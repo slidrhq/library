@@ -579,7 +579,9 @@ const MOVES: Record<Status, Partial<Record<Status, Permission>>> = {
   pending: { accepted: 'review', rejected: 'review' },
   accepted: { pending: 'review', rejected: 'review', published: 'publish' },
   rejected: { pending: 'review' },
-  published: {},
+  // An upload marked published that the library does not have after all goes back to wait for
+  // a publication, by whoever may say it is published.
+  published: { accepted: 'publish' },
 };
 
 const setStatus: Route = async (request, env, [id]) => {

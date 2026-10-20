@@ -702,6 +702,16 @@ describe('the status of an upload', () => {
     assert.equal((await read<Problem>(again)).error, 'not-allowed');
     const bad = await issuesOf(await send(`${at}/status`, 'POST', { status: 'done' }));
     assert.equal(bad[0]!.path, 'status');
+    // Marked published by mistake, it goes back to wait for a publication, and says so.
+    const back = await read<Answer>(
+      await send(`${at}/status`, 'POST', { status: 'accepted', note: 'not in the library yet' }),
+    );
+    assert.equal(back.status, 'accepted');
+    assert.deepEqual(
+      back.history.map((one) => one.status),
+      ['pending', 'accepted', 'published', 'accepted'],
+    );
+    assert.equal(back.history.at(-1)!.note, 'not in the library yet');
   });
 });
 
