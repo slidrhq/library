@@ -151,6 +151,8 @@ An upload waits (`pending`) while it is written. It is then `accepted` or `rejec
 
 **Into the library.** Taking accepted uploads into a publication is still to come. That publication is the studio's, which already publishes into `managed.json` and the templates' samples: it is to read `GET /api/uploads?status=accepted` and each upload's content and files, write them into the author's copy as it writes its own (a design's tags into `managed.json` beside its names, as `tags[<id>]`; a part's tags merged into `tags/<part>.json`), and once the library has them, set each one `published`.
 
+Search-tag uploads may also include any of the other supported content languages alongside Hebrew and English. All supplied languages must tag the same item keys. The app's `desktop/scripts/translate-tags.mjs` translates existing tags into the other fourteen languages before `tag-elements.mjs --upload` sends them. Native accents, vowel marks and capitalization are preserved; English remains lowercase and Hebrew remains without niqqud.
+
 ## Publishing
 
 The page runs on Cloudflare as the Worker `library` (https://library.slidr.workers.dev), which serves the page from `dist/client` and runs `worker/index.ts`: signing in, and the uploads (`wrangler.jsonc`; `pnpm build` writes both, and the Worker's own configuration to `dist/library`). `.github/workflows/deploy.yml` checks, tests, builds and publishes it on every push to `main`, and you can run it by hand from the Actions tab. The workflow needs two repository secrets: `CLOUDFLARE_API_TOKEN`, a token with the "Edit Cloudflare Workers" template, and `CLOUDFLARE_ACCOUNT_ID`.

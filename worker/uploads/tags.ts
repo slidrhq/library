@@ -10,7 +10,12 @@
  * searched takes an upload of `tag`: the tags of some of its published items, by their keys,
  * which publishing merges into its file.
  */
-import { BASE_LANGUAGES, LANGUAGE_NAMES, type ContentLanguage } from '@slidr/model';
+import {
+  BASE_LANGUAGES,
+  CONTENT_LANGUAGES,
+  LANGUAGE_NAMES,
+  type ContentLanguage,
+} from '@slidr/model';
 import { shapePresets } from '../../vendor/packages/renderer/src/geometry.ts';
 import { isRecord } from '../http.ts';
 import {
@@ -32,6 +37,24 @@ const TAG_WORDS = 4;
 
 const HEBREW = /\p{Script=Hebrew}/u;
 const NIQQUD = /[֑-ׇ]/u;
+const LETTERS: Record<ContentLanguage, RegExp> = {
+  he: /\p{Script=Hebrew}/u,
+  en: /\p{Script=Latin}/u,
+  ar: /\p{Script=Arabic}/u,
+  de: /\p{Script=Latin}/u,
+  es: /\p{Script=Latin}/u,
+  fr: /\p{Script=Latin}/u,
+  it: /\p{Script=Latin}/u,
+  'pt-BR': /\p{Script=Latin}/u,
+  ru: /\p{Script=Cyrillic}/u,
+  tr: /\p{Script=Latin}/u,
+  vi: /\p{Script=Latin}/u,
+  id: /\p{Script=Latin}/u,
+  hi: /\p{Script=Devanagari}/u,
+  ja: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u,
+  ko: /\p{Script=Hangul}/u,
+  'zh-CN': /\p{Script=Han}/u,
+};
 
 /** Words about the drawing rather than what it shows, in either language. */
 const MEDIUM = new Set([
@@ -97,11 +120,11 @@ export function checkTags(at: string, lang: ContentLanguage, value: unknown, iss
       );
     } else if (plain !== tag) {
       issues.add(where, `${quote(tag)} is written ${quote(plain)}, with single spaces.`, lang);
-    } else if (lang === 'he' ? !HEBREW.test(tag) : HEBREW.test(tag)) {
+    } else if (!LETTERS[lang].test(tag) || (lang !== 'he' && HEBREW.test(tag))) {
       issues.add(where, `${quote(tag)} is not written in ${language} letters.`, lang);
     } else if (lang === 'he' && NIQQUD.test(tag)) {
       issues.add(where, `${quote(tag)} is written without niqqud.`, lang);
-    } else if (lang !== 'he' && tag !== tag.toLowerCase()) {
+    } else if (lang === 'en' && tag !== tag.toLowerCase()) {
       issues.add(where, `${quote(tag)} is written in lower case.`, lang);
     } else if (MEDIUM.has(bare.toLowerCase())) {
       issues.add(where, `${quote(tag)} says how it is drawn, not what it is or is for.`, lang);
@@ -233,12 +256,12 @@ export function tagHandler(type: TypeId): Handler {
     type,
     action: 'tag',
     about:
-      `The search tags of published ${type}, in Hebrew and English, by the key of each: ` +
+      `The search tags of published ${type}, in any supported language, by the key of each: ` +
       `${part.about}. Publishing merges them into \`tags/${type}.json\`: an item named here takes ` +
       'these tags in place of those it had, and the others keep theirs.',
     id: `The part whose items these tags are for: \`${type}\`.`,
     fields: [],
-    languages: { required: BASE_LANGUAGES, allowed: BASE_LANGUAGES, complete: BASE_LANGUAGES },
+    languages: { required: BASE_LANGUAGES, allowed: CONTENT_LANGUAGES, complete: BASE_LANGUAGES },
     languageFields: [
       {
         name: 'tags',
@@ -279,7 +302,7 @@ export function tagHandler(type: TypeId): Handler {
         }
         const entries = Object.entries(content.tags);
         if (entries.length === 0) issues.add(`${at}.tags`, 'Tags for one item at least.', lang);
-        const others = BASE_LANGUAGES.filter(
+        const others = CONTENT_LANGUAGES.filter(
           (other) => other !== lang && Object.hasOwn(draft.languages, other),
         );
         for (const [key, tags] of entries) {

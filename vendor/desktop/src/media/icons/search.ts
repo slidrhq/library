@@ -10,6 +10,8 @@
  * graphics, emoji, frames, shapes, card sets and designs are searched by as well.
  */
 
+import type { ContentLanguage } from '@slidr/model';
+
 export type IconSet = 'lucide' | 'tabler';
 
 /** What the search compares a query with: the words of a thing, in English and in Hebrew. */
@@ -44,10 +46,7 @@ export type HebrewTags = Readonly<Record<string, readonly string[]>>;
  * The search tags of one thing, in each language: what a user may type to find it beyond its
  * name (a balloon: "birthday", "party"). The media library holds them by kind (`tags/`, ADR-108).
  */
-export interface Tags {
-  en?: readonly string[];
-  he?: readonly string[];
-}
+export type Tags = Partial<Record<ContentLanguage, readonly string[]>>;
 
 /** The tags of every thing of a kind, by its key in the kind's catalogue. */
 export type TagsOf = Readonly<Record<string, Tags>>;
@@ -74,7 +73,7 @@ const FINALS: Record<string, string> = { ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ',
 export function normalize(text: string): string {
   return text
     .normalize('NFKD')
-    .replace(/\p{Mn}/gu, '')
+    .replace(/([\p{Script=Latin}\p{Script=Hebrew}])\p{M}+/gu, '$1')
     .replace(/['"׳״`’]/g, '')
     .toLowerCase()
     .replace(/[ךםןףץ]/g, (letter) => FINALS[letter] ?? letter);
@@ -83,7 +82,7 @@ export function normalize(text: string): string {
 /** The words of a text, normalised. */
 export function wordsOf(text: string): string[] {
   return normalize(text)
-    .split(/[^\p{L}\p{N}]+/u)
+    .split(/[^\p{L}\p{M}\p{N}]+/u)
     .filter(Boolean);
 }
 
@@ -183,7 +182,9 @@ function joined(words: readonly string[], add: readonly string[], taken: Set<str
  */
 export function withTags<T extends SearchWords>(words: T, tags: Tags | undefined): T {
   if (!tags) return words;
-  const english = (tags.en ?? []).flatMap((tag) => wordsOf(tag));
+  const english = Object.entries(tags)
+    .filter(([lang]) => lang !== 'he')
+    .flatMap(([, own]) => (own ?? []).flatMap(wordsOf));
   const hebrew = (tags.he ?? []).map((tag) => wordsOf(tag)).filter((tag) => tag.length > 0);
   const named = [...words.nameTerms, ...words.nameHebrew];
   return {
@@ -292,6 +293,13 @@ function score(icon: SearchWords, word: string): number {
   }
   if (icon.nameWords.includes(word)) return 100;
   if (icon.tagWords.includes(word)) return 50;
+  // These languages do not separate every word with spaces. A query can be inside a tag.
+  if (
+    word.length >= 2 &&
+    /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u.test(word)
+  ) {
+    if (icon.tagWords.some((tag) => tag.includes(word))) return 25;
+  }
   if (word.length >= 2 && icon.nameWords.some((part) => part.startsWith(word))) return 60;
   if (word.length >= 3 && icon.tagWords.some((tag) => tag.startsWith(word))) return 25;
   return 0;

@@ -337,6 +337,39 @@ const tagsOf = (
 describe('the tags of published items', () => {
   const balloon = { he: ['בלון', 'יום הולדת', 'מסיבה'], en: ['balloon', 'birthday', 'party'] };
 
+  test('accept translated tags and validate their language and item keys', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const base = tagsOf('emoji', { 'birthday-cake': balloon.he }, { 'birthday-cake': balloon.en });
+    const made = await read<Answer>(
+      await send('/api/uploads', 'POST', {
+        ...base,
+        languages: {
+          ...base.languages,
+          de: { tags: { 'birthday-cake': ['Geburtstag', 'Kuchen', 'Feier'] } },
+          hi: { tags: { 'birthday-cake': ['जन्मदिन', 'केक', 'पार्टी'] } },
+          ja: { tags: { 'birthday-cake': ['誕生日', 'ケーキ', 'パーティー'] } },
+        },
+      }),
+    );
+    assert.deepEqual(made.languages.de, {
+      tags: { 'birthday-cake': ['Geburtstag', 'Kuchen', 'Feier'] },
+    });
+    const wrong = await issuesOf(
+      await send(`/api/uploads/${made.id}/languages/ja`, 'PUT', {
+        tags: { 'birthday-cake': ['birthday', 'cake', 'party'] },
+      }),
+    );
+    assert.equal(wrong.length, 3);
+    assert.match(wrong[0]!.message, /Japanese letters/);
+    const missing = await issuesOf(
+      await send(`/api/uploads/${made.id}/languages/fr`, 'PUT', {
+        tags: { other: ['anniversaire', 'gâteau', 'fête'] },
+      }),
+    );
+    assert.ok(missing.length > 0);
+  });
+
   test('are kept, by the keys of the items, to be merged into the part’s tags', async () => {
     publishLibrary([], CATALOGS);
     const { send } = await caller();

@@ -1,4 +1,5 @@
 import { useEffect, useState, type DependencyList } from 'react';
+import { CONTENT_LANGUAGES, LANGUAGE_NAMES, languageDir } from '@slidr/model';
 import type { TagKind } from '@desktop/media/icons/library';
 import type { SearchWords, Tags, TagsOf } from '@desktop/media/icons/search';
 import { iconsModule, type iconSearchModule } from './app';
@@ -80,14 +81,19 @@ export function finds(
 export const tagsOf = (kind: TagKind): Promise<TagsOf> =>
   iconsModule().then((icons) => icons.searchTags(kind));
 
-/** The search tags of an item, among its facts: the Hebrew ones, then the English ones. */
+/** The search tags of an item in every language it carries. */
 export function TagFacts({ tags }: { tags: Tags | undefined }) {
   const t = useT();
   return (
     <>
       <dt>{t('library.icons.tags')}</dt>
-      <dd dir="rtl">{tags?.he?.join(', ') || '—'}</dd>
-      <dd dir="ltr">{tags?.en?.join(', ') || '—'}</dd>
+      {CONTENT_LANGUAGES.filter((lang) => tags?.[lang]?.length).map((lang) => (
+        <dd key={lang} lang={lang} dir={languageDir(lang)}>
+          <strong>{LANGUAGE_NAMES[lang].native}: </strong>
+          {tags?.[lang]?.join(', ')}
+        </dd>
+      ))}
+      {!CONTENT_LANGUAGES.some((lang) => tags?.[lang]?.length) && <dd>—</dd>}
     </>
   );
 }

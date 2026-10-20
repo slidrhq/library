@@ -9,6 +9,7 @@
  * again the next time something asks.
  */
 import { lazyMediaJson, readMediaJson } from '@slidr/media-library';
+import { CONTENT_LANGUAGES } from '@slidr/model';
 import {
   buildIndex,
   englishQuery,
@@ -65,8 +66,13 @@ export function tagsOf(value: unknown): TagsOf {
   const tags: Record<string, Tags> = {};
   for (const [key, own] of Object.entries(value as Record<string, unknown>)) {
     if (own === null || typeof own !== 'object') continue;
-    const { en, he } = own as Record<string, unknown>;
-    tags[key] = { en: words(en), he: words(he) };
+    const localized = own as Record<string, unknown>;
+    tags[key] = { en: words(localized.en), he: words(localized.he) };
+    for (const lang of CONTENT_LANGUAGES) {
+      if (lang !== 'he' && lang !== 'en' && Object.hasOwn(localized, lang)) {
+        tags[key][lang] = words(localized[lang]);
+      }
+    }
   }
   return tags;
 }

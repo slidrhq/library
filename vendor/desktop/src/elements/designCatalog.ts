@@ -1,4 +1,4 @@
-import type { Localized, Slide } from '@slidr/model';
+import { CONTENT_LANGUAGES, type Localized, type Slide } from '@slidr/model';
 import {
   searchIcons,
   withTags,
@@ -109,7 +109,11 @@ export function mergeCatalogs(
       if (Object.hasOwn(managedNames, id)) names.set(id, record<string>(managedNames[id]));
       if (Object.hasOwn(managedTags, id)) {
         const own = record<unknown>(managedTags[id]);
-        tags.set(id, { en: strings(own.en), he: strings(own.he) });
+        const localized: Tags = {};
+        for (const lang of CONTENT_LANGUAGES) {
+          if (Object.hasOwn(own, lang)) localized[lang] = strings(own[lang]);
+        }
+        tags.set(id, localized);
       }
     }
     if (groups.includes(group)) {
@@ -143,10 +147,13 @@ export function designTagsOf(library: TagsOf, managed: ReadonlyMap<string, Tags>
   const all: Record<string, Tags> = { ...library };
   for (const [id, own] of managed) {
     const listed = all[id];
-    all[id] = {
-      en: [...new Set([...(own.en ?? []), ...(listed?.en ?? [])])],
-      he: [...new Set([...(own.he ?? []), ...(listed?.he ?? [])])],
-    };
+    const merged: Tags = {};
+    for (const lang of CONTENT_LANGUAGES) {
+      if (own[lang] || listed?.[lang]) {
+        merged[lang] = [...new Set([...(own[lang] ?? []), ...(listed?.[lang] ?? [])])];
+      }
+    }
+    all[id] = merged;
   }
   return all;
 }
