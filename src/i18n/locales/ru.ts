@@ -207,6 +207,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Набор больше не рисует эту иллюстрацию.',
   'libraryCatalogs.stickers.noResults': 'Ничего не найдено.',
   'shell.subtitle': 'Что публикует медиатека — так, как это читает приложение',
+  'account.signIn': 'Войти через Google',
+  'account.signOut': 'Выйти',
+  'account.menu': 'Аккаунт: {name}',
+  'account.editor': 'Этот аккаунт может загружать материалы в медиатеку',
+  'account.viewer': 'Этот аккаунт не может загружать материалы в медиатеку',
+  'account.failed': 'Не удалось войти через Google. Попробуйте ещё раз.',
+  'account.dismiss': 'Закрыть',
 };
 
 export default words;

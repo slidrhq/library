@@ -202,6 +202,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': '키트에서 더 이상 이 일러스트를 그리지 않습니다.',
   'libraryCatalogs.stickers.noResults': '결과가 없습니다.',
   'shell.subtitle': '미디어 라이브러리에 게시된 내용을 앱이 읽는 그대로',
+  'account.signIn': 'Google 계정으로 로그인',
+  'account.signOut': '로그아웃',
+  'account.menu': '계정: {name}',
+  'account.editor': '이 계정은 라이브러리에 콘텐츠를 업로드할 수 있습니다',
+  'account.viewer': '이 계정은 라이브러리에 콘텐츠를 업로드할 수 없습니다',
+  'account.failed': 'Google 로그인에 실패했습니다. 다시 시도하세요.',
+  'account.dismiss': '닫기',
 };
 
 export default words;

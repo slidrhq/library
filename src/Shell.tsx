@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AccountControl } from './account';
 import { useLang, useT } from './i18n';
 import { LanguagePicker } from './languages';
 import { Library } from './Library';
@@ -65,6 +66,7 @@ export function Shell() {
         </div>
         <div className="topbar-actions">
           <LanguagePicker lang={lang} onChange={setLang} label={t('shell.displayLanguage')} />
+          <AccountControl />
         </div>
       </header>
       <main>

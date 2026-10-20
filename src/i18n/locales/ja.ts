@@ -205,6 +205,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'このイラストは、キットでは使われなくなりました。',
   'libraryCatalogs.stickers.noResults': '結果がありません。',
   'shell.subtitle': 'メディアライブラリが公開しているもの（アプリが読むとおり）',
+  'account.signIn': 'Google でログイン',
+  'account.signOut': 'ログアウト',
+  'account.menu': 'アカウント：{name}',
+  'account.editor': 'このアカウントはライブラリにコンテンツをアップロードできます',
+  'account.viewer': 'このアカウントはライブラリにコンテンツをアップロードできません',
+  'account.failed': 'Google でのログインに失敗しました。もう一度お試しください。',
+  'account.dismiss': '閉じる',
 };
 
 export default words;

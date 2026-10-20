@@ -211,6 +211,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Le kit ne dessine plus cette illustration.',
   'libraryCatalogs.stickers.noResults': 'Aucun résultat.',
   'shell.subtitle': 'Ce que publie la médiathèque, tel que l’app le lit',
+  'account.signIn': 'Se connecter avec Google',
+  'account.signOut': 'Se déconnecter',
+  'account.menu': 'Compte : {name}',
+  'account.editor': 'Ce compte peut téléverser du contenu dans la médiathèque',
+  'account.viewer': 'Ce compte ne peut pas téléverser de contenu dans la médiathèque',
+  'account.failed': 'La connexion avec Google a échoué. Réessayez.',
+  'account.dismiss': 'Fermer',
 };
 
 export default words;

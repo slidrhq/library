@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+import { cloudflare } from '@cloudflare/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -6,7 +7,8 @@ import { defineConfig } from 'vite';
 const desktop = fileURLToPath(new URL('vendor/apps/desktop/src', import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
+  // The Worker of `wrangler.jsonc` runs inside the dev server and is built beside the page.
+  plugins: [react(), cloudflare()],
   clearScreen: false,
   resolve: {
     alias: { '@desktop': desktop },

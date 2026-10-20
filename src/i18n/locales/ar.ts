@@ -199,6 +199,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'لم تعد الحزمة ترسم هذا الرسم التوضيحي.',
   'libraryCatalogs.stickers.noResults': 'لا توجد نتائج.',
   'shell.subtitle': 'ما تنشره مكتبة الوسائط، كما يقرؤه التطبيق',
+  'account.signIn': 'تسجيل الدخول باستخدام Google',
+  'account.signOut': 'تسجيل الخروج',
+  'account.menu': 'الحساب: {name}',
+  'account.editor': 'يمكن لهذا الحساب رفع محتوى إلى المكتبة',
+  'account.viewer': 'لا يمكن لهذا الحساب رفع محتوى إلى المكتبة',
+  'account.failed': 'تعذّر تسجيل الدخول باستخدام Google. حاول مرة أخرى.',
+  'account.dismiss': 'إغلاق',
 };
 
 export default words;

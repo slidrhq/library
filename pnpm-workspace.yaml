@@ -1,3 +1,8 @@
 # The app's packages this page uses, copied from the app's repository (vendor/README.md).
 packages:
   - vendor/packages/*
+
+# The Worker's runtime (workerd) and its bundler (esbuild) set up their binaries when installed.
+allowBuilds:
+  esbuild: true
+  workerd: true

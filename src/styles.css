@@ -233,6 +233,178 @@ code {
   flex-wrap: wrap;
 }
 
+/* Signing in with Google (account.tsx). The button is Google's own, in its light and dark form. */
+.account {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.google-sign-in {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.85rem;
+  border-color: #747775;
+  background: #ffffff;
+  color: #1f1f1f;
+  font-family: Roboto, Heebo, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.google-sign-in:hover:not(:disabled) {
+  border-color: #747775;
+  background: #f2f2f2;
+}
+
+.google-sign-in svg {
+  flex: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .google-sign-in {
+    border-color: #8e918f;
+    background: #131314;
+    color: #e3e3e3;
+  }
+
+  .google-sign-in:hover:not(:disabled) {
+    border-color: #8e918f;
+    background: #262628;
+  }
+}
+
+/* The photo alone, in a round target that shows on hover and while the menu is open. */
+.account-button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.account-button:hover:not(:disabled),
+.account-button[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+
+.account-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+img.avatar {
+  background: var(--surface-2);
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  inset-inline-end: 0;
+  /* Above the sticky list of parts, below an item opened up close. */
+  z-index: 5;
+  display: grid;
+  gap: 0.8rem;
+  width: max-content;
+  min-width: 17rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* On a narrow screen the account may wrap to any place in the bar: the menu spans the bar instead. */
+@media (max-width: 640px) {
+  .topbar {
+    position: relative;
+  }
+
+  .account {
+    position: static;
+  }
+
+  .account-menu {
+    top: calc(100% - 0.4rem);
+    inset-inline: 1rem;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+.account-who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.account-who div {
+  display: grid;
+  min-width: 0;
+}
+
+.account-who strong,
+.account-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-email {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.account-role {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.account-role.editor {
+  color: var(--ok);
+}
+
+.account-failed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin: 0;
+  padding-block: 0.15rem;
+  padding-inline: 0.75rem 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--bad) 35%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bad) 8%, var(--surface));
+  color: var(--bad);
+  font-size: 0.82rem;
+}
+
+.account-failed button {
+  padding: 0.1rem 0.45rem;
+  color: inherit;
+  line-height: 1.2;
+}
+
 .programs {
   display: flex;
   gap: 0.35rem;

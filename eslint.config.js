@@ -33,6 +33,12 @@ export default tseslint.config(
   },
 
   {
+    // Node's test runner awaits the promises its `describe` and `test` return.
+    files: ['worker/**/*.test.ts'],
+    rules: { '@typescript-eslint/no-floating-promises': 'off' },
+  },
+
+  {
     files: ['*.config.{js,ts}', 'scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },

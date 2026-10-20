@@ -208,6 +208,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Das Kit zeichnet diese Illustration nicht mehr.',
   'libraryCatalogs.stickers.noResults': 'Keine Ergebnisse.',
   'shell.subtitle': 'Was die Medienbibliothek veröffentlicht, so wie die App es liest',
+  'account.signIn': 'Über Google anmelden',
+  'account.signOut': 'Abmelden',
+  'account.menu': 'Konto: {name}',
+  'account.editor': 'Dieses Konto darf Inhalte in die Bibliothek hochladen',
+  'account.viewer': 'Dieses Konto darf keine Inhalte in die Bibliothek hochladen',
+  'account.failed': 'Die Anmeldung über Google hat nicht geklappt. Versuchen Sie es erneut.',
+  'account.dismiss': 'Schließen',
 };
 
 export default words;

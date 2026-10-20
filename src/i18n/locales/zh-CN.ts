@@ -194,6 +194,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': '素材包已不再绘制这幅插画。',
   'libraryCatalogs.stickers.noResults': '没有结果。',
   'shell.subtitle': '媒体库发布的内容，与应用读取的一致',
+  'account.signIn': '使用 Google 账号登录',
+  'account.signOut': '退出登录',
+  'account.menu': '账号：{name}',
+  'account.editor': '此账号可以向媒体库上传内容',
+  'account.viewer': '此账号无法向媒体库上传内容',
+  'account.failed': '使用 Google 登录失败，请重试。',
+  'account.dismiss': '关闭',
 };
 
 export default words;

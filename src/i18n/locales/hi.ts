@@ -208,6 +208,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'किट अब यह चित्रांकन नहीं बनाती।',
   'libraryCatalogs.stickers.noResults': 'कोई नतीजा नहीं।',
   'shell.subtitle': 'मीडिया लाइब्रेरी जो प्रकाशित करती है, जैसा ऐप उसे पढ़ता है',
+  'account.signIn': 'Google से साइन इन करें',
+  'account.signOut': 'साइन आउट करें',
+  'account.menu': 'खाता: {name}',
+  'account.editor': 'यह खाता लाइब्रेरी में सामग्री अपलोड कर सकता है',
+  'account.viewer': 'यह खाता लाइब्रेरी में सामग्री अपलोड नहीं कर सकता',
+  'account.failed': 'Google से साइन इन नहीं हो सका। फिर से कोशिश करें।',
+  'account.dismiss': 'बंद करें',
 };
 
 export default words;

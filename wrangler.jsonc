@@ -1,9 +1,15 @@
 {
   "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
   "name": "library",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-10-01",
+  // The page, built by Vite (`@cloudflare/vite-plugin` points the Worker at `dist/client`).
   "assets": {
-    "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
+    // Signing in (worker/auth.ts); everything else is served as it was built.
+    "run_worker_first": ["/auth/*", "/api/*"],
   },
+  // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET and LIBRARY_EDITORS are secrets of
+  // the Worker (`wrangler secret put`), and `.dev.vars` on this machine (README, "Signing in").
 }

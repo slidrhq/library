@@ -204,6 +204,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Bộ không còn vẽ minh họa này.',
   'libraryCatalogs.stickers.noResults': 'Không có kết quả.',
   'shell.subtitle': 'Những gì thư viện phương tiện xuất bản, đúng như ứng dụng đọc',
+  'account.signIn': 'Đăng nhập bằng Google',
+  'account.signOut': 'Đăng xuất',
+  'account.menu': 'Tài khoản: {name}',
+  'account.editor': 'Tài khoản này có thể tải nội dung lên thư viện',
+  'account.viewer': 'Tài khoản này không thể tải nội dung lên thư viện',
+  'account.failed': 'Không đăng nhập được bằng Google. Hãy thử lại.',
+  'account.dismiss': 'Đóng',
 };
 
 export default words;

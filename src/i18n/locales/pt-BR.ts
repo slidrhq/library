@@ -207,6 +207,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'O kit não desenha mais esta ilustração.',
   'libraryCatalogs.stickers.noResults': 'Nenhum resultado.',
   'shell.subtitle': 'O que a biblioteca de mídia publica, como o app lê',
+  'account.signIn': 'Fazer login com o Google',
+  'account.signOut': 'Sair',
+  'account.menu': 'Conta: {name}',
+  'account.editor': 'Esta conta pode enviar conteúdo para a biblioteca',
+  'account.viewer': 'Esta conta não pode enviar conteúdo para a biblioteca',
+  'account.failed': 'Não foi possível fazer login com o Google. Tente de novo.',
+  'account.dismiss': 'Fechar',
 };
 
 export default words;

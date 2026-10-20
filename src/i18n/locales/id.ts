@@ -208,6 +208,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Kit tidak lagi menggambar ilustrasi ini.',
   'libraryCatalogs.stickers.noResults': 'Tidak ada hasil.',
   'shell.subtitle': 'Yang diterbitkan pustaka media, sebagaimana aplikasi membacanya',
+  'account.signIn': 'Login dengan Google',
+  'account.signOut': 'Keluar',
+  'account.menu': 'Akun: {name}',
+  'account.editor': 'Akun ini dapat mengunggah konten ke pustaka',
+  'account.viewer': 'Akun ini tidak dapat mengunggah konten ke pustaka',
+  'account.failed': 'Gagal login dengan Google. Coba lagi.',
+  'account.dismiss': 'Tutup',
 };
 
 export default words;

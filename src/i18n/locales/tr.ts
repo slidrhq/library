@@ -204,6 +204,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Kit artık bu illüstrasyonu çizmiyor.',
   'libraryCatalogs.stickers.noResults': 'Sonuç yok.',
   'shell.subtitle': 'Medya kitaplığının yayımladıkları, uygulamanın okuduğu gibi',
+  'account.signIn': 'Google ile oturum açın',
+  'account.signOut': 'Oturumu kapat',
+  'account.menu': 'Hesap: {name}',
+  'account.editor': 'Bu hesap kütüphaneye içerik yükleyebilir',
+  'account.viewer': 'Bu hesap kütüphaneye içerik yükleyemez',
+  'account.failed': 'Google ile oturum açılamadı. Yeniden deneyin.',
+  'account.dismiss': 'Kapat',
 };
 
 export default words;
