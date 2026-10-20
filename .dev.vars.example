@@ -1,0 +1,12 @@
+# The Worker's secrets for `pnpm dev`: copy this file to `.dev.vars` (README, "Signing in").
+# The OAuth client of the Google Cloud project, of the "Web application" type, with
+# http://127.0.0.1:5176/auth/callback among its authorized redirect URIs.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+# At least 32 characters: node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
+SESSION_SECRET=
+# The Google accounts that may upload to the library, separated by commas.
+LIBRARY_EDITORS=
+# The programs that may upload, if any (README, "Uploading"): <name>=<key>, separated by commas,
+# each key at least 32 characters.
+LIBRARY_KEYS=

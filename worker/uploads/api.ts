@@ -13,7 +13,8 @@
  *   DELETE /api/uploads/{id}/languages/{lang}    takes a language it may do without away
  *   POST   /api/uploads/{id}/status              accepts it, rejects it, sends it back, or says it is published
  *
- * Every route asks `access.ts` first. Nothing here changes the published library: an accepted
+ * Every route of the uploads asks `access.ts` first: they are the library's editors'. What
+ * describes the API is open to anyone. Nothing here changes the published library: an accepted
  * upload is published with the rest of the library, from the author's copy.
  */
 import {
@@ -24,7 +25,7 @@ import {
 } from '@slidr/model';
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { isRecord, json, jsonBody, problem, type Issue } from '../http.ts';
-import { authorize, type Actor, type Permission } from './access.ts';
+import { authorize, type AccessEnv, type Actor, type Permission } from './access.ts';
 import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
@@ -46,7 +47,7 @@ import {
 } from './store.ts';
 import { Sample } from './templates.ts';
 
-export interface UploadsEnv {
+export interface UploadsEnv extends AccessEnv {
   /** The bucket uploads are kept in (`wrangler.jsonc`). */
   UPLOADS?: Bucket;
   /** The library uploads are checked against: the published one unless this names another. */
@@ -146,26 +147,18 @@ const now = () => new Date().toISOString();
 
 // ---- GET /api/content, /api/openapi.json, /api/schemas/…
 
-const content: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'read');
-  if (actor instanceof Response) return actor;
-  return json(describeContent());
-};
+const content: Route = () => Promise.resolve(json(describeContent()));
 
-const openapi: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'read');
-  if (actor instanceof Response) return actor;
-  return json(openApi());
-};
+const openapi: Route = () => Promise.resolve(json(openApi()));
 
 let schemas: Record<string, unknown> | undefined;
 
-const schema: Route = async (request, env, [name]) => {
-  const actor = await authorize(request, env, 'read');
-  if (actor instanceof Response) return actor;
+const schema: Route = (_request, _env, [name]) => {
   schemas ??= { slide: slideJsonSchema(), sample: toJsonSchema(Sample) };
   const found = name ? schemas[name] : undefined;
-  return found ? json(found) : problem(404, 'not-found', `There is no schema ${name}.`);
+  return Promise.resolve(
+    found ? json(found) : problem(404, 'not-found', `There is no schema ${name}.`),
+  );
 };
 
 // ---- GET /api/uploads

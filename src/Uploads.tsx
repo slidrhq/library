@@ -1,5 +1,6 @@
 import { CONTENT_LANGUAGES } from '@slidr/model';
 import { useMemo, useState } from 'react';
+import { signIn } from './account';
 import { isolate } from './bidi';
 import { useLang, useT } from './i18n';
 import { LanguageNames, type Lang } from './languages';
@@ -8,9 +9,11 @@ import { NewUpload } from './NewUpload';
 import { matches, useRead, type LibraryRoute } from './shared';
 import { UploadDetail } from './UploadDetail';
 import {
+  ApiError,
   STATUSES,
   kindKey,
   readAccess,
+  settled,
   statusKey,
   unavailable,
   uploadsApi,
@@ -76,8 +79,7 @@ function UploadCard({
           )}
         </span>
         <span className="muted small">
-          {when(uiLang, upload.updated)}
-          {upload.by !== 'anyone' && <> · {who(t, upload.by)}</>}
+          {when(uiLang, upload.updated)} · {who(upload.by)}
         </span>
       </span>
     </button>
@@ -102,7 +104,8 @@ export function Uploads({
   const t = useT();
   const [status, setStatus] = useState<Status | undefined>();
   const [version, setVersion] = useState(0);
-  const list = useRead(() => uploadsApi.list(), [version]);
+  const read = useRead(() => settled(uploadsApi.list()), [version]);
+  const list = { value: read.value?.found, error: read.value?.failed ?? read.error };
   const access = useRead(readAccess, []);
   const files = useRead(manifest, []);
   const refresh = () => setVersion((at) => at + 1);
@@ -118,36 +121,52 @@ export function Uploads({
   );
   const count = (one?: Status) => all.filter((upload) => !one || upload.status === one).length;
   const mayUpload = access.value?.mayUpload ?? false;
+  // The uploads are the editors': someone else is told why, and one signed out how to sign in.
+  const refused =
+    list.error instanceof ApiError && (list.error.status === 401 || list.error.status === 403);
+  const signedOut =
+    list.error instanceof ApiError && list.error.status === 401 && Boolean(access.value?.signIn);
   const open = (item: string) => go({ section: 'uploads', item });
   const close = () => go({ section: 'uploads' });
 
   return (
     <>
-      <div className="upload-bar">
-        <div className="chips" role="group" aria-label={t('uploads.filterLabel')}>
-          {[undefined, ...STATUSES].map((one) => (
-            <button
-              type="button"
-              key={one ?? 'all'}
-              className="chip"
-              aria-pressed={status === one}
-              onClick={() => setStatus(one)}
-            >
-              {one ? t(statusKey(one)) : t('uploads.filter.all')}{' '}
-              <span className="muted">{list.value ? count(one) : ''}</span>
+      {!refused && (
+        <div className="upload-bar">
+          <div className="chips" role="group" aria-label={t('uploads.filterLabel')}>
+            {[undefined, ...STATUSES].map((one) => (
+              <button
+                type="button"
+                key={one ?? 'all'}
+                className="chip"
+                aria-pressed={status === one}
+                onClick={() => setStatus(one)}
+              >
+                {one ? t(statusKey(one)) : t('uploads.filter.all')}{' '}
+                <span className="muted">{list.value ? count(one) : ''}</span>
+              </button>
+            ))}
+          </div>
+          {mayUpload && (
+            <button type="button" className="primary" onClick={() => open(NEW)}>
+              {t('uploads.new')}
             </button>
-          ))}
+          )}
         </div>
-        {mayUpload && (
-          <button type="button" className="primary" onClick={() => open(NEW)}>
-            {t('uploads.new')}
-          </button>
-        )}
-      </div>
-      {access.value?.signIn && !mayUpload && <p className="hint">{t('uploads.signIn')}</p>}
-
-      {list.error !== undefined && (
-        <p className="error-text">{isolate(unavailable(t, list.error))}</p>
+      )}
+      {refused ? (
+        <div className="upload-empty">
+          <p>{isolate(unavailable(t, list.error, access.value))}</p>
+          {signedOut && (
+            <button type="button" className="primary" onClick={signIn}>
+              {t('account.signIn')}
+            </button>
+          )}
+        </div>
+      ) : (
+        list.error !== undefined && (
+          <p className="error-text">{isolate(unavailable(t, list.error, access.value))}</p>
+        )
       )}
       {!list.value && list.error === undefined && <p className="muted">{t('uploads.loading')}</p>}
       {list.value && shown.length === 0 && (

@@ -2,7 +2,7 @@
 packages:
   - vendor/packages/*
 
-# The Worker's runtime and bundler fetch their binaries when installed.
+# The Worker's runtime (workerd) and its bundler (esbuild) set up their binaries when installed.
 allowBuilds:
   esbuild: true
   workerd: true

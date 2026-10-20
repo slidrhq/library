@@ -81,8 +81,8 @@ export const statusKey = (status: Status) => `uploads.status.${status}` as Messa
 export const kindKey = (upload: { type: string; action: string }) =>
   `uploads.kind.${kindOf(upload).replace(':', '.')}` as MessageKey;
 
-/** Who did something, as the page names them: anyone, while there are no permissions. */
-export const who = (t: Translate, id: string) => (id === 'anyone' ? t('uploads.anyone') : id);
+/** Who did something: an editor by their address, a program by its name. */
+export const who = (id: string) => (id.startsWith('key:') ? id.slice('key:'.length) : id);
 
 /** A moment, as people read it in the language of the page. */
 export const when = (lang: string, at: string) =>
@@ -94,7 +94,11 @@ export const when = (lang: string, at: string) =>
   });
 
 /** What the server answered instead of the uploads, in words. */
-export function unavailable(t: Translate, error: unknown) {
+export function unavailable(t: Translate, error: unknown, access?: Access) {
+  if (error instanceof ApiError && error.status === 401) {
+    return access && !access.signIn ? t('uploads.noSignIn') : t('uploads.signIn');
+  }
+  if (error instanceof ApiError && error.code === 'not-an-editor') return t('uploads.notEditor');
   if (error instanceof ApiError && error.code === 'not-set-up') return t('uploads.notSetUp');
   if (error instanceof ApiError && (error.code === 'no-api' || error.status === 404)) {
     return t('uploads.noServer');
@@ -144,6 +148,18 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
+/**
+ * A read of the API that keeps what it answered when it failed (`useRead` keeps only its words),
+ * so the page can say why: no one signed in, not an editor, no server.
+ */
+export type Settled<T> = { found: T; failed?: undefined } | { found?: undefined; failed: unknown };
+
+export const settled = <T>(read: Promise<T>): Promise<Settled<T>> =>
+  read.then(
+    (found) => ({ found }),
+    (failed: unknown) => ({ failed }),
+  );
+
 const sendJson = (method: string, body: unknown): RequestInit => ({
   method,
   headers: { 'Content-Type': 'application/json' },
@@ -173,8 +189,8 @@ export const uploadsApi = {
 };
 
 /**
- * What the person may do here. Signing in answers `/api/me` once it is there, and an editor may
- * upload and review; until then the server lets everyone do everything, and so does the page.
+ * What the person may do here: the uploads are the library's editors', as signing in names them
+ * (`/api/me`, worker/auth.ts). Where no one answers, or no one is signed in, nothing.
  */
 export interface Access {
   /** Whether the server has signing in at all. */
@@ -187,7 +203,7 @@ export interface Access {
 export async function readAccess(): Promise<Access> {
   try {
     const me = await call<{ signIn?: boolean; user?: Access['user'] | null }>('me');
-    const editor = !me.signIn || Boolean(me.user?.editor);
+    const editor = Boolean(me.user?.editor);
     return {
       signIn: Boolean(me.signIn),
       user: me.user ?? undefined,
@@ -195,7 +211,7 @@ export async function readAccess(): Promise<Access> {
       mayReview: editor,
     };
   } catch {
-    return { signIn: false, mayUpload: true, mayReview: true };
+    return { signIn: false, mayUpload: false, mayReview: false };
   }
 }
 

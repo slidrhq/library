@@ -17,6 +17,7 @@ import {
   who,
   languageOfFile,
   readContent,
+  settled,
   readJsonFile,
   uploadsApi,
   type Access,
@@ -431,9 +432,10 @@ export function UploadDetail({
 }) {
   const t = useT();
   const [uiLang] = useLang();
-  const read = useRead(() => uploadsApi.get(id), [id]);
+  const read = useRead(() => settled(uploadsApi.get(id)), [id]);
+  const failed = read.value?.failed ?? read.error;
   const [changed, setChanged] = useState<Upload>();
-  const upload = changed ?? read.value;
+  const upload = changed ?? read.value?.found;
   const [busy, setBusy] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [failure, setFailure] = useState<string>();
@@ -493,10 +495,10 @@ export function UploadDetail({
       return last;
     });
 
-  if (read.error) {
+  if (failed !== undefined && !upload) {
     return (
       <ItemOverlay title={t('uploads.nav')} onClose={onClose}>
-        <p className="error-text">{unavailable(t, read.error)}</p>
+        <p className="error-text">{unavailable(t, failed, access)}</p>
       </ItemOverlay>
     );
   }
@@ -509,8 +511,8 @@ export function UploadDetail({
   }
 
   const pending = upload.status === 'pending';
-  const mayUpload = access?.mayUpload ?? true;
-  const mayReview = access?.mayReview ?? true;
+  const mayUpload = access?.mayUpload ?? false;
+  const mayReview = access?.mayReview ?? false;
   const names = upload.languages.he?.name ?? upload.languages.en?.name;
   const withdrawable = mayUpload && (pending || upload.status === 'rejected');
 
@@ -608,7 +610,7 @@ export function UploadDetail({
                     {t(statusKey(entry.status))}
                   </span>{' '}
                   <span className="muted">
-                    {when(uiLang, entry.at)} · {who(t, entry.by.id)}
+                    {when(uiLang, entry.at)} · {who(entry.by.id)}
                   </span>
                   {entry.note && (
                     <span className="upload-note block" dir="auto">

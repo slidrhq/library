@@ -6,6 +6,8 @@ import { forgetLibrary } from './library.ts';
 import {
   ALL_LANGUAGES,
   PICTURE,
+  EDITOR,
+  KEY,
   SITE,
   caller,
   designLanguages,
@@ -62,7 +64,7 @@ async function issuesOf(response: Response) {
 
 describe('what the library takes', () => {
   test('names every part and every language, and why a part takes no uploads', async () => {
-    const { call } = caller();
+    const { call } = await caller();
     const response = await call('/api/content');
     assert.equal(response.status, 200);
     const content = await read<{
@@ -103,7 +105,7 @@ describe('what the library takes', () => {
   });
 
   test('describes itself as OpenAPI, with the model’s schema of a slide', async () => {
-    const { call } = caller();
+    const { call } = await caller();
     const api = await read<{
       openapi: string;
       paths: Record<string, unknown>;
@@ -127,7 +129,7 @@ describe('what the library takes', () => {
 describe('a new design', () => {
   test('is kept, with its picture, to wait in the languages it lacks', async () => {
     publishLibrary();
-    const { bucket, call, upload } = caller();
+    const { bucket, call, upload } = await caller();
     const response = await upload(newDesign(), { picture: webp(1008, 1496) });
     assert.equal(response.status, 201);
     const made = await read<Answer>(response);
@@ -138,7 +140,7 @@ describe('a new design', () => {
     assert.deepEqual(made.missing, ALL_LANGUAGES.slice(2));
     assert.equal(made.files.picture!.path, 'images/designs/m-harbour-launch.webp');
     assert.deepEqual([made.files.picture!.width, made.files.picture!.height], [1008, 1496]);
-    assert.equal(made.history[0]!.by.id, 'anyone');
+    assert.equal(made.history[0]!.by.id, EDITOR);
     assert.ok(bucket.objects.has(`uploads/${made.id}.json`));
 
     const picture = await call(made.files.picture!.url);
@@ -149,7 +151,7 @@ describe('a new design', () => {
 
   test('is refused under an id the library has', async () => {
     publishLibrary(['images/designs/m-harbour-launch.webp']);
-    const { upload } = caller();
+    const { upload } = await caller();
     const issues = await issuesOf(await upload(newDesign(), { picture: webp(800, 800) }));
     assert.deepEqual(
       issues.map((one) => one.path),
@@ -160,7 +162,7 @@ describe('a new design', () => {
 
   test('says each thing wrong with it, at its place', async () => {
     publishLibrary();
-    const { upload } = caller();
+    const { upload } = await caller();
     const { he, en } = designLanguages();
     const languages = {
       he,
@@ -196,7 +198,7 @@ describe('a new design', () => {
 
   test('sets each language in a font that has its letters', async () => {
     publishLibrary();
-    const { upload } = caller();
+    const { upload } = await caller();
     const languages = designLanguages();
     languages.he = { ...languages.he, slide: designSlide('he', 'Playfair Display') };
     const issues = await issuesOf(await upload(newDesign(languages), { picture: webp(800, 800) }));
@@ -221,7 +223,7 @@ describe('a new design', () => {
 
   test('shows its own picture, and words written for it', async () => {
     publishLibrary();
-    const { upload } = caller();
+    const { upload } = await caller();
     const languages = designLanguages();
     const slide = designSlide('en', undefined, ['Lorem ipsum dolor', 'Sit amet at the pier', 'Go']);
     const image = slide.elements[0]!;
@@ -239,7 +241,7 @@ describe('a new design', () => {
 
   test('brings its picture, as WebP', async () => {
     publishLibrary();
-    const { upload } = caller();
+    const { upload } = await caller();
     const without = await issuesOf(await upload(newDesign()));
     assert.deepEqual(
       without.map((one) => one.path),
@@ -253,7 +255,7 @@ describe('a new design', () => {
 
   test('is one upload of its id at a time', async () => {
     publishLibrary();
-    const { upload } = caller();
+    const { upload } = await caller();
     assert.equal((await upload(newDesign(), { picture: webp(800, 800) })).status, 201);
     const issues = await issuesOf(await upload(newDesign(), { picture: webp(800, 800) }));
     assert.match(issues[0]!.message, /adds m-harbour-launch too/);
@@ -262,7 +264,7 @@ describe('a new design', () => {
 
 describe('a part the library takes no uploads of', () => {
   test('is refused, saying why', async () => {
-    const { send } = caller();
+    const { send } = await caller();
     const response = await send('/api/uploads', 'POST', {
       type: 'fonts',
       action: 'add',
@@ -289,7 +291,7 @@ describe('the languages of an upload', () => {
   /** A new design that waits, in Hebrew and English. */
   async function waiting() {
     publishLibrary();
-    const api = caller();
+    const api = await caller();
     const made = await read<Answer>(await api.upload(newDesign(), { picture: webp(800, 800) }));
     return { ...api, made, at: `/api/uploads/${made.id}` };
   }
@@ -352,7 +354,7 @@ describe('the languages of an upload', () => {
 describe('a translation', () => {
   test('writes a published design in another language', async () => {
     publishLibrary(['images/designs/m-techmeetup.webp', 'images/designs/techmeetup.webp']);
-    const { send } = caller();
+    const { send } = await caller();
     const translation = (id: string, languages: Partial<Record<ContentLanguage, unknown>>) => ({
       type: 'designs',
       action: 'translate',
@@ -395,7 +397,7 @@ describe('a translation', () => {
 
   test('writes a template’s sample in another language, seated on its layouts', async () => {
     publishLibrary();
-    const { send } = caller();
+    const { send } = await caller();
     const translation = (sample: unknown, lang = 'fr', id = 'harbour') => ({
       type: 'templates',
       action: 'translate',
@@ -449,7 +451,7 @@ describe('a translation', () => {
 describe('the status of an upload', () => {
   test('goes from waiting to rejected, with a note, and is then withdrawn', async () => {
     publishLibrary();
-    const { bucket, call, send, upload } = caller();
+    const { bucket, call, send, upload } = await caller();
     const made = await read<Answer>(await upload(newDesign(), { picture: webp(800, 800) }));
     const at = `/api/uploads/${made.id}`;
     const published = await send(`${at}/status`, 'POST', { status: 'published' });
@@ -467,7 +469,7 @@ describe('the status of an upload', () => {
 
   test('is published only once accepted, and an accepted upload stays', async () => {
     publishLibrary(['images/designs/m-techmeetup.webp']);
-    const { call, send } = caller();
+    const { call, send } = await caller();
     const made = await read<Answer>(
       await send('/api/uploads', 'POST', {
         type: 'designs',
@@ -494,7 +496,7 @@ describe('the status of an upload', () => {
 describe('the list of uploads', () => {
   test('is newest first, by type, status and language, a page at a time', async () => {
     publishLibrary(['images/designs/m-techmeetup.webp']);
-    const { call, send, upload } = caller();
+    const { call, send, upload } = await caller();
     let tick = Date.parse('2026-10-20T08:00:00Z');
     mock.method(Date, 'now', () => (tick += 1000));
     const design = await read<Answer>(await upload(newDesign(), { picture: webp(800, 800) }));
@@ -542,13 +544,76 @@ describe('the list of uploads', () => {
   });
 });
 
+describe('who may upload', () => {
+  const refused = async (response: Response, status: number, error: string) => {
+    assert.equal(response.status, status);
+    assert.equal((await read<Problem>(response)).error, error);
+  };
+
+  test('no one signed in reads what the API takes, and nothing of the uploads', async () => {
+    publishLibrary();
+    const { call, upload } = await caller({ nobody: true });
+    for (const open of ['/api/content', '/api/openapi.json', '/api/schemas/slide.json']) {
+      assert.equal((await call(open)).status, 200, open);
+    }
+    await refused(await call('/api/uploads'), 401, 'signed-out');
+    // A write from the page without a session, and one from anywhere else (a script without a key).
+    const form = new FormData();
+    form.set('upload', JSON.stringify(newDesign()));
+    const fromPage = await call('/api/uploads', {
+      method: 'POST',
+      headers: { Origin: SITE },
+      body: form,
+    });
+    await refused(fromPage, 401, 'signed-out');
+    await refused(await upload(newDesign(), { picture: webp(800, 800) }), 403, 'another-site');
+  });
+
+  test('an account the library does not name is refused', async () => {
+    const { call } = await caller({ email: 'someone@example.com' });
+    await refused(await call('/api/uploads'), 403, 'not-an-editor');
+  });
+
+  test('an editor changes the uploads from the library’s own page only', async () => {
+    publishLibrary();
+    const { call, upload } = await caller();
+    const made = await read<Answer>(await upload(newDesign(), { picture: webp(800, 800) }));
+    await refused(
+      await call(`/api/uploads/${made.id}`, {
+        method: 'DELETE',
+        headers: { Origin: 'https://elsewhere.example' },
+      }),
+      403,
+      'another-site',
+    );
+    assert.equal((await call(`/api/uploads/${made.id}`)).status, 200);
+  });
+
+  test('a program uploads by its key, and is recorded by its name', async () => {
+    publishLibrary();
+    const studio = await caller({ key: KEY });
+    const response = await studio.upload(newDesign(), { picture: webp(800, 800) });
+    assert.equal(response.status, 201);
+    const made = await read<Answer>(response);
+    assert.equal(made.history[0]!.by.id, 'key:studio');
+    const wrong = await caller({ key: 'not-the-key-of-anything-at-all-0000' });
+    await refused(await wrong.call('/api/uploads'), 401, 'bad-key');
+    const none = await caller({ key: KEY });
+    const keyless = await worker.fetch(
+      new Request(`${SITE}/api/uploads`, { headers: { Authorization: 'Basic abc' } }),
+      none.env,
+    );
+    await refused(keyless, 401, 'bad-key');
+  });
+});
+
 describe('the server', () => {
   test('keeps no uploads without its bucket', async () => {
-    const { env } = caller();
-    const response = await worker.fetch(new Request(`${SITE}/api/uploads`), {
-      ...env,
-      UPLOADS: undefined,
+    const { env } = await caller({ key: KEY });
+    const request = new Request(`${SITE}/api/uploads`, {
+      headers: { Authorization: `Bearer ${KEY}` },
     });
+    const response = await worker.fetch(request, { ...env, UPLOADS: undefined });
     assert.equal(response.status, 503);
     assert.equal((await read<Problem>(response)).error, 'not-set-up');
   });
@@ -556,14 +621,14 @@ describe('the server', () => {
   test('checks nothing when the library cannot be read', async () => {
     forgetLibrary();
     mock.method(globalThis, 'fetch', () => Promise.resolve(new Response('', { status: 500 })));
-    const { upload } = caller();
+    const { upload } = await caller();
     const response = await upload(newDesign(), { picture: webp(800, 800) });
     assert.equal(response.status, 503);
     assert.equal((await read<Problem>(response)).error, 'library-unreachable');
   });
 
   test('answers its paths, over HTTPS, and leaves the rest to the page', async () => {
-    const { call, env } = caller();
+    const { call, env } = await caller();
     assert.equal(await (await call('/designs')).text(), 'the page');
     assert.equal((await call('/api/nothing')).status, 404);
     assert.equal((await call('/api/uploads/u-nothing')).status, 404);

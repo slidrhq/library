@@ -110,10 +110,13 @@ export function openApi() {
         '`GET /api/content` says what each part takes.',
     },
     servers: [{ url: '/' }],
+    // The uploads are the library's editors': signed in on its page, or a program by its key.
+    security: [{ session: [] }, { key: [] }],
     paths: {
       '/api/content': {
         get: {
           summary: 'The parts of the library, its languages, and what each part takes',
+          security: [],
           responses: {
             200: {
               description: 'The parts and the languages.',
@@ -125,6 +128,7 @@ export function openApi() {
       '/api/schemas/{name}.json': {
         get: {
           summary: "The JSON Schema of a slide, or of a template's sample",
+          security: [],
           parameters: [
             { name: 'name', in: 'path', required: true, schema: { enum: ['slide', 'sample'] } },
           ],
@@ -178,7 +182,7 @@ export function openApi() {
                 },
               },
             },
-            ...errors(400, 503),
+            ...errors(401, 403, 400, 503),
           },
         },
         post: {
@@ -210,16 +214,22 @@ export function openApi() {
           },
           responses: {
             201: { ...anUpload, headers: { Location: { schema: { type: 'string' } } } },
-            ...errors(400, 413, 415, 422, 503),
+            ...errors(401, 403, 400, 413, 415, 422, 503),
           },
         },
       },
       '/api/uploads/{id}': {
         parameters: [uploadId],
-        get: { summary: 'One upload, all it holds', responses: { 200: anUpload, ...errors(404) } },
+        get: {
+          summary: 'One upload, all it holds',
+          responses: { 200: anUpload, ...errors(401, 403, 404) },
+        },
         delete: {
           summary: 'Withdraws an upload that waits, or was rejected',
-          responses: { 204: { description: 'Withdrawn, with its files.' }, ...errors(404, 409) },
+          responses: {
+            204: { description: 'Withdrawn, with its files.' },
+            ...errors(401, 403, 404, 409),
+          },
         },
       },
       '/api/uploads/{id}/files/{name}': {
@@ -231,7 +241,7 @@ export function openApi() {
           summary: 'One of the files of an upload',
           responses: {
             200: { description: 'The file.', content: { 'image/webp': {} } },
-            ...errors(404),
+            ...errors(401, 403, 404),
           },
         },
       },
@@ -248,11 +258,11 @@ export function openApi() {
             required: true,
             content: { 'application/json': { schema: { type: 'object' } } },
           },
-          responses: { 200: anUpload, ...errors(400, 404, 409, 415, 422, 503) },
+          responses: { 200: anUpload, ...errors(401, 403, 400, 404, 409, 415, 422, 503) },
         },
         delete: {
           summary: 'Takes away a language the upload may do without',
-          responses: { 200: anUpload, ...errors(404, 409) },
+          responses: { 200: anUpload, ...errors(401, 403, 404, 409) },
         },
       },
       '/api/uploads/{id}/status': {
@@ -279,11 +289,25 @@ export function openApi() {
               },
             },
           },
-          responses: { 200: anUpload, ...errors(404, 409, 415, 422, 503) },
+          responses: { 200: anUpload, ...errors(401, 403, 404, 409, 415, 422, 503) },
         },
       },
     },
     components: {
+      securitySchemes: {
+        session: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: '__Host-library-session',
+          description:
+            'Signed in with a Google account the library names as an editor (`LIBRARY_EDITORS`), from the library’s own page (`/auth/login`). A request that changes something comes from that page (its `Origin`).',
+        },
+        key: {
+          type: 'http',
+          scheme: 'bearer',
+          description: 'A program’s key, as the Worker’s `LIBRARY_KEYS` names it.',
+        },
+      },
       schemas: {
         UploadRequest: { oneOf: HANDLERS.map(uploadSchema) },
         Upload: {
@@ -390,6 +414,8 @@ export function openApi() {
       responses: Object.fromEntries(
         [
           [400, 'The request could not be read.'],
+          [401, 'Not signed in, or a key the library does not have.'],
+          [403, 'An account that is not one of the editors, or a request from another site.'],
           [404, 'There is no such thing.'],
           [409, 'Not now: the upload is not in a status that allows it, or was changed meanwhile.'],
           [413, 'The upload is too large.'],

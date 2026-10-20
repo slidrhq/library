@@ -207,6 +207,13 @@ const words: Record<MessageKey, string> = {
   'libraryCatalogs.stickers.kitGone': 'Набор больше не рисует эту иллюстрацию.',
   'libraryCatalogs.stickers.noResults': 'Ничего не найдено.',
   'shell.subtitle': 'Что публикует медиатека — так, как это читает приложение',
+  'account.signIn': 'Войти через Google',
+  'account.signOut': 'Выйти',
+  'account.menu': 'Аккаунт: {name}',
+  'account.editor': 'Этот аккаунт может загружать материалы в медиатеку',
+  'account.viewer': 'Этот аккаунт не может загружать материалы в медиатеку',
+  'account.failed': 'Не удалось войти через Google. Попробуйте ещё раз.',
+  'account.dismiss': 'Закрыть',
   'uploads.nav': 'Загрузки',
   'uploads.about':
     'Материалы, ожидающие включения в библиотеку: каждая загрузка проверяется по опубликованной библиотеке, принимается и попадает в неё со следующей публикацией.',
@@ -222,7 +229,10 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.translate': 'Дизайн на другом языке',
   'uploads.kind.templates.translate': 'Шаблон на другом языке',
   'uploads.languagesOf': 'Языков: {count} из {total}',
-  'uploads.anyone': 'кто угодно (прав доступа пока нет)',
+  'uploads.notEditor':
+    'Загрузки доступны редакторам библиотеки, а эта учётная запись к ним не относится.',
+  'uploads.noSignIn':
+    'На этом сервере нет входа в учётную запись, поэтому он не принимает загрузки.',
   'uploads.loading': 'Чтение загрузок…',
   'uploads.empty': 'Загрузок пока нет.',
   'uploads.emptyFiltered': 'Нет загрузок, подходящих под выбор.',

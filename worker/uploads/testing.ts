@@ -318,15 +318,88 @@ export function publishLibrary(also: readonly string[] = []) {
   });
 }
 
-/** Calls the Worker, with a bucket of its own for each test (`env`). */
-export function caller(bucket = new MemoryBucket()) {
+/** The Worker's settings of signing in, and the people and programs it names. */
+const CLIENT = 'client-1.apps.googleusercontent.com';
+export const EDITOR = 'editor@example.com';
+export const KEY = 'a-key-of-the-studio-of-at-least-32-characters';
+const SIGN_IN = {
+  GOOGLE_CLIENT_ID: CLIENT,
+  GOOGLE_CLIENT_SECRET: 'client-secret',
+  SESSION_SECRET: 'a-session-secret-of-at-least-32-characters',
+  LIBRARY_EDITORS: `${EDITOR}, other-editor@example.com`,
+  LIBRARY_KEYS: `studio=${KEY}`,
+};
+
+const base64url = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
+
+/**
+ * The cookie of a session, signed in all the way through the Worker's own routes, with Google's
+ * token endpoint standing in for Google.
+ */
+async function sessionAs(email: string, env: object): Promise<string> {
+  const login = await worker.fetch(
+    new Request(`${SITE}/auth/login`, { redirect: 'manual' }),
+    env as never,
+  );
+  const google = new URL(login.headers.get('Location')!);
+  const pending = login.headers
+    .getSetCookie()
+    .find((one) => one.startsWith('__Host-library-signin='));
+  const claims = {
+    iss: 'https://accounts.google.com',
+    aud: CLIENT,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    nonce: google.searchParams.get('nonce'),
+    sub: `sub-${email}`,
+    email,
+    email_verified: true,
+    name: email.split('@')[0],
+  };
+  const token = [base64url({ alg: 'RS256' }), base64url(claims), 'signature'].join('.');
+  const answer = mock.method(globalThis, 'fetch', () =>
+    Promise.resolve(Response.json({ id_token: token })),
+  );
+  const back = await worker.fetch(
+    new Request(`${SITE}/auth/callback?state=${google.searchParams.get('state')}&code=a-code`, {
+      headers: { Cookie: pending!.split(';')[0]! },
+      redirect: 'manual',
+    }),
+    env as never,
+  );
+  answer.mock.restore();
+  const session = back.headers
+    .getSetCookie()
+    .find((one) => one.startsWith('__Host-library-session='));
+  if (!session) throw new Error(`${email} was not signed in`);
+  return session.split(';')[0]!;
+}
+
+/**
+ * Calls the Worker as someone: an editor signed in on the library's page (by default), another
+ * account, a program by its key, or no one; with a bucket of its own for each test (`env`).
+ */
+export async function caller(
+  as: { email?: string; key?: string; nobody?: boolean } = {},
+  bucket = new MemoryBucket(),
+) {
   const env = {
+    ...SIGN_IN,
     UPLOADS: bucket,
     MEDIA_LIBRARY_URL: MEDIA,
     ASSETS: { fetch: () => Promise.resolve(new Response('the page')) },
   };
-  const call = (path: string, init: RequestInit = {}) =>
-    worker.fetch(new Request(SITE + path, init), env);
+  const headers: Record<string, string> = {};
+  if (as.key) headers.Authorization = `Bearer ${as.key}`;
+  else if (!as.nobody) {
+    headers.Cookie = await sessionAs(as.email ?? EDITOR, env);
+    // The page's own requests say where they come from.
+    headers.Origin = SITE;
+  }
+  const call = (path: string, init: RequestInit = {}) => {
+    const all = new Headers(init.headers);
+    for (const [name, value] of Object.entries(headers)) if (!all.has(name)) all.set(name, value);
+    return worker.fetch(new Request(SITE + path, { ...init, headers: all }), env);
+  };
   const send = (path: string, method: string, body: unknown) =>
     call(path, {
       method,
