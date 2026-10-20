@@ -1,0 +1,812 @@
+/* The library browser (Library.tsx), in the colours and type of styles.css. */
+
+/* ------------------------------------------------------------ the frame */
+
+.library {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.lib-nav {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.lib-nav-head h2 {
+  font-size: 1.05rem;
+  margin-bottom: 0.3rem;
+}
+
+.lib-nav-head p {
+  margin: 0 0 0.3rem;
+}
+
+.lib-nav-head a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.lib-nav > button {
+  align-self: flex-start;
+}
+
+.lib-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lib-sections button {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  border: none;
+  border-inline-start: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  padding: 0.42rem 0.7rem;
+  text-align: start;
+}
+
+[dir='rtl'] .lib-sections button {
+  border-radius: 8px 0 0 8px;
+}
+
+.lib-sections button:hover {
+  background: var(--surface-2);
+}
+
+.lib-sections button[aria-current='page'] {
+  background: var(--surface);
+  border-inline-start-color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.lib-sections .small {
+  font-variant-numeric: tabular-nums;
+}
+
+.lib-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.lib-head h2 {
+  font-size: 1.45rem;
+}
+
+.lib-head p {
+  margin: 0.25rem 0 0;
+  max-width: 720px;
+}
+
+.lib-search {
+  width: min(400px, 100%);
+}
+
+.language-note {
+  color: var(--accent);
+}
+
+.lib-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+}
+
+.lib-filters .segmented {
+  align-self: flex-start;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+button.chip {
+  padding: 0.2rem 0.75rem;
+}
+
+button.chip[aria-pressed='true'] {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--surface);
+}
+
+button.chip[aria-pressed='true'] .muted {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.lib-group {
+  margin-bottom: 1.6rem;
+}
+
+.lib-group > h3 {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+}
+
+.crumbs {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.crumbs .link {
+  padding: 0;
+}
+
+/* ------------------------------------------------------------ cards */
+
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.lib-grid.wide {
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+
+.lib-grid.overview {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+}
+
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  text-align: start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition:
+    border-color 140ms,
+    box-shadow 140ms,
+    transform 140ms;
+}
+
+.lib-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+/* A card that is its picture alone, with no words under it. */
+.lib-card.picture {
+  border-color: transparent;
+}
+
+.lib-card .slide-frame {
+  background: var(--surface-2);
+}
+
+.lib-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.85rem 0.8rem;
+  min-width: 0;
+}
+
+.lib-card-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lib-card-meta {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.when-seen {
+  display: block;
+  width: 100%;
+}
+
+.peek {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  aspect-ratio: 4 / 1;
+  width: 100%;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.section-card .peek {
+  aspect-ratio: 5 / 2;
+}
+
+.peek.photos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.peek.photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.peek-glyph {
+  font-size: 2rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.peek-glyph.mono {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 1.5rem;
+}
+
+.peek-glyph.fonts {
+  display: flex;
+  gap: 1rem;
+  color: var(--text);
+}
+
+.peek-art {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+}
+
+.peek-art svg {
+  width: 100%;
+  height: 100%;
+}
+
+.peek-art.icon {
+  width: 30px;
+  height: 30px;
+  color: var(--text);
+}
+
+.peek.cards {
+  display: block;
+  padding: 0.9rem 1.1rem;
+}
+
+.card-stage {
+  display: block;
+  padding: 0.6rem;
+  background: var(--surface-2);
+}
+
+.card-picture-box {
+  width: 100%;
+}
+
+.count-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.element-picture {
+  position: relative;
+  overflow: clip;
+}
+
+/* ------------------------------------------------------------ tiles */
+
+.tile-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.tile-grid.icons {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+}
+
+.tile-grid.frames {
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 0.75rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.4rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.tile:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.tile-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.tile-art,
+.tile-icon,
+.tile-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile-art {
+  width: 52px;
+  height: 52px;
+}
+
+.tile-icon {
+  width: 30px;
+  height: 30px;
+  margin: 0.6rem 0 0.2rem;
+}
+
+.tile-glyph {
+  width: 44px;
+  height: 44px;
+}
+
+.tile-glyph.big {
+  width: 120px;
+  height: 120px;
+}
+
+.tile-art svg,
+.tile-icon svg,
+.tile-glyph svg,
+.glyph {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.frame-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 144px;
+}
+
+.frame-tile img {
+  display: block;
+}
+
+.frame-tile .when-seen {
+  height: 100%;
+}
+
+.frame-tile-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* ------------------------------------------------------------ an item up close */
+
+.detail-title {
+  min-width: 0;
+}
+
+.detail-title h2 {
+  overflow-wrap: anywhere;
+}
+
+.detail-body.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 0.8rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* A value in English sits at the reading edge, as the Hebrew ones beside it do. */
+.facts dd[dir='ltr'],
+.picture-fact figcaption[dir='ltr'] {
+  text-align: end;
+}
+
+.picture-fact figcaption[dir='ltr'] {
+  align-items: flex-end;
+}
+
+.detail .side a {
+  color: var(--accent);
+}
+
+.plain-list {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.facts a {
+  color: var(--accent);
+}
+
+.facts .block {
+  display: block;
+}
+
+.hash {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.checker {
+  --check: color-mix(in srgb, var(--line) 70%, transparent);
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(45deg, var(--check) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--check) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--check) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--check) 75%);
+  background-size: 18px 18px;
+  background-position:
+    0 0,
+    0 9px,
+    9px -9px,
+    -9px 0;
+}
+
+.picture-fact {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.picture-fact a {
+  display: block;
+  padding: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.picture-fact img {
+  display: block;
+  max-width: 100%;
+  max-height: 180px;
+  margin: 0 auto;
+}
+
+.picture-fact figcaption {
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.filmstrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.6rem;
+}
+
+.film {
+  position: relative;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.film[aria-current='true'] {
+  border-color: var(--accent);
+}
+
+.film-number {
+  position: absolute;
+  inset-inline-start: 6px;
+  bottom: 6px;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  padding: 0 0.4rem;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 55%);
+  color: #fff;
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.swatch {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.swatch-color {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+}
+
+.frame-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 28px;
+  border-radius: var(--radius);
+  min-height: 240px;
+}
+
+.drawing-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 2.2rem;
+  padding: 2rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.drawing-size {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.drawing {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+}
+
+.drawing svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ------------------------------------------------------------ files */
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.file-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  padding: 0.38rem 0.6rem;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.82rem;
+  text-align: start;
+}
+
+.file-row:hover {
+  background: var(--surface-2);
+}
+
+.file-row.folder .file-name {
+  font-weight: 700;
+}
+
+.file-name {
+  overflow-wrap: anywhere;
+}
+
+.file-row .muted {
+  white-space: nowrap;
+}
+
+.file-image {
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.file-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 72vh;
+  margin: 0 auto;
+}
+
+.file-frame {
+  width: 100%;
+  height: 76vh;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.file-text {
+  margin: 0;
+  max-height: 72vh;
+  overflow: auto;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.file-text.small {
+  max-height: 300px;
+  font-size: 0.72rem;
+}
+
+.font-sample p {
+  font-size: 2rem;
+  margin: 0.4rem 0;
+}
+
+/* ------------------------------------------------------------ fonts */
+
+.font-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.font-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  text-align: start;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.font-card:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.font-card-name,
+.font-card-meta {
+  font-family: Heebo, 'Segoe UI', system-ui, sans-serif;
+}
+
+.font-card-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-align: start;
+}
+
+.font-card-sample {
+  font-size: 2.1rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.font-card-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.font-waterfall {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.font-weight-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: baseline;
+}
+
+.font-weight-row .tag {
+  justify-self: start;
+  font-family: Heebo, system-ui, sans-serif;
+}
+
+.font-weight-row p {
+  margin: 0;
+  font-size: 1.55rem;
+  line-height: 1.3;
+}
+
+.font-glyphs {
+  margin: 0.6rem 0 0;
+  font-size: 1.35rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ narrow windows */
+
+@media (max-width: 900px) {
+  .library {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .lib-nav {
+    position: static;
+  }
+
+  .lib-sections {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+  }
+
+  .lib-sections button {
+    flex: none;
+    border-inline-start: none;
+    border-radius: 8px;
+    border-bottom: 3px solid transparent;
+  }
+
+  .lib-sections button[aria-current='page'] {
+    border-bottom-color: var(--accent);
+  }
+}

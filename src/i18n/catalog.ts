@@ -1,0 +1,22 @@
+/**
+ * Every word of the library, by key. Each area of the interface keeps its own words in
+ * `areas/<area>.ts`, in Hebrew and English; the other languages are in `locales/<lang>.ts`,
+ * read when the language is chosen. A value holds `{name}` where a number or a name goes.
+ */
+import * as libraryBrowse from './areas/libraryBrowse';
+import * as libraryCatalogs from './areas/libraryCatalogs';
+import * as libraryShell from './areas/libraryShell';
+import * as shell from './areas/shell';
+
+const areas = [shell, libraryShell, libraryBrowse, libraryCatalogs];
+
+export const en = Object.assign({}, ...areas.map((area) => area.en)) as Merge<typeof shell.en> &
+  Merge<typeof libraryShell.en> &
+  Merge<typeof libraryBrowse.en> &
+  Merge<typeof libraryCatalogs.en>;
+
+export type MessageKey = keyof typeof en;
+
+export const he = Object.assign({}, ...areas.map((area) => area.he)) as Record<MessageKey, string>;
+
+type Merge<T> = { [K in keyof T]: string };
