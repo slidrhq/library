@@ -5,7 +5,8 @@ import tseslint from 'typescript-eslint';
 
 // The rules of the app's repository (github.com/slidrhq/app), for these pages.
 export default tseslint.config(
-  { ignores: ['**/node_modules/**', '**/dist/**'] },
+  // vendor/ is the app's code, copied as it is (vendor/README.md).
+  { ignores: ['**/node_modules/**', '**/dist/**', 'vendor/**'] },
 
   js.configs.recommended,
 
@@ -32,7 +33,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['*.config.{js,ts}'],
+    files: ['*.config.{js,ts}', 'scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
 );

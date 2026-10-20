@@ -1,2 +1,5 @@
 pnpm-lock.yaml
 dist/
+
+# The app's code, copied as it is (vendor/README.md).
+vendor/
