@@ -1,0 +1,445 @@
+/* The uploads (Uploads.tsx, UploadDetail.tsx, NewUpload.tsx), in the colours and type of
+   styles.css and library.css. */
+
+/* ------------------------------------------------------------ the list */
+
+.lib-uploads {
+  border-top: 1px solid var(--line);
+  padding-top: 0.6rem;
+}
+
+.upload-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+
+.upload-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.upload-empty p {
+  margin: 0;
+}
+
+.upload-card-picture {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.upload-card-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.upload-card-picture .status-badge {
+  position: absolute;
+  inset-block-start: 0.55rem;
+  inset-inline-start: 0.55rem;
+  background: var(--surface);
+}
+
+/* ------------------------------------------------------------ status */
+
+.status-badge {
+  display: inline-block;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  color: var(--warn);
+}
+
+.status-badge.accepted {
+  color: var(--accent);
+}
+
+.status-badge.rejected {
+  color: var(--bad);
+}
+
+.status-badge.published {
+  color: var(--ok);
+}
+
+.upload-note {
+  margin: 0;
+  padding: 0.35rem 0.6rem;
+  border-inline-start: 3px solid var(--line);
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.upload-history {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.upload-reject {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+button.danger-button {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+details.danger {
+  font-size: 0.85rem;
+}
+
+details.danger summary {
+  cursor: pointer;
+}
+
+details.danger[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+details.danger p {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ files */
+
+.file-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 120ms;
+}
+
+.file-button:hover {
+  border-color: var(--muted);
+}
+
+.file-button:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.file-button.small {
+  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.file-button.ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.file-button[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: inherit;
+}
+
+/* ------------------------------------------------------------ an upload up close */
+
+.upload-slide {
+  position: relative;
+}
+
+.stage > .upload-slide .slide-frame {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.upload-slide.picking {
+  cursor: crosshair;
+}
+
+.subject-mark {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 2px 8px rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
+.subject-mark::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.upload-unshown {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  aspect-ratio: 16 / 9;
+  padding: 2rem;
+  text-align: center;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.upload-unshown p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.upload-langs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-langs li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.upload-langs li:last-child {
+  border-bottom: none;
+}
+
+.upload-langs button.link,
+.language-list button.link {
+  padding: 0.1rem 0;
+  color: var(--text);
+  text-align: start;
+}
+
+.upload-langs li.missing button.link {
+  color: var(--muted);
+}
+
+.upload-langs button.link[aria-pressed='true'],
+.language-list button.link[aria-pressed='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.upload-langs li.written button.link span {
+  color: var(--ok);
+}
+
+.upload-lang-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.upload-lang-actions button.ghost {
+  padding: 0.1rem 0.4rem;
+}
+
+.upload-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.upload-issues h3 {
+  color: var(--bad);
+}
+
+.upload-issues h4 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: 0.82rem;
+}
+
+.upload-issues code {
+  font-size: 0.72rem;
+}
+
+/* ------------------------------------------------------------ a new upload */
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-form .block {
+  display: block;
+}
+
+.upload-kinds {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.upload-kinds button {
+  flex: 1 1 auto;
+  font-size: 0.82rem;
+}
+
+.upload-picture-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.upload-picture-thumb {
+  flex: none;
+  display: block;
+  width: 88px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.upload-picture-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.upload-point {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.upload-drop {
+  border-radius: 10px;
+  padding: 0.7rem;
+  margin: 0 -0.7rem;
+  transition: background 120ms;
+}
+
+.upload-drop.dragging {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.upload-drop-target {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.7rem;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.upload-drop .language-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.upload-drop .language {
+  cursor: default;
+  padding-block: 0.05rem;
+}
+
+.upload-drop .language button.ghost {
+  padding: 0 0.2rem;
+  font-size: 0.75rem;
+}
+
+.language.chosen-language {
+  border-color: var(--ok);
+  background: var(--surface);
+}
+
+.upload-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border-radius: 10px;
+  outline: 2px dashed transparent;
+  outline-offset: 6px;
+  transition: outline-color 120ms;
+}
+
+.upload-stage.dragging {
+  outline-color: var(--accent);
+}
+
+.upload-stage .slide-frame {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.upload-unshown.drop {
+  gap: 0.6rem;
+  border-width: 2px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.upload-drop-icon {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.upload-unshown.drop p:first-of-type {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.upload-history .block {
+  display: block;
+  margin-top: 0.2rem;
+}

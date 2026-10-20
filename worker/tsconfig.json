@@ -1,0 +1,13 @@
+{
+  // The Worker: Cloudflare's runtime has the web's APIs (fetch, crypto.subtle), and no DOM. Its
+  // tests run in Node, which strips the types (`pnpm test`): hence the extensions in the imports,
+  // and only syntax that can be stripped.
+  "extends": "../vendor/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "WebWorker"],
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
+  },
+  "include": ["."]
+}

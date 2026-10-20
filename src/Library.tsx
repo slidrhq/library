@@ -25,10 +25,13 @@ const ArtPeek = lazy(() => import('./Art').then((m) => ({ default: m.ArtPeek }))
 const CardsPeek = lazy(() => import('./Cards').then((m) => ({ default: m.CardsPeek })));
 const ShapesPeek = lazy(() => import('./Shapes').then((m) => ({ default: m.ShapesPeek })));
 const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPeek })));
+const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
 
 export type { LibraryRoute };
 
 const OVERVIEW = 'overview';
+/** What is uploaded to the library and waits to be published (README, "Uploading"). */
+const UPLOADS = 'uploads';
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
 const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
@@ -166,7 +169,8 @@ const published = (t: Translate, locale: string, when?: string) =>
 
 /**
  * The media library as it is published: each of its parts, drawn as the app draws it, and every
- * file of it. Read-only: publishing goes through the studio (github.com/slidrhq/studio).
+ * file of it, and what is uploaded to it. The library itself is only read here: publishing goes
+ * through the studio (github.com/slidrhq/studio).
  */
 export function Library({
   route,
@@ -188,6 +192,7 @@ export function Library({
   const [uiLang] = useLang();
   const read = useRead(manifest, []);
   const section = sectionOf(route.section);
+  const uploads = route.section === UPLOADS;
   // A language is shown once the app's words in it are read; until then, the one before.
   const [shown, setShown] = useState<Lang>(() => (hasWords(lang) ? lang : 'en'));
   useEffect(() => {
@@ -210,7 +215,10 @@ export function Library({
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
-  switch (section?.id) {
+  switch (uploads ? UPLOADS : section?.id) {
+    case UPLOADS:
+      content = <Uploads {...props} />;
+      break;
     case 'designs':
       content = <Designs {...props} variants={variants} onOpenVariant={onOpenVariant} />;
       break;
@@ -275,7 +283,7 @@ export function Library({
         <nav className="lib-sections">
           <button
             type="button"
-            aria-current={!section ? 'page' : undefined}
+            aria-current={!section && !uploads ? 'page' : undefined}
             onClick={() => go({ section: OVERVIEW })}
           >
             {t('library.overview')}
@@ -291,6 +299,15 @@ export function Library({
             </button>
           ))}
         </nav>
+        <nav className="lib-sections lib-uploads" aria-label={t('uploads.nav')}>
+          <button
+            type="button"
+            aria-current={uploads ? 'page' : undefined}
+            onClick={() => go({ section: UPLOADS })}
+          >
+            {t('uploads.nav')}
+          </button>
+        </nav>
         <button
           type="button"
           className="ghost small"
@@ -304,18 +321,24 @@ export function Library({
       <div className="lib-main">
         <header className="lib-head">
           <div>
-            <h2>{section ? t(section.nameKey) : t('library.overview')}</h2>
+            <h2>
+              {uploads ? t('uploads.nav') : section ? t(section.nameKey) : t('library.overview')}
+            </h2>
             <p className="muted small">
-              {section ? t(section.aboutKey) : t('library.overviewAbout')}
+              {uploads
+                ? t('uploads.about')
+                : section
+                  ? t(section.aboutKey)
+                  : t('library.overviewAbout')}
             </p>
           </div>
-          {section && (
+          {(section || uploads) && (
             <input
               type="search"
               className="lib-search"
               value={query}
               onChange={(event) => setSearch({ section: route.section, text: event.target.value })}
-              placeholder={searchHint(section.id, shown, t)}
+              placeholder={section ? searchHint(section.id, shown, t) : t('uploads.searchHint')}
               aria-label={t('library.searchLabel')}
             />
           )}

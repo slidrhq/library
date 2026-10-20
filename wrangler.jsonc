@@ -1,9 +1,16 @@
 {
   "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
   "name": "library",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-10-01",
+  // The page, built by Vite (`@cloudflare/vite-plugin` points the Worker at `dist/client`).
   "assets": {
-    "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
+    // The uploads (worker/uploads); everything else is served as it was built.
+    "run_worker_first": ["/api/*"],
   },
+  // What is uploaded, until it is published (README, "Uploading"). `pnpm dev` keeps a bucket of
+  // its own on this machine, in `.wrangler/`.
+  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "slidr-library-uploads" }],
 }

@@ -5,6 +5,7 @@ import { I18n } from './i18n';
 import { Shell } from './Shell';
 import './styles.css';
 import './library.css';
+import './uploads.css';
 
 // The designs and the fonts' samples are drawn in the library's fonts, as the app draws them.
 void registerLibraryFonts().catch(() => undefined);

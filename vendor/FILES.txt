@@ -2,6 +2,7 @@
 apps/desktop/src/elements/cardSets.ts
 apps/desktop/src/elements/designAssets.ts
 apps/desktop/src/elements/designCatalog.ts
+apps/desktop/src/elements/designFonts.ts
 apps/desktop/src/elements/designs.ts
 apps/desktop/src/elements/frameThumbs.ts
 apps/desktop/src/elements/frames.ts
