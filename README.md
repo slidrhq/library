@@ -35,6 +35,12 @@ The library is read once each time the page is loaded; "Refresh" reads it again.
 
 When Slidr Studio runs on this machine (`VITE_SLIDR_STUDIO_URL`, `http://127.0.0.1:8765/` by default), the page reads from it which designs it made, and a design the studio made links to its request there. It also says when the studio publishes to another library than the one shown. Without the studio, the page shows the same library, without those links.
 
+## Publishing
+
+The page runs on Cloudflare as the Worker `library` (https://library.slidr.workers.dev), which serves `dist/` (`wrangler.jsonc`). `.github/workflows/deploy.yml` checks, builds and publishes it on every push to `main`, and you can run it by hand from the Actions tab. The workflow needs two repository secrets: `CLOUDFLARE_API_TOKEN`, a token with the "Edit Cloudflare Workers" template, and `CLOUDFLARE_ACCOUNT_ID`.
+
+To publish from your own machine: `pnpm build`, then `npx wrangler deploy`.
+
 ## Working on the page
 
 `pnpm check` runs `typecheck`, `eslint` and `prettier`. The words of the page are in `src/i18n`: each area in Hebrew and English in `areas/<area>.ts`, and every other language in `locales/<lang>.ts`.
