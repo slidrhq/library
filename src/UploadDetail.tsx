@@ -1,5 +1,5 @@
-import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { CONTENT_LANGUAGES, languageDir, type ContentLanguage } from '@slidr/model';
+import { Fragment, useMemo, useState, type ChangeEvent } from 'react';
 import { designAssetsModule, templatesModule } from './app';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
@@ -9,9 +9,11 @@ import { useRead } from './shared';
 import { DesignPreview, SampleSheet, sampleDeckOf, type PictureSource } from './uploadPreview';
 import {
   ApiError,
+  TAGGED,
   kindKey,
   kindOf,
   statusKey,
+  subjectOf,
   unavailable,
   when,
   who,
@@ -25,19 +27,54 @@ import {
   type Kind,
   type LanguagePart,
   type Status,
+  type Tagged,
   type Upload,
 } from './uploadsApi';
 
-/** The languages each kind of upload is written in (`worker/uploads`: designs.ts, templates.ts). */
+/**
+ * The languages each kind of upload is written in (`worker/uploads`: designs.ts, templates.ts,
+ * tags.ts).
+ */
 const OTHERS = CONTENT_LANGUAGES.filter((lang) => lang !== 'he' && lang !== 'en');
+const BASE: readonly ContentLanguage[] = ['he', 'en'];
 export const RULES: Record<
   Kind,
   { allowed: readonly ContentLanguage[]; required: readonly ContentLanguage[] }
 > = {
-  'designs:add': { allowed: CONTENT_LANGUAGES, required: ['he', 'en'] },
+  'designs:add': { allowed: CONTENT_LANGUAGES, required: BASE },
   'designs:translate': { allowed: OTHERS, required: [] },
   'templates:translate': { allowed: OTHERS, required: [] },
+  ...(Object.fromEntries(
+    TAGGED.map((type) => [`${type}:tag`, { allowed: BASE, required: BASE }]),
+  ) as Record<
+    `${Tagged}:tag`,
+    { allowed: readonly ContentLanguage[]; required: readonly ContentLanguage[] }
+  >),
 };
+
+/** The most items of a part's tags drawn at once: the icons are some seven thousand. */
+const TAGS_SHOWN = 400;
+
+/** The search tags of a part's items in one language, each under its key. */
+function TagStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
+  const t = useT();
+  const tags = upload.languages[lang]?.tags;
+  const entries = tags && !Array.isArray(tags) ? Object.entries(tags) : [];
+  return (
+    <section className="upload-tags">
+      <p className="muted small">{t('uploads.tags.items', { count: entries.length })}</p>
+      <dl className="facts" lang={lang} dir={languageDir(lang)}>
+        {entries.slice(0, TAGS_SHOWN).map(([key, words]) => (
+          <Fragment key={key}>
+            <dt dir="ltr">{key}</dt>
+            <dd>{words.join(', ')}</dd>
+          </Fragment>
+        ))}
+      </dl>
+      {entries.length > TAGS_SHOWN && <p className="muted small">…</p>}
+    </section>
+  );
+}
 
 /** The issues of an answer, by the language they are in; general ones first. */
 export function IssueList({
@@ -515,14 +552,20 @@ export function UploadDetail({
   const mayReview = access?.mayReview ?? false;
   const names = upload.languages.he?.name ?? upload.languages.en?.name;
   const withdrawable = mayUpload && (pending || upload.status === 'rejected');
+  // A design's own tags, in the language shown; a part's tags are the stage itself.
+  const ownTags = upload.languages[shown]?.tags;
 
   return (
     <ItemOverlay
       title={
-        <>
-          {names && <>{names} · </>}
-          <span dir="ltr">{upload.target}</span>
-        </>
+        upload.action === 'tag' ? (
+          subjectOf(t, upload)
+        ) : (
+          <>
+            {names && <>{names} · </>}
+            <span dir="ltr">{upload.target}</span>
+          </>
+        )
       }
       subtitle={
         <>
@@ -594,6 +637,14 @@ export function UploadDetail({
                   <dd dir="ltr">{upload.fields.subject.join(', ')}</dd>
                 </>
               )}
+              {Array.isArray(ownTags) && (
+                <>
+                  <dt>{t('uploads.kind.tag')}</dt>
+                  <dd lang={shown} dir={languageDir(shown)}>
+                    {ownTags.join(', ')}
+                  </dd>
+                </>
+              )}
               {Object.entries(upload.files).map(([name, file]) => (
                 <FileFact key={name} name={name} file={file} />
               ))}
@@ -644,7 +695,9 @@ export function UploadDetail({
         </>
       }
     >
-      {upload.type === 'templates' ? (
+      {upload.action === 'tag' ? (
+        <TagStage upload={upload} lang={shown} />
+      ) : upload.type === 'templates' ? (
         <TemplateStage upload={upload} lang={shown} />
       ) : (
         <DesignStage upload={upload} lang={shown} />

@@ -5,12 +5,22 @@
  */
 import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
 import { PARTS } from './content.ts';
-import type { Field, Handler } from './handler.ts';
+import { ACTIONS, type Field, type Handler } from './handler.ts';
 import { STATUSES } from './store.ts';
+import { TAGS_FEWEST, TAGS_MOST } from './tags.ts';
 
 type Schema = Record<string, unknown>;
 
 const ref = (name: string): Schema => ({ $ref: `#/components/schemas/${name}` });
+
+/** The search tags of one item in one language (`tags.ts`). */
+const TAGS: Schema = {
+  type: 'array',
+  items: { type: 'string', minLength: 1, maxLength: 40 },
+  minItems: TAGS_FEWEST,
+  maxItems: TAGS_MOST,
+  uniqueItems: true,
+};
 
 /** The JSON Schema of a field, by the type its description names. */
 const SCHEMA_OF: Record<string, Schema> = {
@@ -18,6 +28,8 @@ const SCHEMA_OF: Record<string, Schema> = {
   '[x, y]': { type: 'array', items: { type: 'number' }, minItems: 2, maxItems: 2 },
   Slide: { $ref: 'schemas/slide.json' },
   'SampleSlide[]': { $ref: 'schemas/sample.json' },
+  Tags: TAGS,
+  'Record<key, Tags>': { type: 'object', minProperties: 1, additionalProperties: TAGS },
 };
 
 const fieldSchema = (field: Field): Schema => ({
@@ -140,7 +152,7 @@ export function openApi() {
           summary: 'The uploads, newest first',
           parameters: [
             { name: 'type', in: 'query', schema: { enum: PARTS.map((part) => part.type) } },
-            { name: 'action', in: 'query', schema: { enum: ['add', 'translate'] } },
+            { name: 'action', in: 'query', schema: { enum: ACTIONS } },
             { name: 'status', in: 'query', schema: { enum: STATUSES } },
             {
               name: 'target',
@@ -315,7 +327,7 @@ export function openApi() {
           properties: {
             id: { type: 'string' },
             type: { enum: PARTS.map((part) => part.type) },
-            action: { enum: ['add', 'translate'] },
+            action: { enum: ACTIONS },
             target: { type: 'string', description: "The item's id in the library." },
             fields: { type: 'object' },
             languages: { type: 'object', propertyNames: { enum: CONTENT_LANGUAGES } },

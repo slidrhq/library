@@ -1,23 +1,31 @@
 import { createDeck, createSlide, languageDir, type Element } from '@slidr/model';
+import { extraShapes } from '@slidr/renderer';
 import { useMemo } from 'react';
 import type { Lang } from './languages';
-import { messages, named, shapesModule } from './app';
+import { iconSearchModule, messages, named, shapesModule } from './app';
 import { useT } from './i18n';
 import { DeckSlide } from './Lazy';
 import { mediaUrl } from './media';
 import { ItemOverlay, stepper } from './Overlay';
-import { matches, useRead, type LibraryRoute } from './shared';
+import { finds, matches, TagFacts, tagsOf, useRead, type LibraryRoute } from './shared';
 
 type ShapesMod = Awaited<ReturnType<typeof shapesModule>>;
 
 const SLIDE = { w: 1920, h: 1080 };
 const LINE = 'line:';
 
+/** The app's name of a preset, else the renderer's for one of its additional shapes, else the preset. */
 const shapeName = (preset: string, lang: Lang) =>
-  named(messages.objects, lang, 'shape', preset) ?? preset;
+  named(messages.objects, lang, 'shape', preset) ??
+  extraShapes[preset]?.[lang === 'he' ? 'he' : 'en'] ??
+  preset;
 const lineName = (kind: string, lang: Lang) => named(messages.objects, lang, 'line', kind) ?? kind;
 const groupName = (group: string, lang: Lang) =>
   named(messages.objects, lang, 'library', group) ?? group;
+/** The key the library's tags give a shape or a line (`tags/shapes.json`). */
+const tagKey = (item: string) => (item.startsWith(LINE) ? item : `shape:${item}`);
+/** The shapes, the app's search, and the tags it finds them by (ADR-108). */
+const load = () => Promise.all([shapesModule(), iconSearchModule(), tagsOf('shapes')]);
 
 /** A shape of the library in neutral black, as the app's library draws it (`ShapeArt`). */
 function ShapeGlyph({ mod, preset }: { mod: ShapesMod; preset: string }) {
@@ -88,34 +96,51 @@ export function Shapes({
   lang: Lang;
 }) {
   const t = useT();
-  const read = useRead(shapesModule, []);
-  const mod = read.value;
+  const read = useRead(load, []);
+  const [mod, search, tags] = read.value ?? [];
   const groups = useMemo(() => {
-    if (!mod) return [];
+    if (!mod || !search || !tags) return [];
+    const linesName = (l: Lang) => named(messages.elements, l, 'lines') ?? 'lines';
     const shapes = mod.shapeLibrary().map(({ group, presets }) => ({
       group: String(group),
       name: groupName(group, lang),
-      items: presets.filter((preset) =>
-        matches(
-          query,
-          preset,
-          shapeName(preset, 'he'),
-          shapeName(preset, 'en'),
-          shapeName(preset, lang),
-        ),
+      items: presets.filter(
+        (preset) =>
+          finds(
+            search,
+            query,
+            { he: shapeName(preset, 'he'), en: shapeName(preset, 'en') },
+            { he: [groupName(group, 'he')], en: [groupName(group, 'en')] },
+            tags[tagKey(preset)],
+          ) ||
+          matches(
+            query,
+            preset,
+            shapeName(preset, 'he'),
+            shapeName(preset, 'en'),
+            shapeName(preset, lang),
+          ),
       ),
     }));
     const lines = {
       group: 'lines',
       name: named(messages.elements, 'he', 'lines') ?? t('libraryBrowse.shapesLines'),
-      items: mod.LINE_KINDS.filter((kind) =>
-        matches(query, kind, lineName(kind, 'he'), lineName(kind, 'en'), lineName(kind, lang)),
+      items: mod.LINE_KINDS.filter(
+        (kind) =>
+          finds(
+            search,
+            query,
+            { he: lineName(kind, 'he'), en: lineName(kind, 'en') },
+            { he: [linesName('he')], en: [linesName('en')] },
+            tags[LINE + kind],
+          ) ||
+          matches(query, kind, lineName(kind, 'he'), lineName(kind, 'en'), lineName(kind, lang)),
       ).map((kind) => LINE + kind),
     };
     return [...shapes, lines];
-  }, [mod, query, lang, t]);
+  }, [mod, search, tags, query, lang, t]);
   if (read.error) return <p className="error-text">{read.error}</p>;
-  if (!mod) return <p className="muted">{t('libraryBrowse.shapesLoading')}</p>;
+  if (!mod || !tags) return <p className="muted">{t('libraryBrowse.shapesLoading')}</p>;
   const listed = groups.flatMap(({ items }) => items);
   const open = (item: string) => go({ section: 'shapes', item });
   const nameOf = (item: string, l: Lang) =>
@@ -196,6 +221,9 @@ export function Shapes({
                   elements/catalogs/shapes.json
                 </a>
               </p>
+              <dl className="facts">
+                <TagFacts tags={tags[tagKey(opened)]} />
+              </dl>
             </section>
           }
         >

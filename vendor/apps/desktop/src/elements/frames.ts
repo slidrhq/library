@@ -30,7 +30,14 @@ import {
   type Theme,
 } from '@slidr/model';
 import { presetPath } from '@slidr/renderer';
-import { searchIcons, wordsOf, type SearchWords } from '../media/icons/search';
+import { searchTags } from '../media/icons/library';
+import {
+  searchIcons,
+  withTags,
+  wordsOf,
+  type SearchWords,
+  type TagsOf,
+} from '../media/icons/search';
 
 /*
  * The photo frames of the Elements panel. A frame is a picture that waits for its photograph:
@@ -207,8 +214,11 @@ export interface PhotoFrame extends SearchWords {
   set?: MagnetSet;
 }
 
-/** Every frame of the catalogue, group by group. */
-export function framesOf(catalog: FramesCatalog): PhotoFrame[] {
+/**
+ * Every frame of the catalogue, group by group. Its words are its names, the words the catalogue
+ * gives it, and the library's tags for it (`tags/frames.json`, by its id there).
+ */
+export function framesOf(catalog: FramesCatalog, tagged: TagsOf = {}): PhotoFrame[] {
   return catalog.groups.flatMap(({ id: group, frames }) =>
     frames.map(({ id, en, he, w, h, mask, d, art, extras, shadow, set, tags }): PhotoFrame => {
       const nameWords = wordsOf(en);
@@ -220,7 +230,7 @@ export function framesOf(catalog: FramesCatalog): PhotoFrame[] {
         const markup = catalog.stickers?.[extra.art];
         return markup ? [{ ...extra, markup }] : [];
       });
-      return {
+      const frame: PhotoFrame = {
         id: `frame:${id}`,
         group: group as FrameGroup,
         label: { en, he },
@@ -239,6 +249,7 @@ export function framesOf(catalog: FramesCatalog): PhotoFrame[] {
         tagTerms: [],
         tagHebrew: wordsOf(tags?.he ?? '').filter((word) => !nameHebrew.includes(word)),
       };
+      return withTags(frame, tagged[id]);
     }),
   );
 }
@@ -249,8 +260,8 @@ let frames: Promise<PhotoFrame[]> | undefined;
 let atHand: readonly PhotoFrame[] | undefined;
 
 export function loadFrames(): Promise<PhotoFrame[]> {
-  frames ??= catalog()
-    .then(framesOf)
+  frames ??= Promise.all([catalog(), searchTags('frames')])
+    .then(([read, tags]) => framesOf(read, tags))
     .then((all) => (atHand = all))
     .catch((error: unknown) => {
       frames = undefined;

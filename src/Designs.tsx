@@ -3,17 +3,23 @@ import { useMemo, useState } from 'react';
 import type { Variant } from './studio';
 import { useT } from './i18n';
 import { isBase, LanguageNames, LanguagePicker, nativeName, type Lang } from './languages';
-import { designAssetsModule, designsModule, messages, named } from './app';
+import { designAssetsModule, designsModule, iconSearchModule, messages, named } from './app';
 import { DeckSlide } from './Lazy';
 import { manifest, mediaUrl, size } from './media';
 import { ItemOverlay, stepper } from './Overlay';
-import { matches, useRead, type LibraryRoute } from './shared';
+import { finds, matches, TagFacts, useRead, type LibraryRoute } from './shared';
 
 type Designs = Awaited<ReturnType<typeof designsModule>>;
 type Assets = Awaited<ReturnType<typeof designAssetsModule>>;
+type Tags = Awaited<ReturnType<Designs['loadDesignTags']>>;
 
 const THUMB = 384;
-const load = () => Promise.all([designsModule(), designAssetsModule()]);
+/** The designs, their pictures, the app's search, and the tags it finds them by (ADR-108). */
+const load = () =>
+  Promise.all([designsModule(), designAssetsModule(), iconSearchModule()]).then(
+    async ([designs, assets, search]) =>
+      [designs, assets, search, await designs.loadDesignTags()] as const,
+  );
 
 type Source = 'all' | 'authored' | 'managed';
 
@@ -82,6 +88,7 @@ function DesignDetail({
   assets,
   id,
   lang: initial,
+  tags,
   variant,
   onOpenVariant,
   onClose,
@@ -91,6 +98,7 @@ function DesignDetail({
   assets: Assets;
   id: string;
   lang: Lang;
+  tags: Tags;
   variant?: Variant;
   onOpenVariant: (variant: Variant) => void;
   onClose: () => void;
@@ -155,6 +163,7 @@ function DesignDetail({
               <dd>{slide.elements.length}</dd>
               <dt>{t('libraryBrowse.designSubjectPoint')}</dt>
               <dd dir="ltr">{subject ? `${subject[0]}, ${subject[1]}` : '—'}</dd>
+              <TagFacts tags={tags[id]} />
             </dl>
           </section>
           <section>
@@ -203,7 +212,7 @@ export function Designs({
   const t = useT();
   const read = useRead(load, []);
   const [source, setSource] = useState<Source>('all');
-  const [designs, assets] = read.value ?? [];
+  const [designs, assets, search, tags] = read.value ?? [];
   // Only the designs written in the language shown: none is shown in English instead.
   const writtenIn = (id: string) => designs?.designLanguages(id).includes(lang) ?? false;
 
@@ -217,7 +226,7 @@ export function Designs({
   }, [variants]);
 
   const groups = useMemo(() => {
-    if (!designs) return [];
+    if (!designs || !search || !tags) return [];
     return designs.DESIGN_GROUPS.filter((group) => !route.group || group === route.group).map(
       (group) => ({
         group,
@@ -226,22 +235,34 @@ export function Designs({
           if (source === 'managed' && !managed) return false;
           if (source === 'authored' && managed) return false;
           if (!designs.designLanguages(id).includes(lang)) return false;
-          return matches(
-            query,
-            id,
-            nameOf(designs, id, 'he'),
-            nameOf(designs, id, 'en'),
-            nameOf(designs, id, lang),
-            groupNameOf(designs, group, 'he'),
+          // As the app's Ready slides search (`DesignsCollection`), and by any name as typed.
+          return (
+            finds(
+              search,
+              query,
+              { he: nameOf(designs, id, 'he'), en: nameOf(designs, id, 'en') },
+              { he: [groupNameOf(designs, group, 'he')], en: [groupNameOf(designs, group, 'en')] },
+              tags[id],
+            ) ||
+            matches(
+              query,
+              id,
+              nameOf(designs, id, 'he'),
+              nameOf(designs, id, 'en'),
+              nameOf(designs, id, lang),
+              groupNameOf(designs, group, 'he'),
+            )
           );
         }),
       }),
     );
-  }, [designs, route.group, source, lang, query]);
+  }, [designs, search, tags, route.group, source, lang, query]);
   const listed = useMemo(() => groups.flatMap(({ ids }) => ids), [groups]);
 
   if (read.error) return <p className="error-text">{read.error}</p>;
-  if (!designs || !assets) return <p className="muted">{t('libraryBrowse.designsLoading')}</p>;
+  if (!designs || !assets || !tags) {
+    return <p className="muted">{t('libraryBrowse.designsLoading')}</p>;
+  }
 
   const written = designs.DESIGN_IDS.filter(writtenIn);
   const managedCount = written.filter((id) => designs.MANAGED_DESIGN_IDS.has(id)).length;
@@ -343,6 +364,7 @@ export function Designs({
           assets={assets}
           id={route.item}
           lang={lang}
+          tags={tags}
           variant={studioOf.get(route.item)}
           onOpenVariant={onOpenVariant}
           onClose={() => go({ ...route, item: undefined })}

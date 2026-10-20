@@ -9,8 +9,21 @@ import type { MessageKey, Translate } from './i18n';
 export type Status = 'pending' | 'accepted' | 'rejected' | 'published';
 export const STATUSES: readonly Status[] = ['pending', 'accepted', 'rejected', 'published'];
 
+/** The parts the app searches, which take the search tags of their items (`tag`, ADR-108). */
+export const TAGGED = [
+  'designs',
+  'cards',
+  'frames',
+  'shapes',
+  'graphics',
+  'emoji',
+  'icons',
+] as const;
+export type Tagged = (typeof TAGGED)[number];
+
 /** What an upload does, as `<type>:<action>`. */
-export type Kind = 'designs:add' | 'designs:translate' | 'templates:translate';
+export type Kind = 'designs:add' | 'designs:translate' | 'templates:translate' | `${Tagged}:tag`;
+/** The kinds a person makes on the page; tags come from programs (the app's `tag-elements.mjs`). */
 export const KINDS: readonly Kind[] = ['designs:add', 'designs:translate', 'templates:translate'];
 
 export interface Issue {
@@ -64,12 +77,16 @@ export interface Summary {
   by: string;
 }
 
-/** The content of one language: a design's slide (and its names), or a template's sample. */
+/**
+ * The content of one language: a design's slide (and its names and search tags), a template's
+ * sample, or the search tags of a part's items by their keys.
+ */
 export interface LanguagePart {
   slide?: Slide;
   sample?: unknown[];
   name?: string;
   groupName?: string;
+  tags?: string[] | Record<string, string[]>;
 }
 
 export const kindOf = (upload: { type: string; action: string }) =>
@@ -79,7 +96,16 @@ export const kindOf = (upload: { type: string; action: string }) =>
 
 export const statusKey = (status: Status) => `uploads.status.${status}` as MessageKey;
 export const kindKey = (upload: { type: string; action: string }) =>
-  `uploads.kind.${kindOf(upload).replace(':', '.')}` as MessageKey;
+  upload.action === 'tag'
+    ? 'uploads.kind.tag'
+    : (`uploads.kind.${kindOf(upload).replace(':', '.')}` as MessageKey);
+
+/** What an upload is about: a part's name for its tags, else the id of its item. */
+export const subjectOf = (
+  t: Translate,
+  upload: { type: string; action: string; target: string },
+) =>
+  upload.action === 'tag' ? t(`library.section.${upload.type}.name` as MessageKey) : upload.target;
 
 /** Who did something: an editor by their address, a program by its name. */
 export const who = (id: string) => (id.startsWith('key:') ? id.slice('key:'.length) : id);

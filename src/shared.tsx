@@ -1,4 +1,8 @@
 import { useEffect, useState, type DependencyList } from 'react';
+import type { TagKind } from '@desktop/media/icons/library';
+import type { SearchWords, Tags, TagsOf } from '@desktop/media/icons/search';
+import { iconsModule, type iconSearchModule } from './app';
+import { useT } from './i18n';
 
 /**
  * Where the library browser is: a section, and in it a group or a folder, an item, and a slide
@@ -43,4 +47,47 @@ export function matches(query: string, ...names: (string | undefined)[]): boolea
   const needle = query.trim().toLowerCase();
   if (!needle) return true;
   return names.some((name) => name?.toLowerCase().includes(needle));
+}
+
+type Search = Awaited<ReturnType<typeof iconSearchModule>>;
+
+/**
+ * Whether a query finds a thing as the app's search does (ADR-108 of the app): every word of it,
+ * in Hebrew or English, in the thing's name, in `more` (the name of its group) or in its tags.
+ */
+export function finds(
+  search: Search,
+  query: string,
+  name: { he?: string; en?: string },
+  ...more: (Tags | undefined)[]
+): boolean {
+  if (!query.trim()) return true;
+  const nameHebrew = search.wordsOf(name.he ?? '');
+  let words: SearchWords = {
+    filled: false,
+    nameWords: search.wordsOf(name.en ?? ''),
+    tagWords: [],
+    nameTerms: [nameHebrew.join(' ')],
+    nameHebrew,
+    tagTerms: [],
+    tagHebrew: [],
+  };
+  for (const tags of more) words = search.withTags(words, tags);
+  return search.searchIcons([words], query, { count: 1 }).length > 0;
+}
+
+/** The library's search tags of a kind, by key, as the app reads them; none when it has none. */
+export const tagsOf = (kind: TagKind): Promise<TagsOf> =>
+  iconsModule().then((icons) => icons.searchTags(kind));
+
+/** The search tags of an item, among its facts: the Hebrew ones, then the English ones. */
+export function TagFacts({ tags }: { tags: Tags | undefined }) {
+  const t = useT();
+  return (
+    <>
+      <dt>{t('library.icons.tags')}</dt>
+      <dd dir="rtl">{tags?.he?.join(', ') || '—'}</dd>
+      <dd dir="ltr">{tags?.en?.join(', ') || '—'}</dd>
+    </>
+  );
 }

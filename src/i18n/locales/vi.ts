@@ -225,6 +225,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'Thiết kế mới',
   'uploads.kind.designs.translate': 'Thiết kế bằng ngôn ngữ khác',
   'uploads.kind.templates.translate': 'Mẫu bằng ngôn ngữ khác',
+  'uploads.kind.tag': 'Thẻ tìm kiếm',
+  'uploads.tags.items': '{count} mục',
   'uploads.languagesOf': '{count} trong số {total} ngôn ngữ',
   'uploads.notEditor':
     'Bản tải lên chỉ dành cho biên tập viên của thư viện, và tài khoản này không phải là biên tập viên.',

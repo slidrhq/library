@@ -1,11 +1,13 @@
 import { lazyMediaJson, requireMediaJson } from '@slidr/media-library';
-import { hebrewTags } from '../media/icons/library';
+import { hebrewTags, searchTags } from '../media/icons/library';
 import {
   hebrewOf,
   searchIcons,
+  withTags,
   wordsOf,
   type HebrewTags,
   type SearchWords,
+  type TagsOf,
 } from '../media/icons/search';
 
 /*
@@ -18,6 +20,7 @@ import {
  * Nothing of it is loaded when the app starts. The two catalogues say what is offered, in what
  * order and under which words; a set's drawings are megabytes of JSON, read as text and parsed
  * the first time one of them is shown (as the icon library's are, `media/icons/library.ts`).
+ * The library's tags add words in both languages (`tags/graphics.json`, `tags/emoji.json`).
  */
 
 export type StickerKind = 'graphic' | 'emoji';
@@ -130,12 +133,19 @@ function graphic(style: string, set: ArtSet, art: string, hebrew: HebrewTags): S
   };
 }
 
-/** Every graphic, style by style. Its Hebrew words are the dictionary's for its English name. */
-export function graphicsOf(catalog: GraphicsCatalog, hebrew: HebrewTags): Sticker[] {
+/**
+ * Every graphic, style by style. Its Hebrew words are the dictionary's for its English name, and
+ * its tags the library's for its drawing (`set:name`).
+ */
+export function graphicsOf(
+  catalog: GraphicsCatalog,
+  hebrew: HebrewTags,
+  tags: TagsOf = {},
+): Sticker[] {
   return catalog.flatMap(({ id, icons }) =>
     icons.map((icon) => {
       const [set = '', art = ''] = icon.split(':');
-      return graphic(id, set as ArtSet, art, hebrew);
+      return withTags(graphic(id, set as ArtSet, art, hebrew), tags[icon]);
     }),
   );
 }
@@ -146,8 +156,9 @@ export function loadGraphics(): Promise<Sticker[]> {
   graphics ??= Promise.all([
     requireMediaJson<GraphicsCatalog>('elements/catalogs/graphics-catalog.json'),
     hebrewTags(),
+    searchTags('graphics'),
   ])
-    .then(([catalog, hebrew]) => graphicsOf(catalog, hebrew))
+    .then(([catalog, hebrew, tags]) => graphicsOf(catalog, hebrew, tags))
     .catch((error: unknown) => {
       graphics = undefined;
       throw error;
@@ -174,8 +185,11 @@ function keywords(list: string, known: ReadonlySet<string>) {
   return { terms: fresh(terms), parts: fresh(parts) };
 }
 
-/** Every emoji of the catalogue, in its order: Unicode's own, group by group. */
-export function emojiOf(catalog: EmojiCatalog): Sticker[] {
+/**
+ * Every emoji of the catalogue, in its order: Unicode's own, group by group. Its words are its
+ * names and keywords, and the library's tags for it, by its name (`grinning-face`).
+ */
+export function emojiOf(catalog: EmojiCatalog, tags: TagsOf = {}): Sticker[] {
   return catalog.flatMap(({ id, emoji }) =>
     emoji.map((line): Sticker => {
       const [art = '', , en = '', enWords = '', he = '', heWords = ''] = line.split('|');
@@ -184,7 +198,7 @@ export function emojiOf(catalog: EmojiCatalog): Sticker[] {
       const nameTerms = [nameHebrew.join(' ')];
       const english = keywords(enWords, new Set(nameWords));
       const hebrew = keywords(heWords, new Set([...nameTerms, ...nameHebrew]));
-      return {
+      const sticker: Sticker = {
         id: `emoji:${art}`,
         kind: 'emoji',
         group: id,
@@ -199,6 +213,7 @@ export function emojiOf(catalog: EmojiCatalog): Sticker[] {
         tagTerms: hebrew.terms,
         tagHebrew: hebrew.parts,
       };
+      return withTags(sticker, tags[art]);
     }),
   );
 }
@@ -206,8 +221,11 @@ export function emojiOf(catalog: EmojiCatalog): Sticker[] {
 let emoji: Promise<Sticker[]> | undefined;
 
 export function loadEmoji(): Promise<Sticker[]> {
-  emoji ??= requireMediaJson<EmojiCatalog>('elements/catalogs/emoji-catalog.json')
-    .then(emojiOf)
+  emoji ??= Promise.all([
+    requireMediaJson<EmojiCatalog>('elements/catalogs/emoji-catalog.json'),
+    searchTags('emoji'),
+  ])
+    .then(([catalog, tags]) => emojiOf(catalog, tags))
     .catch((error: unknown) => {
       emoji = undefined;
       throw error;

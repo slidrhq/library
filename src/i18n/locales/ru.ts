@@ -228,6 +228,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'Новый дизайн',
   'uploads.kind.designs.translate': 'Дизайн на другом языке',
   'uploads.kind.templates.translate': 'Шаблон на другом языке',
+  'uploads.kind.tag': 'Теги для поиска',
+  'uploads.tags.items': 'Элементов: {count}',
   'uploads.languagesOf': 'Языков: {count} из {total}',
   'uploads.notEditor':
     'Загрузки доступны редакторам библиотеки, а эта учётная запись к ним не относится.',

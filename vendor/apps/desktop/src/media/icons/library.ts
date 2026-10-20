@@ -8,7 +8,7 @@
  * not load Tabler. Without the library a read fails, and the icons panel says so; it is tried
  * again the next time something asks.
  */
-import { lazyMediaJson } from '@slidr/media-library';
+import { lazyMediaJson, readMediaJson } from '@slidr/media-library';
 import {
   buildIndex,
   englishQuery,
@@ -18,6 +18,8 @@ import {
   type IconEntry,
   type IconSearchOptions,
   type IconSources,
+  type Tags,
+  type TagsOf,
 } from './search';
 
 /** An SVG element as the sets store it: its tag and its attributes. */
@@ -43,12 +45,57 @@ export async function toEnglish(query: string): Promise<string | null> {
   return englishQuery(query, await english);
 }
 
+/** The kinds of things the media library tags for the search, a file each: `tags/<kind>.json`. */
+export const TAG_KINDS = [
+  'icons',
+  'graphics',
+  'emoji',
+  'frames',
+  'shapes',
+  'cards',
+  'designs',
+] as const;
+export type TagKind = (typeof TAG_KINDS)[number];
+
+/** The tags of a file as the search takes them: lists of words, and nothing else. */
+export function tagsOf(value: unknown): TagsOf {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return {};
+  const words = (list: unknown) =>
+    Array.isArray(list) ? list.filter((tag): tag is string => typeof tag === 'string') : [];
+  const tags: Record<string, Tags> = {};
+  for (const [key, own] of Object.entries(value as Record<string, unknown>)) {
+    if (own === null || typeof own !== 'object') continue;
+    const { en, he } = own as Record<string, unknown>;
+    tags[key] = { en: words(en), he: words(he) };
+  }
+  return tags;
+}
+
+const tagged = new Map<TagKind, Promise<TagsOf>>();
+
+/**
+ * The library's search tags of a kind (ADR-108), read the first time they are asked for. A library
+ * without them has none, and its things are found by their names alone; a read that failed is
+ * tried again the next time.
+ */
+export function searchTags(kind: TagKind): Promise<TagsOf> {
+  let tags = tagged.get(kind);
+  if (!tags) {
+    tags = readMediaJson<{ tags?: unknown }>(`tags/${kind}.json`).then((file) => {
+      if (!file) tagged.delete(kind);
+      return tagsOf(file?.tags);
+    });
+    tagged.set(kind, tags);
+  }
+  return tags;
+}
+
 let index: Promise<IconEntry[]> | undefined;
 
 /** The search index of the whole library, built on first use. */
 export function iconIndex(): Promise<IconEntry[]> {
-  index ??= Promise.all([lucideTags(), tablerIcons(), hebrewTags()])
-    .then(([lucide, tabler, hebrew]) => buildIndex({ lucide, tabler, hebrew }))
+  index ??= Promise.all([lucideTags(), tablerIcons(), hebrewTags(), searchTags('icons')])
+    .then(([lucide, tabler, hebrew, tags]) => buildIndex({ lucide, tabler, hebrew }, tags))
     .catch((error: unknown) => {
       index = undefined;
       throw error;

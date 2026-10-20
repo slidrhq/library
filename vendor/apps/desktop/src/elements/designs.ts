@@ -13,8 +13,10 @@ import {
   type SelectionStore,
   type Slide,
 } from '@slidr/model';
+import { searchTags } from '../media/icons/library';
+import type { TagsOf } from '../media/icons/search';
 import { designAssetUrl, previewAsset, previewBackdrop } from './designAssets';
-import { localName, mergeCatalogs, type DesignCatalog } from './designCatalog';
+import { designTagsOf, localName, mergeCatalogs, type DesignCatalog } from './designCatalog';
 import { MANAGED_DESIGNS } from './managedDesigns';
 
 /**
@@ -45,6 +47,15 @@ export function designName(id: DesignId, lang: string): string | undefined {
 /** The name `managed.json` gives a group of designs, in the language of `lang`. */
 export function designGroupName(group: DesignGroup, lang: string): string | undefined {
   return localName(catalog.groupNames.get(group), lang);
+}
+
+/**
+ * The search tags of every design (ADR-108): the library's, with those `managed.json` gives the
+ * designs of the studio. Read when a search first needs them; without them a design is found by
+ * its name and its group's.
+ */
+export async function loadDesignTags(): Promise<TagsOf> {
+  return designTagsOf(await searchTags('designs'), catalog.tags);
 }
 
 export function designsOf(group: DesignGroup): DesignId[] {

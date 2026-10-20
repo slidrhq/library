@@ -223,6 +223,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': '새 디자인',
   'uploads.kind.designs.translate': '다른 언어로 된 디자인',
   'uploads.kind.templates.translate': '다른 언어로 된 템플릿',
+  'uploads.kind.tag': '검색 태그',
+  'uploads.tags.items': '항목 {count}개',
   'uploads.languagesOf': '언어 {total}개 중 {count}개',
   'uploads.notEditor':
     '업로드는 라이브러리 편집자만 사용할 수 있으며, 이 계정은 편집자가 아닙니다.',

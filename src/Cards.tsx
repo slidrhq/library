@@ -3,14 +3,18 @@ import { useMemo, useState } from 'react';
 import { useT } from './i18n';
 import { isBase, LanguagePicker, nativeName, type Lang } from './languages';
 import { useWidth } from './width';
-import { cardSetsModule, messages, named } from './app';
+import { cardSetsModule, iconSearchModule, messages, named } from './app';
 import { ElementPicture } from './Lazy';
 import { mediaUrl } from './media';
 import { ItemOverlay, stepper } from './Overlay';
-import { matches, useRead, type LibraryRoute } from './shared';
+import { finds, matches, TagFacts, tagsOf, useRead, type LibraryRoute } from './shared';
 
 type CardSets = Awaited<ReturnType<typeof cardSetsModule>>;
 type CardSetId = CardSets['CARD_SETS'][number];
+type Tags = Awaited<ReturnType<typeof tagsOf>>;
+
+/** The card sets, the app's search, and the tags it finds them by (ADR-108). */
+const load = () => Promise.all([cardSetsModule(), iconSearchModule(), tagsOf('cards')]);
 
 /** The room around a drawn set, in slide pixels: its shadow falls there (`CardSetsCollection`). */
 const PAD = 44;
@@ -65,12 +69,14 @@ function CardDetail({
   cards,
   id,
   lang: initial,
+  tags,
   onClose,
   onStep,
 }: {
   cards: CardSets;
   id: CardSetId;
   lang: Lang;
+  tags: Tags;
   onClose: () => void;
   onStep?: (by: -1 | 1) => void;
 }) {
@@ -123,6 +129,7 @@ function CardDetail({
             <dd>{kinds}</dd>
             <dt>{t('libraryBrowse.cardsMost')}</dt>
             <dd>{most}</dd>
+            <TagFacts tags={tags[id]} />
             <dt>{t('libraryBrowse.file')}</dt>
             <dd dir="ltr">
               <a href={mediaUrl('elements/cards/catalog.json')} target="_blank" rel="noreferrer">
@@ -171,14 +178,17 @@ export function Cards({
   lang: Lang;
 }) {
   const t = useT();
-  const read = useRead(cardSetsModule, []);
-  const cards = read.value;
+  const read = useRead(load, []);
+  const [cards, search, tags] = read.value ?? [];
   const shown = useMemo(
     () =>
-      (cards?.CARD_SETS ?? []).filter((id) =>
-        matches(query, id, nameOf(id, 'he'), nameOf(id, 'en'), nameOf(id, lang)),
+      (cards?.CARD_SETS ?? []).filter(
+        (id) =>
+          (search &&
+            finds(search, query, { he: nameOf(id, 'he'), en: nameOf(id, 'en') }, tags?.[id])) ||
+          matches(query, id, nameOf(id, 'he'), nameOf(id, 'en'), nameOf(id, lang)),
       ),
-    [cards, query, lang],
+    [cards, search, tags, query, lang],
   );
   const sets = useMemo(() => {
     if (!cards) return [];
@@ -186,7 +196,7 @@ export function Cards({
     return shown.map((id) => ({ id, element: cards.newCardSet(id, reading) }));
   }, [cards, shown, lang]);
   if (read.error) return <p className="error-text">{read.error}</p>;
-  if (!cards) return <p className="muted">{t('libraryBrowse.cardsLoading')}</p>;
+  if (!cards || !tags) return <p className="muted">{t('libraryBrowse.cardsLoading')}</p>;
   if (cards.CARD_SETS.length === 0) return <p className="muted">{t('libraryBrowse.cardsEmpty')}</p>;
   // The card sets are written in Hebrew and English only, and are shown in no other language.
   if (!isBase(lang)) {
@@ -229,6 +239,7 @@ export function Cards({
           cards={cards}
           id={opened}
           lang={lang}
+          tags={tags}
           onClose={() => go({ section: 'cards' })}
           onStep={stepper(shown, opened, open)}
         />

@@ -1,12 +1,13 @@
 /**
  * The parts of the library, and what an upload may do to each (`GET /api/content`).
  *
- * A part takes uploads where what is uploaded stays: designs join the catalog Slidr Studio
+ * A part takes new items where what is uploaded stays: designs join the catalog Slidr Studio
  * publishes into, and a template's sample takes more languages beside those its source writes.
  * The other parts are written whole by the app's own scripts, from packages they read, or are
- * drawn by the app's code, so an upload into them would be written over, or never shown; each
- * says why. Opening one takes the app first: a catalog of its own that publishing merges, as
- * `managed.json` is for designs.
+ * drawn by the app's code, so a new item in them would be written over, or never shown; each
+ * says why (`closed`). Opening one takes the app first: a catalog of its own that publishing
+ * merges, as `managed.json` is for designs. Every part the app searches takes the search tags of
+ * its items (`tag`, `tags.ts`), which are a file of their own, `tags/<part>.json`.
  */
 import {
   BASE_LANGUAGES,
@@ -18,6 +19,7 @@ import {
 } from '@slidr/model';
 import { addDesign, translateDesign } from './designs.ts';
 import type { ActionId, Handler, TypeId } from './handler.ts';
+import { tagHandler } from './tags.ts';
 import { translateTemplate } from './templates.ts';
 
 /** The languages a part of the library is written in. */
@@ -37,24 +39,31 @@ interface Part {
   /** Where it is in the library. */
   paths: readonly string[];
   handlers: readonly Handler[];
-  /** Why it takes no uploads. */
+  /** Why it takes no new items. */
   closed?: string;
 }
 
+/** A part the app searches: it takes the tags of its items, kept in `tags/<part>.json`. */
+const tagged = (part: Part): Part => ({
+  ...part,
+  paths: [...part.paths, `tags/${part.type}.json`],
+  handlers: [...part.handlers, tagHandler(part.type)],
+});
+
 export const PARTS: readonly Part[] = [
-  {
+  tagged({
     type: 'designs',
     written: 'content',
     paths: ['elements/designs/managed.json', 'images/designs/'],
     handlers: [addDesign, translateDesign],
-  },
+  }),
   {
     type: 'templates',
     written: 'content',
     paths: ['templates/catalog.json'],
     handlers: [translateTemplate],
   },
-  {
+  tagged({
     type: 'cards',
     written: 'base',
     paths: ['elements/cards/catalog.json'],
@@ -62,8 +71,8 @@ export const PARTS: readonly Part[] = [
     closed:
       'The app offers only the card sets its code names (`CardSetId` in ' +
       '`apps/desktop/src/elements/cardSets.ts`), so a new set would not be shown.',
-  },
-  {
+  }),
+  tagged({
     type: 'frames',
     written: 'base',
     paths: ['elements/catalogs/frames-catalog.json', 'images/frames/'],
@@ -71,16 +80,16 @@ export const PARTS: readonly Part[] = [
     closed:
       "The app's `scripts/generate-frames-catalog.mjs` writes the catalog whole, from the frames " +
       'it draws, and would drop an uploaded one.',
-  },
-  {
+  }),
+  tagged({
     type: 'shapes',
     written: 'none',
     paths: ['elements/catalogs/shapes.json'],
     handlers: [],
     closed:
       "Each shape is a preset of the app's renderer: a new one needs the renderer to draw it.",
-  },
-  {
+  }),
+  tagged({
     type: 'graphics',
     written: 'base',
     paths: ['elements/catalogs/graphics-catalog.json'],
@@ -88,8 +97,8 @@ export const PARTS: readonly Part[] = [
     closed:
       "The app's `scripts/generate-graphics-catalog.mjs` writes the catalog whole, from the art " +
       'sets, and would drop an uploaded graphic.',
-  },
-  {
+  }),
+  tagged({
     type: 'emoji',
     written: 'base',
     paths: ['elements/catalogs/emoji-catalog.json'],
@@ -97,7 +106,7 @@ export const PARTS: readonly Part[] = [
     closed:
       "The app's `scripts/generate-emoji-catalog.mjs` writes the catalog whole, from Twemoji, " +
       'and would drop an uploaded emoji.',
-  },
+  }),
   {
     type: 'art',
     written: 'none',
@@ -107,13 +116,13 @@ export const PARTS: readonly Part[] = [
       'The art sets are packages, each published with its licence, and the app offers only the ' +
       'sets its code names (`ART` in `apps/desktop/src/elements/stickers.ts`).',
   },
-  {
+  tagged({
     type: 'icons',
     written: 'base',
     paths: ['icons/'],
     handlers: [],
     closed: 'The Lucide and Tabler sets, as their packages publish them.',
-  },
+  }),
   {
     type: 'fonts',
     written: 'scripts',

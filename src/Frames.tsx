@@ -8,15 +8,19 @@ import { framesModule, frameThumbsModule, messages, named } from './app';
 import { ElementPicture, WhenSeen } from './Lazy';
 import { manifest, mediaUrl, size } from './media';
 import { ItemOverlay, stepper } from './Overlay';
-import { useRead, type LibraryRoute } from './shared';
+import { TagFacts, tagsOf, useRead, type LibraryRoute } from './shared';
 
 type FramesMod = Awaited<ReturnType<typeof framesModule>>;
 type ThumbsMod = Awaited<ReturnType<typeof frameThumbsModule>>;
 type PhotoFrame = Awaited<ReturnType<FramesMod['loadFrames']>>[number];
 
 const load = async () => {
-  const [frames, thumbs] = await Promise.all([framesModule(), frameThumbsModule()]);
-  return { frames, thumbs, all: await frames.loadFrames() };
+  const [frames, thumbs, tags] = await Promise.all([
+    framesModule(),
+    frameThumbsModule(),
+    tagsOf('frames'),
+  ]);
+  return { frames, thumbs, tags, all: await frames.loadFrames() };
 };
 
 /** The theme a frame is drawn in here: a new deck's, as no deck is open. */
@@ -130,6 +134,7 @@ function FrameDetail({
   mod,
   thumbs,
   frame,
+  tags,
   lang: initial,
   onClose,
   onStep,
@@ -137,6 +142,8 @@ function FrameDetail({
   mod: FramesMod;
   thumbs: ThumbsMod;
   frame: PhotoFrame;
+  /** What the library's tags (`tags/frames.json`) say of it, beside the catalogue's own words. */
+  tags: Awaited<ReturnType<typeof tagsOf>>[string] | undefined;
   lang: Lang;
   onClose: () => void;
   onStep?: (by: -1 | 1) => void;
@@ -247,6 +254,7 @@ function FrameDetail({
               )}
               <dt>rev</dt>
               <dd dir="ltr">{mod.frameRev(frame)}</dd>
+              <TagFacts tags={tags} />
             </dl>
           </section>
           {ahead && (
@@ -339,7 +347,7 @@ export function Frames({
       </p>
     );
   }
-  const { frames: mod, thumbs } = read.value;
+  const { frames: mod, thumbs, tags } = read.value;
   const groups = mod.FRAME_GROUPS.filter((group) => all.some((frame) => frame.group === group));
   const ids = found.map((frame) => frame.id);
   const open = (id: string) => go({ ...route, item: id });
@@ -413,6 +421,7 @@ export function Frames({
           mod={mod}
           thumbs={thumbs}
           frame={opened}
+          tags={tags[plainId(opened)]}
           lang={lang}
           onClose={() => go({ ...route, item: undefined })}
           onStep={stepper(ids, opened.id, open)}

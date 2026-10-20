@@ -232,6 +232,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'Diseño nuevo',
   'uploads.kind.designs.translate': 'Diseño en otro idioma',
   'uploads.kind.templates.translate': 'Plantilla en otro idioma',
+  'uploads.kind.tag': 'Etiquetas de búsqueda',
+  'uploads.tags.items': '{count} elementos',
   'uploads.languagesOf': '{count} de {total} idiomas',
   'uploads.notEditor':
     'Las subidas están abiertas a los editores de la biblioteca, y esta cuenta no está entre ellos.',

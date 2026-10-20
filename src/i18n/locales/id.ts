@@ -229,6 +229,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'Desain baru',
   'uploads.kind.designs.translate': 'Desain dalam bahasa lain',
   'uploads.kind.templates.translate': 'Templat dalam bahasa lain',
+  'uploads.kind.tag': 'Tag pencarian',
+  'uploads.tags.items': '{count} item',
   'uploads.languagesOf': '{count} dari {total} bahasa',
   'uploads.notEditor': 'Unggahan terbuka untuk editor pustaka, dan akun ini bukan salah satunya.',
   'uploads.noSignIn': 'Server ini tidak menyediakan cara masuk, jadi tidak menerima unggahan.',

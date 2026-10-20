@@ -1,8 +1,8 @@
 /**
  * What every kind of upload is made of, and the checks they share. Each part of the library that
- * takes uploads says, for each thing an upload of it may do (`add`, `translate`), which fields it
- * has, which languages it is written in, which files it brings, and how it is checked
- * (`designs.ts`, `templates.ts`; `content.ts` names them all).
+ * takes uploads says, for each thing an upload of it may do (`add`, `translate`, `tag`), which
+ * fields it has, which languages it is written in, which files it brings, and how it is checked
+ * (`designs.ts`, `templates.ts`, `tags.ts`; `content.ts` names them all).
  */
 import {
   plainText,
@@ -31,9 +31,10 @@ export type TypeId = (typeof TYPES)[number];
 
 /**
  * What an upload does: `add` puts a new item into the library, `translate` writes a published
- * item in more languages.
+ * item in more languages, `tag` gives published items the words the search finds them by
+ * (`tags.ts`).
  */
-export const ACTIONS = ['add', 'translate'] as const;
+export const ACTIONS = ['add', 'translate', 'tag'] as const;
 export type ActionId = (typeof ACTIONS)[number];
 
 /** A field of an upload, as `GET /api/content` describes it. */

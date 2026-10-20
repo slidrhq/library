@@ -37,6 +37,7 @@ import {
   type Handler,
 } from './handler.ts';
 import type { Library } from './library.ts';
+import { TAGS_FIELD, checkTags } from './tags.ts';
 
 /** The id of a design made outside the authored catalog. */
 const ID = /^m-[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -187,13 +188,15 @@ async function checkLanguages(
       continue;
     }
     const base = (BASE_LANGUAGES as readonly string[]).includes(lang);
-    const known = named && base ? ['slide', 'name', 'groupName'] : ['slide'];
+    const known = named && base ? ['slide', 'name', 'groupName', 'tags'] : ['slide'];
     for (const key of unknownKeys(part, known)) {
       issues.add(
         `${at}.${key}`,
         key === 'name' || key === 'groupName'
           ? `A design is named in Hebrew and English only, not in ${LANGUAGE_NAMES[lang].english}: the app names it so in every language.`
-          : `A design's content in a language has no field ${key}.`,
+          : key === 'tags'
+            ? `A design is tagged in Hebrew and English only, the languages the app's search reads, not in ${LANGUAGE_NAMES[lang].english}.`
+            : `A design's content in a language has no field ${key}.`,
         lang,
       );
     }
@@ -204,6 +207,8 @@ async function checkLanguages(
       if (part.groupName !== undefined && !isText(part.groupName, NAME_MOST)) {
         issues.add(`${at}.groupName`, `The group's name, up to ${NAME_MOST} characters.`, lang);
       }
+      // The words the search of Ready slides finds it by, written with it (ADR-108 of the app).
+      checkTags(`${at}.tags`, lang, part.tags, issues);
     }
     checkSlide(lang, part.slide, { backdrop: context.backdrop, shelf }, issues);
   }
@@ -215,7 +220,7 @@ export const addDesign: Handler = {
   action: 'add',
   about:
     'A new ready-made slide. It joins the designs Slidr Studio makes (`elements/designs/managed.json`), ' +
-    'with its picture in `images/designs/`.',
+    'with its picture in `images/designs/`, its names and its search tags in Hebrew and English.',
   id: "The new design's id: `m-` and lowercase words joined by hyphens, as `m-harbour-launch`, not taken in the library.",
   fields: [
     {
@@ -250,6 +255,7 @@ export const addDesign: Handler = {
       required: false,
       languages: BASE_LANGUAGES,
     },
+    TAGS_FIELD,
   ],
   files: [picture, backdrop],
   async check(draft, library, only) {

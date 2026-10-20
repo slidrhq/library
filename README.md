@@ -18,7 +18,7 @@ The page draws the library with the app's own code: the packages it uses (`@slid
 ## What it shows
 
 - **Overview.** Each part of the library, with its number of files and their size, and the date the library was published.
-- **Parts.** Ready-made designs, templates, card sets, frames, shapes and lines, graphics, emoji, art sets, icons and fonts. Each is read and drawn by the app's own code in `apps/desktop/src` (`src/app.ts` names the modules, copied in `vendor/`): the same catalogs, names, renderer and search in Hebrew and English. A part is loaded when it is opened.
+- **Parts.** Ready-made designs, templates, card sets, frames, shapes and lines, graphics, emoji, art sets, icons and fonts. Each is read and drawn by the app's own code in `apps/desktop/src` (`src/app.ts` names the modules, copied in `vendor/`): the same catalogs, names, renderer and search in Hebrew and English, which reads the library's search tags (`tags/`, ADR-108 of the app) beside the names, and an item up close shows its tags. A part is loaded when it is opened.
 - **Languages.** The language picker at the top shows the library in any content language of the app (`CONTENT_LANGUAGES`), and only what is written in that language: the designs and template samples written in it, and no English in place of the others. Frames and card sets are written in Hebrew and English only, so another language shows none of them, and the picker of a design, a template, a frame or a card set offers only the languages it is written in. Names come from the app's translations (`apps/desktop/src/i18n/locales`), read when a language is chosen. Fonts are only the families of the language (`familyOfLanguage`: made for its letters, or for Latin ones and having its letters, so a Hebrew family is none of English's), and show a sentence in it.
 - **An item up close.** A click opens it full size, in the language chosen (the picker of the item switches it), beside what it is made of:
   - a design shows its thumbnail as the gallery shows it, its pictures and its catalog, and links to its request in the studio when the studio made it;
@@ -70,16 +70,18 @@ Content comes into the library through a REST API of the page's Worker, under `/
 
 `GET /api/content` says what each part of the library takes and in which languages, and `GET /api/openapi.json` describes the whole API (OpenAPI 3.1). A slide and a template's sample are described by the model's own JSON Schema, at `/api/schemas/slide.json` and `/api/schemas/sample.json`.
 
-| Part                                                               | What an upload does                                                                                                                                                                                                | Languages                                                                                                                                                                                    |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Designs                                                            | `add`: a new ready-made slide and its picture, which join the designs Slidr Studio makes (`elements/designs/managed.json`, `images/designs/m-<id>.webp`). `translate`: one of those designs in another language.   | Uploaded in Hebrew and English, and accepted once written in every language of the app, as the app's tests hold every design to be. A translation is in any language but Hebrew and English. |
-| Templates                                                          | `translate`: a built-in template's sample deck in another language (`templates/catalog.json`, `samples[<template>].<language>`).                                                                                   | Any but Hebrew and English, which the template's source writes.                                                                                                                              |
-| Card sets, frames, shapes, graphics, emoji, art sets, icons, fonts | None. The app's scripts write their catalogs whole, from the packages they read, or the app's code names what it offers, so an upload would be written over, or never shown. `GET /api/content` says why for each. |                                                                                                                                                                                              |
+| Part                                              | What an upload does                                                                                                                                                                                                                                                                                   | Languages                                                                                                                                                                                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Designs                                           | `add`: a new ready-made slide and its picture, which join the designs Slidr Studio makes (`elements/designs/managed.json`, `images/designs/m-<id>.webp`), with its names and search tags. `translate`: one of those designs in another language. `tag`: the search tags of published designs (below). | Uploaded in Hebrew and English, and accepted once written in every language of the app, as the app's tests hold every design to be. A translation is in any language but Hebrew and English. Tags are in Hebrew and English. |
+| Templates                                         | `translate`: a built-in template's sample deck in another language (`templates/catalog.json`, `samples[<template>].<language>`).                                                                                                                                                                      | Any but Hebrew and English, which the template's source writes.                                                                                                                                                              |
+| Card sets, frames, shapes, graphics, emoji, icons | `tag`: the search tags of published items (below). No new items: the app's scripts write their catalogs whole, from the packages they read, or the app's code names what it offers, so a new item would be written over, or never shown. `GET /api/content` says why for each.                        | Hebrew and English.                                                                                                                                                                                                          |
+| Art sets, fonts                                   | None, for the same reasons. The app does not search them by tags.                                                                                                                                                                                                                                     |                                                                                                                                                                                                                              |
 
 An upload holds its content by language, under the codes of `CONTENT_LANGUAGES` (`he`, `en`, `ar`, `fr`, …), and keeps them in the app's order, Hebrew and English first. Each language is checked on its own:
 
 - a design's slide in it is a `Slide` of the model. It shows its own picture (`__subject__`, and `__backdrop__` where a photograph lies under it) and no other file. It says something real: three texts at least, more than 25 characters, no placeholder words. Every run of its text is set in a family of the library that has the language's letters; where its family lacks them, the answer names the family's counterpart (`fonts/catalog.json`, ADR-105 of the app);
-- a design and its group are named in Hebrew and English only, as the catalog names them;
+- a design and its group are named in Hebrew and English only, as the catalog names them, and a new design comes with its search tags in both (`tags`): the words people type to find it in the app's Ready slides, beside its name (ADR-108 of the app);
+- every list of tags, a design's or an item's, holds 3 to 20 tags of one to four words each, in the language's own letters: Hebrew without niqqud, English in lower case, none twice, and none about how the item is drawn (`icon`, `illustration`, `outline`…; `worker/uploads/tags.ts`);
 - a template's sample is seated on the template's layouts by the template's own engine (`sampleSlides`), as `export-templates.mjs` checks the languages it keeps, and names only pictures the templates have (`templates/pictures.json`).
 
 ```text
@@ -114,13 +116,29 @@ curl.exe -H "Content-Type: application/json" --data "@accept.json" http://127.0.
     "he": {
       "name": "ערב השקה בנמל",
       "groupName": "אירועים",
+      "tags": ["ערב השקה", "השקה", "אירוע", "הזמנה", "נמל"],
       "slide": { "id": "s_1", "elements": [], "timeline": [] }
     },
     "en": {
       "name": "Launch night at the harbour",
       "groupName": "Events",
+      "tags": ["launch night", "launch", "event", "invitation", "harbour"],
       "slide": { "id": "s_1", "elements": [], "timeline": [] }
     }
+  }
+}
+```
+
+**Search tags.** Every part the app searches (designs, card sets, frames, shapes, graphics, emoji, icons) takes `tag`: the tags of some of its published items, by the key its catalog gives each (`fluent-emoji:balloon`, `birthday-cake`, `lucide:cake`, `shape:rightArrow`, `magnet-birthday`, `steps`, `birthday`; `GET /api/content` names the keys of each part). The upload is named by its part, one waits at a time, and each item is tagged in both languages. Publishing merges it into `tags/<part>.json`: an item named in it takes these tags, and the others keep theirs. The app's `scripts/tag-elements.mjs` writes them with Claude and sends them this way (`--upload`).
+
+```json
+{
+  "type": "graphics",
+  "action": "tag",
+  "id": "graphics",
+  "languages": {
+    "he": { "tags": { "fluent-emoji:balloon": ["בלון", "יום הולדת", "מסיבה"] } },
+    "en": { "tags": { "fluent-emoji:balloon": ["balloon", "birthday", "party"] } }
   }
 }
 ```
@@ -131,7 +149,7 @@ An upload waits (`pending`) while it is written. It is then `accepted` or `rejec
 
 **Who may upload.** The uploads are the library's editors' ([Signing in](#signing-in)): a person signed in with a Google account that `LIBRARY_EDITORS` names, on the library's own page, or a program by a key of its own, sent as `Authorization: Bearer <key>`. The programs and their keys are the Worker's secret `LIBRARY_KEYS` (`studio=<key>, ci=<key>`, each key at least 32 characters); a key sends no cookie, and so is not asked which site it comes from. An editor or a program may do all an upload takes: upload, review and say it is published. `worker/uploads/access.ts` decides, by what each route is about to do (`read`, `upload`, `review`, `publish`). What describes the API (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is open to anyone. An upload records who did each thing, by address or by the program's name. The page's **Uploads** shows the uploads to an editor; it asks anyone else to sign in, or says why it is closed to them.
 
-**Into the library.** Taking accepted uploads into a publication is still to come. That publication is the studio's, which already publishes into `managed.json` and the templates' samples: it is to read `GET /api/uploads?status=accepted` and each upload's content and files, write them into the author's copy as it writes its own, and once the library has them, set each one `published`.
+**Into the library.** Taking accepted uploads into a publication is still to come. That publication is the studio's, which already publishes into `managed.json` and the templates' samples: it is to read `GET /api/uploads?status=accepted` and each upload's content and files, write them into the author's copy as it writes its own (a design's tags into `managed.json` beside its names, as `tags[<id>]`; a part's tags merged into `tags/<part>.json`), and once the library has them, set each one `published`.
 
 ## Publishing
 

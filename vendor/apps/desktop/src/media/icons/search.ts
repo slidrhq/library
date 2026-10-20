@@ -6,6 +6,8 @@
  * An icon's words are the parts of its name (`arrow-big-down`) and the tags its set gives it.
  * The Hebrew dictionary maps an English word to the Hebrew a user would type for it, so an
  * icon's Hebrew tags are the translations of its own words: Hebrew for "arrow" finds every arrow.
+ * On top of those come the library's own tags in both languages (`withTags`, ADR-108), which the
+ * graphics, emoji, frames, shapes, card sets and designs are searched by as well.
  */
 
 export type IconSet = 'lucide' | 'tabler';
@@ -37,6 +39,18 @@ export interface IconEntry extends SearchWords {
 
 /** English word to the Hebrew terms a user would type for it. */
 export type HebrewTags = Readonly<Record<string, readonly string[]>>;
+
+/**
+ * The search tags of one thing, in each language: what a user may type to find it beyond its
+ * name (a balloon: "birthday", "party"). The media library holds them by kind (`tags/`, ADR-108).
+ */
+export interface Tags {
+  en?: readonly string[];
+  he?: readonly string[];
+}
+
+/** The tags of every thing of a kind, by its key in the kind's catalogue. */
+export type TagsOf = Readonly<Record<string, Tags>>;
 
 export interface IconSources {
   /** Lucide's `tags.json`: icon name to tags. */
@@ -78,19 +92,27 @@ const isHebrew = (word: string) => /\p{Script=Hebrew}/u.test(word);
 /** The one-letter prefixes Hebrew attaches to a word: "the", "and", "in", "to", "from", "that", "as". */
 const PREFIXES = 'הובלמשכ';
 
+/** A form a Hebrew word may stand for, and how surely: 1 for the word as typed. */
+interface HebrewForm {
+  form: string;
+  weight: number;
+}
+
 /**
  * What a Hebrew word may stand for in the index: itself, itself without an attached prefix
  * (the Hebrew for "the house" also matches "house"), and without a plural ending. The looser
- * forms count for less.
+ * forms count for less, and a form that is both is the least sure: "steps" read as "that" and
+ * "hearts" is a heart.
  */
-function hebrewForms(word: string): string[] {
-  const forms = [word];
-  if (word.length > 3 && PREFIXES.includes(word[0]!)) forms.push(word.slice(1));
+function hebrewForms(word: string): HebrewForm[] {
+  const forms: HebrewForm[] = [{ form: word, weight: 1 }];
+  if (word.length > 3 && PREFIXES.includes(word[0]!))
+    forms.push({ form: word.slice(1), weight: 0.4 });
   // After normalising, the plural endings are the Hebrew suffixes "im" and "ot". A plural of
   // four letters can have a singular of two, as many common nouns do.
-  for (const form of [...forms]) {
+  for (const { form, weight } of [...forms]) {
     if (form.length >= 4 && (form.endsWith('ימ') || form.endsWith('ות'))) {
-      forms.push(form.slice(0, -2));
+      forms.push({ form: form.slice(0, -2), weight: weight === 1 ? 0.6 : 0.25 });
     }
   }
   return forms;
@@ -143,17 +165,60 @@ function entry(
   };
 }
 
-/** The index of the whole library: Lucide first, then Tabler's line icons, then its filled ones. */
-export function buildIndex(sources: IconSources): IconEntry[] {
+/** The words of `add` that `taken` does not have yet, in their order, after those of `words`. */
+function joined(words: readonly string[], add: readonly string[], taken: Set<string>): string[] {
+  const all = [...words];
+  for (const word of add) {
+    if (taken.has(word)) continue;
+    taken.add(word);
+    all.push(word);
+  }
+  return all;
+}
+
+/**
+ * A thing's words with its tags added: the words of the English tags among its tag words, and
+ * each Hebrew tag as a whole term and as the single words it is made of. A word its name has
+ * already is not added again.
+ */
+export function withTags<T extends SearchWords>(words: T, tags: Tags | undefined): T {
+  if (!tags) return words;
+  const english = (tags.en ?? []).flatMap((tag) => wordsOf(tag));
+  const hebrew = (tags.he ?? []).map((tag) => wordsOf(tag)).filter((tag) => tag.length > 0);
+  const named = [...words.nameTerms, ...words.nameHebrew];
+  return {
+    ...words,
+    tagWords: joined(words.tagWords, english, new Set([...words.nameWords, ...words.tagWords])),
+    tagTerms: joined(
+      words.tagTerms,
+      hebrew.map((tag) => tag.join(' ')),
+      new Set([...named, ...words.tagTerms]),
+    ),
+    tagHebrew: joined(words.tagHebrew, hebrew.flat(), new Set([...named, ...words.tagHebrew])),
+  };
+}
+
+/**
+ * The index of the whole library: Lucide first, then Tabler's line icons, then its filled ones.
+ * The library's tags of an icon (`lucide:cake`, `tabler:cake`) are those of both its styles.
+ */
+export function buildIndex(sources: IconSources, tagged: TagsOf = {}): IconEntry[] {
   const index: IconEntry[] = [];
   for (const [name, tags] of Object.entries(sources.lucide)) {
-    index.push(entry('lucide', name, false, tags, sources.hebrew));
+    index.push(
+      withTags(entry('lucide', name, false, tags, sources.hebrew), tagged[`lucide:${name}`]),
+    );
   }
   const filled: IconEntry[] = [];
   for (const [name, icon] of Object.entries(sources.tabler)) {
     const tags = icon.tags ?? [];
-    if (icon.styles?.outline) index.push(entry('tabler', name, false, tags, sources.hebrew));
-    if (icon.styles?.filled) filled.push(entry('tabler', name, true, tags, sources.hebrew));
+    const own = tagged[`tabler:${name}`];
+    if (icon.styles?.outline) {
+      index.push(withTags(entry('tabler', name, false, tags, sources.hebrew), own));
+    }
+    if (icon.styles?.filled) {
+      filled.push(withTags(entry('tabler', name, true, tags, sources.hebrew), own));
+    }
   }
   return [...index, ...filled];
 }
@@ -192,7 +257,7 @@ export function englishQuery(query: string, english: ReadonlyMap<string, string>
       continue;
     }
     const found = hebrewForms(word)
-      .map((form) => english.get(form))
+      .map(({ form }) => english.get(form))
       .find((match) => match !== undefined);
     if (!found) return null;
     translated.push(found);
@@ -210,10 +275,9 @@ export interface IconSearchOptions {
 function score(icon: SearchWords, word: string): number {
   if (isHebrew(word)) {
     let best = 0;
-    hebrewForms(word).forEach((form, i) => {
+    hebrewForms(word).forEach(({ form, weight }) => {
       // A whole term of the name (Hebrew for "house"), then a word of one (the same word in
       // Hebrew for "hospital"), then the same for the tags; then the beginning of a word.
-      const weight = i === 0 ? 1 : 0.4;
       if (icon.nameTerms.includes(form)) best = Math.max(best, 80 * weight);
       else if (icon.nameHebrew.includes(form)) best = Math.max(best, 60 * weight);
       else if (icon.tagTerms.includes(form)) best = Math.max(best, 45 * weight);

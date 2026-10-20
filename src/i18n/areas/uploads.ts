@@ -13,6 +13,8 @@ export const he = {
   'uploads.kind.designs.add': 'עיצוב חדש',
   'uploads.kind.designs.translate': 'עיצוב בשפה נוספת',
   'uploads.kind.templates.translate': 'תבנית בשפה נוספת',
+  'uploads.kind.tag': 'תגיות חיפוש',
+  'uploads.tags.items': '{count} פריטים',
   'uploads.languagesOf': '{count} מתוך {total} שפות',
   'uploads.notEditor': 'ההעלאות פתוחות לעורכי הספרייה, והחשבון הזה אינו אחד מהם.',
   'uploads.noSignIn': 'בשרת הזה אין כניסה לחשבון, ולכן הוא לא מקבל העלאות.',
@@ -125,6 +127,8 @@ export const en: Record<keyof typeof he, string> = {
   'uploads.kind.designs.add': 'New design',
   'uploads.kind.designs.translate': 'Design in another language',
   'uploads.kind.templates.translate': 'Template in another language',
+  'uploads.kind.tag': 'Search tags',
+  'uploads.tags.items': '{count} items',
   'uploads.languagesOf': '{count} of {total} languages',
   'uploads.notEditor':
     'Uploads are open to the library’s editors, and this account is not one of them.',

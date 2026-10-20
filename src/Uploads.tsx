@@ -15,6 +15,7 @@ import {
   readAccess,
   settled,
   statusKey,
+  subjectOf,
   unavailable,
   uploadsApi,
   when,
@@ -27,6 +28,8 @@ const NEW = 'new';
 
 /** The picture that shows what an upload is: its own, the published design's, the template's. */
 function pictureOf(upload: Summary, files: Record<string, unknown> | undefined) {
+  // The tags of a part are words: they have no picture.
+  if (upload.action === 'tag') return undefined;
   if (upload.type === 'designs') {
     return upload.action === 'add'
       ? `/api/uploads/${upload.id}/files/picture`
@@ -62,8 +65,8 @@ function UploadCard({
         <span className={`badge status-badge ${upload.status}`}>{t(statusKey(upload.status))}</span>
       </span>
       <span className="lib-card-body">
-        <span className="lib-card-title" dir="ltr">
-          {upload.target}
+        <span className="lib-card-title" dir={upload.action === 'tag' ? undefined : 'ltr'}>
+          {subjectOf(t, upload)}
         </span>
         <span className="muted small">{t(kindKey(upload))}</span>
         <span className="lib-card-meta small">

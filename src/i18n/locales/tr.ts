@@ -225,6 +225,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'Yeni tasarım',
   'uploads.kind.designs.translate': 'Başka bir dilde tasarım',
   'uploads.kind.templates.translate': 'Başka bir dilde şablon',
+  'uploads.kind.tag': 'Arama etiketleri',
+  'uploads.tags.items': '{count} öğe',
   'uploads.languagesOf': '{count} / {total} dil',
   'uploads.notEditor':
     'Yüklemeler kütüphanenin düzenleyicilerine açıktır ve bu hesap onlardan biri değil.',

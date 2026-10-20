@@ -220,6 +220,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'تصميم جديد',
   'uploads.kind.designs.translate': 'تصميم بلغة إضافية',
   'uploads.kind.templates.translate': 'قالب بلغة إضافية',
+  'uploads.kind.tag': 'وسوم البحث',
+  'uploads.tags.items': 'عدد العناصر: {count}',
   'uploads.languagesOf': '{count} من أصل {total} لغات',
   'uploads.notEditor': 'عمليات الرفع متاحة لمحرري المكتبة، وهذا الحساب ليس واحدًا منهم.',
   'uploads.noSignIn': 'لا يتيح هذا الخادم تسجيل الدخول، ولذلك لا يقبل عمليات الرفع.',

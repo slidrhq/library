@@ -229,6 +229,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': 'नया डिज़ाइन',
   'uploads.kind.designs.translate': 'दूसरी भाषा में डिज़ाइन',
   'uploads.kind.templates.translate': 'दूसरी भाषा में टेम्पलेट',
+  'uploads.kind.tag': 'खोज टैग',
+  'uploads.tags.items': '{count} आइटम',
   'uploads.languagesOf': '{total} में से {count} भाषाएँ',
   'uploads.notEditor': 'अपलोड लाइब्रेरी के संपादकों के लिए हैं, और यह खाता उनमें से नहीं है।',
   'uploads.noSignIn': 'यह सर्वर साइन इन की सुविधा नहीं देता, इसलिए यह अपलोड स्वीकार नहीं करता।',

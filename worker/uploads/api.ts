@@ -118,19 +118,26 @@ async function checked(
   }
 }
 
-/** The other uploads of the same new item that wait or were accepted. */
+/**
+ * The other uploads of the same new item, or of the tags of the same part, that wait or were
+ * accepted: a part's tags are one upload at a time, written in it until it is published.
+ */
 async function rivals(bucket: Bucket, draft: Draft, self?: string): Promise<Issue[]> {
-  if (draft.action !== 'add') return [];
+  if (draft.action !== 'add' && draft.action !== 'tag') return [];
   const { uploads } = await listUploads(
     bucket,
-    { type: draft.type, action: 'add', target: draft.target },
+    { type: draft.type, action: draft.action, target: draft.target },
     1000,
   );
+  const does = draft.action === 'add' ? 'adds' : 'tags';
   return uploads
     .filter(
       (other) => other.id !== self && (other.status === 'pending' || other.status === 'accepted'),
     )
-    .map((other) => ({ path: 'id', message: `The upload ${other.id} adds ${draft.target} too.` }));
+    .map((other) => ({
+      path: 'id',
+      message: `The upload ${other.id} ${does} ${draft.target} too.`,
+    }));
 }
 
 const invalid = (issues: Issue[]) => problem(422, 'invalid', 'The upload does not hold.', issues);
@@ -349,17 +356,19 @@ const create: Route = async (request, env) => {
       },
     ]);
   }
-  if (part.closed)
+  if (part.handlers.length === 0)
     return problem(
       422,
       'not-uploadable',
-      `The library takes no uploads of ${part.type}. ${part.closed}`,
+      `The library takes no uploads of ${part.type}. ${part.closed ?? ''}`.trim(),
     );
   const handler = typeof action === 'string' ? handlerOf(part.type, action) : undefined;
   if (!handler) {
     const actions = part.handlers.map((one) => one.action).join(', ');
+    // A part that takes no new items says why, when that is what was asked.
+    const why = action === 'add' && part.closed ? ` ${part.closed}` : '';
     return invalid([
-      { path: 'action', message: `An upload of ${part.type} does one of: ${actions}.` },
+      { path: 'action', message: `An upload of ${part.type} does one of: ${actions}.${why}` },
     ]);
   }
   const issues: Issue[] = [];

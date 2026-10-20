@@ -13,6 +13,7 @@ import {
   designLanguages,
   designSlide,
   frenchSample,
+  CATALOGS,
   publishLibrary,
   webp,
 } from './testing.ts';
@@ -98,10 +99,16 @@ describe('what the library takes', () => {
       'icons',
       'fonts',
     ]);
-    assert.deepEqual(Object.keys(byType.designs!.actions), ['add', 'translate']);
+    assert.deepEqual(Object.keys(byType.designs!.actions), ['add', 'translate', 'tag']);
     assert.deepEqual(Object.keys(byType.templates!.actions), ['translate']);
     assert.equal(byType.fonts!.uploads, false);
     assert.match(byType.fonts!.closed!, /gen-builtin-fonts/);
+    // A part the app searches takes the tags of its items, though it takes no new ones.
+    for (const type of ['cards', 'frames', 'shapes', 'graphics', 'emoji', 'icons']) {
+      assert.deepEqual(Object.keys(byType[type]!.actions), ['tag'], type);
+      assert.equal(byType[type]!.uploads, true, type);
+    }
+    assert.deepEqual(Object.keys(byType.art!.actions), []);
   });
 
   test('describes itself as OpenAPI, with the model’s schema of a slide', async () => {
@@ -115,7 +122,18 @@ describe('what the library takes', () => {
     assert.ok(api.paths['/api/uploads/{id}/languages/{lang}']);
     assert.deepEqual(
       api.components.schemas.UploadRequest.oneOf.map((one) => one.title),
-      ['designs: add', 'designs: translate', 'templates: translate'],
+      [
+        'designs: add',
+        'designs: translate',
+        'designs: tag',
+        'templates: translate',
+        'cards: tag',
+        'frames: tag',
+        'shapes: tag',
+        'graphics: tag',
+        'emoji: tag',
+        'icons: tag',
+      ],
     );
     const slide = await read<{ properties: Record<string, unknown> }>(
       await call('/api/schemas/slide.json'),
@@ -259,6 +277,200 @@ describe('a new design', () => {
     assert.equal((await upload(newDesign(), { picture: webp(800, 800) })).status, 201);
     const issues = await issuesOf(await upload(newDesign(), { picture: webp(800, 800) }));
     assert.match(issues[0]!.message, /adds m-harbour-launch too/);
+  });
+
+  test('comes with the words its search finds it by, in Hebrew and English', async () => {
+    publishLibrary();
+    const { upload } = await caller();
+    const { he, en } = designLanguages();
+    const untagged = await issuesOf(
+      await upload(newDesign({ he: { ...he, tags: undefined }, en }), { picture: webp(800, 800) }),
+    );
+    assert.deepEqual(
+      untagged.map((one) => [one.path, one.language]),
+      [['languages.he.tags', 'he']],
+    );
+    assert.match(untagged[0]!.message, /3 to 20 words/);
+
+    const wrong = await issuesOf(
+      await upload(
+        newDesign({
+          he: { ...he, tags: ['יוֹם הולדת', 'party', 'מסיבה', 'מסיבה', 'אייקון'] },
+          en: { ...en, tags: ['Birthday', 'kids  party', 'מסיבה', 'cake'] },
+        }),
+        { picture: webp(800, 800) },
+      ),
+    );
+    assert.deepEqual(
+      wrong.map((one) => [one.path, one.message]),
+      [
+        ['languages.he.tags.0', '"יוֹם הולדת" is written without niqqud.'],
+        ['languages.he.tags.1', '"party" is not written in Hebrew letters.'],
+        ['languages.he.tags.3', '"מסיבה" is there twice.'],
+        ['languages.he.tags.4', '"אייקון" says how it is drawn, not what it is or is for.'],
+        ['languages.en.tags.0', '"Birthday" is written in lower case.'],
+        ['languages.en.tags.1', '"kids  party" is written "kids party", with single spaces.'],
+        ['languages.en.tags.2', '"מסיבה" is not written in English letters.'],
+      ],
+    );
+
+    // Tags are in the languages the search reads, and in no other.
+    const french = await issuesOf(
+      await upload(
+        newDesign({ he, en, fr: { slide: designSlide('fr'), tags: ['fête', 'soirée', 'port'] } }),
+        { picture: webp(800, 800) },
+      ),
+    );
+    assert.equal(french[0]!.path, 'languages.fr.tags');
+    assert.match(french[0]!.message, /tagged in Hebrew and English only/);
+  });
+});
+
+/** An upload of the tags of a part's items, in Hebrew and English. */
+const tagsOf = (
+  type: string,
+  he: Record<string, unknown>,
+  en: Record<string, unknown>,
+  id = type,
+) => ({ type, action: 'tag', id, languages: { he: { tags: he }, en: { tags: en } } });
+
+describe('the tags of published items', () => {
+  const balloon = { he: ['בלון', 'יום הולדת', 'מסיבה'], en: ['balloon', 'birthday', 'party'] };
+
+  test('are kept, by the keys of the items, to be merged into the part’s tags', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const response = await send(
+      '/api/uploads',
+      'POST',
+      tagsOf(
+        'graphics',
+        { 'fluent-emoji:balloon': balloon.he, 'streamline-emojis:balloon': balloon.he },
+        { 'fluent-emoji:balloon': balloon.en, 'streamline-emojis:balloon': balloon.en },
+      ),
+    );
+    assert.equal(response.status, 201);
+    const made = await read<Answer>(response);
+    assert.equal(made.target, 'graphics');
+    assert.deepEqual(made.missing, []);
+    assert.deepEqual(Object.keys(made.languages), ['he', 'en']);
+  });
+
+  test('are for items the library has, each tagged in both languages', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const issues = await issuesOf(
+      await send(
+        '/api/uploads',
+        'POST',
+        tagsOf(
+          'graphics',
+          { 'fluent-emoji:balloon': balloon.he, 'fluent-emoji:unicorn': balloon.he },
+          { 'fluent-emoji:balloon': balloon.en, 'fluent-emoji:wrapped-gift': balloon.en },
+        ),
+      ),
+    );
+    assert.deepEqual(
+      issues.map((one) => [one.path, one.message]),
+      [
+        [
+          'languages.he.tags.fluent-emoji:unicorn',
+          'The library has no graphic fluent-emoji:unicorn.',
+        ],
+        [
+          'languages.en.tags.fluent-emoji:wrapped-gift',
+          'fluent-emoji:wrapped-gift has no tags in Hebrew: an item is tagged in both.',
+        ],
+      ],
+    );
+  });
+
+  test('know the keys of every part the app searches', async () => {
+    publishLibrary(['images/designs/birthday.webp', 'images/designs/birthday-bg.webp'], CATALOGS);
+    const { send } = await caller();
+    const keys: Record<string, string[]> = {
+      emoji: ['birthday-cake'],
+      icons: ['lucide:cake', 'tabler:balloon'],
+      // A preset of the renderer, though the catalog does not list it, a line, and the card.
+      shapes: ['shape:rect', 'shape:heart', 'line:arrow', 'card'],
+      designs: ['birthday'],
+    };
+    const of = (list: string[], tags: string[]) =>
+      Object.fromEntries(list.map((key) => [key, tags]));
+    // A design's backdrop is no design.
+    const backdrop = await issuesOf(
+      await send(
+        '/api/uploads',
+        'POST',
+        tagsOf('designs', of(['birthday-bg'], balloon.he), of(['birthday-bg'], balloon.en)),
+      ),
+    );
+    assert.match(backdrop[0]!.message, /has no design birthday-bg/);
+    for (const [type, list] of Object.entries(keys)) {
+      const answer = await send(
+        '/api/uploads',
+        'POST',
+        tagsOf(type, of(list, balloon.he), of(list, balloon.en)),
+      );
+      assert.equal(answer.status, 201, type);
+    }
+  });
+
+  test('of a part are one upload at a time, named by the part', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const tags = tagsOf('emoji', { 'birthday-cake': balloon.he }, { 'birthday-cake': balloon.en });
+    assert.equal((await send('/api/uploads', 'POST', tags)).status, 201);
+    const again = await issuesOf(await send('/api/uploads', 'POST', tags));
+    assert.match(again[0]!.message, /tags emoji too/);
+    const named = await issuesOf(await send('/api/uploads', 'POST', { ...tags, id: 'cakes' }));
+    assert.deepEqual(named[0], {
+      path: 'id',
+      message: 'An upload of the tags of emoji is named emoji.',
+    });
+  });
+
+  test('are written again a language at a time, while they wait', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const made = await read<Answer>(
+      await send(
+        '/api/uploads',
+        'POST',
+        tagsOf('emoji', { 'birthday-cake': balloon.he }, { 'birthday-cake': balloon.en }),
+      ),
+    );
+    const cake = ['עוגת יום הולדת', 'עוגה', 'נרות'];
+    const put = await send(`/api/uploads/${made.id}/languages/he`, 'PUT', {
+      tags: { 'birthday-cake': cake },
+    });
+    assert.equal(put.status, 200);
+    assert.deepEqual((await read<Answer>(put)).languages.he, { tags: { 'birthday-cake': cake } });
+    // Hebrew alone may not tag what English does not.
+    const issues = await issuesOf(
+      await send(`/api/uploads/${made.id}/languages/he`, 'PUT', {
+        tags: { 'birthday-cake': cake, 'red-heart': cake },
+      }),
+    );
+    assert.deepEqual(
+      issues.map((one) => one.path),
+      ['languages.he.tags.red-heart'],
+    );
+  });
+
+  test('are all a part takes, when it takes no new items', async () => {
+    publishLibrary([], CATALOGS);
+    const { send } = await caller();
+    const issues = await issuesOf(
+      await send('/api/uploads', 'POST', {
+        type: 'graphics',
+        action: 'add',
+        id: 'x',
+        languages: {},
+      }),
+    );
+    assert.equal(issues[0]!.path, 'action');
+    assert.match(issues[0]!.message, /does one of: tag\. .*generate-graphics-catalog/);
   });
 });
 

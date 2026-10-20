@@ -1026,7 +1026,7 @@
   "elements": {
     "title": "요소",
     "search": "요소 검색",
-    "searchPlaceholder": "그래픽, 프레임, 이모지, 아이콘 검색…",
+    "searchPlaceholder": "모든 요소 검색…",
     "recent": "최근 사용한 항목",
     "browse": "컬렉션 둘러보기",
     "back": "컬렉션으로 돌아가기",

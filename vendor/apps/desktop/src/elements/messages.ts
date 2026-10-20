@@ -3,7 +3,7 @@ import type { Messages } from '../i18n/he';
 export const he = {
   title: 'אלמנטים',
   search: 'חיפוש באלמנטים',
-  searchPlaceholder: "חיפוש גרפיקות, מסגרות, אימוג'י ואייקונים…",
+  searchPlaceholder: 'חיפוש בכל האלמנטים…',
   recent: 'היו בשימוש לאחרונה',
   browse: 'דפדוף באוספים',
   back: 'חזרה לאוספים',
@@ -439,7 +439,7 @@ export const he = {
 export const en: Messages<typeof he> = {
   title: 'Elements',
   search: 'Search elements',
-  searchPlaceholder: 'Search graphics, frames, emoji and icons…',
+  searchPlaceholder: 'Search all elements…',
   recent: 'Recently used',
   browse: 'Browse collections',
   back: 'Back to collections',

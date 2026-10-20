@@ -1,6 +1,7 @@
 /**
  * The published library, as an upload is checked against it: whether an id is taken, the fonts a
- * text may be set in, a template a sample is written for. Each file is read from the site itself
+ * text may be set in, a template a sample is written for, the items a part's tags are for. Each
+ * file is read from the site itself
  * (`MEDIA_LIBRARY_URL`, the published library unless the Worker names another) and kept for a
  * minute, so a burst of uploads reads it once.
  */
@@ -12,6 +13,10 @@ import { fontShelf, type FontShelf } from '../../vendor/apps/desktop/src/element
 export interface Library {
   /** Whether the published library has a file, by its path. */
   has(path: string): Promise<boolean>;
+  /** The paths of every file of the published library. */
+  paths(): Promise<string[]>;
+  /** A JSON file of the published library, such as a catalog, by its path. */
+  json<T>(path: string): Promise<T>;
   /** The families of `fonts/catalog.json`, and their weights. */
   fonts(): Promise<FontShelf>;
   /** A built-in template, as a deck takes it (`templates/<id>/template.json`). */
@@ -73,6 +78,8 @@ export function libraryAt(base = MEDIA_LIBRARY_URL): Library {
 
   return {
     has,
+    paths: async () => Object.keys(await files()),
+    json: (path) => readJson(url(path)),
     async fonts() {
       const catalog = await readJson<FontCatalog>(url('fonts/catalog.json'));
       return fontShelf({ families: catalog.families ?? [], faces: catalog.faces ?? [] });

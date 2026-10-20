@@ -215,6 +215,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': '新设计',
   'uploads.kind.designs.translate': '设计的其他语言版本',
   'uploads.kind.templates.translate': '模板的其他语言版本',
+  'uploads.kind.tag': '搜索标签',
+  'uploads.tags.items': '{count} 项',
   'uploads.languagesOf': '{total} 种语言中的 {count} 种',
   'uploads.notEditor': '上传仅向媒体库的编辑者开放，此账号不是编辑者。',
   'uploads.noSignIn': '此服务器未提供登录，因此不接受上传。',

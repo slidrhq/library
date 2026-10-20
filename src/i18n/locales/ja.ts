@@ -226,6 +226,8 @@ const words: Record<MessageKey, string> = {
   'uploads.kind.designs.add': '新規デザイン',
   'uploads.kind.designs.translate': 'デザインの別言語版',
   'uploads.kind.templates.translate': 'テンプレートの別言語版',
+  'uploads.kind.tag': '検索タグ',
+  'uploads.tags.items': '{count} 件',
   'uploads.languagesOf': '{total} 言語中 {count} 言語',
   'uploads.notEditor':
     'アップロードはライブラリの編集者のみが利用できます。このアカウントは編集者ではありません。',

@@ -188,14 +188,21 @@ export function designSlide(
   });
 }
 
-/** A design's content in a language: its slide, and in Hebrew and English its names. */
+/** A design's content in a language: its slide, and in Hebrew and English its names and tags. */
 export interface DesignLanguage {
   slide: Slide;
   name?: string;
   groupName?: string;
+  tags?: string[];
 }
 
-/** The content of a new design in each language: names in Hebrew and English. */
+/** The search tags of a design of a launch night, in Hebrew and in English. */
+export const DESIGN_TAGS = {
+  he: ['ערב השקה', 'השקה', 'אירוע', 'הזמנה', 'נמל'],
+  en: ['launch night', 'launch', 'event', 'invitation', 'harbour'],
+};
+
+/** The content of a new design in each language: names and tags in Hebrew and English. */
 export function designLanguages(
   languages: readonly ContentLanguage[] = ['he', 'en'],
 ): Record<string, DesignLanguage> {
@@ -203,9 +210,14 @@ export function designLanguages(
     languages.map((lang) => [
       lang,
       lang === 'he'
-        ? { name: 'ערב השקה', groupName: 'אירועים', slide: designSlide(lang) }
+        ? { name: 'ערב השקה', groupName: 'אירועים', tags: DESIGN_TAGS.he, slide: designSlide(lang) }
         : lang === 'en'
-          ? { name: 'Launch night', groupName: 'Events', slide: designSlide(lang) }
+          ? {
+              name: 'Launch night',
+              groupName: 'Events',
+              tags: DESIGN_TAGS.en,
+              slide: designSlide(lang),
+            }
           : { slide: designSlide(lang) },
     ]),
   );
@@ -291,16 +303,31 @@ export function frenchSample() {
   ];
 }
 
+/** The catalogs of the parts that are tagged, a few items each, by their paths in the library. */
+export const CATALOGS: Record<string, unknown> = {
+  'elements/catalogs/graphics-catalog.json': [
+    { id: 'glossy', icons: ['fluent-emoji:balloon', 'fluent-emoji:wrapped-gift'] },
+    { id: 'outlined', icons: ['streamline-emojis:balloon'] },
+  ],
+  'elements/catalogs/emoji-catalog.json': [
+    { id: 'food', emoji: ['birthday-cake|🎂|birthday cake|cake|עוגת יום הולדת|עוגה'] },
+  ],
+  'elements/catalogs/shapes.json': { shapes: { rect: {} }, lines: { arrow: 'M4 12H20' } },
+  'icons/lucide/tags.json': { cake: ['birthday'] },
+  'icons/tabler/icons.json': { balloon: { tags: ['party'] } },
+};
+
 /**
  * Serves a published library of these files, and the paths named besides, from the site of
  * `MEDIA`, until the test ends.
  */
-export function publishLibrary(also: readonly string[] = []) {
+export function publishLibrary(also: readonly string[] = [], more: Record<string, unknown> = {}) {
   forgetLibrary();
   const files: Record<string, unknown> = {
     'fonts/catalog.json': FONTS,
     'templates/harbour/template.json': TEMPLATE,
     'templates/pictures.json': { harbourPier: PICTURE },
+    ...more,
   };
   const manifest = {
     version: 1,
