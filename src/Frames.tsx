@@ -28,7 +28,7 @@ const THEME = createDeck().theme;
 
 /**
  * The landscape the app's frame thumbnails wait for a photograph with (`FRAME_PHOTO_URL` of
- * `apps/desktop/src/elements/tiles.tsx`), which the pictures made ahead show too.
+ * `desktop/src/elements/tiles.tsx`), which the pictures made ahead show too.
  */
 const LANDSCAPE = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid slice">' +

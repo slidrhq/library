@@ -70,7 +70,7 @@ export const PARTS: readonly Part[] = [
     handlers: [],
     closed:
       'The app offers only the card sets its code names (`CardSetId` in ' +
-      '`apps/desktop/src/elements/cardSets.ts`), so a new set would not be shown.',
+      '`desktop/src/elements/cardSets.ts`), so a new set would not be shown.',
   }),
   tagged({
     type: 'frames',
@@ -114,7 +114,7 @@ export const PARTS: readonly Part[] = [
     handlers: [],
     closed:
       'The art sets are packages, each published with its licence, and the app offers only the ' +
-      'sets its code names (`ART` in `apps/desktop/src/elements/stickers.ts`).',
+      'sets its code names (`ART` in `desktop/src/elements/stickers.ts`).',
   },
   tagged({
     type: 'icons',

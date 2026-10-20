@@ -8,7 +8,7 @@
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import type { AssetMeta, FontFamilyEntry } from '@slidr/model';
 import { Template } from '@slidr/templates';
-import { fontShelf, type FontShelf } from '../../vendor/apps/desktop/src/elements/designFonts.ts';
+import { fontShelf, type FontShelf } from '../../vendor/desktop/src/elements/designFonts.ts';
 
 export interface Library {
   /** Whether the published library has a file, by its path. */

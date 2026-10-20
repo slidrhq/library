@@ -1,5 +1,5 @@
 /**
- * The app's own readers of the media library (`@desktop`: `apps/desktop/src`, vendor/), so the
+ * The app's own readers of the media library (`@desktop`: `desktop/src`, vendor/), so the
  * browser shows each kind of content exactly as the app reads and draws it. Only modules that
  * stand without the app's shell are named here: they depend on `@slidr/media-library`,
  * `@slidr/model`, `@slidr/renderer` and `@slidr/templates` alone.

@@ -3,8 +3,8 @@ import { cloudflare } from '@cloudflare/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-/** The app's readers of the media library, copied from `apps/desktop/src` (vendor/README.md). */
-const desktop = fileURLToPath(new URL('vendor/apps/desktop/src', import.meta.url));
+/** The app's readers of the media library, copied from `desktop/src` (vendor/README.md). */
+const desktop = fileURLToPath(new URL('vendor/desktop/src', import.meta.url));
 
 export default defineConfig({
   // The Worker of `wrangler.jsonc` runs inside the dev server and is built beside the page.

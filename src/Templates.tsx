@@ -51,7 +51,7 @@ const taglineOf = (template: Template, lang: Lang) =>
 
 /**
  * The photograph on the cover of each built-in template that opens with one: the one the opening
- * slide of its sample shows (as `apps/desktop/src/templates/covers.ts` has them).
+ * slide of its sample shows (as `desktop/src/templates/covers.ts` has them).
  */
 const COVERS: Record<string, AssetMeta | undefined> = {
   shvil: pictures.shvilRidge,

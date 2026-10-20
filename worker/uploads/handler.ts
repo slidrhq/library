@@ -120,7 +120,7 @@ export const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
  * Words that stand for text that was never written. The app's tests hold every design to it
- * (`apps/desktop/src/elements/designs.test.ts`).
+ * (`desktop/src/elements/designs.test.ts`).
  */
 const PLACEHOLDER =
   /lorem ipsum|placeholder|add your text|טקסט לדוגמה|texte d'exemple|texto de ejemplo|beispieltext/i;
