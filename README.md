@@ -145,13 +145,54 @@ curl.exe -H "Content-Type: application/json" --data "@accept.json" http://127.0.
 
 The page does the same by hand, under **Uploads** in its side menu (`src/Uploads.tsx`). It lists the uploads by their status. An upload opens up close, drawn by the app's renderer in each of its languages, with the subject's point marked on its picture, beside its languages (each added, replaced or taken away from a JSON file), its status and its history. **New upload** takes the picture and a file for each language, named by it (`he.json`, `en.json`…), or a whole upload as the API takes it, and draws the slide, or the template's sample, before anything is sent. A click on the slide places the subject's point. What the server finds wrong is shown by language.
 
-An upload waits (`pending`) while it is written. It is then `accepted` or `rejected` (with a note), and an accepted one is `published` once the library has it. One marked published that the library does not have after all goes back to `accepted`, by whoever may say it is published. An upload is checked once more, against the library as it is then, when it is accepted, and it records who did each of these in its `history`. What does not hold is answered `422`, with every issue at its place: `{ "error": "invalid", "message", "issues": [{ "path": "languages.ja.slide", "message", "language": "ja" }] }`.
+An upload waits (`pending`) while it is written. It is then `accepted` or `rejected` (with a note), and an accepted one is `published` when a publication writes it into the library ([Publishing the uploads](#publishing-the-uploads)). One marked published that the library does not have after all goes back to `accepted`, by whoever may publish. An upload is checked once more, against the library as it is then, when it is accepted, and it records who did each of these in its `history`. What does not hold is answered `422`, with every issue at its place: `{ "error": "invalid", "message", "issues": [{ "path": "languages.ja.slide", "message", "language": "ja" }] }`.
 
 **Who may upload.** The uploads are the library's editors' ([Signing in](#signing-in)): a person signed in with a Google account that `LIBRARY_EDITORS` names, on the library's own page, or a program by a key of its own, sent as `Authorization: Bearer <key>`. The programs and their keys are the Worker's secret `LIBRARY_KEYS` (`studio=<key>, ci=<key>`, each key at least 32 characters); a key sends no cookie, and so is not asked which site it comes from. An editor or a program may do all an upload takes: upload, review and say it is published. `worker/uploads/access.ts` decides, by what each route is about to do (`read`, `upload`, `review`, `publish`). What describes the API (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is open to anyone. An upload records who did each thing, by address or by the program's name. The page's **Uploads** shows the uploads to an editor; it asks anyone else to sign in, or says why it is closed to them.
 
-**Into the library.** Taking accepted uploads into a publication is still to come. That publication is the studio's, which already publishes into `managed.json` and the templates' samples: it is to read `GET /api/uploads?status=accepted` and each upload's content and files, write them into the author's copy as it writes its own (a design's tags into `managed.json` beside its names, as `tags[<id>]`; a part's tags merged into `tags/<part>.json`), and once the library has them, set each one `published`.
-
 Search-tag uploads may also include any of the other supported content languages alongside Hebrew and English. All supplied languages must tag the same item keys. The app's `desktop/scripts/translate-tags.mjs` translates existing tags into the other fourteen languages before `tag-elements.mjs --upload` sends them. Native accents, vowel marks and capitalization are preserved; English remains lowercase and Hebrew remains without niqqud.
+
+## Publishing the uploads
+
+The published media library lives in the Worker's own R2 bucket, `slidr-media` (`MEDIA`, `worker/media/live.ts`): every file under its path, and `manifest.json`, which names each with its size and SHA-256 as the app reads it. The Worker serves it at `/media/` (`worker/media/serve.ts`), with the headers Cloudflare Pages gave it: any site may read it, the manifest is asked for again each time, and a file answers its SHA-256 as its ETag. slidr-media.pages.dev, where every installed app reads the library, is a Pages project whose one Worker sends each request there through a service binding (`media-site/`). No author's copy of the library and no `pnpm media:publish` take part: what reaches the library comes through the uploads, and a publication writes the accepted ones into the bucket.
+
+```text
+GET  /api/library            where the library is, when it was published, how many uploads wait
+POST /api/publish            every accepted upload, oldest first; or { "uploads": ["u-…"] }
+POST /api/library/import     once: the site's library into the bucket, a batch per call
+PUT  /api/library/staged/…   a file of an author's publication (pnpm media:publish of the app)
+POST /api/library/files      an author's publication: the files changed since the copy was pulled
+GET  /media/<path>           the published library, as the app reads it
+```
+
+A publication (`worker/media/publish.ts`), by an editor or a program that may publish:
+
+- checks each upload once more against the library as it is, and leaves accepted one that no longer holds, saying why (`skipped`);
+- writes each into the files it changes (`worker/media/merge.ts`): the tags of a part merged into `tags/<part>.json`, where an item named takes the tags given in every language given and the others keep theirs; a new design into `elements/designs/managed.json` (its names, group, slides, subject, size and tags) with its picture in `images/designs/`; a design's translation into its slides; a template's sample into `templates/catalog.json`, which changes in no other byte;
+- keeps what it replaces under `_history/<published>/` (the manifest before it, and each file it wrote over), writes the manifest last, and marks each upload `published`. The app takes the new library the next time it reads the manifest.
+
+**An author's files.** What the app's generators write (the catalogs of icons, frames and authored designs, the templates and their sources' samples, the fonts) is still made in an author's copy of the library, and published from it by `pnpm media:publish` of the app, through this API too: it sends each file the author changed since the copy was pulled (`PUT /api/library/staged/<sha256>`), and then the publication of them (`POST /api/library/files`), each path with the hash it was changed from (`worker/media/files.ts`). A file the library changed meanwhile, as an upload that was published, is a conflict, and nothing is written: the author pulls (`pnpm media:pull`) and publishes again. Every file the author did not change stays as the library has it, so a publication of an author's files never takes away a published upload.
+
+One publication runs at a time. Up to 50 uploads go in one, and the answer says how many are left. Once the library is in its bucket, an upload is no longer marked published by hand (`409 publish-instead`): it is published. The page's **Uploads** publishes every accepted upload at once, and an upload up close by itself; Slidr Studio's Publish panel publishes them too, with its key.
+
+**Setting it up**, once:
+
+1. Make the bucket, and publish the Worker with it (`wrangler.jsonc` binds it):
+   ```powershell
+   npx wrangler r2 bucket create slidr-media
+   pnpm build; npx wrangler deploy
+   ```
+2. Bring the published library into the bucket, from slidr-media.pages.dev as Pages serves it now. A call copies a batch, checked file by file; the script calls until the bucket has every file and the manifest:
+   ```powershell
+   $env:LIBRARY_KEY = '<a key of LIBRARY_KEYS>'
+   node scripts/import-library.mjs
+   ```
+   `https://library.slidr.workers.dev/media/manifest.json` then answers with the library.
+3. Send slidr-media.pages.dev to the Worker. This deployment of the Pages project holds no files, only `media-site/public/_worker.js` and its service binding to `library` (`media-site/wrangler.toml`):
+   ```powershell
+   cd media-site; npx wrangler pages deploy
+   ```
+   Every installed app reads the bucket from then on. Its deployments before stay in the Pages project, and one is put back from Cloudflare's dashboard.
+4. Publish the accepted uploads: **Uploads** → **Publish N accepted**, or `POST /api/publish`.
 
 ## Publishing
 
@@ -159,7 +200,7 @@ The page runs on Cloudflare as the Worker `library` (https://library.slidr.worke
 
 To publish from your own machine: `pnpm build`, then `npx wrangler deploy`.
 
-The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made once, before the first publication: `npx wrangler r2 bucket create slidr-library-uploads`. They are checked against the published library, `https://slidr-media.pages.dev/`, unless the Worker's variable `MEDIA_LIBRARY_URL` names another. Checking an upload (a design in every language, a sample seated on its template) takes more CPU time than the Free plan's 10 ms a request, so the Worker runs on Workers Paid. `pnpm dev` runs the Worker beside the page, with a bucket of its own on this machine, in `.wrangler/`.
+The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made once, before the first publication: `npx wrangler r2 bucket create slidr-library-uploads`, and the published library in `slidr-media` ([Publishing the uploads](#publishing-the-uploads)). They are checked against the library in its bucket, and before it is there against the site, `https://slidr-media.pages.dev/`, unless the Worker's variable `MEDIA_LIBRARY_URL` names another. Checking an upload (a design in every language, a sample seated on its template) takes more CPU time than the Free plan's 10 ms a request, so the Worker runs on Workers Paid. `pnpm dev` runs the Worker beside the page, with buckets of its own on this machine, in `.wrangler/`: `node scripts/import-library.mjs --url http://127.0.0.1:5176` brings the library into them.
 
 ## Working on the page
 

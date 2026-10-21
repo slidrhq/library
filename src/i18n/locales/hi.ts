@@ -258,8 +258,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'क्यों? (अपलोड के साथ सहेजा जाएगा)',
   'uploads.detail.rejectConfirm': 'अपलोड अस्वीकार करें',
   'uploads.detail.reopen': 'फिर से प्रतीक्षा में डालें',
-  'uploads.detail.published': 'प्रकाशित के रूप में चिह्नित करें',
-  'uploads.detail.publishedHint': 'जब लाइब्रेरी के किसी प्रकाशन ने इसे शामिल कर लिया हो।',
+  'uploads.detail.published': 'प्रकाशित करें',
+  'uploads.detail.publishedHint':
+    'इसे अभी लाइब्रेरी में लिखता है: ऐप अगली बार लाइब्रेरी पढ़ते समय इसे पाता है।',
+  'uploads.publishAll': '{count} स्वीकृत प्रकाशित करें',
+  'uploads.publishDone': '{count} लाइब्रेरी में प्रकाशित हुए।',
+  'uploads.publishSkipped':
+    '{count} प्रकाशित नहीं हुए और स्वीकृत रहे: कारण देखने के लिए उन्हें खोलें।',
   'uploads.detail.withdraw': 'अपलोड वापस लें',
   'uploads.detail.withdrawConfirm': 'अपलोड और उसकी फ़ाइलें हटा दी जाएँगी।',
   'uploads.detail.languages': 'भाषाएँ',

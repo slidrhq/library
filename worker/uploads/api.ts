@@ -12,10 +12,15 @@
  *   PUT    /api/uploads/{id}/languages/{lang}    writes it in a language, or again in one
  *   DELETE /api/uploads/{id}/languages/{lang}    takes a language it may do without away
  *   POST   /api/uploads/{id}/status              accepts it, rejects it, sends it back, or says it is published
+ *   GET    /api/library                          where the published library is, and what waits for it
+ *   POST   /api/library/import                   brings the site's library into its bucket, once
+ *   POST   /api/publish                          writes the accepted uploads into the library
+ *   PUT    /api/library/staged/{sha256}          a file of an author's publication, by its hash
+ *   POST   /api/library/files                    an author's publication: the files changed since a pull
  *
  * Every route of the uploads asks `access.ts` first: they are the library's editors'. What
- * describes the API is open to anyone. Nothing here changes the published library: an accepted
- * upload is published with the rest of the library, from the author's copy.
+ * describes the API is open to anyone. Only a publication changes the published library
+ * (`../media/publish.ts`): it writes the accepted uploads into the library's bucket.
  */
 import {
   CONTENT_LANGUAGES,
@@ -23,13 +28,21 @@ import {
   toJsonSchema,
   type ContentLanguage,
 } from '@slidr/model';
-import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { isRecord, json, jsonBody, problem, type Issue } from '../http.ts';
 import { authorize, type AccessEnv, type Actor, type Permission } from './access.ts';
 import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
-import { LibraryUnreachable, libraryAt, type Library } from './library.ts';
+import {
+  filesRoute,
+  importRoute,
+  isLive,
+  libraryStatus,
+  publishRoute,
+  stageRoute,
+} from '../media/routes.ts';
+import type { MediaEnv } from '../media/live.ts';
+import { LibraryUnreachable, libraryFor, type Library } from './library.ts';
 import { openApi } from './openapi.ts';
 import {
   STATUSES,
@@ -47,7 +60,7 @@ import {
 } from './store.ts';
 import { Sample } from './templates.ts';
 
-export interface UploadsEnv extends AccessEnv {
+export interface UploadsEnv extends AccessEnv, MediaEnv {
   /** The bucket uploads are kept in (`wrangler.jsonc`). */
   UPLOADS?: Bucket;
   /** The library uploads are checked against: the published one unless this names another. */
@@ -95,8 +108,7 @@ function view(upload: Upload) {
 const notSetUp = () =>
   problem(503, 'not-set-up', 'This server keeps no uploads: it has no bucket for them (UPLOADS).');
 
-const libraryOf = (env: UploadsEnv): Library =>
-  libraryAt(env.MEDIA_LIBRARY_URL ?? MEDIA_LIBRARY_URL);
+const libraryOf = (env: UploadsEnv): Library => libraryFor(env);
 
 /** The checks of a handler, or the answer to give when the library cannot be read. */
 async function checked(
@@ -607,6 +619,14 @@ const setStatus: Route = async (request, env, [id]) => {
   }
   const actor: Actor | Response = await authorize(request, env, permission);
   if (actor instanceof Response) return actor;
+  // Once the library is in its bucket, an upload is published by publishing it, not by saying so.
+  if (status === 'published' && (await isLive(env))) {
+    return problem(
+      409,
+      'publish-instead',
+      'The library is published through the uploads now: publish it (POST /api/publish).',
+    );
+  }
 
   if (status === 'accepted') {
     // Accepted as the library is now, and only when it is written in every language it needs.
@@ -654,6 +674,11 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
     { PUT: putLanguage, DELETE: deleteLanguage },
   ],
   [new RegExp(`^/api/uploads/${UPLOAD}/status$`), { POST: setStatus }],
+  [/^\/api\/library$/, { GET: libraryStatus }],
+  [/^\/api\/library\/import$/, { POST: importRoute }],
+  [/^\/api\/publish$/, { POST: publishRoute }],
+  [/^\/api\/library\/staged\/([0-9a-f]{64})$/, { PUT: stageRoute }],
+  [/^\/api\/library\/files$/, { POST: filesRoute }],
 ];
 
 /** The answer to a request of the API; undefined for a path that is none of its. */

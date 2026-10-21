@@ -212,7 +212,20 @@ export const uploadsApi = {
   setStatus: (id: string, status: Status, note?: string) =>
     call<Upload>(`uploads/${id}/status`, sendJson('POST', note ? { status, note } : { status })),
   withdraw: (id: string) => call<undefined>(`uploads/${id}`, { method: 'DELETE' }),
+  /** Writes the accepted uploads (or those named) into the library (worker/media/publish.ts). */
+  publish: (ids?: string[]) =>
+    call<Publication>('publish', sendJson('POST', ids ? { uploads: ids } : {})),
 };
+
+/** What came of a publication (`POST /api/publish`). */
+export interface Publication {
+  published?: string;
+  uploads: { id: string; type: string; action: string; target: string; paths: string[] }[];
+  skipped: { id: string; message: string; issues?: Issue[] }[];
+  added: string[];
+  changed: string[];
+  remaining: number;
+}
 
 /**
  * What the person may do here: the uploads are the library's editors', as signing in names them

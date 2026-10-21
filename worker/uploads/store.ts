@@ -40,7 +40,9 @@ export interface BucketObject {
   size: number;
   body: ReadableStream;
   httpMetadata?: { contentType?: string };
+  customMetadata?: Record<string, string>;
   text(): Promise<string>;
+  arrayBuffer(): Promise<ArrayBuffer>;
 }
 
 /**

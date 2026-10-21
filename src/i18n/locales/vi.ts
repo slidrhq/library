@@ -255,8 +255,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Lý do? (được lưu cùng bản tải lên)',
   'uploads.detail.rejectConfirm': 'Từ chối bản tải lên',
   'uploads.detail.reopen': 'Đưa về trạng thái chờ',
-  'uploads.detail.published': 'Đánh dấu đã xuất bản',
-  'uploads.detail.publishedHint': 'Khi một lần xuất bản thư viện đã đưa nó vào.',
+  'uploads.detail.published': 'Xuất bản',
+  'uploads.detail.publishedHint':
+    'Ghi vào thư viện ngay: ứng dụng sẽ thấy ở lần đọc thư viện tiếp theo.',
+  'uploads.publishAll': 'Xuất bản {count} đã chấp nhận',
+  'uploads.publishDone': 'Đã xuất bản {count} vào thư viện.',
+  'uploads.publishSkipped':
+    '{count} chưa được xuất bản và vẫn ở trạng thái đã chấp nhận: mở ra để xem lý do.',
   'uploads.detail.withdraw': 'Rút bản tải lên',
   'uploads.detail.withdrawConfirm': 'Bản tải lên và các tệp của nó sẽ bị xóa.',
   'uploads.detail.languages': 'Ngôn ngữ',

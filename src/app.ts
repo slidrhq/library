@@ -15,6 +15,7 @@ import { isBase, type Lang } from './languages';
 
 export const designsModule = () => import('@desktop/elements/designs');
 export const designAssetsModule = () => import('@desktop/elements/designAssets');
+export const designThumbsModule = () => import('@desktop/elements/designThumbs');
 export const templatesModule = () => import('@desktop/templates/builtIn');
 export const samplesModule = () => import('@desktop/templates/samples');
 export const cardSetsModule = () => import('@desktop/elements/cardSets');

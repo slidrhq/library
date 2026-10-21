@@ -258,8 +258,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Alasannya? (disimpan bersama unggahan)',
   'uploads.detail.rejectConfirm': 'Tolak unggahan',
   'uploads.detail.reopen': 'Kembalikan ke status menunggu',
-  'uploads.detail.published': 'Tandai sudah diterbitkan',
-  'uploads.detail.publishedHint': 'Setelah penerbitan pustaka memasukkannya.',
+  'uploads.detail.published': 'Terbitkan',
+  'uploads.detail.publishedHint':
+    'Menuliskannya ke pustaka sekarang: aplikasi menemukannya saat berikutnya membaca pustaka.',
+  'uploads.publishAll': 'Terbitkan {count} yang diterima',
+  'uploads.publishDone': '{count} diterbitkan ke pustaka.',
+  'uploads.publishSkipped':
+    '{count} tidak diterbitkan dan tetap diterima: buka untuk melihat alasannya.',
   'uploads.detail.withdraw': 'Tarik unggahan',
   'uploads.detail.withdrawConfirm': 'Unggahan beserta file-nya akan dihapus.',
   'uploads.detail.languages': 'Bahasa',

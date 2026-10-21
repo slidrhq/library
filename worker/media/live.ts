@@ -1,0 +1,132 @@
+/**
+ * The published library itself, kept by the Worker in a bucket of R2 (`MEDIA`, `wrangler.jsonc`):
+ * every file of the library under its own path (`fonts/catalog.json`, `tags/emoji.json`), and
+ * `manifest.json`, which names each with its size and SHA-256 as the app reads it
+ * (docs/media-library.md of the app). The Worker serves it at `/media/` (`serve.ts`), and the
+ * library's site, slidr-media.pages.dev, answers from there (`media-site/`), so an installed app
+ * reads it at the address it always had.
+ *
+ * What is published comes through the uploads: a publication writes the accepted ones into the
+ * bucket (`publish.ts`). It came into the bucket once, from the site as it was (`import.ts`).
+ *
+ *   manifest.json                  the library's files, their sizes and hashes
+ *   <path>                         each file, with its SHA-256 in its metadata
+ *   _history/<published>/…         what a publication replaced: the manifest before it, and each
+ *                                  file it wrote over
+ *   _publishing.json               while a publication runs
+ *
+ * A path that starts with `_` is the Worker's own, and never one of the library's.
+ */
+import type { Bucket } from '../uploads/store.ts';
+
+export const MANIFEST = 'manifest.json';
+export const HISTORY = '_history';
+export const LOCK = '_publishing.json';
+
+export interface MediaEnv {
+  /** The published library (`wrangler.jsonc`). Without it, the Worker reads the site. */
+  MEDIA?: Bucket;
+}
+
+export interface ManifestEntry {
+  size: number;
+  sha256: string;
+}
+
+/** The list of the library's files, as the app and the pages read it. */
+export interface Manifest {
+  version: 1;
+  published: string;
+  files: Record<string, ManifestEntry>;
+}
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
+export const toBytes = (text: string) => encoder.encode(text);
+export const toText = (bytes: Uint8Array) => decoder.decode(bytes);
+
+export async function sha256Hex(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+const TYPES: Record<string, string> = {
+  json: 'application/json',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  woff2: 'font/woff2',
+  woff: 'font/woff',
+  ttf: 'font/ttf',
+  otf: 'font/otf',
+  html: 'text/html; charset=utf-8',
+  md: 'text/plain; charset=utf-8',
+  txt: 'text/plain; charset=utf-8',
+};
+
+/** The type a file of the library is served as, by its extension (as `desktop/build/media.ts`). */
+export function contentType(path: string): string {
+  const extension = /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase() ?? '';
+  return TYPES[extension] ?? 'application/octet-stream';
+}
+
+/**
+ * Whether a path is one of a file of the library: plain parts joined by `/`, none of them `.` or
+ * `..`, and not the Worker's own (`_…`).
+ */
+export function isLibraryPath(path: string): boolean {
+  if (!path || path.startsWith('_') || path.startsWith('/') || path.endsWith('/')) return false;
+  if (path.includes('\\') || path.includes(':') || path.includes('\0')) return false;
+  return path.split('/').every((part) => part !== '' && part !== '.' && part !== '..');
+}
+
+/** The manifest as `pnpm media:publish` wrote it: its files by path, indented. */
+export function encodeManifest(manifest: Manifest): string {
+  const files = Object.fromEntries(
+    Object.keys(manifest.files)
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .map((path) => [path, manifest.files[path]]),
+  );
+  return `${JSON.stringify({ version: 1, published: manifest.published, files }, null, 2)}\n`;
+}
+
+const isManifest = (value: unknown): value is Manifest =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as Manifest).files === 'object' &&
+  (value as Manifest).files !== null;
+
+/** The manifest of the bucket, and the version of it read; none before the library came in. */
+export async function readManifest(
+  bucket: Bucket,
+): Promise<{ manifest: Manifest; etag: string } | undefined> {
+  const object = await bucket.get(MANIFEST);
+  if (!object) return undefined;
+  const value = JSON.parse(await object.text()) as unknown;
+  if (!isManifest(value)) throw new Error(`The bucket's ${MANIFEST} is not a manifest.`);
+  return {
+    manifest: { version: 1, published: String(value.published ?? ''), files: value.files },
+    etag: object.etag,
+  };
+}
+
+/** The bytes of a file of the bucket; none when it is not there. */
+export async function readBytes(bucket: Bucket, path: string): Promise<Uint8Array | undefined> {
+  const object = await bucket.get(path);
+  return object ? new Uint8Array(await object.arrayBuffer()) : undefined;
+}
+
+/** Writes a file of the library into the bucket, with what it is served as. */
+export async function putFile(bucket: Bucket, path: string, bytes: Uint8Array, sha256: string) {
+  await bucket.put(path, bytes, {
+    httpMetadata: { contentType: contentType(path) },
+    customMetadata: { sha256 },
+  });
+}
+
+/** `path`, ready to be joined to the address of a site. */
+export const encodedPath = (path: string) => path.split('/').map(encodeURIComponent).join('/');

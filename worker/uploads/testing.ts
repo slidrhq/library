@@ -33,13 +33,15 @@ export class MemoryBucket implements Bucket {
   get(key: string): Promise<BucketObject | null> {
     const held = this.objects.get(key);
     if (!held) return Promise.resolve(null);
-    const { data, etag, contentType } = held;
+    const { data, etag, contentType, meta } = held;
     return Promise.resolve({
       etag,
       size: data.length,
       body: new Blob([data as Uint8Array<ArrayBuffer>]).stream(),
       httpMetadata: { contentType },
+      customMetadata: meta,
       text: () => Promise.resolve(new TextDecoder().decode(data)),
+      arrayBuffer: () => Promise.resolve(data.slice().buffer),
     });
   }
 

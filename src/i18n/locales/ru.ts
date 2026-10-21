@@ -258,8 +258,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Почему? (сохранится вместе с загрузкой)',
   'uploads.detail.rejectConfirm': 'Отклонить загрузку',
   'uploads.detail.reopen': 'Вернуть в ожидание',
-  'uploads.detail.published': 'Отметить как опубликованную',
-  'uploads.detail.publishedHint': 'После того как публикация библиотеки включила её.',
+  'uploads.detail.published': 'Опубликовать',
+  'uploads.detail.publishedHint':
+    'Записывает её в библиотеку сейчас: приложение найдёт её, когда в следующий раз прочитает библиотеку.',
+  'uploads.publishAll': 'Опубликовать принятые: {count}',
+  'uploads.publishDone': 'Опубликовано в библиотеке: {count}.',
+  'uploads.publishSkipped':
+    'Не опубликовано и осталось принятыми: {count}. Откройте их, чтобы узнать причину.',
   'uploads.detail.withdraw': 'Отозвать загрузку',
   'uploads.detail.withdrawConfirm': 'Загрузка и её файлы будут удалены.',
   'uploads.detail.languages': 'Языки',

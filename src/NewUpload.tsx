@@ -1,9 +1,11 @@
 import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
+import type { ManagedDesignCatalog } from '@desktop/elements/designCatalog';
 import { isolate } from './bidi';
 import { useMemo, useState, type DragEvent, type ReactNode } from 'react';
 import { messages, named, templatesModule } from './app';
 import { useT, type MessageKey } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
+import { mediaJson } from './media';
 import { ItemOverlay } from './Overlay';
 import { useRead } from './shared';
 import { FileButton, IssueList, RULES, partsOfFiles } from './UploadDetail';
@@ -32,7 +34,9 @@ import {
 type Parts = Partial<Record<ContentLanguage, LanguagePart>>;
 type Names = { he: string; en: string };
 
-const managedModule = () => import('@desktop/elements/managedDesigns');
+/** The designs Slidr Studio published, whole: their names and groups. */
+const managedCatalog = () =>
+  mediaJson<Partial<ManagedDesignCatalog>>('elements/designs/managed.json');
 
 const isWebp = (file: File) => file.type === 'image/webp' || /\.webp$/i.test(file.name);
 /** A picture whose name says it lies under the other. */
@@ -42,9 +46,9 @@ const kindLabel = (kind: Kind) => `uploads.kind.${kind.replace(':', '.')}` as Me
 
 /** The designs uploads may translate (those of `managed.json`), and the groups they are in. */
 function useManaged(lang: Lang) {
-  const read = useRead(managedModule, []);
+  const read = useRead(managedCatalog, []);
   return useMemo(() => {
-    const catalog = read.value?.MANAGED_DESIGNS;
+    const catalog = read.value;
     const nameOf = (names: { he?: string; en?: string } | undefined, id: string) =>
       (lang === 'he' ? names?.he : names?.en) ?? names?.en ?? id;
     return {

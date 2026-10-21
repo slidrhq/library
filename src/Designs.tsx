@@ -3,22 +3,33 @@ import { useMemo, useState } from 'react';
 import type { Variant } from './studio';
 import { useT } from './i18n';
 import { isBase, LanguageNames, LanguagePicker, nativeName, type Lang } from './languages';
-import { designAssetsModule, designsModule, iconSearchModule, messages, named } from './app';
+import { designsModule, designThumbsModule, iconSearchModule, messages, named } from './app';
 import { DeckSlide } from './Lazy';
 import { manifest, mediaUrl, size } from './media';
 import { ItemOverlay, stepper } from './Overlay';
 import { finds, matches, TagFacts, useRead, type LibraryRoute } from './shared';
+import { useWidth } from './width';
 
-type Designs = Awaited<ReturnType<typeof designsModule>>;
-type Assets = Awaited<ReturnType<typeof designAssetsModule>>;
+type Designs = Awaited<ReturnType<Awaited<ReturnType<typeof designsModule>>['loadDesigns']>>;
+type FindThumb = Awaited<
+  ReturnType<Awaited<ReturnType<typeof designThumbsModule>>['loadDesignThumbs']>
+>;
 type Tags = Awaited<ReturnType<Designs['loadDesignTags']>>;
 
 const THUMB = 384;
-/** The designs, their pictures, the app's search, and the tags it finds them by (ADR-108). */
-const load = () =>
-  Promise.all([designsModule(), designAssetsModule(), iconSearchModule()]).then(
-    async ([designs, assets, search]) =>
-      [designs, assets, search, await designs.loadDesignTags()] as const,
+
+/** The designs drawn in a language, read once a language (ADR-109). */
+const designsIn = (lang: Lang) => designsModule().then((designs) => designs.loadDesigns(lang));
+const thumbs = () => designThumbsModule().then((module) => module.loadDesignThumbs());
+
+/**
+ * The designs of a language, the pictures made of them, the app's search, and the tags it finds
+ * them by (ADR-108).
+ */
+const load = (lang: Lang) =>
+  Promise.all([designsIn(lang), thumbs(), iconSearchModule()]).then(
+    async ([designs, thumb, search]) =>
+      [designs, thumb, search, await designs.loadDesignTags()] as const,
   );
 
 type Source = 'all' | 'authored' | 'managed';
@@ -63,6 +74,65 @@ function DesignView({
   );
 }
 
+/** The picture made of a design ahead, at the width it is shown at or at the width of its place. */
+function DesignPicture({
+  made,
+  lang,
+  width: fixed,
+}: {
+  made: NonNullable<ReturnType<FindThumb>>;
+  lang: Lang;
+  width?: number;
+}) {
+  const [ref, measured] = useWidth<HTMLDivElement>();
+  const width = fixed ?? measured;
+  return (
+    <div ref={ref} className="slide-frame" style={fixed ? { width: fixed } : undefined}>
+      <img
+        src={made.src}
+        srcSet={made.srcSet}
+        sizes={width > 0 ? `${Math.round(width)}px` : undefined}
+        lang={lang}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="design-picture"
+      />
+    </div>
+  );
+}
+
+/**
+ * A design in a language as the gallery shows it: the picture made of it ahead, or, where it has
+ * none, drawn live from the designs of that language, read when it is first shown.
+ */
+function DesignIn({
+  id,
+  lang,
+  thumb,
+  width,
+}: {
+  id: string;
+  lang: Lang;
+  thumb: FindThumb;
+  width?: number;
+}) {
+  const made = thumb(id, lang);
+  const drawn = useRead(
+    () => (made ? Promise.resolve(undefined) : designsIn(lang)),
+    [Boolean(made), lang],
+  );
+  if (made) return <DesignPicture made={made} lang={lang} width={width} />;
+  if (!drawn.value) {
+    return (
+      <div className="slide-frame" style={width ? { width } : undefined}>
+        <div className="slide-empty" />
+      </div>
+    );
+  }
+  return <DesignView designs={drawn.value} id={id} lang={lang} width={width} />;
+}
+
 function Picture({ asset, label }: { asset: AssetMeta; label: string }) {
   const files = useRead(manifest, []);
   const path = `images/designs/${asset.file}`;
@@ -85,7 +155,7 @@ function Picture({ asset, label }: { asset: AssetMeta; label: string }) {
 
 function DesignDetail({
   designs,
-  assets,
+  thumb,
   id,
   lang: initial,
   tags,
@@ -95,7 +165,7 @@ function DesignDetail({
   onStep,
 }: {
   designs: Designs;
-  assets: Assets;
+  thumb: FindThumb;
   id: string;
   lang: Lang;
   tags: Tags;
@@ -106,11 +176,15 @@ function DesignDetail({
 }) {
   const t = useT();
   const [lang, setLang] = useState<Lang>(initial);
-  const managed = designs.MANAGED_DESIGN_IDS.has(id);
-  const group = designs.DESIGN_GROUPS.find((g) => designs.designsOf(g).includes(id));
-  const { slide } = previewOf(designs, id, lang);
-  const subject = designs.DESIGN_SUBJECTS[id];
-  const backdrop = assets.previewBackdrop(id);
+  // The design up close, in the language its picker shows: the designs of that language.
+  const shown = useRead(() => designsIn(lang), [lang]);
+  const managed = designs.managed.has(id);
+  const group = designs.groups.find((g) => designs.designsOf(g).includes(id));
+  const slide = shown.value?.designIn(id, lang)
+    ? previewOf(shown.value, id, lang).slide
+    : undefined;
+  const subject = designs.subjects[id];
+  const backdrop = designs.previewBackdrop(id);
   const languages = designs.designLanguages(id);
 
   return (
@@ -160,7 +234,7 @@ function DesignDetail({
                 <LanguageNames langs={languages} />
               </dd>
               <dt>{t('libraryBrowse.designElements')}</dt>
-              <dd>{slide.elements.length}</dd>
+              <dd>{slide?.elements.length ?? '…'}</dd>
               <dt>{t('libraryBrowse.designSubjectPoint')}</dt>
               <dd dir="ltr">{subject ? `${subject[0]}, ${subject[1]}` : '—'}</dd>
               <TagFacts tags={tags[id]} />
@@ -168,18 +242,24 @@ function DesignDetail({
           </section>
           <section>
             <h3>{t('libraryBrowse.designPictures')}</h3>
-            <Picture asset={assets.previewAsset(id)} label="subject" />
+            <Picture asset={designs.previewAsset(id)} label="subject" />
             {backdrop && <Picture asset={backdrop} label="backdrop" />}
           </section>
         </>
       }
     >
-      <DesignView designs={designs} id={id} lang={lang} />
+      {shown.value?.designIn(id, lang) ? (
+        <DesignView designs={shown.value} id={id} lang={lang} />
+      ) : (
+        <div className="slide-frame">
+          <div className="slide-empty" />
+        </div>
+      )}
       <h3>{t('libraryBrowse.designGalleryView', { size: THUMB })}</h3>
       <div className="thumbs">
         {languages.map((side) => (
           <figure key={side}>
-            <DesignView designs={designs} id={id} lang={side} width={THUMB} />
+            <DesignIn id={id} lang={side} thumb={thumb} width={THUMB} />
             <figcaption lang={side} dir="auto">
               {nativeName(side)}
             </figcaption>
@@ -192,7 +272,8 @@ function DesignDetail({
 
 /**
  * The ready-made slides of Elements, as the app lists them: the authored catalog, and after it
- * the designs the studio published, group by group. Each is drawn live by the app's renderer.
+ * the designs the studio published, group by group. Each is shown as the picture made of it ahead
+ * (ADR-109), or drawn live by the app's renderer where it has none.
  */
 export function Designs({
   route,
@@ -210,11 +291,14 @@ export function Designs({
   onOpenVariant: (variant: Variant) => void;
 }) {
   const t = useT();
-  const read = useRead(load, []);
+  const read = useRead(() => load(lang), [lang]);
+  // Every design is written in English: what another language has is told as a share of those.
+  const english = useRead(
+    () => (isBase(lang) ? Promise.resolve(undefined) : designsIn('en')),
+    [lang],
+  );
   const [source, setSource] = useState<Source>('all');
-  const [designs, assets, search, tags] = read.value ?? [];
-  // Only the designs written in the language shown: none is shown in English instead.
-  const writtenIn = (id: string) => designs?.designLanguages(id).includes(lang) ?? false;
+  const [designs, thumb, search, tags] = read.value ?? [];
 
   /** The studio's variant each published design came from, by design id. */
   const studioOf = useMemo(() => {
@@ -227,14 +311,14 @@ export function Designs({
 
   const groups = useMemo(() => {
     if (!designs || !search || !tags) return [];
-    return designs.DESIGN_GROUPS.filter((group) => !route.group || group === route.group).map(
-      (group) => ({
+    return designs.groups
+      .filter((group) => !route.group || group === route.group)
+      .map((group) => ({
         group,
-        ids: designs.designsOf(group).filter((id) => {
-          const managed = designs.MANAGED_DESIGN_IDS.has(id);
+        ids: designs.designsIn(group, lang).filter((id) => {
+          const managed = designs.managed.has(id);
           if (source === 'managed' && !managed) return false;
           if (source === 'authored' && managed) return false;
-          if (!designs.designLanguages(id).includes(lang)) return false;
           // As the app's Ready slides search (`DesignsCollection`), and by any name as typed.
           return (
             finds(
@@ -254,27 +338,27 @@ export function Designs({
             )
           );
         }),
-      }),
-    );
+      }));
   }, [designs, search, tags, route.group, source, lang, query]);
   const listed = useMemo(() => groups.flatMap(({ ids }) => ids), [groups]);
 
   if (read.error) return <p className="error-text">{read.error}</p>;
-  if (!designs || !assets || !tags) {
+  if (!designs || !thumb || !tags) {
     return <p className="muted">{t('libraryBrowse.designsLoading')}</p>;
   }
 
-  const written = designs.DESIGN_IDS.filter(writtenIn);
-  const managedCount = written.filter((id) => designs.MANAGED_DESIGN_IDS.has(id)).length;
+  // The designs of a language are only those written in it: none is shown in English instead.
+  const written = designs.ids;
+  const managedCount = written.filter((id) => designs.managed.has(id)).length;
   const open = (id: string) => go({ ...route, item: id });
 
   return (
     <>
-      {!isBase(lang) && (
+      {!isBase(lang) && english.value && (
         <p className="muted small">
           {t('libraryBrowse.designsWrittenIn', {
             shown: written.length,
-            total: designs.DESIGN_IDS.length,
+            total: english.value.ids.length,
           })}
           <bdi lang={lang}>{nativeName(lang)}</bdi>.
         </p>
@@ -310,8 +394,8 @@ export function Designs({
           >
             {t('libraryBrowse.designAllGroups')}
           </button>
-          {designs.DESIGN_GROUPS.map((group) => {
-            const count = designs.designsOf(group).filter(writtenIn).length;
+          {designs.groups.map((group) => {
+            const count = designs.designsIn(group, lang).length;
             if (count === 0 && route.group !== group) return null;
             return (
               <button
@@ -341,27 +425,34 @@ export function Designs({
             </h3>
             <div className="lib-grid">
               {/* A design is shown as its picture alone; its name is in its tooltip and its details. */}
-              {ids.map((id) => (
-                <button
-                  type="button"
-                  key={id}
-                  className="lib-card picture"
-                  onClick={() => open(id)}
-                  title={nameOf(designs, id, lang)}
-                  aria-label={t('libraryBrowse.designOpen', { name: nameOf(designs, id, 'he') })}
-                >
-                  <DesignView designs={designs} id={id} lang={lang} lazy />
-                </button>
-              ))}
+              {ids.map((id) => {
+                const made = thumb(id, lang);
+                return (
+                  <button
+                    type="button"
+                    key={id}
+                    className="lib-card picture"
+                    onClick={() => open(id)}
+                    title={nameOf(designs, id, lang)}
+                    aria-label={t('libraryBrowse.designOpen', { name: nameOf(designs, id, 'he') })}
+                  >
+                    {made ? (
+                      <DesignPicture made={made} lang={lang} />
+                    ) : (
+                      <DesignView designs={designs} id={id} lang={lang} lazy />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </section>
         ))}
 
-      {route.item && designs.DESIGN_IDS.includes(route.item) && writtenIn(route.item) && (
+      {route.item && designs.designIn(route.item, lang) && (
         <DesignDetail
           key={route.item}
           designs={designs}
-          assets={assets}
+          thumb={thumb}
           id={route.item}
           lang={lang}
           tags={tags}

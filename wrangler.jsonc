@@ -7,13 +7,17 @@
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    // Signing in (worker/auth.ts) and the uploads (worker/uploads); everything else is served as
-    // it was built.
-    "run_worker_first": ["/auth/*", "/api/*"],
+    // Signing in (worker/auth.ts), the uploads (worker/uploads) and the published library
+    // (worker/media); everything else is served as it was built.
+    "run_worker_first": ["/auth/*", "/api/*", "/media/*"],
   },
-  // What is uploaded, until it is published (README, "Uploading"). `pnpm dev` keeps a bucket of
-  // its own on this machine, in `.wrangler/`.
-  "r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "slidr-library-uploads" }],
+  // What is uploaded, until it is published (README, "Uploading"), and the published library
+  // itself, which the uploads are published into (README, "Publishing the uploads"). `pnpm dev`
+  // keeps buckets of its own on this machine, in `.wrangler/`.
+  "r2_buckets": [
+    { "binding": "UPLOADS", "bucket_name": "slidr-library-uploads" },
+    { "binding": "MEDIA", "bucket_name": "slidr-media" },
+  ],
   // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET, LIBRARY_EDITORS and LIBRARY_KEYS are
   // secrets of the Worker (`wrangler secret put`), and `.dev.vars` on this machine (README,
   // "Signing in", "Uploading").

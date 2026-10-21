@@ -1,7 +1,6 @@
 import { mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
 import type { AssetMeta } from '@slidr/model';
 import type { DesignId } from './designs';
-import { managedPictureSize } from './managedDesigns';
 
 const sizes =
   (await readMediaJson<Record<string, number[] | undefined>>('images/designs/sizes.json')) ?? {};
@@ -22,13 +21,16 @@ const url = (name: string) => {
 export const previewAssetId = (id: DesignId) => `design-preview-${id}`;
 export const previewBackdropId = (id: DesignId) => `design-preview-${id}-bg`;
 
+/** A picture's width and height in pixels. */
+type Size = readonly [number, number];
+
 /**
  * The record of a bundled picture, for the gallery. It carries the picture's size in pixels
- * (`scripts/design-asset-sizes.mjs`; a managed design's, from `managed.json`): a cropped picture
- * cannot be drawn without it.
+ * (`scripts/design-asset-sizes.mjs`; a managed design's, which `managed.json` gives, from the
+ * caller): a cropped picture cannot be drawn without it.
  */
-function meta(id: string, name: string): AssetMeta {
-  const size = sizes[name] ?? managedPictureSize(name);
+function meta(id: string, name: string, managed?: Size): AssetMeta {
+  const size = sizes[name] ?? managed;
   const file = `${name}.webp`;
   return {
     id,
@@ -42,11 +44,12 @@ function meta(id: string, name: string): AssetMeta {
   };
 }
 
-export const previewAsset = (id: DesignId) => meta(previewAssetId(id), id);
+/** The preview record of a design's picture; `managed`, its size as `managed.json` gives it. */
+export const previewAsset = (id: DesignId, managed?: Size) => meta(previewAssetId(id), id, managed);
 
 /** The preview record of a design's backdrop, when it has one. */
-export function previewBackdrop(id: DesignId): AssetMeta | undefined {
-  return url(`${id}-bg`) ? meta(previewBackdropId(id), `${id}-bg`) : undefined;
+export function previewBackdrop(id: DesignId, managed?: Size): AssetMeta | undefined {
+  return url(`${id}-bg`) ? meta(previewBackdropId(id), `${id}-bg`, managed) : undefined;
 }
 
 export function designAssetUrl(asset: AssetMeta): string | undefined {

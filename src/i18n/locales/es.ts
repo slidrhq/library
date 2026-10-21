@@ -261,8 +261,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': '¿Por qué? (se guarda con la subida)',
   'uploads.detail.rejectConfirm': 'Rechazar la subida',
   'uploads.detail.reopen': 'Devolver a la espera',
-  'uploads.detail.published': 'Marcar como publicada',
-  'uploads.detail.publishedHint': 'Una vez que una publicación de la biblioteca la haya incluido.',
+  'uploads.detail.published': 'Publicar',
+  'uploads.detail.publishedHint':
+    'La escribe ahora en la biblioteca: la app la encuentra la próxima vez que lee la biblioteca.',
+  'uploads.publishAll': 'Publicar {count} aceptadas',
+  'uploads.publishDone': '{count} publicadas en la biblioteca.',
+  'uploads.publishSkipped':
+    '{count} no se publicaron y siguen aceptadas: ábrelas para ver por qué.',
   'uploads.detail.withdraw': 'Retirar la subida',
   'uploads.detail.withdrawConfirm': 'La subida y sus archivos se borrarán.',
   'uploads.detail.languages': 'Idiomas',

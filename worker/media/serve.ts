@@ -1,0 +1,86 @@
+/**
+ * The published library, served from its bucket at `/media/<path>`, as Cloudflare Pages served
+ * it before (`desktop/build/media.ts` of the app, its `_headers`): any page may read it, the
+ * manifest is asked for again each time, and every file answers with its SHA-256 as its ETag, so
+ * a reader that has it gets 304. slidr-media.pages.dev sends every request here (`media-site/`).
+ *
+ * Nothing here needs signing in: the library is public.
+ */
+import { MANIFEST, contentType, isLibraryPath, type MediaEnv } from './live.ts';
+
+export const MEDIA_PREFIX = '/media/';
+
+/** Says that the library is served from its bucket: `pnpm media:publish` of the app reads it. */
+export const LIVE_HEADER = 'X-Slidr-Library';
+
+const SHARED = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, If-None-Match',
+  'Access-Control-Expose-Headers': 'ETag',
+  'X-Content-Type-Options': 'nosniff',
+  [LIVE_HEADER]: 'live',
+};
+
+const NOT_FOUND =
+  '<!doctype html><meta charset="utf-8"><title>Not found</title><p>Slidr media library: no such file.</p>\n';
+
+const notFound = () =>
+  new Response(NOT_FOUND, {
+    status: 404,
+    headers: { ...SHARED, 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
+
+/** The path of the library a request names, or none when it names none. */
+function pathOf(pathname: string): string | undefined {
+  try {
+    const path = pathname
+      .slice(MEDIA_PREFIX.length)
+      .split('/')
+      .map((part) => decodeURIComponent(part))
+      .join('/');
+    return isLibraryPath(path) ? path : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether an `If-None-Match` names this ETag. */
+function matches(header: string | null, etag: string) {
+  const named = header?.split(',').map((one) => one.trim().replace(/^W\//, '')) ?? [];
+  return named.includes('*') || named.includes(etag);
+}
+
+export async function serveMedia(request: Request, env: MediaEnv): Promise<Response> {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: SHARED });
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response(null, { status: 405, headers: { ...SHARED, Allow: 'GET, HEAD, OPTIONS' } });
+  }
+  if (!env.MEDIA) {
+    return new Response('The library has no bucket here (MEDIA).', {
+      status: 503,
+      headers: { ...SHARED, 'Cache-Control': 'no-store' },
+    });
+  }
+  const path = pathOf(new URL(request.url).pathname);
+  if (!path) return notFound();
+  const object = await env.MEDIA.get(path);
+  if (!object) return notFound();
+  const etag = `"${object.customMetadata?.sha256 ?? object.etag}"`;
+  const headers: Record<string, string> = {
+    ...SHARED,
+    'Content-Type': object.httpMetadata?.contentType ?? contentType(path),
+    'Cache-Control': path === MANIFEST ? 'no-cache' : 'public, max-age=0, must-revalidate',
+    ETag: etag,
+  };
+  if (matches(request.headers.get('If-None-Match'), etag)) {
+    await object.body.cancel();
+    return new Response(null, { status: 304, headers });
+  }
+  headers['Content-Length'] = String(object.size);
+  if (request.method === 'HEAD') {
+    await object.body.cancel();
+    return new Response(null, { headers });
+  }
+  return new Response(object.body, { headers });
+}

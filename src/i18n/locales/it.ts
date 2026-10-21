@@ -258,8 +258,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Perché? (resta salvato con il caricamento)',
   'uploads.detail.rejectConfirm': 'Rifiuta il caricamento',
   'uploads.detail.reopen': 'Rimetti in attesa',
-  'uploads.detail.published': 'Segna come pubblicato',
-  'uploads.detail.publishedHint': 'Dopo che una pubblicazione della libreria lo ha incluso.',
+  'uploads.detail.published': 'Pubblica',
+  'uploads.detail.publishedHint':
+    'La scrive ora nella libreria: l’app la trova la prossima volta che legge la libreria.',
+  'uploads.publishAll': 'Pubblica {count} accettati',
+  'uploads.publishDone': '{count} pubblicati nella libreria.',
+  'uploads.publishSkipped':
+    '{count} non sono stati pubblicati e restano accettati: aprili per vedere perché.',
   'uploads.detail.withdraw': 'Ritira il caricamento',
   'uploads.detail.withdrawConfirm': 'Il caricamento e i suoi file verranno eliminati.',
   'uploads.detail.languages': 'Lingue',

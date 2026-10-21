@@ -1,11 +1,14 @@
 /**
  * The Worker that serves the library's page (`wrangler.jsonc`). The page and its files are static
- * assets; the Worker itself answers only what they cannot, under `/auth/` and `/api/`
- * (`assets.run_worker_first`): signing in with Google (`auth.ts`), and the uploads to the
- * library, which its editors make (`uploads/api.ts`, `uploads/access.ts`).
+ * assets; the Worker itself answers only what they cannot, under `/auth/`, `/api/` and `/media/`
+ * (`assets.run_worker_first`): signing in with Google (`auth.ts`), the uploads to the library,
+ * which its editors make and publish (`uploads/api.ts`, `uploads/access.ts`, `media/publish.ts`),
+ * and the published library itself, from its bucket (`media/serve.ts`), which
+ * slidr-media.pages.dev answers with (`media-site/`).
  */
 import { callback, json, login, logout, me, type AuthEnv } from './auth.ts';
 import { problem } from './http.ts';
+import { MEDIA_PREFIX, serveMedia } from './media/serve.ts';
 import { uploadsApi, type UploadsEnv } from './uploads/api.ts';
 
 interface Env extends AuthEnv, UploadsEnv {
@@ -27,6 +30,8 @@ const loopback = new Set(['127.0.0.1', 'localhost', '[::1]']);
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    // The library is public, and read from anywhere: over HTTP too, on this machine.
+    if (url.pathname.startsWith(MEDIA_PREFIX)) return serveMedia(request, env);
     if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/')) {
       return env.ASSETS.fetch(request);
     }

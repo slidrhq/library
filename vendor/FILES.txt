@@ -3,10 +3,10 @@ desktop/src/elements/cardSets.ts
 desktop/src/elements/designAssets.ts
 desktop/src/elements/designCatalog.ts
 desktop/src/elements/designFonts.ts
+desktop/src/elements/designThumbs.ts
 desktop/src/elements/designs.ts
 desktop/src/elements/frameThumbs.ts
 desktop/src/elements/frames.ts
-desktop/src/elements/managedDesigns.ts
 desktop/src/elements/messages.ts
 desktop/src/elements/stickers.ts
 desktop/src/i18n/he.ts

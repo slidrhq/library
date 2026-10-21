@@ -118,7 +118,8 @@ export function openApi() {
       version: '1',
       description:
         'Content uploaded to the Slidr media library: each part of the library, in the languages ' +
-        'it is written in. An upload waits to be accepted, and is published with the library. ' +
+        'it is written in. An upload waits to be accepted, and a publication then writes it into ' +
+        'the library (`POST /api/publish`), which the Worker serves at `/media/`. ' +
         '`GET /api/content` says what each part takes.',
     },
     servers: [{ url: '/' }],
@@ -302,6 +303,166 @@ export function openApi() {
             },
           },
           responses: { 200: anUpload, ...errors(401, 403, 404, 409, 415, 422, 503) },
+        },
+      },
+      '/api/library': {
+        get: {
+          summary: 'Where the published library is, when it was published, and what waits for it',
+          responses: {
+            200: {
+              description:
+                '`live`: whether the library is in its bucket, and served from there; `accepted`: the uploads the next publication takes.',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      live: { type: 'boolean' },
+                      bucket: { type: 'boolean' },
+                      site: { type: 'string' },
+                      published: { type: 'string' },
+                      files: { type: 'integer' },
+                      bytes: { type: 'integer' },
+                      accepted: { type: 'integer' },
+                    },
+                  },
+                },
+              },
+            },
+            ...errors(401, 403),
+          },
+        },
+      },
+      '/api/library/import': {
+        post: {
+          summary: 'Brings the site’s library into its bucket, a batch at a time, once',
+          description:
+            'Copies the next files the site’s manifest names (`from`, the published library unless named), each checked against its SHA-256, and writes the manifest once every file is in. Called until `done`.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    from: { type: 'string', format: 'uri' },
+                    limit: { type: 'integer', minimum: 1 },
+                  },
+                  additionalProperties: false,
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'What this call copied, and what is left.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(400, 401, 403, 409, 503),
+          },
+        },
+      },
+      '/api/publish': {
+        post: {
+          summary: 'Writes the accepted uploads into the published library',
+          description:
+            'Every accepted upload, oldest first, or those named: each checked once more against the library as it is, written into its files, and marked published once the manifest names them. One that no longer holds stays accepted, in `skipped`.',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { uploads: { type: 'array', items: uploadId.schema } },
+                  additionalProperties: false,
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                'The uploads published and the files each wrote, those skipped and why, and the library’s files added and changed.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(400, 401, 403, 409, 503),
+          },
+        },
+      },
+      '/api/library/staged/{sha256}': {
+        parameters: [
+          {
+            name: 'sha256',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', pattern: '^[0-9a-f]{64}$' },
+          },
+        ],
+        put: {
+          summary:
+            'Sends a file of an author’s publication, kept by its SHA-256 until it is published',
+          requestBody: {
+            required: true,
+            content: {
+              'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'The file is kept; `already` when it was.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(400, 401, 403, 413, 503),
+          },
+        },
+      },
+      '/api/library/files': {
+        post: {
+          summary: 'Publishes an author’s files: those changed since the copy was pulled',
+          description:
+            'Each path names the hash of the file the author changed (`from`, null for a new one) and the file it is to be (`to`, sent first by its hash; null to take it away). A path the library changed meanwhile is a conflict, and nothing is written. Every other file stays as the library has it.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    files: {
+                      type: 'object',
+                      additionalProperties: {
+                        type: 'object',
+                        properties: {
+                          from: { type: ['string', 'null'] },
+                          to: {
+                            oneOf: [
+                              {
+                                type: 'object',
+                                properties: {
+                                  size: { type: 'integer' },
+                                  sha256: { type: 'string' },
+                                },
+                                required: ['size', 'sha256'],
+                              },
+                              { type: 'null' },
+                            ],
+                          },
+                        },
+                        required: ['from', 'to'],
+                      },
+                    },
+                  },
+                  required: ['files'],
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                'The files added, changed and taken away, and those the library had already.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(400, 401, 403, 409, 422, 503),
+          },
         },
       },
     },

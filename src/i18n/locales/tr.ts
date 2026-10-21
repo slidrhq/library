@@ -255,8 +255,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Neden? (yüklemeyle birlikte saklanır)',
   'uploads.detail.rejectConfirm': 'Yüklemeyi reddet',
   'uploads.detail.reopen': 'Beklemeye geri al',
-  'uploads.detail.published': 'Yayınlandı olarak işaretle',
-  'uploads.detail.publishedHint': 'Kütüphanenin bir yayınlaması onu ekledikten sonra.',
+  'uploads.detail.published': 'Yayımla',
+  'uploads.detail.publishedHint':
+    'Şimdi kitaplığa yazar: uygulama kitaplığı bir sonraki okuyuşunda bulur.',
+  'uploads.publishAll': 'Kabul edilen {count} yüklemeyi yayımla',
+  'uploads.publishDone': '{count} yükleme kitaplıkta yayımlandı.',
+  'uploads.publishSkipped':
+    '{count} yükleme yayımlanmadı ve kabul edilmiş olarak kaldı: nedenini görmek için açın.',
   'uploads.detail.withdraw': 'Yüklemeyi geri çek',
   'uploads.detail.withdrawConfirm': 'Yükleme ve dosyaları silinecek.',
   'uploads.detail.languages': 'Diller',

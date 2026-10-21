@@ -10,7 +10,7 @@ import {
 
 /**
  * The catalogs of Elements → Designs as the media library holds them, how the app makes one
- * of them, and how it searches them. Nothing here reads: `designs.ts` and `managedDesigns.ts` do.
+ * of them, and how it searches them. Nothing here reads: `designs.ts` and `designThumbs.ts` do.
  */
 
 /** A name in the two languages of the interface. */
@@ -21,12 +21,13 @@ export interface DesignNames {
 
 /**
  * The ready-made slides of `elements/designs/index.json`, authored. A design's slide is drawn in
- * Hebrew and in English, and in whatever other language its author drew it.
+ * Hebrew and in English, and in whatever other language its author drew it; a catalog the
+ * publisher writes in one language (`InLanguage`) holds the slides of that one alone.
  */
 export interface DesignCatalog {
   groups: string[];
   groupIds: Record<string, string[]>;
-  slides: Record<string, Localized<Slide>>;
+  slides: Record<string, Partial<Localized<Slide>>>;
   subjects: Record<string, [number, number]>;
 }
 
@@ -42,6 +43,30 @@ export interface ManagedDesignCatalog extends DesignCatalog {
   sizes: Record<string, [number, number]>;
   /** The search tags the studio wrote with each design (ADR-108); older files have none. */
   tags?: Record<string, Tags>;
+}
+
+/**
+ * What the publisher adds to a catalog it writes again in one language (`<language>/index.json`,
+ * `<language>/managed.json`, ADR-109): its slides are of that language alone.
+ */
+export interface InLanguage {
+  /** Every language each design of the whole catalog is drawn in. */
+  languages: Record<string, string[]>;
+  /** The hash of each file it was made from, by its place in the library. */
+  from: Record<string, string>;
+}
+
+/**
+ * Whether a file the publisher wrote was made from the files the manifest names now: it gives the
+ * hash of each in `from`. A copy pulled from the site, published again by a publisher that does
+ * not write such files, holds them as they were, beside newer files.
+ */
+export function madeFrom(
+  from: unknown,
+  files: Readonly<Record<string, { sha256: string } | undefined>>,
+): boolean {
+  const made = Object.entries(record<unknown>(from));
+  return made.length > 0 && made.every(([path, hash]) => files[path]?.sha256 === hash);
 }
 
 /** The two catalogs as one, and what of it came from the managed one. */
@@ -77,7 +102,7 @@ export function mergeCatalogs(
   authored: Partial<DesignCatalog> | undefined,
   managed: Partial<ManagedDesignCatalog> | undefined,
 ): MergedDesignCatalog {
-  const slides = { ...record<Localized<Slide>>(authored?.slides) };
+  const slides = { ...record<Partial<Localized<Slide>>>(authored?.slides) };
   const has = (id: string) => Object.hasOwn(slides, id);
   const groups = strings(authored?.groups);
   const groupIds = Object.fromEntries(
@@ -88,7 +113,7 @@ export function mergeCatalogs(
   );
   const subjects = { ...record<[number, number]>(authored?.subjects) };
 
-  const managedSlides = record<Localized<Slide> | undefined>(managed?.slides);
+  const managedSlides = record<Partial<Localized<Slide>> | undefined>(managed?.slides);
   const managedIds = record<unknown>(managed?.groupIds);
   const managedSubjects = record<unknown>(managed?.subjects);
   const managedNames = record<unknown>(managed?.names);

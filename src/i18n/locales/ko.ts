@@ -252,8 +252,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': '거부 사유 (업로드와 함께 보관됨)',
   'uploads.detail.rejectConfirm': '업로드 거부',
   'uploads.detail.reopen': '대기 상태로 되돌리기',
-  'uploads.detail.published': '게시됨으로 표시',
-  'uploads.detail.publishedHint': '라이브러리 게시로 추가된 뒤에 사용하세요.',
+  'uploads.detail.published': '게시',
+  'uploads.detail.publishedHint':
+    '지금 라이브러리에 기록합니다. 앱은 다음에 라이브러리를 읽을 때 찾습니다.',
+  'uploads.publishAll': '승인된 {count}개 게시',
+  'uploads.publishDone': '{count}개를 라이브러리에 게시했습니다.',
+  'uploads.publishSkipped':
+    '{count}개는 게시되지 않고 승인 상태로 남았습니다. 열어서 이유를 확인하세요.',
   'uploads.detail.withdraw': '업로드 철회',
   'uploads.detail.withdrawConfirm': '업로드와 해당 파일이 삭제됩니다.',
   'uploads.detail.languages': '언어',

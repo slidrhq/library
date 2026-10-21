@@ -257,8 +257,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': '却下の理由（アップロードと一緒に保存されます）',
   'uploads.detail.rejectConfirm': 'アップロードを却下',
   'uploads.detail.reopen': '審査待ちに戻す',
-  'uploads.detail.published': '公開済みにする',
-  'uploads.detail.publishedHint': 'ライブラリの公開で追加されたあとに使います。',
+  'uploads.detail.published': '公開',
+  'uploads.detail.publishedHint':
+    '今すぐライブラリに書き込みます。アプリは次にライブラリを読むときに見つけます。',
+  'uploads.publishAll': '承認済み {count} 件を公開',
+  'uploads.publishDone': '{count} 件をライブラリに公開しました。',
+  'uploads.publishSkipped':
+    '{count} 件は公開されず承認済みのままです。開いて理由を確認してください。',
   'uploads.detail.withdraw': 'アップロードを取り下げる',
   'uploads.detail.withdrawConfirm': 'アップロードとそのファイルは削除されます。',
   'uploads.detail.languages': '言語',

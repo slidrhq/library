@@ -260,9 +260,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Warum? (wird mit dem Upload gespeichert)',
   'uploads.detail.rejectConfirm': 'Upload ablehnen',
   'uploads.detail.reopen': 'Zurück in die Warteschlange',
-  'uploads.detail.published': 'Als veröffentlicht markieren',
+  'uploads.detail.published': 'Veröffentlichen',
   'uploads.detail.publishedHint':
-    'Sobald eine Veröffentlichung der Bibliothek ihn aufgenommen hat.',
+    'Schreibt ihn jetzt in die Bibliothek: Die App findet ihn, sobald sie die Bibliothek das nächste Mal liest.',
+  'uploads.publishAll': '{count} angenommene veröffentlichen',
+  'uploads.publishDone': '{count} in der Bibliothek veröffentlicht.',
+  'uploads.publishSkipped':
+    '{count} wurden nicht veröffentlicht und bleiben angenommen: Öffnen Sie sie, um den Grund zu sehen.',
   'uploads.detail.withdraw': 'Upload zurückziehen',
   'uploads.detail.withdrawConfirm': 'Der Upload und seine Dateien werden gelöscht.',
   'uploads.detail.languages': 'Sprachen',

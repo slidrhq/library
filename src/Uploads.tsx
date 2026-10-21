@@ -112,6 +112,38 @@ export function Uploads({
   const access = useRead(readAccess, []);
   const files = useRead(manifest, []);
   const refresh = () => setVersion((at) => at + 1);
+  const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState<string>();
+  /** Writes every accepted upload into the library, and says what came of it. */
+  const publishAccepted = () => {
+    setPublishing(true);
+    setPublished(undefined);
+    uploadsApi
+      .publish()
+      .then(
+        (done) =>
+          setPublished(
+            [
+              t('uploads.publishDone', { count: done.uploads.length }),
+              done.skipped.length
+                ? t('uploads.publishSkipped', { count: done.skipped.length })
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' '),
+          ),
+        (error: unknown) =>
+          setPublished(
+            t('uploads.issues.failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          ),
+      )
+      .finally(() => {
+        setPublishing(false);
+        refresh();
+      });
+  };
 
   const all = useMemo(() => list.value?.uploads ?? [], [list.value]);
   const shown = useMemo(
@@ -150,6 +182,11 @@ export function Uploads({
               </button>
             ))}
           </div>
+          {mayUpload && count('accepted') > 0 && (
+            <button type="button" disabled={publishing} onClick={publishAccepted}>
+              {t('uploads.publishAll', { count: count('accepted') })}
+            </button>
+          )}
           {mayUpload && (
             <button type="button" className="primary" onClick={() => open(NEW)}>
               {t('uploads.new')}
@@ -157,6 +194,7 @@ export function Uploads({
           )}
         </div>
       )}
+      {published && <p className="hint">{published}</p>}
       {refused ? (
         <div className="upload-empty">
           <p>{isolate(unavailable(t, list.error, access.value))}</p>

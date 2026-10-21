@@ -1,6 +1,6 @@
 import { CONTENT_LANGUAGES, languageDir, type ContentLanguage } from '@slidr/model';
 import { Fragment, useMemo, useState, type ChangeEvent } from 'react';
-import { designAssetsModule, templatesModule } from './app';
+import { designAssetsModule, designsModule, templatesModule } from './app';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
@@ -200,14 +200,23 @@ export async function partsOfFiles(
   return { parts, issues, uploads };
 }
 
-/** The picture of a published design, as the gallery draws it. */
+/**
+ * The picture of a published design, as the gallery draws it: of the English designs, which every
+ * design is written in, since they know the sizes of the studio's pictures.
+ */
 async function publishedPicture(id: string) {
-  const assets = await designAssetsModule();
-  const source = (asset?: ReturnType<typeof assets.previewAsset>): PictureSource | undefined => {
+  const [designs, assets] = await Promise.all([
+    designsModule().then((module) => module.loadDesigns('en')),
+    designAssetsModule(),
+  ]);
+  const source = (asset?: ReturnType<typeof designs.previewAsset>): PictureSource | undefined => {
     const url = asset ? assets.designAssetUrl(asset) : undefined;
     return url && asset ? { url, width: asset.width, height: asset.height } : undefined;
   };
-  return { picture: source(assets.previewAsset(id)), backdrop: source(assets.previewBackdrop(id)) };
+  return {
+    picture: source(designs.previewAsset(id)),
+    backdrop: source(designs.previewBackdrop(id)),
+  };
 }
 
 function TemplateStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
@@ -281,6 +290,17 @@ function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }
       )}
     </>
   );
+}
+
+/**
+ * Publishes one accepted upload: writes it into the library, and answers it as it now is, or
+ * why it was left accepted.
+ */
+async function publishOne(id: string): Promise<Upload> {
+  const done = await uploadsApi.publish([id]);
+  const skipped = done.skipped.find((one) => one.id === id);
+  if (skipped) throw new ApiError(409, 'skipped', skipped.message, skipped.issues ?? []);
+  return uploadsApi.get(id);
 }
 
 /** What a person may do to an upload in its status, and what it takes. */
@@ -600,7 +620,13 @@ export function UploadDetail({
               <StatusActions
                 upload={upload}
                 busy={busy}
-                act={(status, note) => void act(() => uploadsApi.setStatus(id, status, note))}
+                act={(status, note) =>
+                  void act(() =>
+                    status === 'published'
+                      ? publishOne(id)
+                      : uploadsApi.setStatus(id, status, note),
+                  )
+                }
               />
             )}
           </section>

@@ -263,8 +263,13 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.rejectNote': 'Pourquoi ? (conservé avec l’envoi)',
   'uploads.detail.rejectConfirm': 'Refuser l’envoi',
   'uploads.detail.reopen': 'Remettre en attente',
-  'uploads.detail.published': 'Marquer comme publié',
-  'uploads.detail.publishedHint': 'Une fois qu’une publication de la bibliothèque l’a intégré.',
+  'uploads.detail.published': 'Publier',
+  'uploads.detail.publishedHint':
+    'L’écrit maintenant dans la bibliothèque : l’app le trouve la prochaine fois qu’elle lit la bibliothèque.',
+  'uploads.publishAll': 'Publier {count} acceptés',
+  'uploads.publishDone': '{count} publiés dans la bibliothèque.',
+  'uploads.publishSkipped':
+    '{count} n’ont pas été publiés et restent acceptés : ouvrez-les pour voir pourquoi.',
   'uploads.detail.withdraw': 'Retirer l’envoi',
   'uploads.detail.withdrawConfirm': 'L’envoi et ses fichiers seront supprimés.',
   'uploads.detail.languages': 'Langues',
