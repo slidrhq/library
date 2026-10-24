@@ -2,7 +2,7 @@
  * The published library, served from its bucket at `/media/<path>`, as Cloudflare Pages served
  * it before (`desktop/build/media.ts` of the app, its `_headers`): any page may read it, the
  * manifest is asked for again each time, and every file answers with its SHA-256 as its ETag, so
- * a reader that has it gets 304. slidr-media.pages.dev sends every request here (`media-site/`).
+ * a reader that has it gets 304. media.slidr.studio sends every request here (`media-site/`).
  *
  * Nothing here needs signing in: the library is public.
  */

@@ -1,8 +1,8 @@
-// slidr-media.pages.dev: the address the app reads the media library at (docs/media-library.md of
-// the app). The library lives in a bucket of the library's Worker, which serves it at /media/
-// (worker/media/serve.ts) and publishes the accepted uploads into it; this site sends it every
-// request, as it came, through a service binding (wrangler.toml), so an installed app reads the
-// library where it always did.
+// media.slidr.studio, and slidr-media.pages.dev before it: the address the app reads the media
+// library at (docs/media-library.md of the app). The library lives in a bucket of the library's
+// Worker, which serves it at /media/ (worker/media/serve.ts) and publishes the accepted uploads
+// into it; this site sends it every request, as it came, through a service binding
+// (wrangler.toml), so an installed app reads the library where it always did.
 export default {
   async fetch(request, env) {
     if (!env.LIBRARY) {

@@ -3,8 +3,8 @@
  * every file of the library under its own path (`fonts/catalog.json`, `tags/emoji.json`), and
  * `manifest.json`, which names each with its size and SHA-256 as the app reads it
  * (docs/media-library.md of the app). The Worker serves it at `/media/` (`serve.ts`), and the
- * library's site, slidr-media.pages.dev, answers from there (`media-site/`), so an installed app
- * reads it at the address it always had.
+ * library's site, media.slidr.studio, answers from there (`media-site/`), as slidr-media.pages.dev
+ * does, so an installed app of any release reads it at the address it has.
  *
  * What is published comes through the uploads: a publication writes the accepted ones into the
  * bucket (`publish.ts`). It came into the bucket once, from the site as it was (`import.ts`).

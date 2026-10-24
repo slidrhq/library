@@ -4,7 +4,7 @@
  * (`assets.run_worker_first`): signing in with Google (`auth.ts`), the uploads to the library,
  * which its editors make and publish (`uploads/api.ts`, `uploads/access.ts`, `media/publish.ts`),
  * and the published library itself, from its bucket (`media/serve.ts`), which
- * slidr-media.pages.dev answers with (`media-site/`).
+ * media.slidr.studio answers with (`media-site/`).
  */
 import { callback, json, login, logout, me, type AuthEnv } from './auth.ts';
 import { problem } from './http.ts';

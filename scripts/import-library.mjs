@@ -11,7 +11,7 @@
 //   node scripts/import-library.mjs --batch 100
 //
 // --from is the site to copy from: the Worker's MEDIA_LIBRARY_URL (the published library) unless
-// named. Once the bucket has the library, slidr-media.pages.dev is sent to it (media-site/).
+// named. Once the bucket has the library, the Pages project slidr-media is sent to it (media-site/).
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
   const at = args.indexOf(name);

@@ -153,7 +153,7 @@ Search-tag uploads may also include any of the other supported content languages
 
 ## Publishing the uploads
 
-The published media library lives in the Worker's own R2 bucket, `slidr-media` (`MEDIA`, `worker/media/live.ts`): every file under its path, and `manifest.json`, which names each with its size and SHA-256 as the app reads it. The Worker serves it at `/media/` (`worker/media/serve.ts`), with the headers Cloudflare Pages gave it: any site may read it, the manifest is asked for again each time, and a file answers its SHA-256 as its ETag. slidr-media.pages.dev, where every installed app reads the library, is a Pages project whose one Worker sends each request there through a service binding (`media-site/`). No author's copy of the library and no `pnpm media:publish` take part: what reaches the library comes through the uploads, and a publication writes the accepted ones into the bucket.
+The published media library lives in the Worker's own R2 bucket, `slidr-media` (`MEDIA`, `worker/media/live.ts`): every file under its path, and `manifest.json`, which names each with its size and SHA-256 as the app reads it. The Worker serves it at `/media/` (`worker/media/serve.ts`), with the headers Cloudflare Pages gave it: any site may read it, the manifest is asked for again each time, and a file answers its SHA-256 as its ETag. media.slidr.studio, where every installed app reads the library (releases before it at slidr-media.pages.dev, the same project), is a Pages project whose one Worker sends each request there through a service binding (`media-site/`). No author's copy of the library and no `pnpm media:publish` take part: what reaches the library comes through the uploads, and a publication writes the accepted ones into the bucket.
 
 ```text
 GET  /api/library            where the library is, when it was published, how many uploads wait
@@ -181,13 +181,13 @@ One publication runs at a time. Up to 50 uploads go in one, and the answer says 
    npx wrangler r2 bucket create slidr-media
    pnpm build; npx wrangler deploy
    ```
-2. Bring the published library into the bucket, from slidr-media.pages.dev as Pages serves it now. A call copies a batch, checked file by file; the script calls until the bucket has every file and the manifest:
+2. Bring the published library into the bucket, from media.slidr.studio as Pages serves it now. A call copies a batch, checked file by file; the script calls until the bucket has every file and the manifest:
    ```powershell
    $env:LIBRARY_KEY = '<a key of LIBRARY_KEYS>'
    node scripts/import-library.mjs
    ```
    `https://library.slidr.workers.dev/media/manifest.json` then answers with the library.
-3. Send slidr-media.pages.dev to the Worker. This deployment of the Pages project holds no files, only `media-site/public/_worker.js` and its service binding to `library` (`media-site/wrangler.toml`):
+3. Send the Pages project `slidr-media` (media.slidr.studio and slidr-media.pages.dev) to the Worker. This deployment of it holds no files, only `media-site/public/_worker.js` and its service binding to `library` (`media-site/wrangler.toml`):
    ```powershell
    cd media-site; npx wrangler pages deploy
    ```
@@ -200,7 +200,7 @@ The page runs on Cloudflare as the Worker `library` (https://library.slidr.worke
 
 To publish from your own machine: `pnpm build`, then `npx wrangler deploy`.
 
-The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made once, before the first publication: `npx wrangler r2 bucket create slidr-library-uploads`, and the published library in `slidr-media` ([Publishing the uploads](#publishing-the-uploads)). They are checked against the library in its bucket, and before it is there against the site, `https://slidr-media.pages.dev/`, unless the Worker's variable `MEDIA_LIBRARY_URL` names another. Checking an upload (a design in every language, a sample seated on its template) takes more CPU time than the Free plan's 10 ms a request, so the Worker runs on Workers Paid. `pnpm dev` runs the Worker beside the page, with buckets of its own on this machine, in `.wrangler/`: `node scripts/import-library.mjs --url http://127.0.0.1:5176` brings the library into them.
+The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made once, before the first publication: `npx wrangler r2 bucket create slidr-library-uploads`, and the published library in `slidr-media` ([Publishing the uploads](#publishing-the-uploads)). They are checked against the library in its bucket, and before it is there against the site, `https://media.slidr.studio/`, unless the Worker's variable `MEDIA_LIBRARY_URL` names another. Checking an upload (a design in every language, a sample seated on its template) takes more CPU time than the Free plan's 10 ms a request, so the Worker runs on Workers Paid. `pnpm dev` runs the Worker beside the page, with buckets of its own on this machine, in `.wrangler/`: `node scripts/import-library.mjs --url http://127.0.0.1:5176` brings the library into them.
 
 ## Working on the page
 

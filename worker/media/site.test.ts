@@ -19,7 +19,7 @@ test('the site sends every request to the library’s Worker, at /media/, as it 
     },
   };
   const answer = await (site as Site).fetch(
-    new Request('https://slidr-media.pages.dev/fonts/heebo/a%20b.woff2?v=1', {
+    new Request('https://media.slidr.studio/fonts/heebo/a%20b.woff2?v=1', {
       method: 'HEAD',
       headers: { 'If-None-Match': '"x"' },
     }),
@@ -32,7 +32,7 @@ test('the site sends every request to the library’s Worker, at /media/, as it 
   assert.equal(sent!.method, 'HEAD');
   assert.equal(sent!.headers.get('If-None-Match'), '"x"');
   const unbound = await (site as Site).fetch(
-    new Request('https://slidr-media.pages.dev/manifest.json'),
+    new Request('https://media.slidr.studio/manifest.json'),
     {},
   );
   assert.equal(unbound.status, 503);

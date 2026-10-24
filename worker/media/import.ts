@@ -1,6 +1,6 @@
 /**
  * Bringing the published library into its bucket, once: every file the site's manifest names,
- * read from the site (slidr-media.pages.dev, as Cloudflare Pages served it), checked against its
+ * read from the site (media.slidr.studio, as Cloudflare Pages served it), checked against its
  * SHA-256 and written under its path. A call copies a batch and says how many are left, so it is
  * called until it says it is done (`scripts/import-library.mjs`); a file already there with its
  * hash is not read again. The manifest is written last, once every file is in: from then on the
