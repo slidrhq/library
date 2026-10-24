@@ -16,7 +16,8 @@ type FindThumb = Awaited<
 >;
 type Tags = Awaited<ReturnType<Designs['loadDesignTags']>>;
 
-const THUMB = 384;
+/** The width a design's pictures are made at, at which the detail view shows them (ADR-111). */
+const THUMB = 320;
 
 /** The designs drawn in a language, read once a language (ADR-109). */
 const designsIn = (lang: Lang) => designsModule().then((designs) => designs.loadDesigns(lang));
@@ -74,7 +75,13 @@ function DesignView({
   );
 }
 
-/** The picture made of a design ahead, at the width it is shown at or at the width of its place. */
+/**
+ * The picture made of a design ahead, at the width it is shown at or at the width of its place.
+ * It is asked for once that width is known, as the app's panel does: before it, the browser would
+ * take the picture for the whole screen's width and then the one the card needs, and show the
+ * first at twice the card's width until the second came. Its place keeps the slide's shape, so a
+ * picture not yet read leaves the cards where they are, and only those near the screen are read.
+ */
 function DesignPicture({
   made,
   lang,
@@ -87,17 +94,23 @@ function DesignPicture({
   const [ref, measured] = useWidth<HTMLDivElement>();
   const width = fixed ?? measured;
   return (
-    <div ref={ref} className="slide-frame" style={fixed ? { width: fixed } : undefined}>
-      <img
-        src={made.src}
-        srcSet={made.srcSet}
-        sizes={width > 0 ? `${Math.round(width)}px` : undefined}
-        lang={lang}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        className="design-picture"
-      />
+    <div
+      ref={ref}
+      className="slide-frame design-frame"
+      style={fixed ? { width: fixed } : undefined}
+    >
+      {width > 0 && (
+        <img
+          src={made.src}
+          srcSet={made.srcSet}
+          sizes={`${Math.round(width)}px`}
+          lang={lang}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="design-picture"
+        />
+      )}
     </div>
   );
 }

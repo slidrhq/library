@@ -198,6 +198,17 @@ button.chip[aria-pressed='true'] .muted {
   background: var(--surface-2);
 }
 
+/* A design's picture, in the slide's place, at the width of that place whichever file it is. */
+.design-frame {
+  aspect-ratio: 16 / 9;
+}
+
+.design-picture {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .lib-card-body {
   display: flex;
   flex-direction: column;
