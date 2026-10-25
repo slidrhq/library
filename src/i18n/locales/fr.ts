@@ -261,8 +261,6 @@ const words: Record<MessageKey, string> = {
     'L’écrit maintenant dans la bibliothèque : l’app le trouve la prochaine fois qu’elle lit la bibliothèque.',
   'uploads.publishAll': 'Publier {count} acceptés',
   'uploads.publishDone': '{count} publiés dans la bibliothèque.',
-  'uploads.publishSkipped':
-    '{count} n’ont pas été publiés et restent acceptés : ouvrez-les pour voir pourquoi.',
   'uploads.detail.withdraw': 'Retirer l’envoi',
   'uploads.detail.withdrawConfirm': 'L’envoi et ses fichiers seront supprimés.',
   'uploads.detail.languages': 'Langues',
@@ -500,6 +498,38 @@ const words: Record<MessageKey, string> = {
   'settings.limits.default': 'Par défaut : {value}',
   'settings.empty': 'La médiathèque est vide : rien n’y est encore publié.',
   'settings.emptySeed': 'Remplir le stockage des médias dans les Paramètres',
+  'publications.nav': 'Publications',
+  'publications.about':
+    'Ce que chaque publication a écrit dans la bibliothèque, la plus récente d’abord.',
+  'publications.closed': 'Seuls ceux qui examinent les envois voient les publications.',
+  'publications.loading': 'Lecture des publications…',
+  'publications.none': 'Rien n’a encore été publié.',
+  'publications.kind.uploads': 'Envois',
+  'publications.kind.files': 'Fichiers d’un auteur',
+  'publications.uploads': 'Envois : {count}',
+  'publications.added': 'Ajoutés : {count}',
+  'publications.changed': 'Modifiés : {count}',
+  'publications.removed': 'Supprimés : {count}',
+  'publications.skipped': 'Non écrits : {count}',
+  'publications.reason.invalid':
+    'N’est plus valide par rapport à la bibliothèque, et a été remis en attente',
+  'publications.reason.unwritable': 'N’a pas pu être écrit, et attend',
+  'publications.reason.status': 'N’était pas approuvé',
+  'publications.reason.missing': 'Introuvable',
+  'publications.files': 'Fichiers',
+  'publications.cache.files': 'Le cache devant la bibliothèque a été vidé des fichiers écrits.',
+  'publications.cache.host': 'Le cache devant la bibliothèque a été entièrement vidé.',
+  'publications.cache.none': 'Le cache devant la bibliothèque n’a pas été vidé : {message}',
+  'publications.more': 'Publications précédentes',
+  'publications.waiting': 'En attente d’écriture',
+  'publications.waitingSoon': 'Il sera écrit au prochain passage, d’ici une minute.',
+  'publications.waitingNext': 'Tentatives échouées : {attempts}. Prochaine tentative : {when}.',
+  'publications.waitingByHand':
+    'Tentatives échouées : {attempts}. Il ne sera pas réessayé de lui-même.',
+  'publications.tryAgain': 'Réessayer',
+  'publications.written': 'Approuvé, et écrit dans la bibliothèque :',
+  'publications.publishSkipped':
+    'Non publiés : {count}. Ceux qui ne sont plus valides ont été remis en attente, et les autres attendent d’être écrits. Ouvrez-les pour voir pourquoi.',
 };
 
 export default words;

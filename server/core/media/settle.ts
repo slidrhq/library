@@ -74,6 +74,18 @@ const sendBack = (note: string, by: Recorded, now: number) => (upload: Upload) =
 };
 
 /**
+ * Why the media could not be written, as the uploads and their reviewers are told it: by the
+ * error's code, never its text, which names the server's own folders. The log has all of it.
+ */
+function unwritten(error: unknown) {
+  const code = (error as { code?: unknown } | undefined)?.code;
+  return {
+    code: 'not-written',
+    message: `The media could not be written${typeof code === 'string' ? ` (${code})` : ''}.`,
+  };
+}
+
+/**
  * Publishes the uploads named, as `actor`, and settles each that is not written. A publication
  * that cannot run, or fails, leaves them waiting, and says why: it does not throw.
  */
@@ -100,10 +112,12 @@ export async function publishNow(
     return { publication };
   } catch (error) {
     const known = error instanceof NotNow;
-    const failed = known
-      ? { code: error.code, message: error.message }
-      : { code: 'not-written', message: error instanceof Error ? error.message : String(error) };
-    if (!known) console.error(`A publication failed: ${failed.message}`);
+    const failed = known ? { code: error.code, message: error.message } : unwritten(error);
+    if (!known) {
+      console.error(
+        `A publication failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     // Only a try that failed counts: one that found the library busy is tried in a minute.
     for (const id of ids) await whileAccepted(state, id, waits(failed.message, !known, now));
     return { failed };

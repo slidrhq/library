@@ -64,7 +64,14 @@ export interface Upload {
   history: { status: Status; at: string; by: Actor; note?: string }[];
   /** The languages it still needs before it is accepted. */
   missing: ContentLanguage[];
+  /** Accepted and not yet written: why, the tries that failed, and when it is tried again. */
+  publication?: { message: string; at: string; attempts: number; next?: string };
 }
+
+/** An upload as approving it answers: with what the publication that followed did. */
+export type Approved = Upload & {
+  publishing?: { publication?: Publication; failed?: { code: string; message: string } };
+};
 
 export interface Summary {
   id: string;
@@ -108,8 +115,9 @@ export const subjectOf = (
 ) =>
   upload.action === 'tag' ? t(`library.section.${upload.type}.name` as MessageKey) : upload.target;
 
-/** Who did something: an editor by their address, a program by its name. */
-export const who = (id: string) => (id.startsWith('key:') ? id.slice('key:'.length) : id);
+/** Who did something: a person by their address, a program by its name, or the library itself. */
+export const who = (id: string) =>
+  id === 'library' ? 'Slidr Library' : id.startsWith('key:') ? id.slice('key:'.length) : id;
 
 /** A moment, as people read it in the language of the page. */
 export const when = (lang: string, at: string) =>
@@ -212,21 +220,43 @@ export const uploadsApi = {
   deleteLanguage: (id: string, lang: ContentLanguage) =>
     call<Upload>(`uploads/${id}/languages/${lang}`, { method: 'DELETE' }),
   setStatus: (id: string, status: Status, note?: string) =>
-    call<Upload>(`uploads/${id}/status`, sendJson('POST', note ? { status, note } : { status })),
+    call<Approved>(`uploads/${id}/status`, sendJson('POST', note ? { status, note } : { status })),
   withdraw: (id: string) => call<undefined>(`uploads/${id}`, { method: 'DELETE' }),
   /** Writes the accepted uploads (or those named) into the library (server/core/media/publish.ts). */
   publish: (ids?: string[]) =>
     call<Publication>('publish', sendJson('POST', ids ? { uploads: ids } : {})),
+  /** What each publication did, newest first, a page at a time. */
+  publications: (before?: string) =>
+    call<{ publications: PublicationRecord[]; next?: string }>(
+      `publications${before ? `?before=${encodeURIComponent(before)}` : ''}`,
+    ),
 };
 
 /** What came of a publication (`POST /api/publish`). */
 export interface Publication {
   published?: string;
   uploads: { id: string; type: string; action: string; target: string; paths: string[] }[];
-  skipped: { id: string; message: string; issues?: Issue[] }[];
+  /** Not written: no longer holding (back to pending), not writable now (waiting), or neither. */
+  skipped: {
+    id: string;
+    reason: 'missing' | 'status' | 'invalid' | 'unwritable';
+    message: string;
+    issues?: Issue[];
+  }[];
   added: string[];
   changed: string[];
   remaining: number;
+}
+
+/** A publication as it is kept: of uploads, or of an author's files; by whom; and the cache. */
+export interface PublicationRecord extends Omit<Publication, 'remaining' | 'uploads' | 'skipped'> {
+  published: string;
+  kind: 'uploads' | 'files';
+  by: Actor;
+  uploads?: Publication['uploads'];
+  skipped?: Publication['skipped'];
+  removed?: string[];
+  cache?: { emptied: 'files' | 'host' | 'none'; files?: number; message?: string };
 }
 
 /** What the server says a person may do (`/api/me`, server/core/people.ts). */

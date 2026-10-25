@@ -443,3 +443,81 @@ details.danger p {
   display: block;
   margin-top: 0.2rem;
 }
+
+/* ------------------------------------------------------------ publishing */
+
+/* An approved upload not yet written: why, and when it is tried again. */
+.upload-waiting {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.5rem 0.7rem;
+  border-inline-start: 3px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 7%, var(--surface));
+  border-radius: 0 6px 6px 0;
+}
+
+.upload-waiting span[dir='auto'] {
+  overflow-wrap: anywhere;
+}
+
+/* What an approval just wrote into the library. */
+.upload-wrote {
+  display: grid;
+  gap: 0.2rem;
+  color: var(--ok);
+}
+
+.upload-wrote ul,
+.publication-paths,
+.publication-uploads {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.publications {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  max-width: 52rem;
+}
+
+.publications .member-list {
+  width: 100%;
+}
+
+.publication {
+  border-bottom: 1px solid var(--line);
+}
+
+.publication:last-child {
+  border-bottom: none;
+}
+
+.publication summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.9rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+
+.publication-when {
+  font-weight: 600;
+}
+
+.publication-body {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0 1rem 0.9rem;
+}
+
+.publication-body .facts {
+  margin: 0;
+}
+
+.publication-body p {
+  margin: 0;
+}

@@ -648,7 +648,8 @@ describe('a publication', () => {
       const waits = await read<Approved>(await call(`/api/uploads/${first}`));
       assert.equal(waits.status, 'accepted');
       assert.equal(waits.publication?.attempts, 1);
-      assert.match(waits.publication.message, /went away/);
+      // Why, without the store's own words, which may name the server's folders.
+      assert.equal(waits.publication.message, 'The media could not be written.');
     }
   });
 

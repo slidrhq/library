@@ -126,7 +126,7 @@ export function Uploads({
             [
               t('uploads.publishDone', { count: done.uploads.length }),
               done.skipped.length
-                ? t('uploads.publishSkipped', { count: done.skipped.length })
+                ? t('publications.publishSkipped', { count: done.skipped.length })
                 : '',
             ]
               .filter(Boolean)

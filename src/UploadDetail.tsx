@@ -293,14 +293,39 @@ function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }
 }
 
 /**
- * Publishes one accepted upload: writes it into the library, and answers it as it now is, or
- * why it was left accepted.
+ * Publishes one accepted upload (Try again), and answers it as it now is: published; pending
+ * again, with a note, when it no longer holds; or still waiting, saying why.
  */
 async function publishOne(id: string): Promise<Upload> {
-  const done = await uploadsApi.publish([id]);
-  const skipped = done.skipped.find((one) => one.id === id);
-  if (skipped) throw new ApiError(409, 'skipped', skipped.message, skipped.issues ?? []);
+  try {
+    await uploadsApi.publish([id]);
+  } catch (error) {
+    // What could not be written, or not now, the upload itself tells.
+    if (!(error instanceof ApiError) || (error.status !== 409 && error.status !== 502)) {
+      throw error;
+    }
+  }
   return uploadsApi.get(id);
+}
+
+/** An approved upload that is not written yet: why, its tries, and when it is tried again. */
+function Waiting({ waiting }: { waiting: NonNullable<Upload['publication']> }) {
+  const t = useT();
+  const [uiLang] = useLang();
+  const { attempts, next } = waiting;
+  return (
+    <div className="upload-waiting small" role="status">
+      <strong>{t('publications.waiting')}</strong>
+      <span dir="auto">{waiting.message}</span>
+      <span className="muted">
+        {attempts === 0
+          ? t('publications.waitingSoon')
+          : next
+            ? t('publications.waitingNext', { attempts, when: when(uiLang, next) })
+            : t('publications.waitingByHand', { attempts })}
+      </span>
+    </div>
+  );
 }
 
 /** What a person may do to an upload in its status, and what it takes. */
@@ -357,10 +382,10 @@ function StatusActions({
           type="button"
           className="primary"
           disabled={busy}
-          title={t('uploads.detail.publishedHint')}
+          title={upload.publication ? undefined : t('uploads.detail.publishedHint')}
           onClick={() => act('published')}
         >
-          {t('uploads.detail.published')}
+          {upload.publication ? t('publications.tryAgain') : t('uploads.detail.published')}
         </button>
       )}
       {(upload.status === 'accepted' || upload.status === 'rejected') && (
@@ -497,6 +522,8 @@ export function UploadDetail({
   const [issues, setIssues] = useState<Issue[]>([]);
   const [failure, setFailure] = useState<string>();
   const [chosen, setChosen] = useState<ContentLanguage>();
+  /** The files the approval just wrote into the library. */
+  const [wrote, setWrote] = useState<string[]>();
   const written = useMemo(
     () => CONTENT_LANGUAGES.filter((one) => upload?.languages[one] !== undefined),
     [upload],
@@ -616,16 +643,35 @@ export function UploadDetail({
                 {upload.note}
               </p>
             )}
+            {upload.status === 'accepted' && upload.publication && (
+              <Waiting waiting={upload.publication} />
+            )}
+            {upload.status === 'published' && wrote && (
+              <div className="upload-wrote small">
+                <span>{t('publications.written')}</span>
+                <ul>
+                  {wrote.map((path) => (
+                    <li key={path}>
+                      <bdi dir="ltr">{path}</bdi>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {mayReview && (
               <StatusActions
                 upload={upload}
                 busy={busy}
                 act={(status, note) =>
-                  void act(() =>
-                    status === 'published'
-                      ? publishOne(id)
-                      : uploadsApi.setStatus(id, status, note),
-                  )
+                  void act(async () => {
+                    if (status === 'published') return publishOne(id);
+                    const approved = await uploadsApi.setStatus(id, status, note);
+                    const mine = approved.publishing?.publication?.uploads.find(
+                      (one) => one.id === id,
+                    );
+                    setWrote(mine?.paths);
+                    return approved;
+                  })
                 }
               />
             )}

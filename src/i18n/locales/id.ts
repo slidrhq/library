@@ -256,8 +256,6 @@ const words: Record<MessageKey, string> = {
     'Menuliskannya ke pustaka sekarang: aplikasi menemukannya saat berikutnya membaca pustaka.',
   'uploads.publishAll': 'Terbitkan {count} yang diterima',
   'uploads.publishDone': '{count} diterbitkan ke pustaka.',
-  'uploads.publishSkipped':
-    '{count} tidak diterbitkan dan tetap diterima: buka untuk melihat alasannya.',
   'uploads.detail.withdraw': 'Tarik unggahan',
   'uploads.detail.withdrawConfirm': 'Unggahan beserta file-nya akan dihapus.',
   'uploads.detail.languages': 'Bahasa',
@@ -492,6 +490,37 @@ const words: Record<MessageKey, string> = {
   'settings.limits.default': 'Bawaan: {value}',
   'settings.empty': 'Pustaka masih kosong: belum ada yang diterbitkan di dalamnya.',
   'settings.emptySeed': 'Isi penyimpanan media di Pengaturan',
+  'publications.nav': 'Penerbitan',
+  'publications.about': 'Apa yang ditulis setiap penerbitan ke pustaka, dari yang terbaru.',
+  'publications.closed': 'Hanya yang meninjau unggahan yang dapat melihat penerbitan.',
+  'publications.loading': 'Membaca penerbitan…',
+  'publications.none': 'Belum ada yang diterbitkan.',
+  'publications.kind.uploads': 'Unggahan',
+  'publications.kind.files': 'File seorang penulis',
+  'publications.uploads': 'Unggahan: {count}',
+  'publications.added': 'Ditambahkan: {count}',
+  'publications.changed': 'Diubah: {count}',
+  'publications.removed': 'Dihapus: {count}',
+  'publications.skipped': 'Tidak ditulis: {count}',
+  'publications.reason.invalid':
+    'Tidak lagi valid terhadap pustaka, dan kembali ke status menunggu',
+  'publications.reason.unwritable': 'Tidak dapat ditulis, dan menunggu',
+  'publications.reason.status': 'Belum disetujui',
+  'publications.reason.missing': 'Tidak ditemukan',
+  'publications.files': 'File',
+  'publications.cache.files': 'File yang ditulis telah dihapus dari cache di depan pustaka.',
+  'publications.cache.host': 'Seluruh cache di depan pustaka telah dikosongkan.',
+  'publications.cache.none': 'Cache di depan pustaka tidak dikosongkan: {message}',
+  'publications.more': 'Penerbitan sebelumnya',
+  'publications.waiting': 'Menunggu ditulis',
+  'publications.waitingSoon': 'Akan ditulis pada putaran berikutnya, dalam satu menit.',
+  'publications.waitingNext': 'Percobaan gagal: {attempts}. Percobaan berikutnya: {when}.',
+  'publications.waitingByHand':
+    'Percobaan gagal: {attempts}. Tidak akan dicoba lagi secara otomatis.',
+  'publications.tryAgain': 'Coba lagi',
+  'publications.written': 'Disetujui, dan ditulis ke pustaka:',
+  'publications.publishSkipped':
+    'Tidak diterbitkan: {count}. Yang tidak lagi valid kembali ke status menunggu, dan sisanya menunggu ditulis. Buka untuk melihat alasannya.',
 };
 
 export default words;

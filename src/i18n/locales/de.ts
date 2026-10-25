@@ -258,8 +258,6 @@ const words: Record<MessageKey, string> = {
     'Schreibt ihn jetzt in die Bibliothek: Die App findet ihn, sobald sie die Bibliothek das nächste Mal liest.',
   'uploads.publishAll': '{count} angenommene veröffentlichen',
   'uploads.publishDone': '{count} in der Bibliothek veröffentlicht.',
-  'uploads.publishSkipped':
-    '{count} wurden nicht veröffentlicht und bleiben angenommen: Öffnen Sie sie, um den Grund zu sehen.',
   'uploads.detail.withdraw': 'Upload zurückziehen',
   'uploads.detail.withdrawConfirm': 'Der Upload und seine Dateien werden gelöscht.',
   'uploads.detail.languages': 'Sprachen',
@@ -498,6 +496,39 @@ const words: Record<MessageKey, string> = {
   'settings.limits.default': 'Standard: {value}',
   'settings.empty': 'Die Bibliothek ist leer: Darin ist noch nichts veröffentlicht.',
   'settings.emptySeed': 'Medienspeicher in den Einstellungen befüllen',
+  'publications.nav': 'Veröffentlichungen',
+  'publications.about':
+    'Was jede Veröffentlichung in die Bibliothek geschrieben hat, die neueste zuerst.',
+  'publications.closed': 'Nur wer Uploads prüft, sieht die Veröffentlichungen.',
+  'publications.loading': 'Veröffentlichungen werden gelesen…',
+  'publications.none': 'Noch wurde nichts veröffentlicht.',
+  'publications.kind.uploads': 'Uploads',
+  'publications.kind.files': 'Dateien eines Autors',
+  'publications.uploads': 'Uploads: {count}',
+  'publications.added': 'Hinzugefügt: {count}',
+  'publications.changed': 'Geändert: {count}',
+  'publications.removed': 'Entfernt: {count}',
+  'publications.skipped': 'Nicht geschrieben: {count}',
+  'publications.reason.invalid':
+    'Gegenüber der Bibliothek nicht mehr gültig und zurück in der Warteschlange',
+  'publications.reason.unwritable': 'Konnte nicht geschrieben werden und wartet',
+  'publications.reason.status': 'War nicht angenommen',
+  'publications.reason.missing': 'Nicht gefunden',
+  'publications.files': 'Dateien',
+  'publications.cache.files':
+    'Die geschriebenen Dateien wurden aus dem Cache vor der Bibliothek entfernt.',
+  'publications.cache.host': 'Der Cache vor der Bibliothek wurde ganz geleert.',
+  'publications.cache.none': 'Der Cache vor der Bibliothek wurde nicht geleert: {message}',
+  'publications.more': 'Frühere Veröffentlichungen',
+  'publications.waiting': 'Wartet auf das Schreiben',
+  'publications.waitingSoon': 'Er wird in der nächsten Runde geschrieben, binnen einer Minute.',
+  'publications.waitingNext': 'Fehlgeschlagene Versuche: {attempts}. Nächster Versuch: {when}.',
+  'publications.waitingByHand':
+    'Fehlgeschlagene Versuche: {attempts}. Er wird nicht von selbst erneut versucht.',
+  'publications.tryAgain': 'Erneut versuchen',
+  'publications.written': 'Angenommen und in die Bibliothek geschrieben:',
+  'publications.publishSkipped':
+    'Nicht veröffentlicht: {count}. Was nicht mehr gültig ist, ist zurück in der Warteschlange; der Rest wartet auf das Schreiben. Öffnen Sie sie, um den Grund zu sehen.',
 };
 
 export default words;

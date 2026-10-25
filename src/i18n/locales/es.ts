@@ -258,8 +258,6 @@ const words: Record<MessageKey, string> = {
     'La escribe ahora en la biblioteca: la app la encuentra la próxima vez que lee la biblioteca.',
   'uploads.publishAll': 'Publicar {count} aceptadas',
   'uploads.publishDone': '{count} publicadas en la biblioteca.',
-  'uploads.publishSkipped':
-    '{count} no se publicaron y siguen aceptadas: ábrelas para ver por qué.',
   'uploads.detail.withdraw': 'Retirar la subida',
   'uploads.detail.withdrawConfirm': 'La subida y sus archivos se borrarán.',
   'uploads.detail.languages': 'Idiomas',
@@ -498,6 +496,38 @@ const words: Record<MessageKey, string> = {
   'settings.limits.default': 'Predeterminado: {value}',
   'settings.empty': 'La biblioteca está vacía: aún no se ha publicado nada en ella.',
   'settings.emptySeed': 'Llenar el almacén multimedia en Configuración',
+  'publications.nav': 'Publicaciones',
+  'publications.about':
+    'Lo que cada publicación escribió en la biblioteca, la más reciente primero.',
+  'publications.closed': 'Solo quienes revisan las subidas ven las publicaciones.',
+  'publications.loading': 'Leyendo las publicaciones…',
+  'publications.none': 'Aún no se ha publicado nada.',
+  'publications.kind.uploads': 'Subidas',
+  'publications.kind.files': 'Archivos de un autor',
+  'publications.uploads': 'Subidas: {count}',
+  'publications.added': 'Añadidos: {count}',
+  'publications.changed': 'Modificados: {count}',
+  'publications.removed': 'Eliminados: {count}',
+  'publications.skipped': 'No escritas: {count}',
+  'publications.reason.invalid': 'Ya no es válida frente a la biblioteca y volvió a la espera',
+  'publications.reason.unwritable': 'No se pudo escribir y espera',
+  'publications.reason.status': 'No estaba aprobada',
+  'publications.reason.missing': 'No se encontró',
+  'publications.files': 'Archivos',
+  'publications.cache.files':
+    'Los archivos escritos se quitaron de la caché delante de la biblioteca.',
+  'publications.cache.host': 'La caché delante de la biblioteca se vació por completo.',
+  'publications.cache.none': 'La caché delante de la biblioteca no se vació: {message}',
+  'publications.more': 'Publicaciones anteriores',
+  'publications.waiting': 'En espera de escritura',
+  'publications.waitingSoon': 'Se escribirá en la próxima ronda, en menos de un minuto.',
+  'publications.waitingNext': 'Intentos fallidos: {attempts}. Próximo intento: {when}.',
+  'publications.waitingByHand':
+    'Intentos fallidos: {attempts}. No se volverá a intentar por sí sola.',
+  'publications.tryAgain': 'Intentar de nuevo',
+  'publications.written': 'Aprobada y escrita en la biblioteca:',
+  'publications.publishSkipped':
+    'No publicadas: {count}. Las que ya no son válidas volvieron a la espera, y el resto espera a escribirse. Ábrelas para ver por qué.',
 };
 
 export default words;

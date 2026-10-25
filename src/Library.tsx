@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Variant } from './studio';
-import { useLang, useT, type Translate } from './i18n';
+import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { isBase, nativeName, type Lang } from './languages';
 import { hasWords, loadWords } from './app';
 import { FileFacts, FilePreview, Files } from './Files';
@@ -29,6 +29,9 @@ const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads
 const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
 const Profile = lazy(() => import('./Profile').then((m) => ({ default: m.Profile })));
 const Settings = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
+const Publications = lazy(() =>
+  import('./Publications').then((m) => ({ default: m.Publications })),
+);
 
 export type { LibraryRoute };
 
@@ -41,6 +44,17 @@ const MEMBERS = 'members';
 const PROFILE = 'profile';
 /** Where the library is kept, how people sign in, the limits: for its admins (§5.3). */
 const SETTINGS = 'settings';
+/** What each publication wrote into the library: for its reviewers (§9.5). */
+const PUBLICATIONS = 'publications';
+
+/** The library's own pages, beside the parts of its media: each one's name, and what it is. */
+const OWN: Record<string, { name: MessageKey; about: MessageKey }> = {
+  [UPLOADS]: { name: 'uploads.nav', about: 'uploads.about' },
+  [PUBLICATIONS]: { name: 'publications.nav', about: 'publications.about' },
+  [MEMBERS]: { name: 'people.nav', about: 'people.about' },
+  [PROFILE]: { name: 'tokens.nav', about: 'tokens.about' },
+  [SETTINGS]: { name: 'settings.nav', about: 'settings.about' },
+};
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
 const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
@@ -210,8 +224,8 @@ export function Library({
   const section = sectionOf(route.section);
   const uploads = route.section === UPLOADS;
   const members = route.section === MEMBERS;
-  const profile = route.section === PROFILE;
   const settings = route.section === SETTINGS;
+  const publications = route.section === PUBLICATIONS;
   const access = useRead(readAccess, []);
   // A language is shown once the app's words in it are read; until then, the one before.
   const [shown, setShown] = useState<Lang>(() => (hasWords(lang) ? lang : 'en'));
@@ -235,15 +249,8 @@ export function Library({
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
-  const page = uploads
-    ? UPLOADS
-    : members
-      ? MEMBERS
-      : profile
-        ? PROFILE
-        : settings
-          ? SETTINGS
-          : section?.id;
+  const own = OWN[route.section];
+  const page = own ? route.section : section?.id;
   switch (page) {
     case UPLOADS:
       content = <Uploads {...props} />;
@@ -256,6 +263,9 @@ export function Library({
       break;
     case SETTINGS:
       content = <Settings />;
+      break;
+    case PUBLICATIONS:
+      content = <Publications go={go} />;
       break;
     case 'designs':
       content = <Designs {...props} variants={variants} onOpenVariant={onOpenVariant} />;
@@ -354,6 +364,15 @@ export function Library({
           >
             {t('uploads.nav')}
           </button>
+          {access.value?.mayReview && (
+            <button
+              type="button"
+              aria-current={publications ? 'page' : undefined}
+              onClick={() => go({ section: PUBLICATIONS })}
+            >
+              {t('publications.nav')}
+            </button>
+          )}
           {access.value?.mayManage && (
             <button
               type="button"
@@ -386,31 +405,9 @@ export function Library({
       <div className="lib-main">
         <header className="lib-head">
           <div>
-            <h2>
-              {uploads
-                ? t('uploads.nav')
-                : members
-                  ? t('people.nav')
-                  : profile
-                    ? t('tokens.nav')
-                    : settings
-                      ? t('settings.nav')
-                      : section
-                        ? t(section.nameKey)
-                        : t('library.overview')}
-            </h2>
+            <h2>{own ? t(own.name) : section ? t(section.nameKey) : t('library.overview')}</h2>
             <p className="muted small">
-              {uploads
-                ? t('uploads.about')
-                : members
-                  ? t('people.about')
-                  : profile
-                    ? t('tokens.about')
-                    : settings
-                      ? t('settings.about')
-                      : section
-                        ? t(section.aboutKey)
-                        : t('library.overviewAbout')}
+              {own ? t(own.about) : section ? t(section.aboutKey) : t('library.overviewAbout')}
             </p>
           </div>
           {(section || uploads || members) && (
