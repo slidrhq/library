@@ -552,6 +552,21 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Подтвердить и сохранить',
   'settings.media.publicUrlRemoteHint':
     'Адрес HTTPS, по которому тот сервер раздаёт папку. Без него этот сервер раздаёт её по /media/.',
+  'settings.media.kind.r2s3': 'R2-бакет в Cloudflare',
+  'settings.media.accountId': 'ID учётной записи (Account ID)',
+  'settings.media.bucket': 'Имя бакета',
+  'settings.media.domain': 'Домен бакета',
+  'settings.media.domainHint':
+    'Где Cloudflare раздаёт бакет, например https://media.example.org/. Оттуда его читают установленные приложения.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint': 'Из API-токена R2 с правом Object Read & Write только на этот бакет.',
+  'settings.media.zoneId': 'ID зоны домена (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Чтобы каждая публикация удаляла из кэша то, что записала. Без него старые файлы остаются в кэше, пока не истечёт их срок.',
+  'settings.media.purgeToken': 'Токен очистки кэша',
+  'settings.media.purgeTokenHint':
+    'API-токен с правом Cache Purge на эту зону. Он проверяется перед сохранением.',
 };
 
 export default words;

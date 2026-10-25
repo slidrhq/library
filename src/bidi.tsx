@@ -2,12 +2,12 @@ import type { ReactNode } from 'react';
 
 /**
  * What a sentence names in code (`__subject__`, `he.json, en.json`, `m-harbour-launch`,
- * `pnpm dev`, `pnpm library login`, a path such as `/media/`), each a run of its own from left to
+ * `pnpm dev`, `pnpm library login`, an address, a path such as `/media/`), each a run of its own from left to
  * right: in a sentence in Hebrew or Arabic, the page would otherwise move its underscores, its
  * dots, its slashes and its commas to the far side.
  */
 const CODE =
-  /(__\w+__|[\w-]+\.(?:json|webp)(?:[,،]‏?\s*[\w-]+\.(?:json|webp))*|\bm-[a-z0-9-]*|pnpm (?:dev|library(?: [a-z-]+)?)|\(x, y\)|(?<![\w/:.])\/(?:[\w.-]*[\w-]\/?)+)/g;
+  /(__\w+__|[\w-]+\.(?:json|webp)(?:[,،]‏?\s*[\w-]+\.(?:json|webp))*|\bm-[a-z0-9-]*|pnpm (?:dev|library(?: [a-z-]+)?)|\(x, y\)|\bhttps?:\/\/[\w.-]*[\w-](?:\/(?:[\w.-]*[\w-]\/?)*)?|(?<![\w/:.])\/(?:[\w.-]*[\w-]\/?)+)/g;
 
 export function isolate(text: string): ReactNode {
   const parts = text.split(CODE);

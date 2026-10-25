@@ -71,8 +71,31 @@ const FtpMedia = z
     path: ['tls'],
   });
 
+/**
+ * A Cloudflare R2 bucket reached from a machine, through its S3 API (`media/r2s3.ts`), and served
+ * at its own domain, where installed apps read it. Its key is the vault's `media`: an R2 API
+ * token's S3 credentials, and the token that empties the cache of the domain's zone.
+ */
+const R2Media = z.object({
+  kind: z.literal('r2'),
+  accountId: z.string().regex(/^[0-9a-f]{32}$/),
+  bucket: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/),
+  /** The bucket's own domain: `https://media.example.org/`. */
+  publicUrl: address,
+  /** The zone of that domain, whose cache a publication empties of what it wrote. */
+  zoneId: z
+    .string()
+    .regex(/^[0-9a-f]{32}$/)
+    .optional(),
+});
+
 /** Where the published library is kept. */
-export const MediaSettings = z.discriminatedUnion('kind', [FolderMedia, SftpMedia, FtpMedia]);
+export const MediaSettings = z.discriminatedUnion('kind', [
+  FolderMedia,
+  SftpMedia,
+  FtpMedia,
+  R2Media,
+]);
 export type MediaSettings = z.infer<typeof MediaSettings>;
 
 /**

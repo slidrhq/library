@@ -2,6 +2,8 @@
  * What the tests of the uploads stand on: a bucket in memory, a published library of a few
  * files, and the content of uploads, drawn with the model's own factories.
  */
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mock } from 'node:test';
 import {
   CONTENT_LANGUAGES,
@@ -475,4 +477,100 @@ export async function caller<B extends Bucket = MemoryBucket>(
     return call('/api/uploads', { method: 'POST', body: form });
   };
   return { bucket, env, call, send, upload };
+}
+
+// ---- R2's S3 API, stood in for (media/r2s3.ts)
+
+export const R2_ACCOUNT = '0123456789abcdef0123456789abcdef';
+export const R2_ENDPOINT = `https://${R2_ACCOUNT}.r2.cloudflarestorage.com/slidr-media`;
+export const R2_CREDENTIALS = {
+  accessKeyId: 'AKIDEXAMPLE',
+  secretAccessKey: 'a-secret-of-the-test',
+};
+
+const xml = (text: string) =>
+  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+/**
+ * R2's S3 API, as far as the library uses it, over a map: each request answered only when signed
+ * by the test's key; and every request it was sent. A request elsewhere goes to `other`.
+ */
+export function s3StandIn(
+  other: (request: Request) => Response | Promise<Response> = () =>
+    new Response('', { status: 404 }),
+) {
+  const objects = new Map<string, { data: Uint8Array; etag: string; headers: Headers }>();
+  const requests: Request[] = [];
+  let honoursIfMatch = true;
+  mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    const request = new Request(input, init);
+    requests.push(request.clone());
+    const url = new URL(request.url);
+    if (!url.href.startsWith(R2_ENDPOINT)) return other(request);
+    const auth = request.headers.get('Authorization') ?? '';
+    assert.match(
+      auth,
+      /^AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE\/\d{8}\/auto\/s3\/aws4_request, SignedHeaders=[^,]+, Signature=[0-9a-f]{64}$/,
+    );
+    assert.ok(request.headers.get('x-amz-content-sha256'));
+    const key = decodeURIComponent(url.pathname.slice('/slidr-media/'.length));
+    if (request.method === 'GET' && url.searchParams.get('list-type') === '2') {
+      const prefix = url.searchParams.get('prefix') ?? '';
+      const after = url.searchParams.get('start-after') ?? '';
+      const most = Number(url.searchParams.get('max-keys') ?? 1000);
+      const keys = [...objects.keys()]
+        .filter((one) => one.startsWith(prefix) && one > after)
+        .sort();
+      const page = keys.slice(0, most);
+      const contents = page
+        .map(
+          (one) =>
+            `<Contents><Key>${xml(one)}</Key><ETag>&quot;${objects.get(one)!.etag}&quot;</ETag></Contents>`,
+        )
+        .join('');
+      return new Response(
+        `<?xml version="1.0"?><ListBucketResult>${contents}<IsTruncated>${keys.length > most}</IsTruncated></ListBucketResult>`,
+      );
+    }
+    const held = objects.get(key);
+    if (request.method === 'GET' || request.method === 'HEAD') {
+      if (!held) {
+        return new Response('<Error><Code>NoSuchKey</Code></Error>', { status: 404 });
+      }
+      const headers = new Headers(held.headers);
+      headers.set('ETag', `"${held.etag}"`);
+      return new Response(
+        request.method === 'HEAD' ? null : (held.data as Uint8Array<ArrayBuffer>),
+        { headers },
+      );
+    }
+    if (request.method === 'PUT') {
+      const wanted = request.headers.get('If-Match');
+      if (honoursIfMatch && wanted !== null && wanted !== `"${held?.etag}"`) {
+        return new Response('<Error><Code>PreconditionFailed</Code></Error>', { status: 412 });
+      }
+      const data = new Uint8Array(await request.arrayBuffer());
+      const headers = new Headers();
+      for (const [name, value] of request.headers) {
+        if (name.startsWith('x-amz-meta-') || name === 'content-type' || name === 'cache-control') {
+          headers.set(name, value);
+        }
+      }
+      const etag = createHash('md5').update(data).digest('hex');
+      objects.set(key, { data, etag, headers });
+      return new Response(null, { headers: { ETag: `"${etag}"` } });
+    }
+    if (request.method === 'DELETE') {
+      objects.delete(key);
+      return new Response(null, { status: 204 });
+    }
+    return new Response('', { status: 405 });
+  });
+  return {
+    objects,
+    requests,
+    ignoreIfMatch: () => {
+      honoursIfMatch = false;
+    },
+  };
 }

@@ -517,6 +517,20 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': '确认并保存',
   'settings.media.publicUrlRemoteHint':
     '该服务器提供此文件夹所用的 HTTPS 地址。未填写时，此服务器在 /media/ 提供它。',
+  'settings.media.kind.r2s3': 'Cloudflare 上的 R2 存储桶',
+  'settings.media.accountId': '账号 ID（Account ID）',
+  'settings.media.bucket': '存储桶名称',
+  'settings.media.domain': '存储桶的域名',
+  'settings.media.domainHint':
+    'Cloudflare 提供此存储桶的地址，例如 https://media.example.org/。已安装应用从这里读取。',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint': '来自仅对此存储桶拥有 Object Read & Write 权限的 R2 API 令牌。',
+  'settings.media.zoneId': '域名的区域 ID（Zone ID）',
+  'settings.media.zoneIdHint':
+    '让每次发布从缓存中清除它写入的内容。未填写时，旧文件会留在缓存中直到过期。',
+  'settings.media.purgeToken': '缓存清除令牌',
+  'settings.media.purgeTokenHint': '对此区域拥有 Cache Purge 权限的 API 令牌。保存前会验证。',
 };
 
 export default words;

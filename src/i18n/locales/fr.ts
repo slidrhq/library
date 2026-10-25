@@ -565,6 +565,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Confirmer et enregistrer',
   'settings.media.publicUrlRemoteHint':
     'L’adresse HTTPS à laquelle le serveur distant sert le dossier. Sans elle, ce serveur le sert à /media/.',
+  'settings.media.kind.r2s3': 'Un bucket R2 sur Cloudflare',
+  'settings.media.accountId': 'ID de compte (Account ID)',
+  'settings.media.bucket': 'Nom du bucket',
+  'settings.media.domain': 'Domaine du bucket',
+  'settings.media.domainHint':
+    'Où Cloudflare sert le bucket, comme https://media.example.org/. Les applications installées le lisent là.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'D’un jeton d’API R2 autorisé en Object Read & Write sur ce seul bucket.',
+  'settings.media.zoneId': 'ID de zone du domaine (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Pour que chaque publication vide le cache de ce qu’elle a écrit. Sans lui, les anciens fichiers restent en cache jusqu’à expiration.',
+  'settings.media.purgeToken': 'Jeton de purge du cache',
+  'settings.media.purgeTokenHint':
+    'Un jeton d’API autorisé en Cache Purge sur cette zone. Il est vérifié avant l’enregistrement.',
 };
 
 export default words;

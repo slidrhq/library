@@ -2,18 +2,19 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, describe, test } from 'node:test';
+import { after, afterEach, describe, mock, test } from 'node:test';
 import { readAudit } from '../../core/audit.ts';
 import { issueLocalLink } from '../../core/auth.ts';
 import { readConfig } from '../../core/config.ts';
 import type { Context } from '../../core/context.ts';
 import { handle } from '../../core/index.ts';
-import { caller } from '../../core/uploads/testing.ts';
+import { R2_ACCOUNT, R2_CREDENTIALS, caller, s3StandIn } from '../../core/uploads/testing.ts';
 import { contextSource, install, openLibrary } from './install.ts';
 import { memoryKeys } from './master.ts';
 
 const folders: string[] = [];
 after(() => Promise.all(folders.map((folder) => rm(folder, { recursive: true, force: true }))));
+afterEach(() => mock.restoreAll());
 
 async function newFolder() {
   const folder = await mkdtemp(join(tmpdir(), 'slidr-library-settings-'));
@@ -149,6 +150,63 @@ describe('the settings, on a machine', () => {
     assert.equal((await readConfig(library.state))?.url, 'https://library.example.org/');
     const actions = (await readAudit(library.state)).map((entry) => entry.action).reverse();
     assert.deepEqual(actions, ['settings.limits', 'settings.library']);
+  });
+});
+
+describe('an R2 bucket, from a machine', () => {
+  test('is tried, with the token that empties its cache, before it is kept', async () => {
+    const { send, library, source, call } = await machine();
+    const purges: string[] = [];
+    s3StandIn(async (request) => {
+      // Cloudflare's purge of the zone's cache, by its token.
+      purges.push(request.headers.get('Authorization') ?? '');
+      // Read: the stand-in keeps a copy of each request, and a copy's half is never cancelled.
+      await request.text();
+      return request.headers.get('Authorization') === 'Bearer the-purge-token'
+        ? Response.json({ success: true })
+        : Response.json(
+            { success: false, errors: [{ code: 10000, message: 'Authentication error' }] },
+            { status: 403 },
+          );
+    });
+    mock.method(console, 'error', () => {});
+    const r2 = {
+      kind: 'r2',
+      accountId: R2_ACCOUNT,
+      bucket: 'slidr-media',
+      publicUrl: 'https://media.example.org/',
+      zoneId: 'f'.repeat(32),
+    };
+    const refused = await send('/api/settings/media', 'PUT', {
+      ...r2,
+      key: { ...R2_CREDENTIALS, purgeToken: 'not-it' },
+    });
+    assert.equal(refused.status, 422);
+    assert.equal((await read<{ error: string }>(refused)).error, 'purge-refused');
+    assert.notEqual((await readConfig(library.state))?.media?.kind, 'r2');
+    const kept = await send('/api/settings/media', 'PUT', {
+      ...r2,
+      key: { ...R2_CREDENTIALS, purgeToken: 'the-purge-token' },
+    });
+    assert.equal(kept.status, 200, await kept.clone().text());
+    assert.deepEqual((await readConfig(library.state))?.media, r2);
+    assert.deepEqual(JSON.parse((await library.vault.get('media'))!), {
+      ...R2_CREDENTIALS,
+      purgeToken: 'the-purge-token',
+    });
+    assert.deepEqual(purges, ['Bearer not-it', 'Bearer the-purge-token']);
+    // Installed apps read the bucket at its domain, and a publication empties its cache.
+    const ctx = await source();
+    assert.equal(ctx.publicUrl, 'https://media.example.org/');
+    assert.ok(ctx.purge);
+    const settings = await read<{ media: { address: string; key: { set: boolean } } }>(
+      await call('/api/settings'),
+    );
+    assert.deepEqual(
+      [settings.media.address, settings.media.key.set],
+      ['https://media.example.org/', true],
+    );
+    assert.doesNotMatch(JSON.stringify(settings), /a-secret-of-the-test|the-purge-token/);
   });
 });
 

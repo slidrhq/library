@@ -545,6 +545,21 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': '승인 후 저장',
   'settings.media.publicUrlRemoteHint':
     '그 서버가 폴더를 제공하는 HTTPS 주소입니다. 없으면 이 서버가 /media/에서 제공합니다.',
+  'settings.media.kind.r2s3': 'Cloudflare의 R2 버킷',
+  'settings.media.accountId': '계정 ID(Account ID)',
+  'settings.media.bucket': '버킷 이름',
+  'settings.media.domain': '버킷의 도메인',
+  'settings.media.domainHint':
+    'Cloudflare가 버킷을 제공하는 주소입니다(예: https://media.example.org/). 설치된 앱이 여기서 읽습니다.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint': '이 버킷에만 Object Read & Write 권한이 있는 R2 API 토큰의 값입니다.',
+  'settings.media.zoneId': '도메인의 영역 ID(Zone ID)',
+  'settings.media.zoneIdHint':
+    '게시할 때마다 기록한 파일을 캐시에서 비우기 위한 것입니다. 없으면 오래된 파일이 만료될 때까지 캐시에 남습니다.',
+  'settings.media.purgeToken': '캐시 비우기 토큰',
+  'settings.media.purgeTokenHint':
+    '이 영역에 Cache Purge 권한이 있는 API 토큰입니다. 저장하기 전에 확인합니다.',
 };
 
 export default words;

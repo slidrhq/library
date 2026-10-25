@@ -554,6 +554,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Xác nhận và lưu',
   'settings.media.publicUrlRemoteHint':
     'Địa chỉ HTTPS nơi máy chủ đó phục vụ thư mục. Nếu để trống, máy chủ này phục vụ thư mục tại /media/.',
+  'settings.media.kind.r2s3': 'Một bucket R2 trên Cloudflare',
+  'settings.media.accountId': 'ID tài khoản (Account ID)',
+  'settings.media.bucket': 'Tên bucket',
+  'settings.media.domain': 'Tên miền của bucket',
+  'settings.media.domainHint':
+    'Nơi Cloudflare phục vụ bucket, như https://media.example.org/. Ứng dụng đã cài đặt đọc bucket từ đó.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'Lấy từ một token API R2 chỉ có quyền Object Read & Write trên bucket này.',
+  'settings.media.zoneId': 'ID vùng của tên miền (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Để mỗi lần xuất bản xóa khỏi bộ nhớ đệm những gì nó đã ghi. Nếu thiếu, tệp cũ vẫn nằm trong bộ nhớ đệm đến khi hết hạn.',
+  'settings.media.purgeToken': 'Token xóa bộ nhớ đệm',
+  'settings.media.purgeTokenHint':
+    'Token API có quyền Cache Purge trên vùng này. Token được kiểm tra trước khi lưu.',
 };
 
 export default words;

@@ -553,6 +553,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'पुष्टि करें और सहेजें',
   'settings.media.publicUrlRemoteHint':
     'वह HTTPS पता जिस पर वह सर्वर फ़ोल्डर देता है। पता न हो, तो यह सर्वर उसे /media/ पर देता है।',
+  'settings.media.kind.r2s3': 'Cloudflare पर एक R2 बकेट',
+  'settings.media.accountId': 'खाता ID (Account ID)',
+  'settings.media.bucket': 'बकेट का नाम',
+  'settings.media.domain': 'बकेट का डोमेन',
+  'settings.media.domainHint':
+    'वह पता जिस पर Cloudflare बकेट देता है, जैसे https://media.example.org/। इंस्टॉल किए गए ऐप उसे वहीं से पढ़ते हैं।',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'उस R2 API टोकन से, जिसे केवल इस बकेट पर Object Read & Write की अनुमति है।',
+  'settings.media.zoneId': 'डोमेन का ज़ोन ID (Zone ID)',
+  'settings.media.zoneIdHint':
+    'ताकि हर प्रकाशन अपनी लिखी फ़ाइलें कैश से हटा दे। इसके बिना, पुरानी फ़ाइलें समाप्त होने तक कैश में रहती हैं।',
+  'settings.media.purgeToken': 'कैश साफ़ करने का टोकन',
+  'settings.media.purgeTokenHint':
+    'इस ज़ोन पर Cache Purge की अनुमति वाला API टोकन। सहेजने से पहले इसे जाँचा जाता है।',
 };
 
 export default words;

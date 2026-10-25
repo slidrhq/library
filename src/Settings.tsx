@@ -154,6 +154,7 @@ const KINDS: Record<Values['media']['kind'], MessageKey> = {
   folder: 'settings.media.kind.folder',
   sftp: 'settings.media.kind.sftp',
   ftp: 'settings.media.kind.ftp',
+  // The Worker's own bucket, on Cloudflare; on a machine, a bucket it reaches (`R2_KIND`).
   r2: 'settings.media.kind.r2',
   none: 'settings.media.kind.none',
 };
@@ -167,6 +168,9 @@ function readable(address: string) {
 }
 
 type Kind = MediaSettings['kind'];
+
+/** An R2 bucket, as a library on a machine names it among its kinds of store. */
+const R2_KIND: MessageKey = 'settings.media.kind.r2s3';
 
 /** The fields of the store as they are being written: text, as the inputs hold it. */
 interface Draft {
@@ -183,10 +187,19 @@ interface Draft {
   privateKey: string;
   passphrase: string;
   password: string;
+  accountId: string;
+  bucket: string;
+  zoneId: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  purgeToken: string;
 }
 
 const draftOf = (media: Values['media']): Draft => ({
-  kind: media.kind === 'sftp' || media.kind === 'ftp' ? media.kind : 'folder',
+  kind:
+    media.kind === 'sftp' || media.kind === 'ftp' || (media.kind === 'r2' && media.accountId)
+      ? media.kind
+      : 'folder',
   path: media.path ?? '',
   host: media.host ?? '',
   port: media.port ? String(media.port) : '',
@@ -199,6 +212,12 @@ const draftOf = (media: Values['media']): Draft => ({
   privateKey: '',
   passphrase: '',
   password: '',
+  accountId: media.accountId ?? '',
+  bucket: media.bucket ?? '',
+  zoneId: media.zoneId ?? '',
+  accessKeyId: '',
+  secretAccessKey: '',
+  purgeToken: '',
 });
 
 /** The settings a draft names, and its key, when one was written. */
@@ -207,6 +226,27 @@ function settingsOf(draft: Draft, hostKey?: string): { settings: MediaSettings; 
   const common = publicUrl ? { publicUrl } : {};
   if (draft.kind === 'folder')
     return { settings: { kind: 'folder', path: draft.path.trim(), ...common } };
+  if (draft.kind === 'r2') {
+    const written = draft.accessKeyId.trim() && draft.secretAccessKey.trim();
+    return {
+      settings: {
+        kind: 'r2',
+        accountId: draft.accountId.trim(),
+        bucket: draft.bucket.trim(),
+        publicUrl,
+        ...(draft.zoneId.trim() ? { zoneId: draft.zoneId.trim() } : {}),
+      },
+      ...(written
+        ? {
+            key: {
+              accessKeyId: draft.accessKeyId.trim(),
+              secretAccessKey: draft.secretAccessKey.trim(),
+              ...(draft.purgeToken.trim() ? { purgeToken: draft.purgeToken.trim() } : {}),
+            },
+          }
+        : {}),
+    };
+  }
   const server = {
     host: draft.host.trim(),
     user: draft.user.trim(),
@@ -319,7 +359,15 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
         return undefined;
       }
       setConfirm(undefined);
-      setDraft((was) => ({ ...was, privateKey: '', passphrase: '', password: '' }));
+      setDraft((was) => ({
+        ...was,
+        privateKey: '',
+        passphrase: '',
+        password: '',
+        accessKeyId: '',
+        secretAccessKey: '',
+        purgeToken: '',
+      }));
       onSaved();
       return told(answer.test);
     });
@@ -367,9 +415,9 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
                 setConfirm(undefined);
               }}
             >
-              {(['folder', 'sftp', 'ftp'] as const).map((kind) => (
+              {(['folder', 'sftp', 'ftp', 'r2'] as const).map((kind) => (
                 <option key={kind} value={kind}>
-                  {t(KINDS[kind])}
+                  {t(kind === 'r2' ? R2_KIND : KINDS[kind])}
                 </option>
               ))}
             </select>
@@ -378,6 +426,67 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
             <Field label={t('settings.media.path')} hint={t('settings.media.pathHint')}>
               <input required dir="ltr" placeholder="D:\\Slidr\\media" {...text('path')} />
             </Field>
+          ) : draft.kind === 'r2' ? (
+            <>
+              <div className="settings-server two">
+                <Field label={t('settings.media.accountId')}>
+                  <input required dir="ltr" pattern="[0-9a-f]{32}" {...text('accountId')} />
+                </Field>
+                <Field label={t('settings.media.bucket')}>
+                  <input required dir="ltr" placeholder="slidr-media" {...text('bucket')} />
+                </Field>
+              </div>
+              <Field
+                label={t('settings.media.domain')}
+                hint={isolate(t('settings.media.domainHint'))}
+              >
+                <input
+                  type="url"
+                  required
+                  dir="ltr"
+                  placeholder="https://media.example.org/"
+                  {...text('publicUrl')}
+                />
+              </Field>
+              <Field
+                label={t('settings.media.accessKeyId')}
+                hint={keyHint ?? t('settings.media.s3Hint')}
+              >
+                <input
+                  dir="ltr"
+                  autoComplete="off"
+                  required={!kept}
+                  placeholder={kept ? '••••••••' : ''}
+                  {...text('accessKeyId')}
+                />
+              </Field>
+              <Field label={t('settings.media.secretAccessKey')}>
+                <input
+                  type="password"
+                  dir="ltr"
+                  autoComplete="new-password"
+                  required={!kept}
+                  placeholder={kept ? '••••••••' : ''}
+                  {...text('secretAccessKey')}
+                />
+              </Field>
+              <Field label={t('settings.media.zoneId')} hint={t('settings.media.zoneIdHint')}>
+                <input dir="ltr" pattern="[0-9a-f]{32}" {...text('zoneId')} />
+              </Field>
+              <Field
+                label={t('settings.media.purgeToken')}
+                hint={t('settings.media.purgeTokenHint')}
+              >
+                <input
+                  type="password"
+                  dir="ltr"
+                  autoComplete="new-password"
+                  required={Boolean(draft.zoneId.trim()) && !kept}
+                  placeholder={kept ? '••••••••' : ''}
+                  {...text('purgeToken')}
+                />
+              </Field>
+            </>
           ) : (
             <>
               <div className="settings-server">
@@ -493,19 +602,21 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
               )}
             </>
           )}
-          <Field
-            label={t('settings.media.publicUrl')}
-            hint={isolate(
-              t(server ? 'settings.media.publicUrlRemoteHint' : 'settings.media.publicUrlHint'),
-            )}
-          >
-            <input
-              type="url"
-              dir="ltr"
-              placeholder="https://media.example.org/slidr/"
-              {...text('publicUrl')}
-            />
-          </Field>
+          {draft.kind !== 'r2' && (
+            <Field
+              label={t('settings.media.publicUrl')}
+              hint={isolate(
+                t(server ? 'settings.media.publicUrlRemoteHint' : 'settings.media.publicUrlHint'),
+              )}
+            >
+              <input
+                type="url"
+                dir="ltr"
+                placeholder="https://media.example.org/slidr/"
+                {...text('publicUrl')}
+              />
+            </Field>
+          )}
         </>
       )}
       {confirm && (

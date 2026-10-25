@@ -556,6 +556,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Konfirmasi dan simpan',
   'settings.media.publicUrlRemoteHint':
     'Alamat HTTPS tempat server tersebut menyajikan folder. Tanpa alamat, server ini menyajikannya di /media/.',
+  'settings.media.kind.r2s3': 'Bucket R2 di Cloudflare',
+  'settings.media.accountId': 'ID akun (Account ID)',
+  'settings.media.bucket': 'Nama bucket',
+  'settings.media.domain': 'Domain bucket',
+  'settings.media.domainHint':
+    'Tempat Cloudflare menyajikan bucket, misalnya https://media.example.org/. Aplikasi terpasang membacanya di sana.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'Dari token API R2 yang diizinkan Object Read & Write hanya pada bucket ini.',
+  'settings.media.zoneId': 'ID zona domain (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Agar setiap penerbitan menghapus dari cache apa yang ditulisnya. Tanpa ini, file lama tetap di cache sampai kedaluwarsa.',
+  'settings.media.purgeToken': 'Token pembersihan cache',
+  'settings.media.purgeTokenHint':
+    'Token API yang diizinkan Cache Purge pada zona ini. Token ini diperiksa sebelum disimpan.',
 };
 
 export default words;

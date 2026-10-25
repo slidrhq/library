@@ -558,6 +558,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': '承認して保存',
   'settings.media.publicUrlRemoteHint':
     'そのサーバーがフォルダーを配信する HTTPS アドレス。未設定の場合は、このサーバーが /media/ で配信します。',
+  'settings.media.kind.r2s3': 'Cloudflare の R2 バケット',
+  'settings.media.accountId': 'アカウント ID（Account ID）',
+  'settings.media.bucket': 'バケット名',
+  'settings.media.domain': 'バケットのドメイン',
+  'settings.media.domainHint':
+    'Cloudflare がバケットを配信するアドレス（例: https://media.example.org/）。インストール済みアプリはここから読み込みます。',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'このバケットだけに Object Read & Write を許可した R2 API トークンの値です。',
+  'settings.media.zoneId': 'ドメインのゾーン ID（Zone ID）',
+  'settings.media.zoneIdHint':
+    '公開のたびに、書き込んだファイルをキャッシュから消去するためのものです。未設定の場合、古いファイルは期限切れまでキャッシュに残ります。',
+  'settings.media.purgeToken': 'キャッシュ消去用トークン',
+  'settings.media.purgeTokenHint':
+    'このゾーンで Cache Purge を許可した API トークン。保存前に確認します。',
 };
 
 export default words;

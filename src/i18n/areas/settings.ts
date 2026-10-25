@@ -119,6 +119,21 @@ export const he = {
   'settings.media.confirm': 'אישור ושמירה',
   'settings.media.publicUrlRemoteHint':
     'כתובת ה-HTTPS שבה השרת מגיש את התיקייה. אם לא נותנים כתובת, השרת הזה מגיש אותה ב-/media/.',
+  'settings.media.kind.r2s3': 'דלי R2 של Cloudflare',
+  'settings.media.accountId': 'מזהה החשבון (Account ID)',
+  'settings.media.bucket': 'שם הדלי',
+  'settings.media.domain': 'הדומיין של הדלי',
+  'settings.media.domainHint':
+    'הכתובת שבה Cloudflare מגישה את הדלי, כמו https://media.example.org/. ממנה האפליקציות המותקנות קוראות.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint': 'של טוקן API של R2 עם הרשאת Object Read & Write לדלי הזה בלבד.',
+  'settings.media.zoneId': 'מזהה ה-Zone של הדומיין (Zone ID)',
+  'settings.media.zoneIdHint':
+    'כדי שכל פרסום ינקה מהמטמון את מה שכתב. בלעדיו, קבצים ישנים נשארים במטמון עד שתוקפם פג.',
+  'settings.media.purgeToken': 'טוקן לניקוי המטמון',
+  'settings.media.purgeTokenHint':
+    'טוקן API עם הרשאת Cache Purge ל-Zone הזה. הוא נבדק לפני השמירה.',
 };
 
 export const en: Record<keyof typeof he, string> = {
@@ -247,4 +262,20 @@ export const en: Record<keyof typeof he, string> = {
   'settings.media.confirm': 'Confirm and save',
   'settings.media.publicUrlRemoteHint':
     'The HTTPS address where that server serves the folder. Without one, this server serves it at /media/.',
+  'settings.media.kind.r2s3': 'A Cloudflare R2 bucket',
+  'settings.media.accountId': 'Account ID',
+  'settings.media.bucket': 'Bucket',
+  'settings.media.domain': 'The bucket’s domain',
+  'settings.media.domainHint':
+    'Where Cloudflare serves the bucket, as https://media.example.org/. Installed apps read it there.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'Of an R2 API token allowed Object Read & Write on this one bucket only.',
+  'settings.media.zoneId': 'The domain’s Zone ID',
+  'settings.media.zoneIdHint':
+    'So that each publication empties the cache of what it wrote. Without it, old files stay cached until they expire.',
+  'settings.media.purgeToken': 'Cache purge token',
+  'settings.media.purgeTokenHint':
+    'An API token allowed Cache Purge on this zone. It is tried before it is kept.',
 };

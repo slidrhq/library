@@ -564,6 +564,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Bestätigen und speichern',
   'settings.media.publicUrlRemoteHint':
     'Die HTTPS-Adresse, unter der jener Server den Ordner bereitstellt. Ohne sie stellt dieser Server ihn unter /media/ bereit.',
+  'settings.media.kind.r2s3': 'Ein R2-Bucket bei Cloudflare',
+  'settings.media.accountId': 'Konto-ID (Account ID)',
+  'settings.media.bucket': 'Bucket-Name',
+  'settings.media.domain': 'Domain des Buckets',
+  'settings.media.domainHint':
+    'Wo Cloudflare den Bucket bereitstellt, etwa https://media.example.org/. Dort lesen ihn installierte Apps.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'Von einem R2-API-Token mit der Berechtigung Object Read & Write nur für diesen Bucket.',
+  'settings.media.zoneId': 'Zonen-ID der Domain (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Damit jede Veröffentlichung das Geschriebene aus dem Cache entfernt. Ohne sie bleiben alte Dateien bis zum Ablauf im Cache.',
+  'settings.media.purgeToken': 'Token zum Leeren des Caches',
+  'settings.media.purgeTokenHint':
+    'Ein API-Token mit der Berechtigung Cache Purge für diese Zone. Es wird vor dem Speichern geprüft.',
 };
 
 export default words;

@@ -22,7 +22,9 @@ import {
   type MediaSettings,
 } from '../../core/config.ts';
 import type { Context, MediaStore } from '../../core/context.ts';
+import { purgerFor } from '../../core/media/cache.ts';
 import { openLease } from '../../core/media/lease.ts';
+import { R2S3Media, type R2Credentials } from '../../core/media/r2s3.ts';
 import { sweep } from '../../core/media/sweep.ts';
 import { emailOf, isEmail, writePerson } from '../../core/people.ts';
 import { Vault, masterKeyText, newMasterKey, randomKey } from '../../core/vault.ts';
@@ -222,22 +224,29 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
 }
 
 /** A store's key, as the vault keeps it: JSON of what the store takes. */
-function keyOf(text: string | undefined): SftpKey {
+type StoreKey = SftpKey & Partial<R2Credentials> & { purgeToken?: string };
+
+function keyOf(text: string | undefined): StoreKey {
   if (!text) return {};
   try {
-    return JSON.parse(text) as SftpKey;
+    return JSON.parse(text) as StoreKey;
   } catch {
     return {};
   }
 }
 
 /**
- * Opens the media store of some settings, with its key: a folder of this machine, or a folder of
- * another server, whose files read are kept in a cache folder of its own in the data folder.
+ * Opens the media store of some settings, with its key: a folder of this machine; an R2 bucket,
+ * through its S3 API; or a folder of another server, whose files read are kept in a cache folder
+ * of its own in the data folder.
  */
 export function mediaOpener(data: string) {
   return (settings: MediaSettings, key?: string): MediaStore => {
     if (settings.kind === 'folder') return new FolderMedia(settings.path);
+    if (settings.kind === 'r2') {
+      const { accessKeyId = '', secretAccessKey = '' } = keyOf(key);
+      return new R2S3Media(settings, { accessKeyId, secretAccessKey });
+    }
     const where = `${settings.kind}:${settings.user}@${settings.host}:${settings.port ?? ''}${settings.root}`;
     const cache = join(
       data,
@@ -257,6 +266,16 @@ async function contextFor(library: Library): Promise<Context> {
   const media = library.config.media;
   const openMedia = mediaOpener(library.data);
   const key = media && media.kind !== 'folder' ? await library.vault.get('media') : undefined;
+  // An R2 bucket's domain has Cloudflare's cache before it, emptied of what a publication wrote.
+  const purgeToken = keyOf(key).purgeToken;
+  const purge =
+    media?.kind === 'r2' && media.zoneId && purgeToken
+      ? purgerFor({
+          MEDIA_ZONE_ID: media.zoneId,
+          MEDIA_PURGE_TOKEN: purgeToken,
+          MEDIA_LIBRARY_URL: media.publicUrl,
+        })
+      : undefined;
   // The session key is the vault's, read as each request needs it (`sessionKeyOf`); the owner
   // signs in on this machine by a link of the CLI. On a machine, an admin changes it all.
   return {
@@ -264,6 +283,7 @@ async function contextFor(library: Library): Promise<Context> {
     vault: library.vault,
     ...(media ? { media: openMedia(media, key) } : {}),
     ...(media?.publicUrl ? { publicUrl: media.publicUrl } : {}),
+    ...(purge ? { purge } : {}),
     auth: {},
     local: true,
     editable: { url: true, media: true },

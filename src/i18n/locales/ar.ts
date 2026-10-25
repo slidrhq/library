@@ -531,6 +531,21 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'تأكيد وحفظ',
   'settings.media.publicUrlRemoteHint':
     'عنوان HTTPS الذي يقدّم منه ذلك الخادم المجلد. من دونه، يقدّمه هذا الخادم على /media/.',
+  'settings.media.kind.r2s3': 'حاوية R2 على Cloudflare',
+  'settings.media.accountId': 'معرّف الحساب (Account ID)',
+  'settings.media.bucket': 'اسم الحاوية',
+  'settings.media.domain': 'نطاق الحاوية',
+  'settings.media.domainHint':
+    'العنوان الذي تقدّم منه Cloudflare الحاوية، مثل https://media.example.org/. منه تقرأ التطبيقات المثبّتة.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint': 'من رمز API لـ R2 بصلاحية Object Read & Write على هذه الحاوية فقط.',
+  'settings.media.zoneId': 'معرّف منطقة النطاق (Zone ID)',
+  'settings.media.zoneIdHint':
+    'لكي تُفرغ كل عملية نشر من ذاكرة التخزين المؤقت ما كتبته. من دونه، تبقى الملفات القديمة فيها حتى تنتهي صلاحيتها.',
+  'settings.media.purgeToken': 'رمز إفراغ ذاكرة التخزين المؤقت',
+  'settings.media.purgeTokenHint':
+    'رمز API بصلاحية Cache Purge على هذه المنطقة. يُتحقَّق منه قبل الحفظ.',
 };
 
 export default words;

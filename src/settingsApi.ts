@@ -47,7 +47,7 @@ export interface Settings {
 
 /** A media store's settings, as the library keeps them (server/core/config.ts). */
 export interface MediaSettings {
-  kind: 'folder' | 'sftp' | 'ftp';
+  kind: 'folder' | 'sftp' | 'ftp' | 'r2';
   /** A folder of this machine. */
   path?: string;
   /** A server's. */
@@ -59,6 +59,10 @@ export interface MediaSettings {
   hostKey?: string;
   tls?: 'explicit' | 'implicit' | 'none';
   allowUnencrypted?: boolean;
+  /** An R2 bucket's: the account it is in, its name, and its domain's zone. */
+  accountId?: string;
+  bucket?: string;
+  zoneId?: string;
   publicUrl?: string;
 }
 
@@ -67,6 +71,10 @@ export interface MediaKey {
   privateKey?: string;
   passphrase?: string;
   password?: string;
+  /** An R2 bucket's: its S3 credentials, and the token that empties its domain's cache. */
+  accessKeyId?: string;
+  secretAccessKey?: string;
+  purgeToken?: string;
 }
 
 /** A server's host key that is not the one confirmed: never confirmed, or changed. */

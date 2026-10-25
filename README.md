@@ -256,6 +256,14 @@ media.slidr.studio is a custom domain of the bucket `slidr-media`. Cloudflare an
 6. Check it: `curl.exe -sI https://media.slidr.studio/manifest.json` answers `X-Slidr-Library: live` and `Cache-Control: no-cache`, and asked again, `cf-cache-status: HIT`; `/fonts/catalog.json` answers `Access-Control-Allow-Origin: *`.
 7. Delete the Pages project `slidr-media` (**Workers & Pages** → `slidr-media` → **Settings** → **Delete project**). slidr-media.pages.dev stops answering: no release of the app reads it.
 
+**An organization's own bucket, from a library on a machine.** A library installed on a machine may keep its media in an R2 bucket of the organization's own account, served at the organization's own domain, as media.slidr.studio is (`server/core/media/r2s3.ts`, through R2's S3 API):
+
+1. Make the bucket, give it the domain, and set the zone up, as steps 1, 3 and 4 above do, with the bucket's name and the domain in place of `slidr-media` and `media.slidr.studio`.
+2. An R2 API token for the library: **R2** → **Manage API tokens** → **Create API token**, permission **Object Read & Write**, for that one bucket. Keep its **Access Key ID** and **Secret Access Key**.
+3. A token that may empty the domain's cache, as step 5 above makes, for that zone.
+4. In the library's **Settings** → **Media** → **A Cloudflare R2 bucket**: the account's ID, the bucket's name, its domain (`https://media.example.org/`), the zone's ID, and the three keys. **Test and save** writes and removes a probe in the bucket, and empties the cache of one address with the token, before anything is kept. The keys are kept in the vault, and never shown again.
+5. Seed the bucket from the published library (**Settings** → **Seed the media**), and give installed apps the bucket's domain: the policy or the installer's line that Settings shows.
+
 ## Publishing
 
 The page runs on Cloudflare as the Worker `library` (https://library.slidr.workers.dev), which serves the page from `dist/client` and runs `server/host/cloudflare/index.ts` (the library's server, `server/core`): signing in, and the uploads (`wrangler.jsonc`; `pnpm build` writes both, and the Worker's own configuration to `dist/library`). `.github/workflows/deploy.yml` checks, tests, builds and publishes it on every push to `main`, and you can run it by hand from the Actions tab. The workflow needs two repository secrets: `CLOUDFLARE_API_TOKEN`, a token with the "Edit Cloudflare Workers" template, and `CLOUDFLARE_ACCOUNT_ID`.

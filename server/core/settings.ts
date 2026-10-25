@@ -26,6 +26,7 @@ import { LibraryConfig, MediaSettings, readConfig, writeConfig } from './config.
 import type { Context, MediaStore } from './context.ts';
 import { isRecord, json, jsonBody, problem } from './http.ts';
 import { LIMITS, limitsOf } from './limits.ts';
+import { purgerFor } from './media/cache.ts';
 import { MANIFEST, PROBE } from './media/live.ts';
 import { siteOf } from './media/routes.ts';
 import { GOOGLE_ISSUER, ProviderUnreachable, microsoftIssuer, saveSignIn } from './oidc.ts';
@@ -174,7 +175,12 @@ export async function testStore(media: MediaStore): Promise<StoreTest> {
 /** A store's key as the page sends it: what each kind takes, as text for the vault. */
 function keyText(kind: MediaSettings['kind'], given: unknown): string | undefined | Response {
   if (given === undefined || given === null) return undefined;
-  const fields = kind === 'sftp' ? ['privateKey', 'passphrase', 'password'] : ['password'];
+  const fields =
+    kind === 'sftp'
+      ? ['privateKey', 'passphrase', 'password']
+      : kind === 'r2'
+        ? ['accessKeyId', 'secretAccessKey', 'purgeToken']
+        : ['password'];
   if (
     kind === 'folder' ||
     !isRecord(given) ||
@@ -191,6 +197,9 @@ function keyText(kind: MediaSettings['kind'], given: unknown): string | undefine
   if (Object.keys(key).length === 0) return undefined;
   if (kind === 'sftp' && !key.privateKey && !key.password) {
     return problem(400, 'bad-request', 'An SSH server takes a private key, or a password.');
+  }
+  if (kind === 'r2' && (!key.accessKeyId || !key.secretAccessKey)) {
+    return problem(400, 'bad-request', 'An R2 bucket takes its S3 Access Key ID and Secret.');
   }
   return JSON.stringify(key);
 }
@@ -234,6 +243,20 @@ const media: Route = async (request, ctx) => {
   }
   if (!tried.reached || !tried.wrote) {
     return json({ error: 'store-unreachable', message: tried.message, test: tried }, 422);
+  }
+  // The cache of an R2 bucket's domain: its token may empty it.
+  if (settings.data.kind === 'r2' && settings.data.zoneId) {
+    const { purgeToken } = JSON.parse(key ?? '{}') as { purgeToken?: string };
+    const purged = purgeToken
+      ? await purgerFor({
+          MEDIA_ZONE_ID: settings.data.zoneId,
+          MEDIA_PURGE_TOKEN: purgeToken,
+          MEDIA_LIBRARY_URL: settings.data.publicUrl,
+        })([PROBE])
+      : { emptied: 'none' as const, message: 'No token was given to empty the cache.' };
+    if (purged.emptied === 'none') {
+      return json({ error: 'purge-refused', message: purged.message, test: tried }, 422);
+    }
   }
   if (newKey && ctx.vault) await ctx.vault.set('media', newKey, actor.id);
   if (kind === 'folder' && ctx.vault && (await ctx.vault.about('media'))) {

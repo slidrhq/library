@@ -550,6 +550,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Onayla ve kaydet',
   'settings.media.publicUrlRemoteHint':
     'O sunucunun klasörü sunduğu HTTPS adresi. Adres yoksa bu sunucu onu /media/ altında sunar.',
+  'settings.media.kind.r2s3': 'Cloudflare’deki bir R2 kovası',
+  'settings.media.accountId': 'Hesap kimliği (Account ID)',
+  'settings.media.bucket': 'Kova adı',
+  'settings.media.domain': 'Kovanın alan adı',
+  'settings.media.domainHint':
+    'Cloudflare’in kovayı sunduğu adres, örneğin https://media.example.org/. Kurulu uygulamalar onu oradan okur.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'Yalnızca bu kovada Object Read & Write izni olan bir R2 API belirtecinden.',
+  'settings.media.zoneId': 'Alan adının bölge kimliği (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Böylece her yayım, yazdıklarını önbellekten temizler. Kimlik olmadan eski dosyalar süreleri dolana kadar önbellekte kalır.',
+  'settings.media.purgeToken': 'Önbellek temizleme belirteci',
+  'settings.media.purgeTokenHint':
+    'Bu bölgede Cache Purge izni olan bir API belirteci. Kaydetmeden önce doğrulanır.',
 };
 
 export default words;

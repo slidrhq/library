@@ -563,6 +563,22 @@ const words: Record<MessageKey, string> = {
   'settings.media.confirm': 'Confirmar y guardar',
   'settings.media.publicUrlRemoteHint':
     'La dirección HTTPS en la que ese servidor sirve la carpeta. Sin ella, este servidor la sirve en /media/.',
+  'settings.media.kind.r2s3': 'Un bucket R2 en Cloudflare',
+  'settings.media.accountId': 'ID de cuenta (Account ID)',
+  'settings.media.bucket': 'Nombre del bucket',
+  'settings.media.domain': 'Dominio del bucket',
+  'settings.media.domainHint':
+    'Donde Cloudflare sirve el bucket, como https://media.example.org/. Las apps instaladas lo leen ahí.',
+  'settings.media.accessKeyId': 'Access Key ID',
+  'settings.media.secretAccessKey': 'Secret Access Key',
+  'settings.media.s3Hint':
+    'De un token de API de R2 con permiso Object Read & Write solo en este bucket.',
+  'settings.media.zoneId': 'ID de zona del dominio (Zone ID)',
+  'settings.media.zoneIdHint':
+    'Para que cada publicación vacíe de la caché lo que escribió. Sin él, los archivos antiguos siguen en caché hasta que caducan.',
+  'settings.media.purgeToken': 'Token de purga de caché',
+  'settings.media.purgeTokenHint':
+    'Un token de API con permiso Cache Purge en esta zona. Se comprueba antes de guardar.',
 };
 
 export default words;

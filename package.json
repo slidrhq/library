@@ -27,6 +27,7 @@
     "@slidr/model": "workspace:*",
     "@slidr/renderer": "workspace:*",
     "@slidr/templates": "workspace:*",
+    "aws4fetch": "1.0.20",
     "basic-ftp": "6.2.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
