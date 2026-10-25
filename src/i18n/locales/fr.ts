@@ -332,6 +332,47 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Envoyer',
   'uploads.form.submitting': 'Envoi et vérification…',
   'uploads.form.cancel': 'Annuler',
+  'people.signInWith': 'Se connecter avec {name}',
+  'people.signInHere': 'Se connecter sur cet ordinateur',
+  'people.localHint':
+    'Le propriétaire de la médiathèque se connecte sur l’ordinateur où elle est installée : exécutez-y cette commande, puis ouvrez le lien qu’elle affiche.',
+  'people.role.owner': 'Ce compte possède la médiathèque : il nomme ses membres et la configure',
+  'people.role.admin': 'Ce compte est administrateur : il nomme les membres et examine les envois',
+  'people.role.reviewer': 'Ce compte examine les envois et publie ceux qui sont acceptés',
+  'people.role.uploader':
+    'Ce compte peut téléverser du contenu ; les relecteurs de la médiathèque l’y font entrer',
+  'people.role.blocked': 'Ce compte ne peut pas téléverser de contenu dans la médiathèque',
+  'people.nav': 'Membres',
+  'people.about':
+    'Qui examine les envois et gère la médiathèque. Toute personne connectée peut téléverser ; les membres nommés ici examinent.',
+  'people.add.title': 'Ajouter un membre',
+  'people.add.email': 'Adresse e-mail',
+  'people.add.role': 'Rôle',
+  'people.add.submit': 'Ajouter',
+  'people.roleName.owner': 'Propriétaire',
+  'people.roleName.admin': 'Administrateur',
+  'people.roleName.reviewer': 'Relecteur',
+  'people.roleName.none': 'Envois seulement',
+  'people.blockedBadge': 'Bloqué',
+  'people.you': 'Votre compte',
+  'people.lastSeen': 'Dernière connexion : {when}',
+  'people.neverSeen': 'Ne s’est pas encore connecté',
+  'people.block': 'Bloquer',
+  'people.unblock': 'Débloquer',
+  'people.handOver': 'Nommer propriétaire',
+  'people.blockConfirm':
+    'Bloquer {email} ? Le compte ne pourra plus téléverser et perdra son rôle.',
+  'people.handOverConfirm': 'Céder la médiathèque à {email} ? Votre compte reste administrateur.',
+  'people.members': 'Membres',
+  'people.others': 'Autres personnes connectées',
+  'people.noProvider':
+    'Tant qu’aucun fournisseur n’est défini, seul le propriétaire peut se connecter, et les membres ajoutés ne le peuvent pas : pnpm library sign-in.',
+  'people.loading': 'Lecture des membres…',
+  'people.closed': 'Seuls les administrateurs de la médiathèque voient ses membres.',
+  'people.failed': 'Cela n’a pas fonctionné : {error}',
+  'people.blocked':
+    'Ce compte est bloqué : il ne peut pas téléverser de contenu dans la médiathèque.',
+  'people.search': 'Rechercher par nom ou adresse',
 };
 
 export default words;

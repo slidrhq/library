@@ -330,6 +330,47 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Hochladen',
   'uploads.form.submitting': 'Wird hochgeladen und geprüft…',
   'uploads.form.cancel': 'Abbrechen',
+  'people.signInWith': 'Über {name} anmelden',
+  'people.signInHere': 'Auf diesem Rechner anmelden',
+  'people.localHint':
+    'Der Eigentümer der Bibliothek meldet sich auf dem Rechner an, auf dem sie installiert ist: Führen Sie dort diesen Befehl aus und öffnen Sie den Link, den er ausgibt.',
+  'people.role.owner':
+    'Diesem Konto gehört die Bibliothek: Es benennt ihre Mitglieder und richtet sie ein',
+  'people.role.admin': 'Dieses Konto ist Admin: Es benennt die Mitglieder und prüft Uploads',
+  'people.role.reviewer': 'Dieses Konto prüft Uploads und veröffentlicht die angenommenen',
+  'people.role.uploader':
+    'Dieses Konto darf Inhalte hochladen; die Prüfer der Bibliothek nehmen sie auf',
+  'people.role.blocked': 'Dieses Konto darf keine Inhalte in die Bibliothek hochladen',
+  'people.nav': 'Mitglieder',
+  'people.about':
+    'Wer die Uploads prüft und die Bibliothek führt. Wer sich anmeldet, darf hochladen; die hier benannten Mitglieder prüfen.',
+  'people.add.title': 'Mitglied hinzufügen',
+  'people.add.email': 'E-Mail-Adresse',
+  'people.add.role': 'Rolle',
+  'people.add.submit': 'Hinzufügen',
+  'people.roleName.owner': 'Eigentümer',
+  'people.roleName.admin': 'Admin',
+  'people.roleName.reviewer': 'Prüfer',
+  'people.roleName.none': 'Nur Uploads',
+  'people.blockedBadge': 'Gesperrt',
+  'people.you': 'Ihr Konto',
+  'people.lastSeen': 'Zuletzt angemeldet: {when}',
+  'people.neverSeen': 'Noch nicht angemeldet',
+  'people.block': 'Sperren',
+  'people.unblock': 'Entsperren',
+  'people.handOver': 'Zum Eigentümer machen',
+  'people.blockConfirm':
+    '{email} sperren? Das Konto kann dann nicht mehr hochladen und verliert seine Rolle.',
+  'people.handOverConfirm': 'Die Bibliothek an {email} übergeben? Ihr Konto bleibt Admin.',
+  'people.members': 'Mitglieder',
+  'people.others': 'Weitere angemeldete Personen',
+  'people.noProvider':
+    'Solange kein Anbieter eingerichtet ist, meldet sich nur der Eigentümer an, die hinzugefügten Mitglieder nicht: pnpm library sign-in.',
+  'people.loading': 'Mitglieder werden gelesen…',
+  'people.closed': 'Nur die Admins der Bibliothek sehen ihre Mitglieder.',
+  'people.failed': 'Das hat nicht geklappt: {error}',
+  'people.blocked': 'Dieses Konto ist gesperrt: Es darf keine Inhalte in die Bibliothek hochladen.',
+  'people.search': 'Nach Name oder Adresse suchen',
 };
 
 export default words;

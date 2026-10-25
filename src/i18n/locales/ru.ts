@@ -325,6 +325,46 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Загрузить',
   'uploads.form.submitting': 'Загрузка и проверка…',
   'uploads.form.cancel': 'Отмена',
+  'people.signInWith': 'Войти через {name}',
+  'people.signInHere': 'Войти на этом компьютере',
+  'people.localHint':
+    'Владелец медиатеки входит на компьютере, где она установлена: выполните там эту команду и откройте ссылку, которую она выведет.',
+  'people.role.owner': 'Этот аккаунт владеет медиатекой: назначает её участников и настраивает её',
+  'people.role.admin': 'Этот аккаунт — администратор: назначает участников и проверяет загрузки',
+  'people.role.reviewer': 'Этот аккаунт проверяет загрузки и публикует принятые',
+  'people.role.uploader':
+    'Этот аккаунт может загружать материалы; проверяющие медиатеки принимают их',
+  'people.role.blocked': 'Этот аккаунт не может загружать материалы в медиатеку',
+  'people.nav': 'Участники',
+  'people.about':
+    'Кто проверяет загрузки и управляет медиатекой. Загружать может любой, кто вошёл; проверяют участники, назначенные здесь.',
+  'people.add.title': 'Добавить участника',
+  'people.add.email': 'Адрес электронной почты',
+  'people.add.role': 'Роль',
+  'people.add.submit': 'Добавить',
+  'people.roleName.owner': 'Владелец',
+  'people.roleName.admin': 'Администратор',
+  'people.roleName.reviewer': 'Проверяющий',
+  'people.roleName.none': 'Только загрузка',
+  'people.blockedBadge': 'Заблокирован',
+  'people.you': 'Ваш аккаунт',
+  'people.lastSeen': 'Последний вход: {when}',
+  'people.neverSeen': 'Ещё не входил',
+  'people.block': 'Заблокировать',
+  'people.unblock': 'Разблокировать',
+  'people.handOver': 'Сделать владельцем',
+  'people.blockConfirm':
+    'Заблокировать {email}? Аккаунт больше не сможет загружать материалы и лишится своей роли.',
+  'people.handOverConfirm': 'Передать медиатеку {email}? Ваш аккаунт останется администратором.',
+  'people.members': 'Участники',
+  'people.others': 'Другие, кто входил',
+  'people.noProvider':
+    'Пока не настроен поставщик входа, войти может только владелец, а добавленные участники — нет: pnpm library sign-in.',
+  'people.loading': 'Читаем список участников…',
+  'people.closed': 'Участников медиатеки видят только её администраторы.',
+  'people.failed': 'Не получилось: {error}',
+  'people.blocked': 'Этот аккаунт заблокирован: он не может загружать материалы в медиатеку.',
+  'people.search': 'Поиск по имени или адресу',
 };
 
 export default words;

@@ -323,6 +323,48 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Tải lên',
   'uploads.form.submitting': 'Đang tải lên và kiểm tra…',
   'uploads.form.cancel': 'Hủy',
+  'people.signInWith': 'Đăng nhập bằng {name}',
+  'people.signInHere': 'Đăng nhập trên máy này',
+  'people.localHint':
+    'Chủ sở hữu thư viện đăng nhập trên máy đã cài thư viện: hãy chạy lệnh này trên máy đó, rồi mở liên kết mà lệnh in ra.',
+  'people.role.owner': 'Tài khoản này sở hữu thư viện: chỉ định thành viên và thiết lập thư viện',
+  'people.role.admin':
+    'Tài khoản này là quản trị viên: chỉ định thành viên và duyệt nội dung tải lên',
+  'people.role.reviewer':
+    'Tài khoản này duyệt nội dung tải lên và xuất bản những nội dung được chấp nhận',
+  'people.role.uploader':
+    'Tài khoản này có thể tải nội dung lên; người duyệt của thư viện sẽ đưa nội dung vào',
+  'people.role.blocked': 'Tài khoản này không thể tải nội dung lên thư viện',
+  'people.nav': 'Thành viên',
+  'people.about':
+    'Ai duyệt nội dung tải lên và quản lý thư viện. Ai đăng nhập cũng có thể tải lên; các thành viên bạn chỉ định ở đây sẽ duyệt.',
+  'people.add.title': 'Thêm thành viên',
+  'people.add.email': 'Địa chỉ email',
+  'people.add.role': 'Vai trò',
+  'people.add.submit': 'Thêm',
+  'people.roleName.owner': 'Chủ sở hữu',
+  'people.roleName.admin': 'Quản trị viên',
+  'people.roleName.reviewer': 'Người duyệt',
+  'people.roleName.none': 'Chỉ tải lên',
+  'people.blockedBadge': 'Đã chặn',
+  'people.you': 'Tài khoản của bạn',
+  'people.lastSeen': 'Đăng nhập lần cuối: {when}',
+  'people.neverSeen': 'Chưa đăng nhập lần nào',
+  'people.block': 'Chặn',
+  'people.unblock': 'Bỏ chặn',
+  'people.handOver': 'Chuyển quyền sở hữu',
+  'people.blockConfirm':
+    'Chặn {email}? Tài khoản sẽ không thể tải lên nữa và mất vai trò của mình.',
+  'people.handOverConfirm': 'Chuyển thư viện cho {email}? Tài khoản của bạn vẫn là quản trị viên.',
+  'people.members': 'Thành viên',
+  'people.others': 'Những người khác đã đăng nhập',
+  'people.noProvider':
+    'Cho đến khi thiết lập nhà cung cấp đăng nhập, chỉ chủ sở hữu đăng nhập được, các thành viên bạn thêm thì chưa: pnpm library sign-in.',
+  'people.loading': 'Đang đọc danh sách thành viên…',
+  'people.closed': 'Chỉ quản trị viên của thư viện mới thấy các thành viên.',
+  'people.failed': 'Không thành công: {error}',
+  'people.blocked': 'Tài khoản này đã bị chặn: không thể tải nội dung lên thư viện.',
+  'people.search': 'Tìm theo tên hoặc địa chỉ',
 };
 
 export default words;

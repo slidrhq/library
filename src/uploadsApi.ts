@@ -125,6 +125,7 @@ export function unavailable(t: Translate, error: unknown, access?: Access) {
     return access && !access.signIn ? t('uploads.noSignIn') : t('uploads.signIn');
   }
   if (error instanceof ApiError && error.code === 'not-an-editor') return t('uploads.notEditor');
+  if (error instanceof ApiError && error.code === 'blocked') return t('people.blocked');
   if (error instanceof ApiError && error.code === 'not-set-up') return t('uploads.notSetUp');
   if (error instanceof ApiError && (error.code === 'no-api' || error.status === 404)) {
     return t('uploads.noServer');
@@ -146,7 +147,7 @@ export class ApiError extends Error {
   }
 }
 
-async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`/api/${path}`, init);
@@ -227,30 +228,77 @@ export interface Publication {
   remaining: number;
 }
 
+/** What the server says a person may do (`/api/me`, server/core/people.ts). */
+export interface Capabilities {
+  upload: boolean;
+  review: boolean;
+  publish: boolean;
+  members: boolean;
+  settings: boolean;
+  owner: boolean;
+}
+
+/** A role of the library's members (docs/SPEC.md §6.1). */
+export type Role = 'owner' | 'admin' | 'reviewer';
+
+/** What `/api/me` answers (server/core/auth.ts). */
+export interface Me {
+  /** Whether anyone may sign in here at all. */
+  signIn: boolean;
+  /** The provider people sign in through, when there is one. */
+  provider: { kind: string; name: string } | null;
+  /** Whether the owner signs in by a link of the CLI, on the library's machine. */
+  local: boolean;
+  user: {
+    email: string;
+    name: string;
+    picture?: string;
+    provider: string;
+    role: Role | null;
+    blocked: boolean;
+    can: Capabilities;
+  } | null;
+}
+
 /**
- * What the person may do here: the uploads are the library's editors', as signing in names them
- * (`/api/me`, server/core/auth.ts). Where no one answers, or no one is signed in, nothing.
+ * What the person may do here: anyone signed in uploads, a reviewer reviews and publishes, an
+ * admin names the members. Where no one answers, or no one is signed in, nothing.
  */
 export interface Access {
-  /** Whether the server has signing in at all. */
+  /** Whether anyone may sign in here at all. */
   signIn: boolean;
-  user?: { name: string; email: string; editor: boolean };
+  provider?: { kind: string; name: string };
+  local: boolean;
+  user?: NonNullable<Me['user']>;
   mayUpload: boolean;
   mayReview: boolean;
+  mayPublish: boolean;
+  mayManage: boolean;
 }
 
 export async function readAccess(): Promise<Access> {
   try {
-    const me = await call<{ signIn?: boolean; user?: Access['user'] | null }>('me');
-    const editor = Boolean(me.user?.editor);
+    const me = await call<Me>('me');
+    const can = me.user?.can;
     return {
       signIn: Boolean(me.signIn),
-      user: me.user ?? undefined,
-      mayUpload: editor,
-      mayReview: editor,
+      ...(me.provider ? { provider: me.provider } : {}),
+      local: Boolean(me.local),
+      ...(me.user ? { user: me.user } : {}),
+      mayUpload: Boolean(can?.upload),
+      mayReview: Boolean(can?.review),
+      mayPublish: Boolean(can?.publish),
+      mayManage: Boolean(can?.members),
     };
   } catch {
-    return { signIn: false, mayUpload: false, mayReview: false };
+    return {
+      signIn: false,
+      local: false,
+      mayUpload: false,
+      mayReview: false,
+      mayPublish: false,
+      mayManage: false,
+    };
   }
 }
 

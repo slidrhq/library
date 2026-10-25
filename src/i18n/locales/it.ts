@@ -329,6 +329,47 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Carica',
   'uploads.form.submitting': 'Caricamento e verifica in corso…',
   'uploads.form.cancel': 'Annulla',
+  'people.signInWith': 'Accedi con {name}',
+  'people.signInHere': 'Accedi da questo computer',
+  'people.localHint':
+    'Il proprietario della libreria accede dal computer in cui è installata: esegui lì questo comando e apri il link che stampa.',
+  'people.role.owner':
+    'Questo account è proprietario della libreria: ne nomina i membri e la configura',
+  'people.role.admin': 'Questo account è amministratore: nomina i membri e revisiona i caricamenti',
+  'people.role.reviewer': 'Questo account revisiona i caricamenti e pubblica quelli accettati',
+  'people.role.uploader':
+    'Questo account può caricare contenuti; i revisori della libreria li accolgono',
+  'people.role.blocked': 'Questo account non può caricare contenuti nella libreria',
+  'people.nav': 'Membri',
+  'people.about':
+    'Chi revisiona i caricamenti e gestisce la libreria. Chiunque acceda può caricare; i membri nominati qui revisionano.',
+  'people.add.title': 'Aggiungi un membro',
+  'people.add.email': 'Indirizzo email',
+  'people.add.role': 'Ruolo',
+  'people.add.submit': 'Aggiungi',
+  'people.roleName.owner': 'Proprietario',
+  'people.roleName.admin': 'Amministratore',
+  'people.roleName.reviewer': 'Revisore',
+  'people.roleName.none': 'Solo caricamenti',
+  'people.blockedBadge': 'Bloccato',
+  'people.you': 'Il tuo account',
+  'people.lastSeen': 'Ultimo accesso: {when}',
+  'people.neverSeen': 'Non ha ancora effettuato l’accesso',
+  'people.block': 'Blocca',
+  'people.unblock': 'Sblocca',
+  'people.handOver': 'Rendi proprietario',
+  'people.blockConfirm':
+    'Bloccare {email}? L’account non potrà più caricare e perderà il suo ruolo.',
+  'people.handOverConfirm': 'Cedere la libreria a {email}? Il tuo account resta amministratore.',
+  'people.members': 'Membri',
+  'people.others': 'Altre persone che hanno effettuato l’accesso',
+  'people.noProvider':
+    'Finché non si imposta un provider, accede solo il proprietario, e i membri aggiunti no: pnpm library sign-in.',
+  'people.loading': 'Lettura dei membri…',
+  'people.closed': 'Solo gli amministratori della libreria ne vedono i membri.',
+  'people.failed': 'Non ha funzionato: {error}',
+  'people.blocked': 'Questo account è bloccato: non può caricare contenuti nella libreria.',
+  'people.search': 'Cerca per nome o indirizzo',
 };
 
 export default words;

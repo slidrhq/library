@@ -1,24 +1,15 @@
 /**
- * Who is signed in, with a Google account (server/core/auth.ts): the people the library names will
- * upload content to it. The page asks the Worker that serves it; where none answers (the page
- * served without it) or signing in is not set up there, the page shows no account.
+ * Who is signed in (server/core/auth.ts): through the library's provider, Google or another, or,
+ * on the machine a library is installed on, its owner by a link of the CLI. Anyone signed in may
+ * upload; what else the account may do is its role's (docs/SPEC.md §6.1). The page asks the
+ * server that serves it; where none answers (the page served without it) or no one may sign in
+ * there, the page shows no account.
  */
 import { useEffect, useRef, useState } from 'react';
-import { useT } from './i18n';
+import { useT, type MessageKey } from './i18n';
+import type { Me } from './uploadsApi';
 
-export interface Account {
-  email: string;
-  name: string;
-  picture?: string;
-  /** Whether the account may upload to the library (`LIBRARY_EDITORS`). */
-  editor: boolean;
-}
-
-interface Me {
-  /** Whether the Worker offers signing in. */
-  signIn: boolean;
-  user: Account | null;
-}
+type Account = NonNullable<Me['user']>;
 
 async function readMe(): Promise<Me | undefined> {
   const response = await fetch('/api/me', { headers: { Accept: 'application/json' } });
@@ -39,7 +30,7 @@ const failedOnArrival = (() => {
   return true;
 })();
 
-/** Off to Google, coming back to this very page and item. */
+/** Off to the provider, coming back to this very page and item. */
 export function signIn() {
   const back = location.pathname + location.search + location.hash;
   location.assign(`/auth/login?${new URLSearchParams({ return: back })}`);
@@ -97,12 +88,23 @@ function Avatar({ user, size }: { user: Account; size: number }) {
   );
 }
 
-/** Signing in with Google, at the end of the top bar; once signed in, the account and its rights. */
+/** What the account's role lets it do, in words. */
+function roleOf(user: Account): MessageKey {
+  if (user.blocked) return 'people.role.blocked';
+  if (user.role) return `people.role.${user.role}`;
+  return 'people.role.uploader';
+}
+
+/**
+ * Signing in, at the end of the top bar: through the provider, and on the library's own machine
+ * by the owner's link; once signed in, the account and what it may do.
+ */
 export function AccountControl() {
   const t = useT();
   const [me, setMe] = useState<Me>();
   const [failed, setFailed] = useState(failedOnArrival);
   const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,20 +118,24 @@ export function AccountControl() {
     };
   }, []);
 
-  // The menu closes on a click outside it, and on Escape.
+  // The menu closes on a click outside it, and on Escape; so does the hint of the owner's link.
   useEffect(() => {
-    if (!open) return;
-    const onPointer = (event: PointerEvent) => {
-      if (!box.current?.contains(event.target as Node)) setOpen(false);
+    if (!open && !hint) return;
+    const close = () => {
+      setOpen(false);
+      setHint(false);
     };
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
+    const onPointer = (event: PointerEvent) => {
+      if (!box.current?.contains(event.target as Node)) close();
+    };
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && close();
     document.addEventListener('pointerdown', onPointer);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('pointerdown', onPointer);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [open, hint]);
 
   if (!me?.signIn) return null;
   const user = me.user;
@@ -141,8 +147,9 @@ export function AccountControl() {
   };
 
   if (!user) {
+    const provider = me.provider;
     return (
-      <div className="account">
+      <div className="account" ref={box}>
         {failed && (
           <p className="account-failed" role="alert">
             {t('account.failed')}
@@ -156,10 +163,35 @@ export function AccountControl() {
             </button>
           </p>
         )}
-        <button type="button" className="google-sign-in" onClick={signIn}>
-          <GoogleMark />
-          <span>{t('account.signIn')}</span>
-        </button>
+        {me.local && (
+          <button
+            type="button"
+            className={provider ? 'ghost small' : undefined}
+            aria-expanded={hint}
+            onClick={() => setHint(!hint)}
+          >
+            {t('people.signInHere')}
+          </button>
+        )}
+        {provider?.kind === 'google' && (
+          <button type="button" className="google-sign-in" onClick={signIn}>
+            <GoogleMark />
+            <span>{t('account.signIn')}</span>
+          </button>
+        )}
+        {provider && provider.kind !== 'google' && (
+          <button type="button" className="primary" onClick={signIn}>
+            {t('people.signInWith', { name: provider.name })}
+          </button>
+        )}
+        {hint && (
+          <div className="account-menu" role="dialog" aria-label={t('people.signInHere')}>
+            <p className="small">{t('people.localHint')}</p>
+            <code className="account-command" dir="ltr">
+              pnpm library login
+            </code>
+          </div>
+        )}
       </div>
     );
   }
@@ -183,14 +215,26 @@ export function AccountControl() {
             <Avatar user={user} size={40} />
             <div>
               <strong>{user.name}</strong>
-              <span className="account-email">
-                <bdi>{user.email}</bdi>
-              </span>
+              {/* The owner signed in by the CLI's link is named by the address alone. */}
+              {user.name !== user.email && (
+                <span className="account-email">
+                  <bdi>{user.email}</bdi>
+                </span>
+              )}
             </div>
           </div>
-          <p className={user.editor ? 'account-role editor' : 'account-role'}>
-            {t(user.editor ? 'account.editor' : 'account.viewer')}
+          <p
+            className={
+              user.blocked ? 'account-role' : user.role ? 'account-role editor' : 'account-role'
+            }
+          >
+            {t(roleOf(user))}
           </p>
+          {user.can.members && (
+            <a className="account-link" href="#lib=members" onClick={() => setOpen(false)}>
+              {t('people.nav')}
+            </a>
+          )}
           <button type="button" onClick={() => void signOut().catch(() => undefined)}>
             {t('account.signOut')}
           </button>

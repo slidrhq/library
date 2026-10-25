@@ -55,12 +55,13 @@ When Slidr Studio runs on this machine (`VITE_SLIDR_STUDIO_URL`, `http://127.0.0
 
 ## Signing in
 
-The button at the end of the top bar signs in with a Google account. Once signed in, it shows the account, and whether it may upload content to the library ([Uploading](#uploading)).
+The button at the end of the top bar signs in through the library's provider: Google, Microsoft, or any OpenID Connect issuer (`server/core/oidc.ts`). On a library installed on a machine, the owner also signs in there by a one-time link (`pnpm library login`), which needs no provider at all. Once signed in, the button shows the account and its role.
 
-- **How.** OpenID Connect's authorization code flow, with PKCE, a `state` and a `nonce` (`server/core/auth.ts`). `/auth/login` sends the person to Google, Google sends them back to `/auth/callback`, and the Worker exchanges the code for the ID token with the client's secret. It checks the token's issuer, audience, expiry and nonce, and that the address is verified. Then it sends the person back to the page and the item they signed in from. A sign-in that fails comes back with `?signin=failed`, which the page shows and takes off the address.
-- **The session** is a cookie signed with `SESSION_SECRET` (HMAC-SHA-256): `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. The Worker keeps no store. Changing `SESSION_SECRET` signs everyone out.
-- **Who may upload** is `LIBRARY_EDITORS`: Google accounts by address, separated by commas. Anyone with a Google account can sign in, and only these may upload. The list is read on every request, so an address taken off it loses the right at once.
-- **The routes** are the Worker's, ahead of the page's files (`assets.run_worker_first` in `wrangler.jsonc`): `GET /auth/login?return=<path>`, `GET /auth/callback`, `POST /auth/logout`, and `GET /api/me` (whether signing in is offered, and who is signed in). Every route of the uploads starts with `requireEditor(request, ctx)` of `server/core/auth.ts`, through `server/core/uploads/access.ts`. That answers 401 without a session, and 403 for an account the list does not name or for a request from another site (its `Origin`).
+- **How.** OpenID Connect's authorization code flow, with PKCE, a `state` and a `nonce` (`server/core/auth.ts`). `/auth/login` sends the person to the provider, which sends them back to `/auth/callback`, and the server exchanges the code for the ID token with the client's secret. It checks the token's issuer, audience, expiry and nonce, and that the provider vouches for the address, in a domain the library takes when it names some. Then it sends the person back to the page and the item they signed in from. A sign-in that fails comes back with `?signin=failed`, which the page shows and takes off the address. The provider is the library's settings (`signIn`, with its client's secret in the vault; `pnpm library sign-in` on a machine), or, on Cloudflare until it has them, the Worker's Google client.
+- **The owner's link** (`/auth/local?code=`) holds for ten minutes, is used once, and is opened from the very machine the library runs on, which the server keeps to itself (`pnpm library start` listens on `127.0.0.1`).
+- **The session** is a cookie signed with the library's session key (HMAC-SHA-256): the vault's `session`, or `SESSION_SECRET` on a Worker without a vault. It is `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. It says who the person is, never what they may do.
+- **Who may do what** (docs/SPEC.md §6.1; `server/core/people.ts`, `server/core/uploads/access.ts`). Anyone who signs in may upload, and sees and changes their own uploads. A **reviewer** sees every upload, accepts and rejects them, and publishes what waits. An **admin** also names the members by email (**Members**, in the page's side menu; `/api/members`), blocks a person, and publishes an author's files. The **owner**, who installed the library, is an admin no one removes, and hands the library over to another member. Roles are read on every request, so a role given or taken away counts at once, and each change goes into the audit (`audit/` of the library's store). On Cloudflare, a library that named its editors in the Worker's secrets takes them once: `LIBRARY_OWNER`, or else the first of `LIBRARY_EDITORS`, as its owner, and the other editors as reviewers.
+- **The routes** are the server's, ahead of the page's files (`assets.run_worker_first` in `wrangler.jsonc`): `GET /auth/login?return=<path>`, `GET /auth/callback`, `GET /auth/local?code=`, `POST /auth/logout`, and `GET /api/me` (how one signs in here, who is signed in, their role, and what they may do). A route that changes something, sent with a session, must come from the library's own page (its `Origin`).
 
 ### Setting it up
 
@@ -71,11 +72,20 @@ The button at the end of the top bar signs in with a Google account. Once signed
    npx wrangler secret put GOOGLE_CLIENT_ID
    npx wrangler secret put GOOGLE_CLIENT_SECRET
    npx wrangler secret put SESSION_SECRET      # node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
-   npx wrangler secret put LIBRARY_EDITORS     # you@example.com, someone@example.com
+   npx wrangler secret put LIBRARY_EDITORS     # taken once: you@example.com, someone@example.com
+   npx wrangler secret put LIBRARY_OWNER       # optional: the owner, if not the first editor
    npx wrangler secret put LIBRARY_KEYS        # if programs upload: studio=<key>, ci=<key>
    ```
 
 3. On this machine, copy `.dev.vars.example` to `.dev.vars` and fill it in. Git ignores it.
+
+On a library installed on a machine, the provider is named by its CLI, with the redirect URI it prints to register with the client (the client's secret is asked for, never given as an option):
+
+```powershell
+pnpm library sign-in google --client-id <id> [--allowed-domains example.org]
+pnpm library sign-in microsoft --tenant <id> --client-id <id> --allowed-domains example.org
+pnpm library sign-in oidc --issuer https://id.example.org/realms/staff --client-id <id> --name Staff
+```
 
 Until the Worker has its client and a `SESSION_SECRET` of at least 32 characters, `/api/me` says signing in is not offered, and the page shows no button.
 

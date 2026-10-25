@@ -324,6 +324,47 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Enviar',
   'uploads.form.submitting': 'Enviando e verificando…',
   'uploads.form.cancel': 'Cancelar',
+  'people.signInWith': 'Fazer login com {name}',
+  'people.signInHere': 'Fazer login neste computador',
+  'people.localHint':
+    'O proprietário da biblioteca faz login no computador onde ela está instalada: execute este comando lá e abra o link que ele mostra.',
+  'people.role.owner': 'Esta conta é proprietária da biblioteca: nomeia os membros e a configura',
+  'people.role.admin': 'Esta conta é administradora: nomeia os membros e revisa os envios',
+  'people.role.reviewer': 'Esta conta revisa os envios e publica os aceitos',
+  'people.role.uploader':
+    'Esta conta pode enviar conteúdo; os revisores da biblioteca o incorporam',
+  'people.role.blocked': 'Esta conta não pode enviar conteúdo para a biblioteca',
+  'people.nav': 'Membros',
+  'people.about':
+    'Quem revisa os envios e administra a biblioteca. Qualquer pessoa que faça login pode enviar; os membros nomeados aqui revisam.',
+  'people.add.title': 'Adicionar um membro',
+  'people.add.email': 'Endereço de e-mail',
+  'people.add.role': 'Função',
+  'people.add.submit': 'Adicionar',
+  'people.roleName.owner': 'Proprietário',
+  'people.roleName.admin': 'Administrador',
+  'people.roleName.reviewer': 'Revisor',
+  'people.roleName.none': 'Só envios',
+  'people.blockedBadge': 'Bloqueado',
+  'people.you': 'Sua conta',
+  'people.lastSeen': 'Último login: {when}',
+  'people.neverSeen': 'Ainda não fez login',
+  'people.block': 'Bloquear',
+  'people.unblock': 'Desbloquear',
+  'people.handOver': 'Tornar proprietário',
+  'people.blockConfirm':
+    'Bloquear {email}? A conta não poderá mais enviar conteúdo e perderá sua função.',
+  'people.handOverConfirm':
+    'Transferir a biblioteca para {email}? Sua conta continua administradora.',
+  'people.members': 'Membros',
+  'people.others': 'Outras pessoas que fizeram login',
+  'people.noProvider':
+    'Até que um provedor seja configurado, só o proprietário faz login, e os membros adicionados não: pnpm library sign-in.',
+  'people.loading': 'Lendo os membros…',
+  'people.closed': 'Só os administradores da biblioteca veem os membros dela.',
+  'people.failed': 'Não deu certo: {error}',
+  'people.blocked': 'Esta conta está bloqueada: não pode enviar conteúdo para a biblioteca.',
+  'people.search': 'Pesquisar por nome ou endereço',
 };
 
 export default words;

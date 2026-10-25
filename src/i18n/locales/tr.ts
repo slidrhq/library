@@ -324,6 +324,46 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Yükle',
   'uploads.form.submitting': 'Yükleniyor ve denetleniyor…',
   'uploads.form.cancel': 'İptal',
+  'people.signInWith': '{name} ile oturum açın',
+  'people.signInHere': 'Bu bilgisayarda oturum açın',
+  'people.localHint':
+    'Kütüphanenin sahibi, kütüphanenin kurulu olduğu bilgisayarda oturum açar: bu komutu orada çalıştırın ve yazdırdığı bağlantıyı açın.',
+  'people.role.owner': 'Kütüphane bu hesaba ait: üyelerini belirler ve kütüphaneyi yapılandırır',
+  'people.role.admin': 'Bu hesap yönetici: üyeleri belirler ve yüklemeleri inceler',
+  'people.role.reviewer': 'Bu hesap yüklemeleri inceler ve kabul edilenleri yayımlar',
+  'people.role.uploader':
+    'Bu hesap içerik yükleyebilir; kütüphanenin inceleyicileri onları kütüphaneye alır',
+  'people.role.blocked': 'Bu hesap kütüphaneye içerik yükleyemez',
+  'people.nav': 'Üyeler',
+  'people.about':
+    'Yüklemeleri kimin incelediği ve kütüphaneyi kimin yönettiği. Oturum açan herkes yükleyebilir; burada belirlediğiniz üyeler inceler.',
+  'people.add.title': 'Üye ekle',
+  'people.add.email': 'E-posta adresi',
+  'people.add.role': 'Rol',
+  'people.add.submit': 'Ekle',
+  'people.roleName.owner': 'Sahip',
+  'people.roleName.admin': 'Yönetici',
+  'people.roleName.reviewer': 'İnceleyici',
+  'people.roleName.none': 'Yalnızca yükleme',
+  'people.blockedBadge': 'Engellendi',
+  'people.you': 'Hesabınız',
+  'people.lastSeen': 'Son oturum: {when}',
+  'people.neverSeen': 'Henüz oturum açmadı',
+  'people.block': 'Engelle',
+  'people.unblock': 'Engeli kaldır',
+  'people.handOver': 'Sahip yap',
+  'people.blockConfirm': '{email} engellensin mi? Hesap artık yükleme yapamaz ve rolünü kaybeder.',
+  'people.handOverConfirm':
+    'Kütüphane {email} hesabına devredilsin mi? Hesabınız yönetici olarak kalır.',
+  'people.members': 'Üyeler',
+  'people.others': 'Oturum açan diğer kişiler',
+  'people.noProvider':
+    'Bir sağlayıcı ayarlanana kadar yalnızca sahip oturum açabilir, eklediğiniz üyeler açamaz: pnpm library sign-in.',
+  'people.loading': 'Üyeler okunuyor…',
+  'people.closed': 'Kütüphanenin üyelerini yalnızca yöneticileri görür.',
+  'people.failed': 'Olmadı: {error}',
+  'people.blocked': 'Bu hesap engellendi: kütüphaneye içerik yükleyemez.',
+  'people.search': 'Ada veya adrese göre arayın',
 };
 
 export default words;

@@ -324,6 +324,48 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'अपलोड करें',
   'uploads.form.submitting': 'अपलोड और जाँच हो रही है…',
   'uploads.form.cancel': 'रद्द करें',
+  'people.signInWith': '{name} से साइन इन करें',
+  'people.signInHere': 'इस कंप्यूटर पर साइन इन करें',
+  'people.localHint':
+    'लाइब्रेरी का मालिक उसी कंप्यूटर पर साइन इन करता है जहाँ वह इंस्टॉल है: वहाँ यह कमांड चलाएँ और उसका दिखाया लिंक खोलें।',
+  'people.role.owner':
+    'यह खाता लाइब्रेरी का मालिक है: यह उसके सदस्य तय करता है और उसे सेट अप करता है',
+  'people.role.admin': 'यह खाता एडमिन है: यह सदस्य तय करता है और अपलोड की समीक्षा करता है',
+  'people.role.reviewer':
+    'यह खाता अपलोड की समीक्षा करता है और स्वीकार किए गए अपलोड प्रकाशित करता है',
+  'people.role.uploader':
+    'यह खाता सामग्री अपलोड कर सकता है; लाइब्रेरी के समीक्षक उसे लाइब्रेरी में शामिल करते हैं',
+  'people.role.blocked': 'यह खाता लाइब्रेरी में सामग्री अपलोड नहीं कर सकता',
+  'people.nav': 'सदस्य',
+  'people.about':
+    'अपलोड की समीक्षा और लाइब्रेरी का संचालन कौन करता है। साइन इन करने वाला कोई भी अपलोड कर सकता है; यहाँ जोड़े गए सदस्य समीक्षा करते हैं।',
+  'people.add.title': 'सदस्य जोड़ें',
+  'people.add.email': 'ईमेल पता',
+  'people.add.role': 'भूमिका',
+  'people.add.submit': 'जोड़ें',
+  'people.roleName.owner': 'मालिक',
+  'people.roleName.admin': 'एडमिन',
+  'people.roleName.reviewer': 'समीक्षक',
+  'people.roleName.none': 'केवल अपलोड',
+  'people.blockedBadge': 'ब्लॉक किया गया',
+  'people.you': 'आपका खाता',
+  'people.lastSeen': 'पिछला साइन इन: {when}',
+  'people.neverSeen': 'अभी तक साइन इन नहीं किया',
+  'people.block': 'ब्लॉक करें',
+  'people.unblock': 'अनब्लॉक करें',
+  'people.handOver': 'मालिक बनाएँ',
+  'people.blockConfirm':
+    '{email} को ब्लॉक करें? यह खाता अब अपलोड नहीं कर पाएगा और अपनी भूमिका खो देगा।',
+  'people.handOverConfirm': 'लाइब्रेरी {email} को सौंपें? आपका खाता एडमिन बना रहेगा।',
+  'people.members': 'सदस्य',
+  'people.others': 'साइन इन करने वाले अन्य लोग',
+  'people.noProvider':
+    'जब तक कोई प्रदाता सेट नहीं होता, केवल मालिक साइन इन कर सकता है, जोड़े गए सदस्य नहीं: pnpm library sign-in.',
+  'people.loading': 'सदस्य पढ़े जा रहे हैं…',
+  'people.closed': 'लाइब्रेरी के सदस्य केवल उसके एडमिन देखते हैं।',
+  'people.failed': 'यह नहीं हो सका: {error}',
+  'people.blocked': 'यह खाता ब्लॉक है: यह लाइब्रेरी में सामग्री अपलोड नहीं कर सकता।',
+  'people.search': 'नाम या पते से खोजें',
 };
 
 export default words;

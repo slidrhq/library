@@ -321,6 +321,46 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': '업로드',
   'uploads.form.submitting': '업로드하고 확인하는 중…',
   'uploads.form.cancel': '취소',
+  'people.signInWith': '{name} 계정으로 로그인',
+  'people.signInHere': '이 컴퓨터에서 로그인',
+  'people.localHint':
+    '라이브러리 소유자는 라이브러리가 설치된 컴퓨터에서 로그인합니다. 그 컴퓨터에서 이 명령을 실행하고, 출력된 링크를 여세요.',
+  'people.role.owner': '이 계정이 라이브러리를 소유합니다. 멤버를 지정하고 라이브러리를 설정합니다',
+  'people.role.admin': '이 계정은 관리자입니다. 멤버를 지정하고 업로드를 검토합니다',
+  'people.role.reviewer': '이 계정은 업로드를 검토하고, 승인된 업로드를 게시합니다',
+  'people.role.uploader':
+    '이 계정은 콘텐츠를 업로드할 수 있습니다. 라이브러리 검토자가 받아들입니다',
+  'people.role.blocked': '이 계정은 라이브러리에 콘텐츠를 업로드할 수 없습니다',
+  'people.nav': '멤버',
+  'people.about':
+    '업로드를 검토하고 라이브러리를 운영하는 사람들입니다. 로그인한 사람은 누구나 업로드할 수 있으며, 여기서 지정한 멤버가 검토합니다.',
+  'people.add.title': '멤버 추가',
+  'people.add.email': '이메일 주소',
+  'people.add.role': '역할',
+  'people.add.submit': '추가',
+  'people.roleName.owner': '소유자',
+  'people.roleName.admin': '관리자',
+  'people.roleName.reviewer': '검토자',
+  'people.roleName.none': '업로드만',
+  'people.blockedBadge': '차단됨',
+  'people.you': '내 계정',
+  'people.lastSeen': '마지막 로그인: {when}',
+  'people.neverSeen': '아직 로그인하지 않음',
+  'people.block': '차단',
+  'people.unblock': '차단 해제',
+  'people.handOver': '소유자로 지정',
+  'people.blockConfirm':
+    '{email} 계정을 차단할까요? 이 계정은 더 이상 업로드할 수 없고 역할을 잃습니다.',
+  'people.handOverConfirm': '라이브러리를 {email} 계정에 넘길까요? 내 계정은 관리자로 남습니다.',
+  'people.members': '멤버',
+  'people.others': '로그인한 다른 사람',
+  'people.noProvider':
+    '로그인 공급자를 설정하기 전까지는 소유자만 로그인할 수 있고, 추가한 멤버는 로그인할 수 없습니다: pnpm library sign-in',
+  'people.loading': '멤버를 읽는 중…',
+  'people.closed': '라이브러리의 멤버는 관리자만 볼 수 있습니다.',
+  'people.failed': '실패했습니다: {error}',
+  'people.blocked': '이 계정은 차단되었습니다. 라이브러리에 콘텐츠를 업로드할 수 없습니다.',
+  'people.search': '이름 또는 주소로 검색',
 };
 
 export default words;

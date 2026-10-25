@@ -330,6 +330,48 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'Subir',
   'uploads.form.submitting': 'Subiendo y comprobando…',
   'uploads.form.cancel': 'Cancelar',
+  'people.signInWith': 'Iniciar sesión con {name}',
+  'people.signInHere': 'Iniciar sesión en este equipo',
+  'people.localHint':
+    'El propietario de la biblioteca inicia sesión en el equipo donde está instalada: ejecuta allí este comando y abre el enlace que muestra.',
+  'people.role.owner':
+    'Esta cuenta es propietaria de la biblioteca: nombra a sus miembros y la configura',
+  'people.role.admin': 'Esta cuenta es administradora: nombra a los miembros y revisa las subidas',
+  'people.role.reviewer': 'Esta cuenta revisa las subidas y publica las aceptadas',
+  'people.role.uploader':
+    'Esta cuenta puede subir contenido; los revisores de la biblioteca lo incorporan',
+  'people.role.blocked': 'Esta cuenta no puede subir contenido a la biblioteca',
+  'people.nav': 'Miembros',
+  'people.about':
+    'Quién revisa las subidas y gestiona la biblioteca. Cualquiera que inicie sesión puede subir; los miembros que nombres aquí revisan.',
+  'people.add.title': 'Añadir un miembro',
+  'people.add.email': 'Correo electrónico',
+  'people.add.role': 'Rol',
+  'people.add.submit': 'Añadir',
+  'people.roleName.owner': 'Propietario',
+  'people.roleName.admin': 'Administrador',
+  'people.roleName.reviewer': 'Revisor',
+  'people.roleName.none': 'Solo subidas',
+  'people.blockedBadge': 'Bloqueado',
+  'people.you': 'Tu cuenta',
+  'people.lastSeen': 'Último inicio de sesión: {when}',
+  'people.neverSeen': 'Aún no ha iniciado sesión',
+  'people.block': 'Bloquear',
+  'people.unblock': 'Desbloquear',
+  'people.handOver': 'Hacer propietario',
+  'people.blockConfirm':
+    '¿Bloquear a {email}? La cuenta no podrá subir contenido y perderá su rol.',
+  'people.handOverConfirm':
+    '¿Ceder la biblioteca a {email}? Tu cuenta seguirá siendo administradora.',
+  'people.members': 'Miembros',
+  'people.others': 'Otras personas que iniciaron sesión',
+  'people.noProvider':
+    'Hasta que se configure un proveedor, solo el propietario puede iniciar sesión, y los miembros que añadas no: pnpm library sign-in.',
+  'people.loading': 'Leyendo los miembros…',
+  'people.closed': 'Solo los administradores de la biblioteca ven sus miembros.',
+  'people.failed': 'No funcionó: {error}',
+  'people.blocked': 'Esta cuenta está bloqueada: no puede subir contenido a la biblioteca.',
+  'people.search': 'Buscar por nombre o dirección',
 };
 
 export default words;

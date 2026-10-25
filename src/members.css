@@ -1,0 +1,155 @@
+/* The library's members (Members.tsx), and what the account shows of signing in and of the
+   members (account.tsx), in the colours and type of styles.css. */
+
+/* ------------------------------------------------------------ the members */
+
+.members {
+  display: grid;
+  gap: 1.4rem;
+  max-width: 52rem;
+}
+
+.members h3 {
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.member-add {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.member-add h3 {
+  margin: 0;
+}
+
+.member-add .row input {
+  flex: 1 1 16rem;
+  width: auto;
+}
+
+.member-add .row select,
+.member-role select {
+  width: auto;
+}
+
+.member-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.member {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.member:last-child {
+  border-bottom: none;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+
+.member-who {
+  display: grid;
+  min-width: 0;
+}
+
+.member-who strong,
+.member-who span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-self {
+  margin-inline-start: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.member-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.member-actions button {
+  white-space: nowrap;
+}
+
+button.danger {
+  color: var(--bad);
+}
+
+/* A member's role and what may be done to them, side by side, the actions under the role when
+   there is no room. */
+.member-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem 0.75rem;
+}
+
+/* On a narrow screen they go under the name. */
+@media (max-width: 640px) {
+  .member {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0.5rem;
+  }
+
+  .member-avatar {
+    align-self: start;
+  }
+
+  .member-controls {
+    grid-column: 2;
+    justify-content: space-between;
+  }
+}
+
+/* ------------------------------------------------------------ the account */
+
+/* What the menu says in words: the grid's gap spaces it. */
+.account-menu > p {
+  margin: 0;
+}
+
+.account-link {
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.account-link:hover {
+  background: var(--surface-2);
+}
+
+/* The command that prints the owner's link: chosen whole by one click, to be copied. */
+.account-command {
+  display: block;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  user-select: all;
+}

@@ -328,6 +328,49 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submit': 'アップロード',
   'uploads.form.submitting': 'アップロードして確認中…',
   'uploads.form.cancel': 'キャンセル',
+  'people.signInWith': '{name} でログイン',
+  'people.signInHere': 'このコンピューターでログイン',
+  'people.localHint':
+    'ライブラリの所有者は、ライブラリがインストールされているコンピューターでログインします。そこでこのコマンドを実行し、表示されたリンクを開いてください。',
+  'people.role.owner':
+    'このアカウントはライブラリの所有者です。メンバーを指名し、ライブラリを設定します',
+  'people.role.admin': 'このアカウントは管理者です。メンバーを指名し、アップロードを審査します',
+  'people.role.reviewer': 'このアカウントはアップロードを審査し、承認したものを公開します',
+  'people.role.uploader':
+    'このアカウントはコンテンツをアップロードできます。ライブラリの審査者が取り込みます',
+  'people.role.blocked': 'このアカウントはライブラリにコンテンツをアップロードできません',
+  'people.nav': 'メンバー',
+  'people.about':
+    'アップロードを審査し、ライブラリを運営する人たちです。ログインすれば誰でもアップロードでき、ここで指名したメンバーが審査します。',
+  'people.add.title': 'メンバーを追加',
+  'people.add.email': 'メールアドレス',
+  'people.add.role': '役割',
+  'people.add.submit': '追加',
+  'people.roleName.owner': '所有者',
+  'people.roleName.admin': '管理者',
+  'people.roleName.reviewer': '審査者',
+  'people.roleName.none': 'アップロードのみ',
+  'people.blockedBadge': 'ブロック中',
+  'people.you': 'あなたのアカウント',
+  'people.lastSeen': '最終ログイン: {when}',
+  'people.neverSeen': 'まだログインしていません',
+  'people.block': 'ブロック',
+  'people.unblock': 'ブロックを解除',
+  'people.handOver': '所有者にする',
+  'people.blockConfirm':
+    '{email} をブロックしますか？このアカウントはアップロードできなくなり、役割も失います。',
+  'people.handOverConfirm':
+    'ライブラリを {email} に譲りますか？あなたのアカウントは管理者のままです。',
+  'people.members': 'メンバー',
+  'people.others': 'ログインしたその他の人',
+  'people.noProvider':
+    'ログインのプロバイダーを設定するまでは所有者しかログインできず、追加したメンバーはログインできません: pnpm library sign-in',
+  'people.loading': 'メンバーを読み込んでいます…',
+  'people.closed': 'ライブラリのメンバーは管理者だけが見られます。',
+  'people.failed': 'うまくいきませんでした: {error}',
+  'people.blocked':
+    'このアカウントはブロックされています。ライブラリにコンテンツをアップロードできません。',
+  'people.search': '名前またはアドレスで検索',
 };
 
 export default words;

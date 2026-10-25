@@ -10,6 +10,7 @@ import { manifest, MEDIA_LIBRARY_URL, mediaUrl, size, type Manifest } from './me
 import { ItemOverlay } from './Overlay';
 import { inSection, sectionOf, SECTIONS, type Section } from './sections';
 import { useRead, type LibraryRoute } from './shared';
+import { readAccess } from './uploadsApi';
 
 // Each part is loaded when it is opened: the app's readers it takes read their catalogs as they
 // are imported, and none of them should hold up another part.
@@ -25,12 +26,15 @@ const CardsPeek = lazy(() => import('./Cards').then((m) => ({ default: m.CardsPe
 const ShapesPeek = lazy(() => import('./Shapes').then((m) => ({ default: m.ShapesPeek })));
 const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPeek })));
 const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
+const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
 
 export type { LibraryRoute };
 
 const OVERVIEW = 'overview';
 /** What is uploaded to the library and waits to be published (README, "Uploading"). */
 const UPLOADS = 'uploads';
+/** Who reviews and runs the library, for its admins (docs/SPEC.md §6). */
+const MEMBERS = 'members';
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
 const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
@@ -191,6 +195,8 @@ export function Library({
   const read = useRead(manifest, []);
   const section = sectionOf(route.section);
   const uploads = route.section === UPLOADS;
+  const members = route.section === MEMBERS;
+  const access = useRead(readAccess, []);
   // A language is shown once the app's words in it are read; until then, the one before.
   const [shown, setShown] = useState<Lang>(() => (hasWords(lang) ? lang : 'en'));
   useEffect(() => {
@@ -213,9 +219,12 @@ export function Library({
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
-  switch (uploads ? UPLOADS : section?.id) {
+  switch (uploads ? UPLOADS : members ? MEMBERS : section?.id) {
     case UPLOADS:
       content = <Uploads {...props} />;
+      break;
+    case MEMBERS:
+      content = <Members query={query} />;
       break;
     case 'designs':
       content = <Designs {...props} variants={variants} onOpenVariant={onOpenVariant} />;
@@ -278,7 +287,7 @@ export function Library({
         <nav className="lib-sections">
           <button
             type="button"
-            aria-current={!section && !uploads ? 'page' : undefined}
+            aria-current={!section && !uploads && !members ? 'page' : undefined}
             onClick={() => go({ section: OVERVIEW })}
           >
             {t('library.overview')}
@@ -302,6 +311,15 @@ export function Library({
           >
             {t('uploads.nav')}
           </button>
+          {access.value?.mayManage && (
+            <button
+              type="button"
+              aria-current={members ? 'page' : undefined}
+              onClick={() => go({ section: MEMBERS })}
+            >
+              {t('people.nav')}
+            </button>
+          )}
         </nav>
         <button
           type="button"
@@ -317,23 +335,37 @@ export function Library({
         <header className="lib-head">
           <div>
             <h2>
-              {uploads ? t('uploads.nav') : section ? t(section.nameKey) : t('library.overview')}
+              {uploads
+                ? t('uploads.nav')
+                : members
+                  ? t('people.nav')
+                  : section
+                    ? t(section.nameKey)
+                    : t('library.overview')}
             </h2>
             <p className="muted small">
               {uploads
                 ? t('uploads.about')
-                : section
-                  ? t(section.aboutKey)
-                  : t('library.overviewAbout')}
+                : members
+                  ? t('people.about')
+                  : section
+                    ? t(section.aboutKey)
+                    : t('library.overviewAbout')}
             </p>
           </div>
-          {(section || uploads) && (
+          {(section || uploads || members) && (
             <input
               type="search"
               className="lib-search"
               value={query}
               onChange={(event) => setSearch({ section: route.section, text: event.target.value })}
-              placeholder={section ? searchHint(section.id, shown, t) : t('uploads.searchHint')}
+              placeholder={
+                section
+                  ? searchHint(section.id, shown, t)
+                  : members
+                    ? t('people.search')
+                    : t('uploads.searchHint')
+              }
               aria-label={t('library.searchLabel')}
             />
           )}

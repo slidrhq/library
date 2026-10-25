@@ -156,11 +156,12 @@ export function Uploads({
   );
   const count = (one?: Status) => all.filter((upload) => !one || upload.status === one).length;
   const mayUpload = access.value?.mayUpload ?? false;
-  // The uploads are the editors': someone else is told why, and one signed out how to sign in.
+  const mayPublish = access.value?.mayPublish ?? false;
+  // Anyone signed in uploads: someone blocked is told why, and one signed out how to sign in.
   const refused =
     list.error instanceof ApiError && (list.error.status === 401 || list.error.status === 403);
   const signedOut =
-    list.error instanceof ApiError && list.error.status === 401 && Boolean(access.value?.signIn);
+    list.error instanceof ApiError && list.error.status === 401 && Boolean(access.value?.provider);
   const open = (item: string) => go({ section: 'uploads', item });
   const close = () => go({ section: 'uploads' });
 
@@ -182,7 +183,7 @@ export function Uploads({
               </button>
             ))}
           </div>
-          {mayUpload && count('accepted') > 0 && (
+          {mayPublish && count('accepted') > 0 && (
             <button type="button" disabled={publishing} onClick={publishAccepted}>
               {t('uploads.publishAll', { count: count('accepted') })}
             </button>
