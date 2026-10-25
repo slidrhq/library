@@ -8,10 +8,11 @@ import { Vault, masterKeyText, newMasterKey } from './vault.ts';
 
 const SITE = 'https://library.example';
 const TENANT = '9188040d-6c67-4c5b-b112-36a304b66dad';
+/** The discovery of one tenant, as Microsoft answers it: by the tenant's id. */
 const MICROSOFT = {
-  issuer: 'https://login.microsoftonline.com/{tenantid}/v2.0',
-  authorization_endpoint: 'https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize',
-  token_endpoint: 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token',
+  issuer: `https://login.microsoftonline.com/${TENANT}/v2.0`,
+  authorization_endpoint: `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/authorize`,
+  token_endpoint: `https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`,
 };
 const KEYCLOAK = {
   issuer: 'https://id.example.org/realms/staff',
@@ -99,9 +100,12 @@ afterEach(() => {
   forgetDiscovery();
 });
 
-const microsoft = (allowedDomains: string[] = ['contoso.com']): SignInSettings => ({
+const microsoft = (
+  allowedDomains: string[] = ['contoso.com'],
+  tenant = TENANT,
+): SignInSettings => ({
   provider: 'microsoft',
-  issuer: microsoftIssuer('organizations'),
+  issuer: microsoftIssuer(tenant),
   clientId: 'ms-client',
   allowedDomains,
 });
@@ -129,10 +133,7 @@ describe('signing in through the provider the library names', () => {
     const { to, back } = await signIn(env, stand);
     assert.equal(to.origin + to.pathname, MICROSOFT.authorization_endpoint);
     assert.equal(to.searchParams.get('client_id'), 'ms-client');
-    assert.equal(
-      stand.calls[0],
-      `${microsoftIssuer('organizations')}/.well-known/openid-configuration`,
-    );
+    assert.equal(stand.calls[0], `${microsoftIssuer(TENANT)}/.well-known/openid-configuration`);
     const user = await whoIs(env, back);
     assert.equal(user?.email, 'ann@contoso.com');
     assert.equal(user?.provider, 'microsoft');
@@ -149,6 +150,52 @@ describe('signing in through the provider the library names', () => {
       microsoftClaims({ iss: 'https://login.microsoftonline.com/another-tenant/v2.0' }),
     );
     assert.ok(failed((await signIn(env, forged)).back));
+  });
+
+  test('finds a tenant named by its domain, and holds it to that tenant', async () => {
+    const env = await libraryWith(microsoft(['contoso.com'], 'contoso.com'));
+    const { back } = await signIn(env, provider(MICROSOFT, microsoftClaims()));
+    assert.equal((await whoIs(env, back))?.email, 'ann@contoso.com');
+  });
+
+  test('takes no Microsoft of every tenant at once: any tenant could name any address', async () => {
+    for (const tenant of ['organizations', 'common']) {
+      const env = await libraryWith(microsoft(['victim.org'], tenant));
+      const shared = {
+        ...MICROSOFT,
+        issuer: 'https://login.microsoftonline.com/{tenantid}/v2.0',
+      };
+      const stand = provider(shared, microsoftClaims({ preferred_username: 'owner@victim.org' }));
+      const login = await call(env, '/auth/login');
+      assert.equal(login.headers.get('Location'), `${SITE}/?signin=failed`, tenant);
+      assert.ok(!stand.calls.some((url) => url.includes('/token')));
+      mock.restoreAll();
+      mock.method(console, 'warn', () => undefined);
+      forgetDiscovery();
+    }
+  });
+
+  test('takes a discovery only of the very issuer named, over HTTPS', async () => {
+    const env = await libraryWith({
+      provider: 'oidc',
+      issuer: KEYCLOAK.issuer,
+      clientId: 'library',
+      name: 'Staff',
+      allowedDomains: [],
+    });
+    provider({ ...KEYCLOAK, issuer: 'https://evil.example/realms/staff' }, () => ({}));
+    assert.equal(
+      (await call(env, '/auth/login')).headers.get('Location'),
+      `${SITE}/?signin=failed`,
+    );
+    mock.restoreAll();
+    mock.method(console, 'warn', () => undefined);
+    forgetDiscovery();
+    provider({ ...KEYCLOAK, token_endpoint: 'http://id.example.org/token' }, () => ({}));
+    assert.equal(
+      (await call(env, '/auth/login')).headers.get('Location'),
+      `${SITE}/?signin=failed`,
+    );
   });
 
   test('takes no Microsoft address when no domain vouches for it', async () => {
@@ -188,6 +235,11 @@ describe('signing in through the provider the library names', () => {
     provider(undefined, microsoftClaims());
     const login = await call(env, '/auth/login?return=%2Fuploads');
     assert.equal(login.headers.get('Location'), `${SITE}/uploads?signin=failed`);
+    // A path that would name another site, once written back as an address, is not followed.
+    for (const back of ['/.//evil.example/phish', '//evil.example', '/\\evil.example']) {
+      const away = await call(env, `/auth/login?return=${encodeURIComponent(back)}`);
+      assert.equal(away.headers.get('Location'), `${SITE}/?signin=failed`, back);
+    }
   });
 
   test('holds Google to the library’s domains too', async () => {

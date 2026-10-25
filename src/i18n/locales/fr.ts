@@ -469,8 +469,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'Secret client',
   'settings.signIn.secretKept': 'Conservé depuis le {when}. Laissé vide, il reste inchangé.',
   'settings.signIn.tenant': 'Locataire (Tenant)',
-  'settings.signIn.tenantHint':
-    'L’ID de locataire ou le domaine de votre organisation ; organizations : tout compte professionnel ou scolaire.',
   'settings.signIn.issuer': 'Émetteur (Issuer)',
   'settings.signIn.issuerHint':
     'L’adresse dont le document de découverte se trouve à /.well-known/openid-configuration. Il est lu avant l’enregistrement.',
@@ -581,6 +579,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Jeton de purge du cache',
   'settings.media.purgeTokenHint':
     'Un jeton d’API autorisé en Cache Purge sur cette zone. Il est vérifié avant l’enregistrement.',
+  'settings.signIn.tenantHint':
+    'L’ID de locataire (Tenant) de votre organisation, ou son domaine, comme contoso.onmicrosoft.com. Seuls les comptes de ce locataire se connectent.',
+  'settings.signIn.ownerOnly':
+    'Seul le propriétaire de la médiathèque décide comment on s’y connecte : qui choisit le fournisseur dit qui est qui.',
 };
 
 export default words;

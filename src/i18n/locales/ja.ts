@@ -465,8 +465,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'クライアント シークレット',
   'settings.signIn.secretKept': '{when} から保存されています。空欄のままなら変更されません。',
   'settings.signIn.tenant': 'テナント',
-  'settings.signIn.tenantHint':
-    '組織のテナント ID またはドメイン。organizations: 任意の職場または学校アカウント。',
   'settings.signIn.issuer': '発行者（Issuer）',
   'settings.signIn.issuerHint':
     '検出ドキュメントが /.well-known/openid-configuration にあるアドレス。保存前に読み込みます。',
@@ -574,6 +572,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'キャッシュ消去用トークン',
   'settings.media.purgeTokenHint':
     'このゾーンで Cache Purge を許可した API トークン。保存前に確認します。',
+  'settings.signIn.tenantHint':
+    '組織のテナント ID、またはそのドメイン（contoso.onmicrosoft.com など）。そのテナントのアカウントだけがログインできます。',
+  'settings.signIn.ownerOnly':
+    'ログイン方法はライブラリの所有者だけが設定します。プロバイダーを決める人が、誰が誰かを決めるからです。',
 };
 
 export default words;

@@ -50,9 +50,33 @@ const GOOGLE: Endpoints = {
 /** Google's tokens name their issuer either way. */
 const GOOGLE_ISSUERS = [GOOGLE_ISSUER, 'accounts.google.com'];
 
-/** Microsoft's issuer for a tenant: its id, or `organizations`, `common`. */
+/** Microsoft's issuer for a tenant: its id, or one of its domains. */
 export const microsoftIssuer = (tenant: string) =>
   `https://login.microsoftonline.com/${encodeURIComponent(tenant)}/v2.0`;
+
+/**
+ * Microsoft's names for every tenant at once. Through them, a token of any tenant would do, and
+ * any tenant's admin could give an account any address: the library is held to one tenant.
+ */
+export const MANY_TENANTS = ['organizations', 'common', 'consumers'];
+
+/** Whether a tenant is one organization's: its id, or one of its domains. */
+export const isOneTenant = (tenant: string) =>
+  /^[A-Za-z0-9.-]+$/.test(tenant) && !MANY_TENANTS.includes(tenant.toLowerCase());
+
+/** A tenant's issuer, as Microsoft's discovery names it: by the tenant's id. */
+const TENANT_ISSUER =
+  /^https:\/\/login\.microsoftonline\.com\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/v2\.0$/;
+
+/** Whether an address may be a provider's: HTTPS, or plain HTTP on this machine alone. */
+export function secureAddress(address: string) {
+  try {
+    const { protocol, hostname } = new URL(address);
+    return protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
+  } catch {
+    return false;
+  }
+}
 
 const NAMES: Record<Provider['kind'], string> = {
   google: 'Google',
@@ -153,6 +177,10 @@ export function endpointsOf(provider: Provider): Promise<Endpoints> {
   if (held && held.until > Date.now()) return held.value;
   const value = (async () => {
     const url = `${provider.issuer.replace(/\/$/, '')}/.well-known/openid-configuration`;
+    if (!secureAddress(url)) throw new ProviderUnreachable(`${url} is not over HTTPS.`);
+    if (provider.kind === 'microsoft' && !isOneTenant(tenantOfIssuer(provider.issuer))) {
+      throw new ProviderUnreachable('Microsoft is named by one tenant: its id, or its domain.');
+    }
     let document: Record<string, unknown>;
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
@@ -165,9 +193,15 @@ export function endpointsOf(provider: Provider): Promise<Endpoints> {
     if (
       typeof issuer !== 'string' ||
       typeof authorization !== 'string' ||
-      typeof token !== 'string'
+      typeof token !== 'string' ||
+      ![issuer, authorization, token].every(secureAddress)
     ) {
-      throw new ProviderUnreachable(`${url} does not name the provider's endpoints.`);
+      throw new ProviderUnreachable(`${url} does not name the provider's endpoints over HTTPS.`);
+    }
+    // The document is the issuer's own: it names that issuer, and Microsoft's, a tenant's by its id.
+    const same = issuer.replace(/\/+$/, '') === provider.issuer.replace(/\/+$/, '');
+    if (!same && !(provider.kind === 'microsoft' && TENANT_ISSUER.test(issuer))) {
+      throw new ProviderUnreachable(`${url} names another issuer: ${issuer}.`);
     }
     return { issuer, authorization, token };
   })();
@@ -200,14 +234,17 @@ function fromBase64url(text: string) {
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 }
 
-/** Whether the token's issuer is the provider's (Microsoft's common tenants by `{tenantid}`). */
+/** Whether the token's issuer is the provider's: the very one its discovery named. */
 function issuedBy(claims: Claims, provider: Provider, endpoints: Endpoints) {
   if (provider.kind === 'google') return GOOGLE_ISSUERS.includes(claims.iss ?? '');
-  const expected = claims.tid
-    ? endpoints.issuer.replace('{tenantid}', claims.tid)
-    : endpoints.issuer;
-  return claims.iss === expected;
+  return claims.iss === endpoints.issuer;
 }
+
+/** The tenant a Microsoft issuer names. */
+const tenantOfIssuer = (issuer: string) =>
+  decodeURIComponent(
+    /^https:\/\/login\.microsoftonline\.com\/([^/]+)\/v2\.0\/?$/.exec(issuer)?.[1] ?? '',
+  );
 
 /** The domain of an address is one the library allows, when it allows only some. */
 export const domainAllowed = (email: string, allowed: readonly string[]) =>

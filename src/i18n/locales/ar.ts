@@ -441,8 +441,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'سر العميل (Client secret)',
   'settings.signIn.secretKept': 'محفوظ منذ {when}. إذا تُرك فارغًا، يبقى كما هو.',
   'settings.signIn.tenant': 'المستأجر (Tenant)',
-  'settings.signIn.tenantHint':
-    'معرّف المستأجر أو نطاق مؤسستك؛ organizations: أي حساب عمل أو مؤسسة تعليمية.',
   'settings.signIn.issuer': 'المُصدِر (Issuer)',
   'settings.signIn.issuerHint':
     'العنوان الذي يوجد مستند الاكتشاف الخاص به في /.well-known/openid-configuration. يُقرأ قبل الحفظ.',
@@ -546,6 +544,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'رمز إفراغ ذاكرة التخزين المؤقت',
   'settings.media.purgeTokenHint':
     'رمز API بصلاحية Cache Purge على هذه المنطقة. يُتحقَّق منه قبل الحفظ.',
+  'settings.signIn.tenantHint':
+    'معرّف المستأجر (Tenant) لمؤسستك، أو نطاقها، مثل contoso.onmicrosoft.com. لا تسجّل الدخول إلا حسابات هذا المستأجر.',
+  'settings.signIn.ownerOnly':
+    'مالك المكتبة وحده يحدّد كيف يسجّل الناس الدخول: فمن يعيّن الموفّر يحدّد هوية كل شخص.',
 };
 
 export default words;

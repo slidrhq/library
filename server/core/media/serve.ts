@@ -9,7 +9,8 @@
  * Nothing here needs signing in: the library is public.
  */
 import type { Context } from '../context.ts';
-import { cacheControl, contentType, isLibraryPath } from './live.ts';
+import type { MediaStore } from '../context.ts';
+import { MANIFEST, cacheControl, contentType, isLibraryPath, readManifest } from './live.ts';
 
 export const MEDIA_PREFIX = '/media/';
 
@@ -35,6 +36,28 @@ const notFound = () =>
   });
 
 /** The path of the library a request names, or none when it names none. */
+/** The paths each store's manifest names, read again every few seconds. */
+const NAMED_MS = 5_000;
+/** At most this often is the manifest read again for a path it did not name. */
+const UNNAMED_MS = 1_000;
+const namedBy = new WeakMap<MediaStore, { at: number; paths: Set<string> }>();
+
+/**
+ * Whether the library's manifest names a path. A path it did not name is asked about again once a
+ * second at most: one just published is found, and asking for others costs little.
+ */
+async function named(media: MediaStore, path: string) {
+  const held = namedBy.get(media);
+  const age = held ? Date.now() - held.at : Infinity;
+  if (held && (age < UNNAMED_MS || (age < NAMED_MS && held.paths.has(path)))) {
+    return held.paths.has(path);
+  }
+  const live = await readManifest(media).catch(() => undefined);
+  const paths = new Set(Object.keys(live?.manifest.files ?? {}));
+  namedBy.set(media, { at: Date.now(), paths });
+  return paths.has(path);
+}
+
 function pathOf(pathname: string): string | undefined {
   try {
     const path = pathname
@@ -67,6 +90,8 @@ export async function serveMedia(request: Request, ctx: Context): Promise<Respon
   }
   const path = pathOf(new URL(request.url).pathname);
   if (!path) return notFound();
+  // Only what the library names: a folder of a machine may hold other files beside it.
+  if (path !== MANIFEST && !(await named(ctx.media, path))) return notFound();
   const object = await ctx.media.get(path);
   if (!object) return notFound();
   const etag = `"${object.customMetadata?.sha256 ?? object.etag}"`;

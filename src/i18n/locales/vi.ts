@@ -461,8 +461,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'Mật khẩu ứng dụng khách (Client secret)',
   'settings.signIn.secretKept': 'Đã lưu từ {when}. Để trống thì giữ nguyên.',
   'settings.signIn.tenant': 'Đối tượng thuê (Tenant)',
-  'settings.signIn.tenantHint':
-    'ID hoặc tên miền đối tượng thuê của tổ chức bạn; organizations: mọi tài khoản cơ quan hoặc trường học.',
   'settings.signIn.issuer': 'Bên phát hành (Issuer)',
   'settings.signIn.issuerHint':
     'Địa chỉ có tài liệu khám phá nằm tại /.well-known/openid-configuration. Tài liệu được đọc trước khi lưu.',
@@ -570,6 +568,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Token xóa bộ nhớ đệm',
   'settings.media.purgeTokenHint':
     'Token API có quyền Cache Purge trên vùng này. Token được kiểm tra trước khi lưu.',
+  'settings.signIn.tenantHint':
+    'ID đối tượng thuê (Tenant) của tổ chức bạn, hoặc tên miền, ví dụ contoso.onmicrosoft.com. Chỉ tài khoản của đối tượng thuê đó mới đăng nhập được.',
+  'settings.signIn.ownerOnly':
+    'Chỉ chủ sở hữu thư viện mới đặt cách mọi người đăng nhập: ai chọn nhà cung cấp thì quyết định ai là ai.',
 };
 
 export default words;

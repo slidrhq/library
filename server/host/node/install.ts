@@ -12,7 +12,8 @@ import { execFile } from 'node:child_process';
 import { chmod, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
-import { join, resolve } from 'node:path';
+import { realpathSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import {
   CONFIG,
@@ -155,6 +156,7 @@ export async function install(options: InstallOptions): Promise<Installed> {
   let media = options.media;
   if (media?.kind === 'folder') {
     media = { ...media, path: resolve(media.path) };
+    apartFromData(data, media.path);
     await mkdir(media.path, { recursive: true });
   }
 
@@ -235,6 +237,42 @@ function keyOf(text: string | undefined): StoreKey {
   }
 }
 
+/** A folder as the system names it, through the part of it that is there. */
+function realFolderSync(path: string): string {
+  const rest: string[] = [];
+  let at = resolve(path);
+  for (;;) {
+    try {
+      return join(realpathSync.native(at), ...rest.reverse());
+    } catch {
+      const up = dirname(at);
+      if (up === at) return resolve(path);
+      rest.push(basename(at));
+      at = up;
+    }
+  }
+}
+
+/** Whether a folder is another, or inside it. */
+const within = (folder: string, outer: string) => {
+  const path = relative(outer, folder);
+  return path === '' || (!path.startsWith('..') && !isAbsolute(path));
+};
+
+/**
+ * Throws for a media folder that is the library's data folder, in it, or holds it: its files are
+ * published, and a publication writes it, so it is never where the library keeps itself.
+ */
+export function apartFromData(data: string, folder: string) {
+  const media = realFolderSync(folder);
+  const own = realFolderSync(data);
+  if (within(media, own) || within(own, media)) {
+    throw new LibraryError(
+      `The media folder is apart from the library's own data (${own}): neither in it, nor holding it.`,
+    );
+  }
+}
+
 /**
  * Opens the media store of some settings, with its key: a folder of this machine; an R2 bucket,
  * through its S3 API; or a folder of another server, whose files read are kept in a cache folder
@@ -242,7 +280,10 @@ function keyOf(text: string | undefined): StoreKey {
  */
 export function mediaOpener(data: string) {
   return (settings: MediaSettings, key?: string): MediaStore => {
-    if (settings.kind === 'folder') return new FolderMedia(settings.path);
+    if (settings.kind === 'folder') {
+      apartFromData(data, settings.path);
+      return new FolderMedia(settings.path);
+    }
     if (settings.kind === 'r2') {
       const { accessKeyId = '', secretAccessKey = '' } = keyOf(key);
       return new R2S3Media(settings, { accessKeyId, secretAccessKey });

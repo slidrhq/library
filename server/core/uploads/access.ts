@@ -175,11 +175,12 @@ async function byKey(header: string, ctx: Context, permission: Permission) {
     // A token of someone blocked is no different from one that is not there.
     if (person?.blocked) return refuse(401, 'bad-key');
     const role = person?.role;
-    const may =
-      MAY[token.scope].has(permission) &&
-      // A token that publishes is an admin's, while they are one.
-      (token.scope === 'upload' || MAY.upload.has(permission) || rankOf(role) >= rankOf('admin'));
-    if (!may) return refuse(403, 'token-scope');
+    // A token that publishes is an admin's, while they are one: after, it does nothing at all,
+    // not even what any token may.
+    if (token.scope === 'publish' && rankOf(role) < rankOf('admin')) {
+      return refuse(403, 'token-scope');
+    }
+    if (!MAY[token.scope].has(permission)) return refuse(403, 'token-scope');
     const actor: Actor = {
       id: token.owner,
       ...(person?.name ? { name: person.name } : {}),

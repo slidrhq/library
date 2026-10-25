@@ -29,7 +29,14 @@ import { LIMITS, limitsOf } from './limits.ts';
 import { purgerFor } from './media/cache.ts';
 import { MANIFEST, PROBE } from './media/live.ts';
 import { siteOf } from './media/routes.ts';
-import { GOOGLE_ISSUER, ProviderUnreachable, microsoftIssuer, saveSignIn } from './oidc.ts';
+import {
+  GOOGLE_ISSUER,
+  ProviderUnreachable,
+  isOneTenant,
+  microsoftIssuer,
+  saveSignIn,
+  secureAddress,
+} from './oidc.ts';
 import { authorize } from './uploads/access.ts';
 
 type Route = (request: Request, ctx: Context) => Promise<Response>;
@@ -172,6 +179,26 @@ export async function testStore(media: MediaStore): Promise<StoreTest> {
   }
 }
 
+/** Whether two settings name the same store, as far as its key goes. */
+function sameStore(was: MediaSettings | undefined, now: MediaSettings) {
+  if (!was || was.kind !== now.kind) return false;
+  if (was.kind === 'sftp' && now.kind === 'sftp') {
+    return was.host === now.host && was.port === now.port && was.user === now.user;
+  }
+  if (was.kind === 'ftp' && now.kind === 'ftp') {
+    return was.host === now.host && (was.port ?? 0) === (now.port ?? 0) && was.user === now.user;
+  }
+  if (was.kind === 'r2' && now.kind === 'r2') {
+    return (
+      was.accountId === now.accountId &&
+      was.bucket === now.bucket &&
+      was.zoneId === now.zoneId &&
+      was.publicUrl === now.publicUrl
+    );
+  }
+  return was.kind === 'folder';
+}
+
 /** A store's key as the page sends it: what each kind takes, as text for the vault. */
 function keyText(kind: MediaSettings['kind'], given: unknown): string | undefined | Response {
   if (given === undefined || given === null) return undefined;
@@ -228,14 +255,22 @@ const media: Route = async (request, ctx) => {
   const kind = settings.data.kind;
   const newKey = keyText(kind, givenKey);
   if (newKey instanceof Response) return newKey;
-  // A key left out keeps the one the vault has, for a store of the same kind.
+  // A key left out keeps the one the vault has, for the very store it was given for: never sent
+  // to another server, as another user, or for another bucket.
   const was = ctx.state ? (await readConfig(ctx.state))?.media : undefined;
-  const key = newKey ?? (was?.kind === kind ? await ctx.vault?.get('media') : undefined);
+  const key = newKey ?? (sameStore(was, settings.data) ? await ctx.vault?.get('media') : undefined);
   if (kind !== 'folder' && !key) {
     return problem(400, 'bad-request', 'A server is reached with its key: name it.');
   }
   // Reached before it is kept: a store that cannot be reached is not kept.
-  const store = ctx.openMedia(settings.data, key);
+  let store: MediaStore;
+  try {
+    store = ctx.openMedia(settings.data, key);
+  } catch (error) {
+    // Settings the host will not open: a folder where the library keeps itself.
+    const message = error instanceof Error ? error.message : String(error);
+    return json({ error: 'store-unreachable', message }, 422);
+  }
   const tried = await testStore(store);
   await store.close?.().catch(() => undefined);
   if (tried.hostKey) {
@@ -279,8 +314,12 @@ const test: Route = async (request, ctx) => {
   return json(await testStore(ctx.media));
 };
 
+/**
+ * How people sign in is the owner's alone: whoever names the provider says who each person is, the
+ * owner too.
+ */
 const signIn: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'settings');
+  const actor = await authorize(request, ctx, 'owner');
   if (actor instanceof Response) return actor;
   if (!ctx.state || !ctx.vault) {
     return problem(
@@ -301,12 +340,22 @@ const signIn: Route = async (request, ctx) => {
     return problem(400, 'bad-request', 'The provider is google, microsoft or oidc.');
   }
   const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+  if (provider === 'microsoft' && !isOneTenant(text(given.tenant))) {
+    return problem(
+      400,
+      'bad-request',
+      'Microsoft is named by the organization’s tenant: its id, or its domain. Through organizations or common, any tenant’s accounts would sign in.',
+    );
+  }
   const issuer =
     provider === 'microsoft'
-      ? microsoftIssuer(text(given.tenant) || 'organizations')
+      ? microsoftIssuer(text(given.tenant))
       : provider === 'oidc'
         ? text(given.issuer)
         : GOOGLE_ISSUER;
+  if (!secureAddress(issuer)) {
+    return problem(400, 'bad-request', 'A provider is reached over HTTPS.');
+  }
   const domains = Array.isArray(given.allowedDomains)
     ? given.allowedDomains.map((one) => text(one).toLowerCase()).filter(Boolean)
     : [];
@@ -321,8 +370,14 @@ const signIn: Route = async (request, ctx) => {
   if (!parsed.success) {
     return problem(400, 'bad-request', 'These are not the settings of a provider.');
   }
-  // A secret left out keeps the one the vault has.
-  const secret = text(given.secret) || (await ctx.vault.get('oidc'));
+  // A secret left out keeps the one the vault has, for the very client it was given for: never
+  // sent to another issuer.
+  const was = (await readConfig(ctx.state))?.signIn;
+  const same =
+    was?.provider === parsed.data.provider &&
+    was.clientId === parsed.data.clientId &&
+    (was.issuer ?? GOOGLE_ISSUER) === (parsed.data.issuer ?? GOOGLE_ISSUER);
+  const secret = text(given.secret) || (same ? await ctx.vault.get('oidc') : undefined);
   if (!secret) return problem(400, 'bad-request', 'The provider’s client comes with its secret.');
   try {
     await saveSignIn(ctx, parsed.data, secret, actor.id);

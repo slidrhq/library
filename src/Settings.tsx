@@ -770,11 +770,14 @@ const PROVIDERS: Record<Provider, string> = {
 function SignInPart({
   values,
   local,
+  owner,
   onSaved,
 }: {
   values: Values;
   /** Whether the owner signs in by a link of this machine, without a provider. */
   local: boolean;
+  /** Whether the one looking is the owner: how people sign in is the owner's alone. */
+  owner: boolean;
   onSaved: () => void;
 }) {
   const t = useT();
@@ -785,7 +788,7 @@ function SignInPart({
   );
   const [clientId, setClientId] = useState(set?.clientId ?? '');
   const [secret, setSecret] = useState('');
-  const [tenant, setTenant] = useState(tenantOf(set?.issuer) ?? 'organizations');
+  const [tenant, setTenant] = useState(tenantOf(set?.issuer) ?? '');
   const [issuer, setIssuer] = useState(set?.provider === 'oidc' ? (set.issuer ?? '') : '');
   const [name, setName] = useState(set?.name ?? '');
   const [domains, setDomains] = useState(set?.allowedDomains.join(', ') ?? '');
@@ -820,13 +823,22 @@ function SignInPart({
     });
   };
 
-  if (!values.editable.signIn) {
+  if (!values.editable.signIn || !owner) {
     return (
       <section className="settings-part">
         <h3>{t('settings.signIn.title')}</h3>
         <p className="small">
-          {t(values.signIn?.host ? 'settings.signIn.host' : 'settings.signIn.hostNone')}
+          {!values.editable.signIn
+            ? t(values.signIn?.host ? 'settings.signIn.host' : 'settings.signIn.hostNone')
+            : t('settings.signIn.ownerOnly')}
         </p>
+        {values.editable.signIn && values.signIn && (
+          <p className="settings-kind">
+            {values.signIn.provider === 'oidc'
+              ? (values.signIn.name ?? t('settings.signIn.oidc'))
+              : PROVIDERS[values.signIn.provider]}
+          </p>
+        )}
         {values.signIn && (
           <Field label={t('settings.signIn.redirect')}>
             <Copyable text={redirect} />
@@ -860,6 +872,8 @@ function SignInPart({
               <input
                 required
                 dir="ltr"
+                placeholder="contoso.onmicrosoft.com"
+                pattern="(?!(organizations|common|consumers)$)[A-Za-z0-9.\-]+"
                 value={tenant}
                 onChange={(event) => setTenant(event.target.value)}
               />
@@ -1039,7 +1053,12 @@ export function Settings() {
       <LibraryPart values={values} onSaved={onSaved} />
       <MediaPart values={values} onSaved={onSaved} />
       {values.media.kind !== 'none' && <SeedPart key={values.media.path} />}
-      <SignInPart values={values} local={access.value.local} onSaved={onSaved} />
+      <SignInPart
+        values={values}
+        local={access.value.local}
+        owner={Boolean(access.value.user?.can.owner)}
+        onSaved={onSaved}
+      />
       <LimitsPart values={values} onSaved={onSaved} />
     </div>
   );

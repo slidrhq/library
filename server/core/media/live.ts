@@ -91,13 +91,14 @@ export const cacheControl = (path: string) =>
   path === MANIFEST ? 'no-cache' : 'public, max-age=0, must-revalidate';
 
 /**
- * Whether a path is one of a file of the library: plain parts joined by `/`, none of them `.` or
- * `..`, and not the Worker's own (`_…`).
+ * Whether a path is one of a file of the library: plain parts joined by `/`, none of them hidden
+ * (`.…`, as `..`, `.ssh` or `.git`, which a folder of a machine may hold), and not the Worker's own
+ * (`_…`).
  */
 export function isLibraryPath(path: string): boolean {
   if (!path || path.startsWith('_') || path.startsWith('/') || path.endsWith('/')) return false;
   if (path.includes('\\') || path.includes(':') || path.includes('\0')) return false;
-  return path.split('/').every((part) => part !== '' && part !== '.' && part !== '..');
+  return path.split('/').every((part) => part !== '' && !part.startsWith('.'));
 }
 
 /** The manifest as `pnpm media:publish` wrote it: its files by path, indented. */

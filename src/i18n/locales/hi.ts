@@ -459,8 +459,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'क्लाइंट सीक्रेट (Client secret)',
   'settings.signIn.secretKept': '{when} से सहेजा हुआ है। खाली छोड़ें, तो यही बना रहेगा।',
   'settings.signIn.tenant': 'टेनेंट (Tenant)',
-  'settings.signIn.tenantHint':
-    'आपके संगठन की टेनेंट ID या डोमेन; organizations: कोई भी कार्य या स्कूल खाता।',
   'settings.signIn.issuer': 'जारीकर्ता (Issuer)',
   'settings.signIn.issuerHint':
     'वह पता जिसका डिस्कवरी दस्तावेज़ /.well-known/openid-configuration पर है। सहेजने से पहले इसे पढ़ा जाता है।',
@@ -569,6 +567,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'कैश साफ़ करने का टोकन',
   'settings.media.purgeTokenHint':
     'इस ज़ोन पर Cache Purge की अनुमति वाला API टोकन। सहेजने से पहले इसे जाँचा जाता है।',
+  'settings.signIn.tenantHint':
+    'आपके संगठन की टेनेंट (Tenant) ID, या उसका डोमेन, जैसे contoso.onmicrosoft.com। केवल उसी टेनेंट के खाते साइन इन करते हैं।',
+  'settings.signIn.ownerOnly':
+    'केवल लाइब्रेरी का मालिक तय करता है कि लोग कैसे साइन इन करें: जो प्रदाता चुनता है, वही तय करता है कि कौन कौन है।',
 };
 
 export default words;

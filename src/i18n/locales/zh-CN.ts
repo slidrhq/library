@@ -429,7 +429,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': '客户端密钥',
   'settings.signIn.secretKept': '自 {when} 起已保存。留空则保持不变。',
   'settings.signIn.tenant': '租户',
-  'settings.signIn.tenantHint': '你所在组织的租户 ID 或域名；organizations：任意工作或学校账号。',
   'settings.signIn.issuer': '颁发者（Issuer）',
   'settings.signIn.issuerHint':
     '其发现文档位于 /.well-known/openid-configuration 的地址。保存前会读取该文档。',
@@ -531,6 +530,10 @@ const words: Record<MessageKey, string> = {
     '让每次发布从缓存中清除它写入的内容。未填写时，旧文件会留在缓存中直到过期。',
   'settings.media.purgeToken': '缓存清除令牌',
   'settings.media.purgeTokenHint': '对此区域拥有 Cache Purge 权限的 API 令牌。保存前会验证。',
+  'settings.signIn.tenantHint':
+    '你所在组织的租户 ID 或其域名，如 contoso.onmicrosoft.com。只有该租户的账号可以登录。',
+  'settings.signIn.ownerOnly':
+    '只有媒体库的所有者能设置登录方式：谁指定提供方，谁就决定每个人是谁。',
 };
 
 export default words;

@@ -458,8 +458,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'Секрет клиента (Client secret)',
   'settings.signIn.secretKept': 'Хранится с {when}. Если оставить пустым, он сохранится.',
   'settings.signIn.tenant': 'Тенант (Tenant)',
-  'settings.signIn.tenantHint':
-    'ID или домен тенанта вашей организации; organizations: любая рабочая или учебная учётная запись.',
   'settings.signIn.issuer': 'Издатель (Issuer)',
   'settings.signIn.issuerHint':
     'Адрес, документ обнаружения которого лежит в /.well-known/openid-configuration. Он читается перед сохранением.',
@@ -567,6 +565,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Токен очистки кэша',
   'settings.media.purgeTokenHint':
     'API-токен с правом Cache Purge на эту зону. Он проверяется перед сохранением.',
+  'settings.signIn.tenantHint':
+    'ID тенанта (Tenant) вашей организации или её домен, например contoso.onmicrosoft.com. Входят только учётные записи этого тенанта.',
+  'settings.signIn.ownerOnly':
+    'Только владелец медиатеки решает, как в неё входят: кто выбирает поставщика, тот определяет, кто есть кто.',
 };
 
 export default words;

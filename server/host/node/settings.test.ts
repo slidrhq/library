@@ -117,18 +117,67 @@ describe('the settings, on a machine', () => {
     assert.deepEqual(shown.signIn.allowedDomains, ['example.org']);
     assert.equal(shown.signIn.secret.set, true);
     assert.doesNotMatch(JSON.stringify(shown), /the-client-secret/);
-    // A secret left out keeps the one kept.
+    // A secret left out keeps the one kept, for the same client; another client brings its own.
     const again = await send('/api/settings/sign-in', 'PUT', {
       provider: 'google',
-      clientId: 'client-2.apps.googleusercontent.com',
+      clientId: 'client-1.apps.googleusercontent.com',
+      allowedDomains: ['example.org', 'example.com'],
     });
     assert.equal(again.status, 204);
     assert.equal(await library.vault.get('oidc'), 'the-client-secret');
+    const other = await send('/api/settings/sign-in', 'PUT', {
+      provider: 'oidc',
+      issuer: 'https://sso.attacker.example/',
+      clientId: 'client-1.apps.googleusercontent.com',
+      name: 'Staff',
+    });
+    assert.equal(other.status, 400);
+    // Microsoft by one tenant only, and a provider over HTTPS only.
+    for (const body of [
+      { provider: 'microsoft', tenant: 'organizations', clientId: 'c', secret: 's' },
+      { provider: 'microsoft', clientId: 'c', secret: 's' },
+      {
+        provider: 'oidc',
+        issuer: 'http://sso.example.org/',
+        clientId: 'c',
+        name: 'S',
+        secret: 's',
+      },
+    ]) {
+      assert.equal((await send('/api/settings/sign-in', 'PUT', body)).status, 400);
+    }
     const me = await read<{ provider: { kind: string } }>(await call('/api/me'));
     assert.equal(me.provider.kind, 'google');
     assert.equal((await call('/api/settings/sign-in', { method: 'DELETE' })).status, 204);
     assert.equal(await library.vault.get('oidc'), undefined);
     assert.equal((await read<{ signIn: unknown }>(await call('/api/settings'))).signIn, null);
+  });
+
+  test('keep a store’s key for that store only, and no media folder where the library lives', async () => {
+    const { root, send, library } = await machine();
+    // The library's own data folder, or one that holds it, is no media folder.
+    for (const path of [join(root, 'data'), join(root, 'data', 'media'), root]) {
+      const refused = await send('/api/settings/media', 'PUT', { kind: 'folder', path });
+      assert.equal(refused.status, 422, path);
+      assert.match((await read<{ message: string }>(refused)).message, /apart from the library/);
+    }
+    // A key is never sent to another server than the one it was given for.
+    const sftp = {
+      kind: 'sftp' as const,
+      host: 'files.example.org',
+      user: 'u',
+      root: '/srv/media',
+    };
+    await library.vault.set('media', JSON.stringify({ password: 'kept' }));
+    const config = (await readConfig(library.state))!;
+    const { writeConfig } = await import('../../core/config.ts');
+    await writeConfig(library.state, {
+      ...config,
+      media: { ...sftp, port: 22, hostKey: `SHA256:${'A'.repeat(43)}` },
+    });
+    const moved = await send('/api/settings/media', 'PUT', { ...sftp, host: 'evil.example' });
+    assert.equal(moved.status, 400);
+    assert.match((await read<{ message: string }>(moved)).message, /its key/);
   });
 
   test('set the limits and the address, and record each change', async () => {
@@ -211,6 +260,21 @@ describe('an R2 bucket, from a machine', () => {
 });
 
 describe('the settings, on Cloudflare', () => {
+  test('let the owner alone name how people sign in', async () => {
+    const owner = await caller();
+    const someone = await caller({ email: 'someone@example.com' }, owner.bucket);
+    assert.equal(
+      (await owner.send('/api/members/someone%40example.com', 'PUT', { role: 'admin' })).status,
+      200,
+    );
+    const google = { provider: 'google', clientId: 'c', secret: 's' };
+    const admin = await someone.send('/api/settings/sign-in', 'PUT', google);
+    assert.equal(admin.status, 403);
+    assert.equal((await read<{ error: string }>(admin)).error, 'not-the-owner');
+    // The owner is let through, to be told the Worker keeps no keys without its master key.
+    assert.equal((await owner.send('/api/settings/sign-in', 'PUT', google)).status, 409);
+  });
+
   test('are an admin’s, and leave the media and the address to the host', async () => {
     const owner = await caller();
     const someone = await caller({ email: 'someone@example.com' }, owner.bucket);

@@ -158,12 +158,17 @@ function originOf(request: IncomingMessage, options: ServeOptions): string | und
 }
 
 /**
- * The address a request came from: behind a proxy, the last the proxy names
+ * The address a request came from: behind a proxy of this machine, the last the proxy names
  * (`X-Forwarded-For`), since what comes before it is whatever the client said.
  */
-function clientOf(request: IncomingMessage, options: ServeOptions): string | undefined {
+export function clientOf(
+  request: Pick<IncomingMessage, 'socket' | 'headers'>,
+  options: Pick<ServeOptions, 'behindProxy'>,
+): string | undefined {
   const socket = request.socket.remoteAddress;
-  if (!options.behindProxy) return socket;
+  // Only a proxy of this very machine says who it forwards: from anywhere else, anyone could.
+  const proxyHere = socket === '::1' || /^(::ffff:)?127(\.\d{1,3}){3}$/.test(socket ?? '');
+  if (!options.behindProxy || !proxyHere) return socket;
   const header = request.headers['x-forwarded-for'];
   const named = (Array.isArray(header) ? header.join(',') : (header ?? ''))
     .split(',')

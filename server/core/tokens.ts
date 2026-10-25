@@ -124,6 +124,17 @@ export async function revokeToken(store: Bucket, owner: string, id: string): Pro
   return true;
 }
 
+/** Revokes a person's tokens of a scope: an admin's publish tokens, once they are not one. */
+export async function revokeScope(store: Bucket, owner: string, scope: Scope): Promise<number> {
+  let revoked = 0;
+  for (const [id, hash] of await hashesOf(store, owner)) {
+    if ((await recordOf(store, hash))?.scope !== scope) continue;
+    await store.delete([recordKey(hash), indexKey(owner, id)]);
+    revoked += 1;
+  }
+  return revoked;
+}
+
 /** Revokes every token of a person: a person blocked. Answers how many there were. */
 export async function revokeAll(store: Bucket, owner: string): Promise<number> {
   const hashes = await hashesOf(store, owner);

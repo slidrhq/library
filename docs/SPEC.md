@@ -247,8 +247,8 @@ Each change is tested before it is kept: a store is reached, and a provider's di
 | See every upload; approve, reject, send back; publish what waits; **Try again**                            |        |           |    ✓     |   ✓   |   ✓   |
 | Tokens with the `publish` scope; an author's publication; import                                           |        |           |          |   ✓   |   ✓   |
 | Add and remove reviewers and admins; block people; revoke any token                                        |        |           |          |   ✓   |   ✓   |
-| Settings: the media and its key, sign-in, limits                                                           |        |           |          |   ✓   |   ✓   |
-| Hand ownership to another member                                                                           |        |           |          |       |   ✓   |
+| Settings: the media and its key, limits                                                                    |        |           |          |   ✓   |   ✓   |
+| Hand ownership to another member; name how people sign in (whoever names the provider says who each is)    |        |           |          |       |   ✓   |
 
 - The **owner** is the installer, and there is exactly one. No one removes the owner or changes the owner's role. The owner hands ownership over in Settings, or from the machine (`pnpm library owner <email>`).
 - **Members** are people with a role. An admin adds one **by email** with a role (reviewer or admin), before or after that person has ever signed in. The role takes effect at their next request, because roles are read from the store on every request, never from the session. Removing a member, or changing their role, takes effect at once. A `publish` token whose owner is no longer an admin stops working at once.
@@ -439,5 +439,5 @@ The page's words are in Hebrew and English, and every other locale of `src/i18n`
 
 1. **Manual upload.** What the manual upload lacks, if anything (D4). The user will look again.
 2. **Approving one's own upload.** Allowed for now, so that a single installer can work alone. Should a setting require a second person?
-3. **Microsoft and verified addresses.** Entra ID does not send `email_verified`. Should the Microsoft preset accept the address only when allowed domains are set (so the tenant vouches for it)?
+3. **Microsoft and verified addresses.** Entra ID does not send `email_verified`. Settled: the Microsoft preset is held to one tenant (its id or its domain, never `organizations` or `common`), and accepts an address only when allowed domains are set, so that tenant vouches for it.
 4. **Is `/media/` public?** Yes, as the published library is today. Should an organization be able to close it, with apps reading the media through the store's own address instead?

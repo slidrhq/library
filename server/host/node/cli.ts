@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { LINK_SECONDS, issueLocalLink } from '../../core/auth.ts';
 import { writeConfig, type SignInSettings } from '../../core/config.ts';
-import { ProviderUnreachable, microsoftIssuer, saveSignIn } from '../../core/oidc.ts';
+import { ProviderUnreachable, isOneTenant, microsoftIssuer, saveSignIn } from '../../core/oidc.ts';
 import { listPeople } from '../../core/people.ts';
 import {
   LibraryError,
@@ -272,9 +272,14 @@ async function signIn(args: string[]) {
   if (kind !== 'google' && kind !== 'microsoft' && kind !== 'oidc') throw new LibraryError(USAGE);
   const clientId = values['client-id'];
   if (!clientId) throw new LibraryError('Name the client: --client-id <id>.');
+  if (kind === 'microsoft' && !isOneTenant(values.tenant ?? '')) {
+    throw new LibraryError(
+      'Name the organization’s tenant: --tenant <its id, or its domain>. Through organizations or common, any tenant’s accounts would sign in.',
+    );
+  }
   const issuer =
     kind === 'microsoft'
-      ? microsoftIssuer(values.tenant ?? 'organizations')
+      ? microsoftIssuer(values.tenant ?? '')
       : kind === 'oidc'
         ? values.issuer
         : undefined;

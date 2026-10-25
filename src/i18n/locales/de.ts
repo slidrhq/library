@@ -467,8 +467,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'Clientschlüssel (Client secret)',
   'settings.signIn.secretKept': 'Gespeichert seit {when}. Leer lassen, um ihn zu behalten.',
   'settings.signIn.tenant': 'Mandant (Tenant)',
-  'settings.signIn.tenantHint':
-    'Mandanten-ID oder Domain Ihrer Organisation; organizations: jedes Geschäfts-, Schul- oder Unikonto.',
   'settings.signIn.issuer': 'Aussteller (Issuer)',
   'settings.signIn.issuerHint':
     'Die Adresse, deren Discovery-Dokument unter /.well-known/openid-configuration liegt. Es wird vor dem Speichern gelesen.',
@@ -580,6 +578,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Token zum Leeren des Caches',
   'settings.media.purgeTokenHint':
     'Ein API-Token mit der Berechtigung Cache Purge für diese Zone. Es wird vor dem Speichern geprüft.',
+  'settings.signIn.tenantHint':
+    'Die Mandanten-ID (Tenant ID) Ihrer Organisation oder ihre Domain, etwa contoso.onmicrosoft.com. Nur Konten dieses Mandanten melden sich an.',
+  'settings.signIn.ownerOnly':
+    'Nur der Eigentümer der Bibliothek bestimmt, wie man sich anmeldet: Wer den Anbieter festlegt, entscheidet, wer wer ist.',
 };
 
 export default words;

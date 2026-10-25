@@ -238,6 +238,21 @@ describe('a library on a machine, in a folder', () => {
     assert.match(await served.text(), /birthday-cake/);
   });
 
+  test('serves at /media/ only what the library names, never what else the folder holds', async () => {
+    const { folder, owner } = await machine();
+    await mkdir(join(folder, '.ssh'));
+    await writeFile(join(folder, '.ssh', 'id_ed25519'), 'a private key');
+    await writeFile(join(folder, 'notes.json'), '{"private":true}');
+    assert.equal((await owner.call('/media/fonts/catalog.json')).status, 200);
+    for (const path of [
+      '/media/notes.json',
+      '/media/.ssh/id_ed25519',
+      '/media/.ssh%2Fid_ed25519',
+    ]) {
+      assert.equal((await owner.call(path)).status, 404, path);
+    }
+  });
+
   test('is put back as it was when a publication fails part-way, at whichever write', async () => {
     mock.method(console, 'error', () => {});
     for (let at = 1; at <= 4; at += 1) {

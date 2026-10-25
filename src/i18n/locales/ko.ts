@@ -452,8 +452,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': '클라이언트 암호(Client secret)',
   'settings.signIn.secretKept': '{when}부터 저장되어 있습니다. 비워 두면 그대로 유지됩니다.',
   'settings.signIn.tenant': '테넌트',
-  'settings.signIn.tenantHint':
-    '조직의 테넌트 ID 또는 도메인입니다. organizations: 모든 회사 또는 학교 계정.',
   'settings.signIn.issuer': '발급자(Issuer)',
   'settings.signIn.issuerHint':
     '검색 문서가 /.well-known/openid-configuration에 있는 주소입니다. 저장하기 전에 읽습니다.',
@@ -560,6 +558,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': '캐시 비우기 토큰',
   'settings.media.purgeTokenHint':
     '이 영역에 Cache Purge 권한이 있는 API 토큰입니다. 저장하기 전에 확인합니다.',
+  'settings.signIn.tenantHint':
+    '조직의 테넌트 ID 또는 도메인입니다(예: contoso.onmicrosoft.com). 그 테넌트의 계정만 로그인합니다.',
+  'settings.signIn.ownerOnly':
+    '로그인 방식은 라이브러리 소유자만 정합니다. 공급자를 정하는 사람이 누가 누구인지 정하기 때문입니다.',
 };
 
 export default words;

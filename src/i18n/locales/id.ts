@@ -461,8 +461,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'Rahasia klien (Client secret)',
   'settings.signIn.secretKept': 'Tersimpan sejak {when}. Jika dikosongkan, tetap dipakai.',
   'settings.signIn.tenant': 'Penyewa (Tenant)',
-  'settings.signIn.tenantHint':
-    'ID penyewa atau domain organisasi Anda; organizations: akun kerja atau sekolah mana pun.',
   'settings.signIn.issuer': 'Penerbit (Issuer)',
   'settings.signIn.issuerHint':
     'Alamat yang dokumen penemuannya ada di /.well-known/openid-configuration. Dokumen ini dibaca sebelum disimpan.',
@@ -572,6 +570,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Token pembersihan cache',
   'settings.media.purgeTokenHint':
     'Token API yang diizinkan Cache Purge pada zona ini. Token ini diperiksa sebelum disimpan.',
+  'settings.signIn.tenantHint':
+    'ID penyewa (Tenant) organisasi Anda, atau domainnya, seperti contoso.onmicrosoft.com. Hanya akun penyewa itu yang dapat login.',
+  'settings.signIn.ownerOnly':
+    'Hanya pemilik pustaka yang mengatur cara orang login: siapa yang memilih penyedia menentukan identitas setiap orang.',
 };
 
 export default words;

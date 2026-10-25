@@ -156,7 +156,14 @@ function localPath(value: string | null, origin: string): string {
   if (!value?.startsWith('/')) return '/';
   try {
     const target = new URL(value, origin);
-    if (target.origin !== origin || target.pathname.startsWith('/auth/')) return '/';
+    // A path that begins `//` names another site once it is written back as an address.
+    if (
+      target.origin !== origin ||
+      target.pathname.startsWith('//') ||
+      target.pathname.startsWith('/auth/')
+    ) {
+      return '/';
+    }
     return target.pathname + target.search + target.hash;
   } catch {
     return '/';

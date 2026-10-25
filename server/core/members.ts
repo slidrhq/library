@@ -24,7 +24,7 @@ import {
   type MemberRole,
   type Person,
 } from './people.ts';
-import { revokeAll } from './tokens.ts';
+import { revokeAll, revokeScope } from './tokens.ts';
 import { authorize, type Actor } from './uploads/access.ts';
 
 type Route = (request: Request, ctx: Context, params: string[]) => Promise<Response>;
@@ -100,11 +100,13 @@ const name: Route = async (request, ctx, [param]) => {
   }
   const named: Person = { ...(person ?? fresh(email, actor)), role: role as MemberRole };
   await writePerson(store, named);
+  // Publish tokens are an admin's: one who is not any more has theirs taken away.
+  const revoked = role === 'admin' ? 0 : await revokeScope(store, email, 'publish');
   await audit(store, {
     by: actor.id,
     action: 'member.role',
     target: email,
-    detail: { from: person?.role ?? null, to: role },
+    detail: { from: person?.role ?? null, to: role, ...(revoked ? { revoked } : {}) },
   });
   return json(shown(named));
 };
@@ -116,11 +118,12 @@ const remove: Route = async (request, ctx, [param]) => {
   if (person?.role) {
     const { role: _was, ...rest } = person;
     await writePerson(store, rest);
+    const revoked = await revokeScope(store, email, 'publish');
     await audit(store, {
       by: actor.id,
       action: 'member.removed',
       target: email,
-      detail: { role: person.role },
+      detail: { role: person.role, ...(revoked ? { revoked } : {}) },
     });
   }
   return new Response(null, { status: 204 });

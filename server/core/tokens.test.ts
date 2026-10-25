@@ -136,8 +136,28 @@ describe('a token', () => {
     });
     const after = await withToken(made.token, '/api/publish', json({}));
     assert.equal((await read<{ error: string }>(after)).error, 'token-scope');
-    // It still uploads, as its owner.
-    assert.equal((await withToken(made.token, '/api/uploads')).status, 200);
+    // Nor anything else: it would see every upload, as a publishing token does.
+    const listed = await withToken(made.token, '/api/uploads');
+    assert.equal(listed.status, 403);
+    assert.equal((await read<{ error: string }>(listed)).error, 'token-scope');
+  });
+
+  test('that publishes is taken away when its owner is an admin no more', async () => {
+    const { owner, someone, withToken } = await library();
+    assert.equal(
+      (await owner.send('/api/members/someone%40example.com', 'PUT', { role: 'admin' })).status,
+      200,
+    );
+    const publishing = await make(someone, { name: 'ci', scope: 'publish' });
+    const uploading = await make(someone, { name: 'laptop' });
+    assert.equal((await withToken(publishing.token, '/api/uploads')).status, 200);
+    assert.equal(
+      (await owner.send('/api/members/someone%40example.com', 'PUT', { role: 'reviewer' })).status,
+      200,
+    );
+    assert.equal((await withToken(publishing.token, '/api/uploads')).status, 401);
+    // The token that only uploads stays.
+    assert.equal((await withToken(uploading.token, '/api/uploads')).status, 200);
   });
 
   test('is judged alone, whatever cookie comes with it', async () => {

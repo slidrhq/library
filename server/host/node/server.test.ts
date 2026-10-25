@@ -9,7 +9,7 @@ import type { Context } from '../../core/context.ts';
 import { handle } from '../../core/index.ts';
 import { contextOf, install, openLibrary } from './install.ts';
 import { memoryKeys } from './master.ts';
-import { serve, type Serving } from './server.ts';
+import { clientOf, serve, type Serving } from './server.ts';
 
 const folders: string[] = [];
 let serving: Serving;
@@ -245,5 +245,32 @@ describe('the library on a machine, with its media folder', () => {
     }
     // Without a folder, the page reads the published library: nothing is named to it.
     assert.doesNotMatch(await (await fetch(base)).text(), /__slidrMediaPath/);
+  });
+});
+
+describe('who a request comes from', () => {
+  test('is told by a proxy only when the proxy is of this machine', () => {
+    const from = (remoteAddress: string, forwarded?: string) =>
+      clientOf(
+        {
+          socket: { remoteAddress } as never,
+          headers: forwarded ? { 'x-forwarded-for': forwarded } : {},
+        },
+        { behindProxy: true },
+      );
+    assert.equal(from('127.0.0.1', '203.0.113.9'), '203.0.113.9');
+    assert.equal(from('::1', '198.51.100.1, 203.0.113.9'), '203.0.113.9');
+    // Anyone who reaches the server another way says what they like: it is not taken.
+    assert.equal(from('203.0.113.7', '127.0.0.1'), '203.0.113.7');
+    assert.equal(
+      clientOf(
+        {
+          socket: { remoteAddress: '127.0.0.1' } as never,
+          headers: { 'x-forwarded-for': '203.0.113.9' },
+        },
+        {},
+      ),
+      '127.0.0.1',
+    );
   });
 });

@@ -457,8 +457,6 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.secret': 'İstemci gizli anahtarı (Client secret)',
   'settings.signIn.secretKept': '{when} tarihinden beri saklanıyor. Boş bırakılırsa korunur.',
   'settings.signIn.tenant': 'Kiracı (Tenant)',
-  'settings.signIn.tenantHint':
-    'Kuruluşunuzun kiracı kimliği veya alan adı; organizations: herhangi bir iş veya okul hesabı.',
   'settings.signIn.issuer': 'Veren (Issuer)',
   'settings.signIn.issuerHint':
     'Keşif belgesi /.well-known/openid-configuration konumunda olan adres. Kaydetmeden önce okunur.',
@@ -566,6 +564,10 @@ const words: Record<MessageKey, string> = {
   'settings.media.purgeToken': 'Önbellek temizleme belirteci',
   'settings.media.purgeTokenHint':
     'Bu bölgede Cache Purge izni olan bir API belirteci. Kaydetmeden önce doğrulanır.',
+  'settings.signIn.tenantHint':
+    'Kuruluşunuzun kiracı (Tenant) kimliği veya alan adı, örneğin contoso.onmicrosoft.com. Yalnızca bu kiracının hesapları oturum açar.',
+  'settings.signIn.ownerOnly':
+    'Oturum açma yöntemini yalnızca kütüphanenin sahibi belirler: sağlayıcıyı seçen, kimin kim olduğunu belirler.',
 };
 
 export default words;

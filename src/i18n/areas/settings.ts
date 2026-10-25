@@ -59,7 +59,7 @@ export const he = {
   'settings.signIn.secretKept': 'שמור מאז {when}. אם משאירים ריק, הוא נשאר.',
   'settings.signIn.tenant': 'דייר (Tenant)',
   'settings.signIn.tenantHint':
-    'המזהה או הדומיין של הדייר של הארגון; organizations: כל חשבון עבודה או בית ספר.',
+    'המזהה של הדייר של הארגון, או הדומיין שלו, כמו contoso.onmicrosoft.com. רק חשבונות של הדייר הזה נכנסים.',
   'settings.signIn.issuer': 'כתובת המנפיק (Issuer)',
   'settings.signIn.issuerHint':
     'הכתובת שמסמך הגילוי שלה נמצא ב-/.well-known/openid-configuration. הוא נקרא לפני השמירה.',
@@ -134,6 +134,8 @@ export const he = {
   'settings.media.purgeToken': 'טוקן לניקוי המטמון',
   'settings.media.purgeTokenHint':
     'טוקן API עם הרשאת Cache Purge ל-Zone הזה. הוא נבדק לפני השמירה.',
+  'settings.signIn.ownerOnly':
+    'רק הבעלים של הספרייה קובעים איך נכנסים אליה: מי שקובע את ספק הכניסה קובע מי כל אחד הוא.',
 };
 
 export const en: Record<keyof typeof he, string> = {
@@ -199,7 +201,7 @@ export const en: Record<keyof typeof he, string> = {
   'settings.signIn.secretKept': 'Kept since {when}. Left empty, it stays.',
   'settings.signIn.tenant': 'Tenant',
   'settings.signIn.tenantHint':
-    'Your organization’s tenant ID or domain; organizations: any work or school account.',
+    'Your organization’s tenant ID, or its domain, as contoso.onmicrosoft.com. Only that tenant’s accounts sign in.',
   'settings.signIn.issuer': 'Issuer',
   'settings.signIn.issuerHint':
     'The address whose discovery document is at /.well-known/openid-configuration. It is read before saving.',
@@ -278,4 +280,6 @@ export const en: Record<keyof typeof he, string> = {
   'settings.media.purgeToken': 'Cache purge token',
   'settings.media.purgeTokenHint':
     'An API token allowed Cache Purge on this zone. It is tried before it is kept.',
+  'settings.signIn.ownerOnly':
+    'Only the library’s owner sets how people sign in: whoever names the provider says who each person is.',
 };
