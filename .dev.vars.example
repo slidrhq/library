@@ -1,12 +1,21 @@
 # The Worker's secrets for `pnpm dev`: copy this file to `.dev.vars` (README, "Signing in").
 # The OAuth client of the Google Cloud project, of the "Web application" type, with
-# http://127.0.0.1:5176/auth/callback among its authorized redirect URIs.
+# http://127.0.0.1:5176/auth/callback among its authorized redirect URIs. With LIBRARY_MASTER_KEY
+# set, an admin may name another provider in Settings instead.
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-# At least 32 characters: node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
+# The library's owner: the account that names its members, and sets it up. Read once, when the
+# library names no one yet.
+LIBRARY_OWNER=
+# The master key of the library's vault, which keeps its own keys sealed (docs/SPEC.md §4.4):
+#   node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
+# Without it, the Worker keeps no keys of its own, and signs its sessions with SESSION_SECRET.
+LIBRARY_MASTER_KEY=
+# At least 32 characters, made as above; only while LIBRARY_MASTER_KEY is not set.
 SESSION_SECRET=
-# The Google accounts that may upload to the library, separated by commas.
+# Until the library names its members: the Google accounts that review uploads, separated by
+# commas. They are imported once, as reviewers (the first is the owner, without LIBRARY_OWNER).
 LIBRARY_EDITORS=
-# The programs that may upload, if any (README, "Uploading"): <name>=<key>, separated by commas,
-# each key at least 32 characters.
+# Until the programs take tokens (README, "Uploading"): <name>=<key>, separated by commas, each key
+# at least 32 characters.
 LIBRARY_KEYS=

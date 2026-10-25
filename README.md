@@ -81,8 +81,11 @@ The button at the end of the top bar signs in through the library's provider: Go
    npx wrangler secret put SESSION_SECRET      # node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
    npx wrangler secret put LIBRARY_EDITORS     # taken once: you@example.com, someone@example.com
    npx wrangler secret put LIBRARY_OWNER       # optional: the owner, if not the first editor
+   npx wrangler secret put LIBRARY_MASTER_KEY  # the vault's: made as SESSION_SECRET is
    npx wrangler secret put LIBRARY_KEYS        # if programs upload: studio=<key>, ci=<key>
    ```
+
+   With `LIBRARY_MASTER_KEY`, the Worker keeps keys of its own in a vault (docs/SPEC.md §4.4): the secret of the sign-in provider an admin names in **Settings**. Its sessions stay signed with `SESSION_SECRET`. Keep a copy of the master key elsewhere: without it, what the vault holds cannot be read, and the provider is named again.
 
 3. On this machine, copy `.dev.vars.example` to `.dev.vars` and fill it in. Git ignores it.
 
