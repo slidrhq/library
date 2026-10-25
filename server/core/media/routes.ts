@@ -11,30 +11,25 @@
  * upload is published was (`publish`).
  */
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
+import type { Context } from '../context.ts';
 import { isRecord, json, jsonBody, problem } from '../http.ts';
-import { authorize, type AccessEnv } from '../uploads/access.ts';
-import { isUploadId, listUploads, type Bucket } from '../uploads/store.ts';
+import { authorize } from '../uploads/access.ts';
+import { isUploadId, listUploads } from '../uploads/store.ts';
 import { forgetLibrary, libraryFor } from '../uploads/library.ts';
-import { purgerFor, type CacheEnv } from './cache.ts';
 import { BATCH, ImportRefused, importLibrary } from './import.ts';
 import { MOST_BYTES, Refused, publishFiles, stage } from './files.ts';
-import { readManifest, type MediaEnv } from './live.ts';
+import { readManifest } from './live.ts';
 import { MOST_UPLOADS, NotNow, publish } from './publish.ts';
 
-export interface LibraryEnv extends AccessEnv, MediaEnv, CacheEnv {
-  /** The uploads, and beside them a publication's own records (`live.ts`). */
-  UPLOADS?: Bucket;
-}
-
-type Route = (request: Request, env: LibraryEnv) => Promise<Response>;
+type Route = (request: Request, ctx: Context) => Promise<Response>;
 
 const noBucket = (name: string) =>
   problem(503, 'not-set-up', `This server has no bucket for ${name}.`);
 
 /** Whether the library is served from its bucket. */
-export async function isLive(env: MediaEnv): Promise<boolean> {
-  if (!env.MEDIA) return false;
-  const object = await env.MEDIA.get('manifest.json');
+export async function isLive(ctx: Context): Promise<boolean> {
+  if (!ctx.media) return false;
+  const object = await ctx.media.get('manifest.json');
   if (!object) return false;
   await object.body.cancel();
   return true;
@@ -52,18 +47,18 @@ async function optionalBody(request: Request): Promise<Record<string, unknown> |
 
 // ---- GET /api/library
 
-export const libraryStatus: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'read');
+export const libraryStatus: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'read');
   if (actor instanceof Response) return actor;
-  const live = env.MEDIA ? await readManifest(env.MEDIA) : undefined;
-  const accepted = env.UPLOADS
-    ? (await listUploads(env.UPLOADS, { status: 'accepted' }, 1000)).uploads.length
+  const live = ctx.media ? await readManifest(ctx.media) : undefined;
+  const accepted = ctx.state
+    ? (await listUploads(ctx.state, { status: 'accepted' }, 1000)).uploads.length
     : 0;
   const files = live ? Object.values(live.manifest.files) : [];
   return json({
     live: live !== undefined,
-    bucket: env.MEDIA !== undefined,
-    site: env.MEDIA_LIBRARY_URL ?? MEDIA_LIBRARY_URL,
+    bucket: ctx.media !== undefined,
+    site: ctx.site ?? MEDIA_LIBRARY_URL,
     ...(live
       ? {
           published: live.manifest.published,
@@ -77,13 +72,13 @@ export const libraryStatus: Route = async (request, env) => {
 
 // ---- POST /api/library/import
 
-export const importRoute: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'publish');
+export const importRoute: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'publish');
   if (actor instanceof Response) return actor;
-  if (!env.MEDIA) return noBucket('the library (MEDIA)');
+  if (!ctx.media) return noBucket('the library (MEDIA)');
   const body = await optionalBody(request);
   if (body instanceof Response) return body;
-  const from = body.from ?? env.MEDIA_LIBRARY_URL ?? MEDIA_LIBRARY_URL;
+  const from = body.from ?? ctx.site ?? MEDIA_LIBRARY_URL;
   const limit = body.limit ?? BATCH;
   if (typeof from !== 'string' || !/^https?:\/\//.test(from)) {
     return problem(400, 'bad-request', 'from is the address of the site the library is read from.');
@@ -92,7 +87,7 @@ export const importRoute: Route = async (request, env) => {
     return problem(400, 'bad-request', 'limit is how many files to copy, a whole number.');
   }
   try {
-    const imported = await importLibrary(env.MEDIA, from, limit);
+    const imported = await importLibrary(ctx.media, from, limit);
     if (imported.done) forgetLibrary();
     return json(imported);
   } catch (error) {
@@ -105,11 +100,11 @@ export const importRoute: Route = async (request, env) => {
 
 // ---- POST /api/publish
 
-export const publishRoute: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'publish');
+export const publishRoute: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'publish');
   if (actor instanceof Response) return actor;
-  if (!env.MEDIA) return noBucket('the library (MEDIA)');
-  if (!env.UPLOADS) return noBucket('the uploads (UPLOADS)');
+  if (!ctx.media) return noBucket('the library (MEDIA)');
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
   const body = await optionalBody(request);
   if (body instanceof Response) return body;
   const ids = body.uploads;
@@ -129,12 +124,12 @@ export const publishRoute: Route = async (request, env) => {
   try {
     return json(
       await publish(
-        env.MEDIA,
-        env.UPLOADS,
-        libraryFor(env),
+        ctx.media,
+        ctx.state,
+        libraryFor(ctx),
         actor,
         ids as string[] | undefined,
-        purgerFor(env),
+        ctx.purge,
       ),
     );
   } catch (error) {
@@ -145,18 +140,18 @@ export const publishRoute: Route = async (request, env) => {
 
 // ---- PUT /api/library/staged/{sha256}
 
-export const stageRoute = async (request: Request, env: LibraryEnv, [sha256]: string[]) => {
-  const actor = await authorize(request, env, 'publish');
+export const stageRoute = async (request: Request, ctx: Context, [sha256]: string[]) => {
+  const actor = await authorize(request, ctx, 'publish');
   if (actor instanceof Response) return actor;
-  if (!env.MEDIA) return noBucket('the library (MEDIA)');
-  if (!env.UPLOADS) return noBucket('the uploads (UPLOADS)');
+  if (!ctx.media) return noBucket('the library (MEDIA)');
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
   const length = Number(request.headers.get('Content-Length') ?? 0);
   if (length > MOST_BYTES) {
     return problem(413, 'too-large', `A file is at most ${MOST_BYTES / 1024 / 1024} MiB.`);
   }
   const bytes = new Uint8Array(await request.arrayBuffer());
   try {
-    return json(await stage(env.UPLOADS, sha256 ?? '', bytes));
+    return json(await stage(ctx.state, sha256 ?? '', bytes));
   } catch (error) {
     if (error instanceof Refused) return problem(400, error.code, error.message);
     throw error;
@@ -165,21 +160,21 @@ export const stageRoute = async (request: Request, env: LibraryEnv, [sha256]: st
 
 // ---- POST /api/library/files
 
-export const filesRoute: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'publish');
+export const filesRoute: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'publish');
   if (actor instanceof Response) return actor;
-  if (!env.MEDIA) return noBucket('the library (MEDIA)');
-  if (!env.UPLOADS) return noBucket('the uploads (UPLOADS)');
+  if (!ctx.media) return noBucket('the library (MEDIA)');
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
   const body = await jsonBody(request);
   if (body instanceof Response) return body;
   try {
     return json(
       await publishFiles(
-        env.MEDIA,
-        env.UPLOADS,
+        ctx.media,
+        ctx.state,
         actor,
         isRecord(body) ? body.files : undefined,
-        purgerFor(env),
+        ctx.purge,
       ),
     );
   } catch (error) {

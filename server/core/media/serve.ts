@@ -8,7 +8,8 @@
  *
  * Nothing here needs signing in: the library is public.
  */
-import { cacheControl, contentType, isLibraryPath, type MediaEnv } from './live.ts';
+import type { Context } from '../context.ts';
+import { cacheControl, contentType, isLibraryPath } from './live.ts';
 
 export const MEDIA_PREFIX = '/media/';
 
@@ -53,12 +54,12 @@ function matches(header: string | null, etag: string) {
   return named.includes('*') || named.includes(etag);
 }
 
-export async function serveMedia(request: Request, env: MediaEnv): Promise<Response> {
+export async function serveMedia(request: Request, ctx: Context): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: SHARED });
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response(null, { status: 405, headers: { ...SHARED, Allow: 'GET, HEAD, OPTIONS' } });
   }
-  if (!env.MEDIA) {
+  if (!ctx.media) {
     return new Response('The library has no bucket here (MEDIA).', {
       status: 503,
       headers: { ...SHARED, 'Cache-Control': 'no-store' },
@@ -66,7 +67,7 @@ export async function serveMedia(request: Request, env: MediaEnv): Promise<Respo
   }
   const path = pathOf(new URL(request.url).pathname);
   if (!path) return notFound();
-  const object = await env.MEDIA.get(path);
+  const object = await ctx.media.get(path);
   if (!object) return notFound();
   const etag = `"${object.customMetadata?.sha256 ?? object.etag}"`;
   const headers: Record<string, string> = {

@@ -15,9 +15,9 @@ import {
   type Slide,
 } from '@slidr/model';
 import type { Template } from '@slidr/templates';
-import worker from '../index.ts';
+import worker from '../../host/cloudflare/index.ts';
 import { forgetLibrary } from './library.ts';
-import type { Bucket, BucketObject, HttpMetadata } from './store.ts';
+import type { Bucket, BucketObject, HttpMetadata } from '../bucket.ts';
 
 export const SITE = 'https://library.example';
 export const MEDIA = 'https://media.example/';
@@ -415,9 +415,9 @@ async function sessionAs(email: string, env: object): Promise<string> {
  * Calls the Worker as someone: an editor signed in on the library's page (by default), another
  * account, a program by its key, or no one; with a bucket of its own for each test (`env`).
  */
-export async function caller(
+export async function caller<B extends Bucket = MemoryBucket>(
   as: { email?: string; key?: string; nobody?: boolean } = {},
-  bucket = new MemoryBucket(),
+  bucket: B = new MemoryBucket() as Bucket as B,
 ) {
   const env = {
     ...SIGN_IN,

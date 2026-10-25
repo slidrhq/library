@@ -32,7 +32,7 @@ import {
 } from './uploadsApi';
 
 /**
- * The languages each kind of upload is written in (`worker/uploads`: designs.ts, templates.ts,
+ * The languages each kind of upload is written in (`server/core/uploads`: designs.ts, templates.ts,
  * tags.ts).
  */
 const OTHERS = CONTENT_LANGUAGES.filter((lang) => lang !== 'he' && lang !== 'en');

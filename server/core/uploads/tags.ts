@@ -16,7 +16,7 @@ import {
   LANGUAGE_NAMES,
   type ContentLanguage,
 } from '@slidr/model';
-import { shapePresets } from '../../vendor/packages/renderer/src/geometry.ts';
+import { shapePresets } from '../../../vendor/packages/renderer/src/geometry.ts';
 import { isRecord } from '../http.ts';
 import {
   Issues,

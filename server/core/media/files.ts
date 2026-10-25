@@ -29,7 +29,7 @@ import {
   type ManifestEntry,
 } from './live.ts';
 import type { Actor } from '../uploads/access.ts';
-import type { Bucket } from '../uploads/store.ts';
+import type { Bucket } from '../bucket.ts';
 import { forgetLibrary } from '../uploads/library.ts';
 import type { Purge, Purger } from './cache.ts';
 import { NotNow, lock } from './publish.ts';

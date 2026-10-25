@@ -1,5 +1,6 @@
 /**
- * Where uploads are kept until they are published: a bucket of R2 (`UPLOADS`, `wrangler.jsonc`).
+ * Where uploads are kept until they are published: the library's own store (`ctx.state`; a
+ * bucket of R2, `UPLOADS`, on Cloudflare).
  *
  *   uploads/<id>.json      the upload: what it holds, its status and its history
  *   files/<id>/<name>      each of its files
@@ -10,52 +11,9 @@
  * the uploads are listed without reading each one. Ids sort newest first.
  */
 import type { ContentLanguage } from '@slidr/model';
+import type { Bucket } from '../bucket.ts';
 import type { Actor } from './access.ts';
 import type { Draft, StoredFile } from './handler.ts';
-
-/** What the Worker uses of a bucket of R2. */
-export interface Bucket {
-  get(key: string): Promise<BucketObject | null>;
-  put(
-    key: string,
-    value: string | ArrayBuffer | Uint8Array,
-    options?: {
-      httpMetadata?: HttpMetadata;
-      customMetadata?: Record<string, string>;
-      onlyIf?: { etagMatches?: string };
-    },
-  ): Promise<{ etag: string } | null>;
-  delete(keys: string | string[]): Promise<void>;
-  list(options?: {
-    prefix?: string;
-    startAfter?: string;
-    limit?: number;
-    include?: ('customMetadata' | 'httpMetadata')[];
-  }): Promise<{
-    objects: {
-      key: string;
-      httpMetadata?: HttpMetadata;
-      customMetadata?: Record<string, string>;
-    }[];
-    truncated: boolean;
-  }>;
-}
-
-/** What an object is answered with, where the bucket answers the web itself (`../media/live.ts`). */
-export interface HttpMetadata {
-  contentType?: string;
-  cacheControl?: string;
-}
-
-export interface BucketObject {
-  etag: string;
-  size: number;
-  body: ReadableStream;
-  httpMetadata?: HttpMetadata;
-  customMetadata?: Record<string, string>;
-  text(): Promise<string>;
-  arrayBuffer(): Promise<ArrayBuffer>;
-}
 
 /**
  * Where an upload is. It waits (`pending`) while it is written, in more languages too; an

@@ -14,18 +14,12 @@
  * - Once the manifest is written, the cache before the library is emptied of the files written
  *   (`cache.ts`).
  */
+import type { Bucket } from '../bucket.ts';
 import type { Issue } from '../http.ts';
 import type { Actor } from '../uploads/access.ts';
 import { handlerOf } from '../uploads/content.ts';
 import { forgetLibrary, type Library } from '../uploads/library.ts';
-import {
-  listUploads,
-  readFile,
-  readUpload,
-  saveUpload,
-  type Bucket,
-  type Upload,
-} from '../uploads/store.ts';
+import { listUploads, readFile, readUpload, saveUpload, type Upload } from '../uploads/store.ts';
 import type { Purge, Purger } from './cache.ts';
 import {
   HISTORY,

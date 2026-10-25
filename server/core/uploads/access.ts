@@ -3,12 +3,14 @@
  * is about to do, and goes on as the actor it answers, or gives its answer instead (401, 403).
  *
  * The uploads are the editors' (README, "Signing in"): a person signed in with a Google account
- * that `LIBRARY_EDITORS` names, on the library's own page (`requireEditor` of `../auth.ts`), or
- * a program by a key of its own (`LIBRARY_KEYS`), which sends no cookie and so needs no check of
- * the site it comes from. An editor may do everything an upload takes; what the API describes
- * (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is open to anyone.
+ * the host's list of editors names (`LIBRARY_EDITORS`), on the library's own page
+ * (`requireEditor` of `../auth.ts`), or a program by a key of its own (`LIBRARY_KEYS`), which
+ * sends no cookie and so needs no check of the site it comes from. An editor may do everything an
+ * upload takes; what the API describes (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is
+ * open to anyone.
  */
-import { requireEditor, type AuthEnv } from '../auth.ts';
+import { requireEditor } from '../auth.ts';
+import type { Context } from '../context.ts';
 import { problem } from '../http.ts';
 
 /** What a request is about to do. */
@@ -27,15 +29,6 @@ export interface Actor {
   /** An editor's address, or `key:<name>` for a program. */
   id: string;
   name?: string;
-}
-
-export interface AccessEnv extends AuthEnv {
-  /**
-   * The programs that may upload, each with its key: `<name>=<key>`, separated by commas, as
-   * `studio=…, ci=…`. A key is at least 32 characters; a program sends it as
-   * `Authorization: Bearer <key>`.
-   */
-  LIBRARY_KEYS?: string;
 }
 
 const KEY_LEAST = 32;
@@ -61,10 +54,10 @@ async function same(a: string, b: string) {
   return differ === 0;
 }
 
-/** The program a key is of, by `LIBRARY_KEYS`. */
-async function programOf(key: string, env: AccessEnv): Promise<string | undefined> {
+/** The program a key is of, by the host's list of keys (`LIBRARY_KEYS`). */
+async function programOf(key: string, ctx: Context): Promise<string | undefined> {
   let found: string | undefined;
-  for (const entry of (env.LIBRARY_KEYS ?? '').split(',')) {
+  for (const entry of (ctx.auth.keys ?? '').split(',')) {
     const at = entry.indexOf('=');
     const name = entry.slice(0, at).trim();
     const known = entry.slice(at + 1).trim();
@@ -77,17 +70,17 @@ async function programOf(key: string, env: AccessEnv): Promise<string | undefine
 
 export async function authorize(
   request: Request,
-  env: AccessEnv,
+  ctx: Context,
   _permission: Permission,
 ): Promise<Actor | Response> {
   const header = request.headers.get('Authorization');
   if (header !== null) {
     const key = /^Bearer\s+(\S+)$/i.exec(header)?.[1];
-    const program = key ? await programOf(key, env) : undefined;
+    const program = key ? await programOf(key, ctx) : undefined;
     if (!program) return problem(401, 'bad-key', 'The key is not one of the library’s.');
     return { id: `key:${program}`, name: program };
   }
-  const user = await requireEditor(request, env);
+  const user = await requireEditor(request, ctx);
   if (!(user instanceof Response)) return { id: user.email, name: user.name };
   const { error = 'refused' } = (await user.json()) as { error?: string };
   return problem(user.status, error, REFUSED[error] ?? 'Not allowed.');

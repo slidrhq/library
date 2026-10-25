@@ -28,8 +28,10 @@ import {
   toJsonSchema,
   type ContentLanguage,
 } from '@slidr/model';
+import type { Bucket } from '../bucket.ts';
+import type { Context } from '../context.ts';
 import { isRecord, json, jsonBody, problem, type Issue } from '../http.ts';
-import { authorize, type AccessEnv, type Actor, type Permission } from './access.ts';
+import { authorize, type Actor, type Permission } from './access.ts';
 import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
@@ -41,7 +43,6 @@ import {
   publishRoute,
   stageRoute,
 } from '../media/routes.ts';
-import type { MediaEnv } from '../media/live.ts';
 import { LibraryUnreachable, libraryFor, type Library } from './library.ts';
 import { openApi } from './openapi.ts';
 import {
@@ -54,24 +55,16 @@ import {
   readUpload,
   removeUpload,
   saveUpload,
-  type Bucket,
   type Status,
   type Upload,
 } from './store.ts';
 import { Sample } from './templates.ts';
 
-export interface UploadsEnv extends AccessEnv, MediaEnv {
-  /** The bucket uploads are kept in (`wrangler.jsonc`). */
-  UPLOADS?: Bucket;
-  /** The library uploads are checked against: the published one unless this names another. */
-  MEDIA_LIBRARY_URL?: string;
-}
-
 /** The largest request: a design's files and its slide in every language. */
 const REQUEST_BYTES = 64 * 1024 * 1024;
 const NOTE_MOST = 1000;
 
-type Route = (request: Request, env: UploadsEnv, params: string[]) => Promise<Response>;
+type Route = (request: Request, ctx: Context, params: string[]) => Promise<Response>;
 
 const isLanguage = (code: string): code is ContentLanguage =>
   (CONTENT_LANGUAGES as readonly string[]).includes(code);
@@ -108,17 +101,17 @@ function view(upload: Upload) {
 const notSetUp = () =>
   problem(503, 'not-set-up', 'This server keeps no uploads: it has no bucket for them (UPLOADS).');
 
-const libraryOf = (env: UploadsEnv): Library => libraryFor(env);
+const libraryOf = (ctx: Context): Library => libraryFor(ctx);
 
 /** The checks of a handler, or the answer to give when the library cannot be read. */
 async function checked(
   handler: Handler,
   draft: Draft,
-  env: UploadsEnv,
+  ctx: Context,
   only?: readonly ContentLanguage[],
 ): Promise<Issue[] | Response> {
   try {
-    return await handler.check(draft, libraryOf(env), only);
+    return await handler.check(draft, libraryOf(ctx), only);
   } catch (error) {
     if (!(error instanceof LibraryUnreachable)) throw error;
     console.warn(error.message);
@@ -155,11 +148,11 @@ async function rivals(bucket: Bucket, draft: Draft, self?: string): Promise<Issu
 const invalid = (issues: Issue[]) => problem(422, 'invalid', 'The upload does not hold.', issues);
 
 /** Reads the upload of a route, or the answer to give instead. */
-async function load(env: UploadsEnv, id: string | undefined) {
-  if (!env.UPLOADS) return notSetUp();
-  const found = id ? await readUpload(env.UPLOADS, id) : undefined;
+async function load(ctx: Context, id: string | undefined) {
+  if (!ctx.state) return notSetUp();
+  const found = id ? await readUpload(ctx.state, id) : undefined;
   if (!found) return problem(404, 'not-found', `There is no upload ${id}.`);
-  return { bucket: env.UPLOADS, ...found };
+  return { bucket: ctx.state, ...found };
 }
 
 const now = () => new Date().toISOString();
@@ -172,7 +165,7 @@ const openapi: Route = () => Promise.resolve(json(openApi()));
 
 let schemas: Record<string, unknown> | undefined;
 
-const schema: Route = (_request, _env, [name]) => {
+const schema: Route = (_request, _ctx, [name]) => {
   schemas ??= { slide: slideJsonSchema(), sample: toJsonSchema(Sample) };
   const found = name ? schemas[name] : undefined;
   return Promise.resolve(
@@ -182,10 +175,10 @@ const schema: Route = (_request, _env, [name]) => {
 
 // ---- GET /api/uploads
 
-const list: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'read');
+const list: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'read');
   if (actor instanceof Response) return actor;
-  if (!env.UPLOADS) return notSetUp();
+  if (!ctx.state) return notSetUp();
   const query = new URL(request.url).searchParams;
   const limit = Number(query.get('limit') ?? 50);
   if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
@@ -204,7 +197,7 @@ const list: Route = async (request, env) => {
   if (filter.language && !isLanguage(filter.language)) {
     return problem(400, 'bad-query', `language is one of ${CONTENT_LANGUAGES.join(', ')}.`);
   }
-  const found = await listUploads(env.UPLOADS, filter, limit, query.get('after') ?? undefined);
+  const found = await listUploads(ctx.state, filter, limit, query.get('after') ?? undefined);
   return json(found);
 };
 
@@ -349,10 +342,10 @@ async function readFiles(
   return { stored, bytes };
 }
 
-const create: Route = async (request, env) => {
-  const actor = await authorize(request, env, 'upload');
+const create: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
-  if (!env.UPLOADS) return notSetUp();
+  if (!ctx.state) return notSetUp();
   const received = await receive(request);
   if (received instanceof Response) return received;
   const { body, files } = received;
@@ -408,9 +401,9 @@ const create: Route = async (request, env) => {
     languages: written,
     files: stored,
   };
-  const found = await checked(handler, draft, env);
+  const found = await checked(handler, draft, ctx);
   if (found instanceof Response) return found;
-  found.push(...(await rivals(env.UPLOADS, draft)));
+  found.push(...(await rivals(ctx.state, draft)));
   if (found.length > 0) return invalid(found);
 
   const at = now();
@@ -423,24 +416,24 @@ const create: Route = async (request, env) => {
     by: actor,
     history: [{ status: 'pending', at, by: actor }],
   };
-  await createUpload(env.UPLOADS, upload, bytes);
+  await createUpload(ctx.state, upload, bytes);
   return json(view(upload), 201, { Location: `/api/uploads/${upload.id}` });
 };
 
 // ---- GET, DELETE /api/uploads/{id}
 
-const read: Route = async (request, env, [id]) => {
-  const actor = await authorize(request, env, 'read');
+const read: Route = async (request, ctx, [id]) => {
+  const actor = await authorize(request, ctx, 'read');
   if (actor instanceof Response) return actor;
-  const found = await load(env, id);
+  const found = await load(ctx, id);
   if (found instanceof Response) return found;
   return json(view(found.upload));
 };
 
-const withdraw: Route = async (request, env, [id]) => {
-  const actor = await authorize(request, env, 'upload');
+const withdraw: Route = async (request, ctx, [id]) => {
+  const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
-  const found = await load(env, id);
+  const found = await load(ctx, id);
   if (found instanceof Response) return found;
   const { status } = found.upload;
   if (status !== 'pending' && status !== 'rejected') {
@@ -456,10 +449,10 @@ const withdraw: Route = async (request, env, [id]) => {
 
 // ---- GET /api/uploads/{id}/files/{name}
 
-const file: Route = async (request, env, [id, name]) => {
-  const actor = await authorize(request, env, 'read');
+const file: Route = async (request, ctx, [id, name]) => {
+  const actor = await authorize(request, ctx, 'read');
   if (actor instanceof Response) return actor;
-  const found = await load(env, id);
+  const found = await load(ctx, id);
   if (found instanceof Response) return found;
   const stored = name ? found.upload.files[name] : undefined;
   const object = stored && name ? await readFile(found.bucket, found.upload.id, name) : null;
@@ -481,14 +474,14 @@ const file: Route = async (request, env, [id, name]) => {
  * published library as it is now.
  */
 async function change(
-  env: UploadsEnv,
+  ctx: Context,
   id: string | undefined,
   lang: string | undefined,
   edit: (upload: Upload, handler: Handler, lang: ContentLanguage) => Issue[] | Response,
   /** The languages the change asks to check again. */
   recheck: (lang: ContentLanguage) => ContentLanguage[],
 ): Promise<Response> {
-  const found = await load(env, id);
+  const found = await load(ctx, id);
   if (found instanceof Response) return found;
   const { bucket, upload, etag } = found;
   const handler = handlerOf(upload.type, upload.action);
@@ -511,7 +504,7 @@ async function change(
   const edited = edit(upload, handler, lang);
   if (edited instanceof Response) return edited;
   if (edited.length > 0) return invalid(edited);
-  const issues = await checked(handler, upload, env, recheck(lang));
+  const issues = await checked(handler, upload, ctx, recheck(lang));
   if (issues instanceof Response) return issues;
   if (issues.length > 0) return invalid(issues);
   upload.updated = now();
@@ -525,13 +518,13 @@ async function change(
   return json(view(upload));
 }
 
-const putLanguage: Route = async (request, env, [id, lang]) => {
-  const actor = await authorize(request, env, 'upload');
+const putLanguage: Route = async (request, ctx, [id, lang]) => {
+  const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
   const body = await jsonBody(request);
   if (body instanceof Response) return body;
   return change(
-    env,
+    ctx,
     id,
     lang,
     (upload, handler, code) => {
@@ -551,11 +544,11 @@ const putLanguage: Route = async (request, env, [id, lang]) => {
   );
 };
 
-const deleteLanguage: Route = async (request, env, [id, lang]) => {
-  const actor = await authorize(request, env, 'upload');
+const deleteLanguage: Route = async (request, ctx, [id, lang]) => {
+  const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
   return change(
-    env,
+    ctx,
     id,
     lang,
     (upload, handler, code) => {
@@ -596,7 +589,7 @@ const MOVES: Record<Status, Partial<Record<Status, Permission>>> = {
   published: { accepted: 'publish' },
 };
 
-const setStatus: Route = async (request, env, [id]) => {
+const setStatus: Route = async (request, ctx, [id]) => {
   const body = await jsonBody(request);
   if (body instanceof Response) return body;
   const to = isRecord(body) ? body.status : undefined;
@@ -610,17 +603,17 @@ const setStatus: Route = async (request, env, [id]) => {
     ]);
   }
   const status = to as Status;
-  const found = await load(env, id);
+  const found = await load(ctx, id);
   if (found instanceof Response) return found;
   const { bucket, upload, etag } = found;
   const permission = MOVES[upload.status][status];
   if (!permission) {
     return problem(409, 'not-allowed', `An upload that is ${upload.status} is not made ${status}.`);
   }
-  const actor: Actor | Response = await authorize(request, env, permission);
+  const actor: Actor | Response = await authorize(request, ctx, permission);
   if (actor instanceof Response) return actor;
   // Once the library is in its bucket, an upload is published by publishing it, not by saying so.
-  if (status === 'published' && (await isLive(env))) {
+  if (status === 'published' && (await isLive(ctx))) {
     return problem(
       409,
       'publish-instead',
@@ -637,7 +630,7 @@ const setStatus: Route = async (request, env, [id]) => {
     if (missing.length > 0) {
       return problem(409, 'incomplete', `The upload is not yet written in ${missing.join(', ')}.`);
     }
-    const issues = await checked(handler, upload, env);
+    const issues = await checked(handler, upload, ctx);
     if (issues instanceof Response) return issues;
     issues.push(...(await rivals(bucket, upload, upload.id)));
     if (issues.length > 0) return invalid(issues);
@@ -682,7 +675,7 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
 ];
 
 /** The answer to a request of the API; undefined for a path that is none of its. */
-export function uploadsApi(request: Request, env: UploadsEnv): Promise<Response> | undefined {
+export function uploadsApi(request: Request, ctx: Context): Promise<Response> | undefined {
   const { pathname } = new URL(request.url);
   for (const [pattern, methods] of ROUTES) {
     const match = pattern.exec(pathname);
@@ -697,7 +690,7 @@ export function uploadsApi(request: Request, env: UploadsEnv): Promise<Response>
       response.headers.set('Allow', Object.keys(methods).join(', '));
       return Promise.resolve(response);
     }
-    return route(request, env, match.slice(1));
+    return route(request, ctx, match.slice(1));
   }
   if (/^\/api\/uploads\/[^/]+/.test(pathname) && !isUploadId(pathname.split('/')[3] ?? '')) {
     return Promise.resolve(

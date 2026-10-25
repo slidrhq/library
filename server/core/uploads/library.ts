@@ -2,15 +2,16 @@
  * The published library, as an upload is checked against it: whether an id is taken, the fonts a
  * text may be set in, a template a sample is written for, the items a part's tags are for. Each
  * file is read from the library's bucket once the library is there (`../media/live.ts`), and
- * before that from the site itself (`MEDIA_LIBRARY_URL`, the published library unless the Worker
- * names another); it is kept for a minute, so a burst of uploads reads it once, and a publication
- * forgets it.
+ * before that from the site itself (`MEDIA_LIBRARY_URL`, the published library unless the host
+ * names another, `ctx.site`); it is kept for a minute, so a burst of uploads reads it once, and a
+ * publication forgets it.
  */
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import type { AssetMeta, FontFamilyEntry } from '@slidr/model';
 import { Template } from '@slidr/templates';
-import { fontShelf, type FontShelf } from '../../vendor/desktop/src/elements/designFonts.ts';
-import type { Bucket } from './store.ts';
+import { fontShelf, type FontShelf } from '../../../vendor/desktop/src/elements/designFonts.ts';
+import type { Bucket } from '../bucket.ts';
+import type { Context } from '../context.ts';
 
 export interface Library {
   /** Whether the published library has a file, by its path. */
@@ -132,12 +133,12 @@ export function libraryIn(bucket: Bucket): Library {
 }
 
 /**
- * The library uploads are checked against: in its bucket once it is there, and the site before
- * (`MEDIA_LIBRARY_URL`, or the published one).
+ * The library uploads are checked against: in its store once it is there, and the site before
+ * (`ctx.site`, or the published one).
  */
-export function libraryFor(env: { MEDIA?: Bucket; MEDIA_LIBRARY_URL?: string }): Library {
-  const site = libraryAt(env.MEDIA_LIBRARY_URL ?? MEDIA_LIBRARY_URL);
-  const bucket = env.MEDIA;
+export function libraryFor(ctx: Pick<Context, 'media' | 'site'>): Library {
+  const site = libraryAt(ctx.site ?? MEDIA_LIBRARY_URL);
+  const bucket = ctx.media;
   if (!bucket) return site;
   const stored = libraryIn(bucket);
   const which = async () =>

@@ -1,5 +1,5 @@
 /**
- * The uploads to the library, as the page's server keeps them (`worker/uploads`, README
+ * The uploads to the library, as the page's server keeps them (`server/core/uploads`, README
  * "Uploading"): the calls of its API, and the files a person brings to an upload, read in the
  * browser before they are sent.
  */
@@ -212,7 +212,7 @@ export const uploadsApi = {
   setStatus: (id: string, status: Status, note?: string) =>
     call<Upload>(`uploads/${id}/status`, sendJson('POST', note ? { status, note } : { status })),
   withdraw: (id: string) => call<undefined>(`uploads/${id}`, { method: 'DELETE' }),
-  /** Writes the accepted uploads (or those named) into the library (worker/media/publish.ts). */
+  /** Writes the accepted uploads (or those named) into the library (server/core/media/publish.ts). */
   publish: (ids?: string[]) =>
     call<Publication>('publish', sendJson('POST', ids ? { uploads: ids } : {})),
 };
@@ -229,7 +229,7 @@ export interface Publication {
 
 /**
  * What the person may do here: the uploads are the library's editors', as signing in names them
- * (`/api/me`, worker/auth.ts). Where no one answers, or no one is signed in, nothing.
+ * (`/api/me`, server/core/auth.ts). Where no one answers, or no one is signed in, nothing.
  */
 export interface Access {
   /** Whether the server has signing in at all. */

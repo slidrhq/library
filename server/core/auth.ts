@@ -1,19 +1,11 @@
 /**
  * Signing in with a Google account (OpenID Connect: the authorization code flow, with PKCE), so
- * that the people the library names can upload content to it. The Worker keeps no store: the
- * session is a cookie signed with `SESSION_SECRET`, and who may upload is read from
- * `LIBRARY_EDITORS` on every request, so an address taken off the list loses the right at once.
+ * that the people the library names can upload content to it. Nothing of it is stored: the
+ * session is a cookie signed with the host's session key (`SESSION_SECRET` on Cloudflare), and
+ * who may upload is read from the host's list of editors (`LIBRARY_EDITORS`) on every request, so
+ * an address taken off the list loses the right at once.
  */
-
-export interface AuthEnv {
-  /** The OAuth client of the Google Cloud project: a client of the "Web application" type. */
-  GOOGLE_CLIENT_ID?: string;
-  GOOGLE_CLIENT_SECRET?: string;
-  /** The key the cookies are signed with: at least 32 characters. */
-  SESSION_SECRET?: string;
-  /** The Google accounts that may upload, by address, separated by commas or spaces. */
-  LIBRARY_EDITORS?: string;
-}
+import type { AuthSettings, Context } from './context.ts';
 
 /** A person signed in. */
 export interface User {
@@ -33,7 +25,7 @@ const SESSION = 'library-session';
 const PENDING = 'library-signin';
 const SESSION_SECONDS = 14 * 24 * 60 * 60;
 const PENDING_SECONDS = 10 * 60;
-/** How far the clocks of Google and of the Worker may differ. */
+/** How far the clocks of Google and of this server may differ. */
 const SKEW_SECONDS = 60;
 
 const CALLBACK = '/auth/callback';
@@ -57,10 +49,10 @@ interface Pending {
   exp: number;
 }
 
-/** Signing in is offered only when the Worker has its client and its key. */
-function configOf(env: AuthEnv): Config | undefined {
-  const { GOOGLE_CLIENT_ID: clientId, GOOGLE_CLIENT_SECRET: clientSecret } = env;
-  const secret = env.SESSION_SECRET;
+/** Signing in is offered only when the host has its client and its key. */
+function configOf(auth: AuthSettings): Config | undefined {
+  const { googleClientId: clientId, googleClientSecret: clientSecret } = auth;
+  const secret = auth.sessionSecret;
   if (!clientId || !clientSecret || !secret || secret.length < 32) return undefined;
   return { clientId, clientSecret, secret };
 }
@@ -179,19 +171,19 @@ export function fromThisSite(request: Request): boolean {
   return request.headers.get('Origin') === new URL(request.url).origin;
 }
 
-const editorsOf = (env: AuthEnv) =>
-  (env.LIBRARY_EDITORS ?? '')
+const editorsOf = (auth: AuthSettings) =>
+  (auth.editors ?? '')
     .toLowerCase()
     .split(/[\s,;]+/)
     .filter(Boolean);
 
 /** Whether an account may upload to the library. */
-export const isEditor = (email: string, env: AuthEnv) =>
-  editorsOf(env).includes(email.toLowerCase());
+export const isEditor = (email: string, auth: AuthSettings) =>
+  editorsOf(auth).includes(email.toLowerCase());
 
 /** The person a request comes from, when its session is good. */
-export async function signedIn(request: Request, env: AuthEnv): Promise<User | undefined> {
-  const config = configOf(env);
+export async function signedIn(request: Request, ctx: Context): Promise<User | undefined> {
+  const config = configOf(ctx.auth);
   if (!config) return undefined;
   const name = cookieName(new URL(request.url), SESSION);
   const session = await unseal<Session>('session', readCookie(request, name), config.secret);
@@ -205,20 +197,20 @@ export async function signedIn(request: Request, env: AuthEnv): Promise<User | u
  * site, 401 without a session, 403 for an account the library does not name. A route that changes
  * the library, such as an upload, starts with it.
  */
-export async function requireEditor(request: Request, env: AuthEnv): Promise<User | Response> {
+export async function requireEditor(request: Request, ctx: Context): Promise<User | Response> {
   if (!fromThisSite(request)) return json({ error: 'another-site' }, 403);
-  const user = await signedIn(request, env);
+  const user = await signedIn(request, ctx);
   if (!user) return json({ error: 'signed-out' }, 401);
-  if (!isEditor(user.email, env)) return json({ error: 'not-an-editor' }, 403);
+  if (!isEditor(user.email, ctx.auth)) return json({ error: 'not-an-editor' }, 403);
   return user;
 }
 
 /** `GET /api/me`: whether signing in is offered, and who is signed in. */
-export async function me(request: Request, env: AuthEnv): Promise<Response> {
-  const user = await signedIn(request, env);
+export async function me(request: Request, ctx: Context): Promise<Response> {
+  const user = await signedIn(request, ctx);
   return json({
-    signIn: configOf(env) !== undefined,
-    user: user ? { ...user, editor: isEditor(user.email, env) } : null,
+    signIn: configOf(ctx.auth) !== undefined,
+    user: user ? { ...user, editor: isEditor(user.email, ctx.auth) } : null,
   });
 }
 
@@ -229,8 +221,8 @@ const notSetUp = () =>
   });
 
 /** `GET /auth/login?return=<path>`: off to Google, which sends the person back to the callback. */
-export async function login(request: Request, env: AuthEnv): Promise<Response> {
-  const config = configOf(env);
+export async function login(request: Request, ctx: Context): Promise<Response> {
+  const config = configOf(ctx.auth);
   if (!config) return notSetUp();
   const url = new URL(request.url);
   const pending: Pending = {
@@ -306,8 +298,8 @@ export function accountOf(
  * sent back to the page they signed in from, signed in, or with `?signin=failed` when it did not
  * work. Turning Google's page down comes back as it went.
  */
-export async function callback(request: Request, env: AuthEnv): Promise<Response> {
-  const config = configOf(env);
+export async function callback(request: Request, ctx: Context): Promise<Response> {
+  const config = configOf(ctx.auth);
   if (!config) return notSetUp();
   const url = new URL(request.url);
   const pending = await unseal<Pending>(

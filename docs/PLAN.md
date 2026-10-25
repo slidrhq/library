@@ -42,8 +42,9 @@ The core is moved out of the Worker so a second host can run it.
 
 - **Tests:**
   - every test of `api.test.ts`, `auth.test.ts`, `media.test.ts` and `site.test.ts` passes as before;
-  - those of the uploads also run against the folder store;
-  - the folder store gets tests of its own: a conditional put that loses, listing in order, metadata.
+  - the folder store and the bucket in memory of the tests are held to one contract (`server/host/node/state.test.ts`): objects and their metadata, a conditional put that loses, listing in order and by page, keys a file system would refuse or take for one another (`:`, `*`, `con`, a final dot, capitals), deleting;
+  - an upload is made, read, listed, rejected and withdrawn through the server over a folder store;
+  - the core imports nothing of Node (`no-restricted-imports` in `eslint.config.js`).
 - **Acceptance:** `pnpm dev` and a deployment on Cloudflare behave exactly as before.
 
 ## P2. The Node host, the vault and the CLI

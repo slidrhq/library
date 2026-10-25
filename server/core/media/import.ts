@@ -10,7 +10,7 @@
  * The site's own files (`_headers`, `404.html`, the parts of large catalogs and the Worker that
  * joins them) are not the library's, and stay behind: the bucket answers for itself.
  */
-import type { Bucket } from '../uploads/store.ts';
+import type { Bucket } from '../bucket.ts';
 import {
   MANIFEST,
   cacheControl,

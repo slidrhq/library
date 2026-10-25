@@ -25,17 +25,12 @@
  * A path that starts with `_` is never one of the library's: the Worker kept its records there
  * before.
  */
-import type { Bucket } from '../uploads/store.ts';
+import type { Bucket } from '../bucket.ts';
 
 export const MANIFEST = 'manifest.json';
 /** In the bucket of the uploads. */
 export const HISTORY = 'media/history';
 export const LOCK = 'media/lock.json';
-
-export interface MediaEnv {
-  /** The published library (`wrangler.jsonc`). Without it, the Worker reads the site. */
-  MEDIA?: Bucket;
-}
 
 export interface ManifestEntry {
   size: number;

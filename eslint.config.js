@@ -33,8 +33,21 @@ export default tseslint.config(
   },
 
   {
+    // The library's server runs on Cloudflare as on a machine: its core has the web's APIs only,
+    // and what is Node's is the Node host's (server/host/node).
+    files: ['server/core/**/*.ts'],
+    ignores: ['server/core/**/*.test.ts', 'server/core/**/testing.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [{ group: ['node:*'], message: 'The core runs on Cloudflare too.' }] },
+      ],
+    },
+  },
+
+  {
     // Node's test runner awaits the promises its `describe` and `test` return.
-    files: ['worker/**/*.test.ts'],
+    files: ['server/**/*.test.ts'],
     rules: { '@typescript-eslint/no-floating-promises': 'off' },
   },
 

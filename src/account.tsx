@@ -1,5 +1,5 @@
 /**
- * Who is signed in, with a Google account (worker/auth.ts): the people the library names will
+ * Who is signed in, with a Google account (server/core/auth.ts): the people the library names will
  * upload content to it. The page asks the Worker that serves it; where none answers (the page
  * served without it) or signing in is not set up there, the page shows no account.
  */

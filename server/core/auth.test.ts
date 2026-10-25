@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
-import { requireEditor, type AuthEnv } from './auth.ts';
-import worker from './index.ts';
+import { requireEditor } from './auth.ts';
+import worker, { contextOf, type Env } from '../host/cloudflare/index.ts';
 
 const SITE = 'https://library.example';
 const CLIENT = 'client-1.apps.googleusercontent.com';
@@ -26,7 +26,7 @@ function idToken(claims: Record<string, unknown>) {
   ].join('.');
 }
 
-const call = (path: string, init: RequestInit = {}, environment: AuthEnv = env, site = SITE) =>
+const call = (path: string, init: RequestInit = {}, environment: Partial<Env> = env, site = SITE) =>
   worker.fetch(new Request(site + path, { redirect: 'manual', ...init }), {
     ...env,
     ...environment,
@@ -306,19 +306,19 @@ describe('requireEditor', () => {
 
   test('lets an editor through, from the page', async () => {
     const session = sessionOf(await signIn());
-    const user = await requireEditor(post(session), env);
+    const user = await requireEditor(post(session), contextOf(env));
     assert.ok(!(user instanceof Response));
     assert.equal(user.email, 'editor@example.com');
-    const away = await requireEditor(post(session, 'https://evil.example'), env);
+    const away = await requireEditor(post(session, 'https://evil.example'), contextOf(env));
     assert.equal((away as Response).status, 403);
   });
 
   test('turns away no session, and an account the library does not name', async () => {
-    assert.equal(((await requireEditor(post(), env)) as Response).status, 401);
+    assert.equal(((await requireEditor(post(), contextOf(env))) as Response).status, 401);
     const someone = sessionOf(await signIn({ email: 'someone@example.com' }));
-    assert.equal(((await requireEditor(post(someone), env)) as Response).status, 403);
+    assert.equal(((await requireEditor(post(someone), contextOf(env))) as Response).status, 403);
     const editor = sessionOf(await signIn());
-    const taken = await requireEditor(post(editor), { ...env, LIBRARY_EDITORS: '' });
+    const taken = await requireEditor(post(editor), contextOf({ ...env, LIBRARY_EDITORS: '' }));
     assert.equal((taken as Response).status, 403);
   });
 });

@@ -20,7 +20,7 @@ import {
   walkElements,
   type ContentLanguage,
 } from '@slidr/model';
-import { familyIn, type FontShelf } from '../../vendor/desktop/src/elements/designFonts.ts';
+import { familyIn, type FontShelf } from '../../../vendor/desktop/src/elements/designFonts.ts';
 import { isRecord } from '../http.ts';
 import {
   Issues,

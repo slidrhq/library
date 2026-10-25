@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, mock, test } from 'node:test';
 import type { ContentLanguage } from '@slidr/model';
-import worker from '../index.ts';
+import worker from '../../host/cloudflare/index.ts';
 import { forgetLibrary } from './library.ts';
 import {
   ALL_LANGUAGES,
