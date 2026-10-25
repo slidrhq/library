@@ -373,6 +373,41 @@ const words: Record<MessageKey, string> = {
   'people.blocked':
     'Ce compte est bloqué : il ne peut pas téléverser de contenu dans la médiathèque.',
   'people.search': 'Rechercher par nom ou adresse',
+  'tokens.nav': 'Profil',
+  'tokens.about':
+    'Votre compte, et les jetons qui permettent à des programmes de téléverser en son nom.',
+  'tokens.provider': 'Connecté avec {provider}',
+  'tokens.providerLocal': 'Connecté sur l’ordinateur où la médiathèque est installée',
+  'tokens.title': 'Jetons',
+  'tokens.explain':
+    'Un jeton permet à un programme de téléverser dans la médiathèque au nom de ce compte. Il figure dans l’en-tête de la requête, et rien d’autre n’est nécessaire :',
+  'tokens.new': 'Nouveau jeton',
+  'tokens.name': 'Nom',
+  'tokens.namePlaceholder': 'Le studio sur mon portable',
+  'tokens.scope': 'Autorise',
+  'tokens.scope.upload': 'Téléverser',
+  'tokens.scope.publish': 'Téléverser et publier',
+  'tokens.expires': 'Expire',
+  'tokens.days': 'Dans {count} jours',
+  'tokens.year': 'Dans un an',
+  'tokens.never': 'Jamais',
+  'tokens.make': 'Créer le jeton',
+  'tokens.made': 'Copiez le jeton maintenant : il ne sera plus affiché.',
+  'tokens.copy': 'Copier',
+  'tokens.copied': 'Copié',
+  'tokens.example': 'Par exemple, vos envois :',
+  'tokens.done': 'Terminé',
+  'tokens.none': 'Aucun jeton pour l’instant.',
+  'tokens.created': 'Créé : {when}',
+  'tokens.expiresAt': 'Expire : {when}',
+  'tokens.noExpiry': 'N’expire pas',
+  'tokens.lastUsed': 'Dernière utilisation : {when}',
+  'tokens.unused': 'Pas encore utilisé',
+  'tokens.revoke': 'Révoquer',
+  'tokens.revokeConfirm':
+    'Révoquer le jeton « {name} » ? Un programme qui l’utilise ne pourra plus téléverser.',
+  'tokens.signIn': 'Connectez-vous pour voir votre profil.',
+  'tokens.byToken': '{who}, avec le jeton « {token} »',
 };
 
 export default words;

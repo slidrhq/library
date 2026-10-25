@@ -44,6 +44,8 @@ export interface Summary {
   created: string;
   updated: string;
   by: string;
+  /** The bytes of its files: what it keeps of the library's store while it waits. */
+  bytes?: number;
 }
 
 /** The last moment a date can name, so that ids made later sort first. */
@@ -73,6 +75,7 @@ function summaryOf(upload: Upload): Record<string, string> {
     created: upload.created,
     updated: upload.updated,
     by: upload.by.id,
+    bytes: String(Object.values(upload.files).reduce((sum, file) => sum + file.bytes, 0)),
   };
 }
 
@@ -175,6 +178,7 @@ export async function listUploads(
         created: meta.created ?? '',
         updated: meta.updated ?? '',
         by: meta.by ?? '',
+        ...(meta.bytes ? { bytes: Number(meta.bytes) } : {}),
       });
       if (found.length === limit) {
         const more = object !== page.objects.at(-1) || page.truncated;

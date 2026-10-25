@@ -31,7 +31,8 @@ import {
 import type { Bucket } from '../bucket.ts';
 import type { Context } from '../context.ts';
 import { isRecord, json, jsonBody, problem, type Issue } from '../http.ts';
-import { authorize, recordOf, seesAll, type Actor, type Permission } from './access.ts';
+import { authorize, limited, recordOf, seesAll, type Actor, type Permission } from './access.ts';
+import { limitsOf, waitingOf } from '../limits.ts';
 import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
@@ -353,6 +354,16 @@ const create: Route = async (request, ctx) => {
   const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
   if (!ctx.state) return notSetUp();
+  // Anyone without a role keeps only so much waiting (`../limits.ts`).
+  const limits = limited(actor) ? await limitsOf(ctx) : undefined;
+  const waiting = limits ? await waitingOf(ctx, actor.id) : undefined;
+  if (limits && waiting && waiting.count >= limits.pending) {
+    return problem(
+      409,
+      'limit',
+      `You have ${waiting.count} uploads waiting, the most one person keeps: withdraw one, or wait for a review.`,
+    );
+  }
   const received = await receive(request);
   if (received instanceof Response) return received;
   const { body, files } = received;
@@ -399,6 +410,14 @@ const create: Route = async (request, ctx) => {
   const target = typeof id === 'string' ? id : '';
   const { stored, bytes } = await readFiles(handler, target, files, issues);
   if (issues.length > 0) return invalid(issues);
+  const size = [...bytes.values()].reduce((sum, file) => sum + file.length, 0);
+  if (limits && waiting && waiting.bytes + size > limits.bytes) {
+    return problem(
+      409,
+      'limit',
+      `Your uploads waiting would hold more than ${limits.bytes / 1024 / 1024} MiB of files, the most one person keeps.`,
+    );
+  }
 
   const draft: Draft = {
     type: part.type,
@@ -613,7 +632,8 @@ const setStatus: Route = async (request, ctx, [id]) => {
     ]);
   }
   const status = to as Status;
-  const reader = await authorize(request, ctx, 'read-own');
+  // Every move is a reviewer's, or a program's that publishes: one who sees every upload.
+  const reader = await authorize(request, ctx, 'read-all');
   if (reader instanceof Response) return reader;
   const found = await load(ctx, id, reader);
   if (found instanceof Response) return found;

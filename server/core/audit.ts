@@ -16,13 +16,18 @@ export interface AuditEntry {
   detail?: Record<string, unknown>;
 }
 
+/** The moment of the last entry, and how many were written in it: entries of one moment keep their order. */
+let last = { at: '', count: 0 };
+
 export async function audit(store: Bucket | undefined, entry: Omit<AuditEntry, 'at'>) {
   if (!store) return;
   const at = new Date().toISOString();
+  last = at === last.at ? { at, count: last.count + 1 } : { at, count: 0 };
   const random = [...crypto.getRandomValues(new Uint8Array(4))]
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
-  await store.put(`audit/${at}-${random}.json`, JSON.stringify({ at, ...entry }), {
+  const key = `audit/${at}-${String(last.count).padStart(4, '0')}-${random}.json`;
+  await store.put(key, JSON.stringify({ at, ...entry }), {
     httpMetadata: { contentType: 'application/json' },
   });
 }

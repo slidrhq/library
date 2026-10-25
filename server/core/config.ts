@@ -50,6 +50,16 @@ export const LibraryConfig = z.object({
   url: address.optional(),
   media: MediaSettings.optional(),
   signIn: SignInSettings.optional(),
+  /** What one person may keep waiting, and how fast they may write (`limits.ts`). */
+  limits: z
+    .object({
+      pending: z.int().min(1),
+      bytes: z.int().min(1),
+      tokens: z.int().min(1),
+      writesPerMinute: z.int().min(1),
+    })
+    .partial()
+    .optional(),
 });
 export type LibraryConfig = z.infer<typeof LibraryConfig>;
 

@@ -2,7 +2,8 @@
  * The library's server, on whatever host it runs (`../host/`). It answers what the page's files
  * cannot, under `/auth/`, `/api/` and `/media/`:
  *
- * - signing in (`auth.ts`, `oidc.ts`), and the library's people (`members.ts`, `people.ts`);
+ * - signing in (`auth.ts`, `oidc.ts`), the library's people (`members.ts`, `people.ts`), and
+ *   their tokens (`profile.ts`, `tokens.ts`);
  * - the uploads to the library, which anyone signed in makes, and its reviewers accept and
  *   publish (`uploads/api.ts`, `uploads/access.ts`, `media/publish.ts`);
  * - the published library itself, from its store (`media/serve.ts`), as a dev server serves it.
@@ -16,6 +17,7 @@ import type { Context } from './context.ts';
 import { problem } from './http.ts';
 import { MEDIA_PREFIX, serveMedia } from './media/serve.ts';
 import { membersApi } from './members.ts';
+import { profileApi } from './profile.ts';
 import { uploadsApi } from './uploads/api.ts';
 
 type Route = (request: Request, ctx: Context) => Response | Promise<Response>;
@@ -56,6 +58,7 @@ export async function handle(request: Request, ctx: Context): Promise<Response> 
     }
     return (
       (await membersApi(request, ctx)) ??
+      (await profileApi(request, ctx)) ??
       (await uploadsApi(request, ctx)) ??
       json({ error: 'not-found' }, 404)
     );

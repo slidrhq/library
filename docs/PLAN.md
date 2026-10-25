@@ -107,7 +107,7 @@ The core is moved out of the Worker so a second host can run it.
 - Uploads:
   - each records its owner;
   - an uploader lists, reads, changes and withdraws only their own;
-  - the limits of §6.4: waiting uploads and their bytes are counted from the summaries in the store. 429 is counted in memory on Node, and with the Rate Limiting binding on Cloudflare.
+  - the limits of §6.4, which hold anyone without a role: waiting uploads and their bytes are counted from the summaries in the store (each keeps its bytes). 429 is counted in the server's memory; on Cloudflare each isolate counts apart, and the Rate Limiting binding can take over if that proves loose.
 - The page: **Profile**, with the scope (offered to admins), the token shown once, copy, an example `curl.exe`, the list of tokens, and revoke.
 - **Tests:**
   - a request with only `Authorization` (no cookie, no `Origin`) makes an upload;

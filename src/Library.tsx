@@ -27,6 +27,7 @@ const ShapesPeek = lazy(() => import('./Shapes').then((m) => ({ default: m.Shape
 const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPeek })));
 const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
 const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
+const Profile = lazy(() => import('./Profile').then((m) => ({ default: m.Profile })));
 
 export type { LibraryRoute };
 
@@ -35,6 +36,8 @@ const OVERVIEW = 'overview';
 const UPLOADS = 'uploads';
 /** Who reviews and runs the library, for its admins (docs/SPEC.md §6). */
 const MEMBERS = 'members';
+/** The account signed in, and its tokens (docs/SPEC.md §7). */
+const PROFILE = 'profile';
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
 const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
@@ -196,6 +199,7 @@ export function Library({
   const section = sectionOf(route.section);
   const uploads = route.section === UPLOADS;
   const members = route.section === MEMBERS;
+  const profile = route.section === PROFILE;
   const access = useRead(readAccess, []);
   // A language is shown once the app's words in it are read; until then, the one before.
   const [shown, setShown] = useState<Lang>(() => (hasWords(lang) ? lang : 'en'));
@@ -219,12 +223,15 @@ export function Library({
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
-  switch (uploads ? UPLOADS : members ? MEMBERS : section?.id) {
+  switch (uploads ? UPLOADS : members ? MEMBERS : profile ? PROFILE : section?.id) {
     case UPLOADS:
       content = <Uploads {...props} />;
       break;
     case MEMBERS:
       content = <Members query={query} />;
+      break;
+    case PROFILE:
+      content = <Profile />;
       break;
     case 'designs':
       content = <Designs {...props} variants={variants} onOpenVariant={onOpenVariant} />;
@@ -287,7 +294,7 @@ export function Library({
         <nav className="lib-sections">
           <button
             type="button"
-            aria-current={!section && !uploads && !members ? 'page' : undefined}
+            aria-current={!section && !uploads && !members && !profile ? 'page' : undefined}
             onClick={() => go({ section: OVERVIEW })}
           >
             {t('library.overview')}
@@ -339,18 +346,22 @@ export function Library({
                 ? t('uploads.nav')
                 : members
                   ? t('people.nav')
-                  : section
-                    ? t(section.nameKey)
-                    : t('library.overview')}
+                  : profile
+                    ? t('tokens.nav')
+                    : section
+                      ? t(section.nameKey)
+                      : t('library.overview')}
             </h2>
             <p className="muted small">
               {uploads
                 ? t('uploads.about')
                 : members
                   ? t('people.about')
-                  : section
-                    ? t(section.aboutKey)
-                    : t('library.overviewAbout')}
+                  : profile
+                    ? t('tokens.about')
+                    : section
+                      ? t(section.aboutKey)
+                      : t('library.overviewAbout')}
             </p>
           </div>
           {(section || uploads || members) && (

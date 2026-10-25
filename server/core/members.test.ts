@@ -61,8 +61,7 @@ describe('what each of the library’s people may do', () => {
     [
       'review another’s upload',
       (one, id) => one.send(`/api/uploads/${id}/status`, 'POST', { status: 'rejected' }),
-      // An uploader does not see it at all.
-      { someone: 404, reviewer: 200, admin: 200, owner: 200, blocked: 404 },
+      { someone: 'not-a-reviewer', reviewer: 200, admin: 200, owner: 200, blocked: 'blocked' },
     ],
     [
       'publish what waits',
@@ -129,7 +128,7 @@ describe('the members', () => {
     const someone = await as('someone');
     const id = await upload();
     const review = () => someone.send(`/api/uploads/${id}/status`, 'POST', { status: 'pending' });
-    assert.equal((await review()).status, 404);
+    assert.equal((await review()).status, 403);
     const named = await admin.send('/api/members/Someone%40Example.com', 'PUT', {
       role: 'reviewer',
     });
@@ -142,7 +141,7 @@ describe('the members', () => {
       (await admin.call('/api/members/someone%40example.com', { method: 'DELETE' })).status,
       204,
     );
-    assert.equal((await review()).status, 404);
+    assert.equal((await review()).status, 403);
     const listed = await read<{ people: { email: string; role: string | null }[] }>(
       await admin.call('/api/members'),
     );

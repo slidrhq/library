@@ -4,7 +4,8 @@
  *   GET    /api/members            everyone the library knows: members, the blocked, who signed in
  *   PUT    /api/members/{email}    { "role": "reviewer" | "admin" }: names a member, or changes a role
  *   DELETE /api/members/{email}    takes a member's role away; they may still upload
- *   PUT    /api/people/{email}     { "blocked": true | false }: blocks a person, or lets them back
+ *   PUT    /api/people/{email}     { "blocked": true | false }: blocks a person (and revokes every
+ *                                  token of theirs), or lets them back
  *   POST   /api/owner              { "email" }: hands the library to another member
  *
  * An admin does all of these but the last, which is the owner's. No one changes the owner's role,
@@ -23,6 +24,7 @@ import {
   type MemberRole,
   type Person,
 } from './people.ts';
+import { revokeAll } from './tokens.ts';
 import { authorize, type Actor } from './uploads/access.ts';
 
 type Route = (request: Request, ctx: Context, params: string[]) => Promise<Response>;
@@ -31,7 +33,7 @@ const notSetUp = () =>
   problem(503, 'not-set-up', 'This server keeps no people: it has no store for them.');
 
 /** The address of a route, or the answer to give for one that is none. */
-function addressOf(param: string | undefined): string | Response {
+export function addressOf(param: string | undefined): string | Response {
   let text: string;
   try {
     text = decodeURIComponent(param ?? '');
@@ -142,11 +144,13 @@ const block: Route = async (request, ctx, [param]) => {
   const { role: _was, ...rest } = base;
   const changed: Person = blocked ? { ...rest, blocked: true } : { ...base, blocked: false };
   await writePerson(store, changed);
+  // A person blocked keeps no token: letting them back gives none again.
+  const revoked = blocked ? await revokeAll(store, email) : 0;
   await audit(store, {
     by: actor.id,
     action: blocked ? 'person.blocked' : 'person.unblocked',
     target: email,
-    ...(blocked && base.role ? { detail: { role: base.role } } : {}),
+    ...(blocked ? { detail: { role: base.role ?? null, tokens: revoked } } : {}),
   });
   return json(shown(changed));
 };

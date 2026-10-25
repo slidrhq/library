@@ -35,6 +35,8 @@ export interface Issue {
 export interface Actor {
   id: string;
   name?: string;
+  /** The name of the token it was done by, when it was. */
+  token?: string;
 }
 
 export interface UploadFile {

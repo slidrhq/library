@@ -371,6 +371,41 @@ const words: Record<MessageKey, string> = {
   'people.blocked':
     'このアカウントはブロックされています。ライブラリにコンテンツをアップロードできません。',
   'people.search': '名前またはアドレスで検索',
+  'tokens.nav': 'プロフィール',
+  'tokens.about':
+    'あなたのアカウントと、プログラムがこのアカウントとしてアップロードできるようにするトークンです。',
+  'tokens.provider': '{provider} でログイン中',
+  'tokens.providerLocal': 'ライブラリがインストールされているコンピューターでログイン中',
+  'tokens.title': 'トークン',
+  'tokens.explain':
+    'トークンを使うと、プログラムがこのアカウントとしてライブラリにアップロードできます。リクエストのヘッダーに入れて送るだけで、ほかには何も要りません:',
+  'tokens.new': '新しいトークン',
+  'tokens.name': '名前',
+  'tokens.namePlaceholder': 'ノートパソコンのスタジオ',
+  'tokens.scope': '権限',
+  'tokens.scope.upload': 'アップロード',
+  'tokens.scope.publish': 'アップロードと公開',
+  'tokens.expires': '有効期限',
+  'tokens.days': '{count} 日後',
+  'tokens.year': '1 年後',
+  'tokens.never': '無期限',
+  'tokens.make': 'トークンを作成',
+  'tokens.made': 'トークンを今すぐコピーしてください。二度と表示されません。',
+  'tokens.copy': 'コピー',
+  'tokens.copied': 'コピーしました',
+  'tokens.example': '例えば、あなたのアップロード:',
+  'tokens.done': '完了',
+  'tokens.none': 'トークンはまだありません。',
+  'tokens.created': '作成: {when}',
+  'tokens.expiresAt': '有効期限: {when}',
+  'tokens.noExpiry': '無期限',
+  'tokens.lastUsed': '最終使用: {when}',
+  'tokens.unused': 'まだ使われていません',
+  'tokens.revoke': '取り消す',
+  'tokens.revokeConfirm':
+    'トークン「{name}」を取り消しますか？これを使うプログラムはアップロードできなくなります。',
+  'tokens.signIn': 'プロフィールを見るにはログインしてください。',
+  'tokens.byToken': '{who}（トークン「{token}」）',
 };
 
 export default words;

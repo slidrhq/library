@@ -230,11 +230,16 @@ export function AccountControl() {
           >
             {t(roleOf(user))}
           </p>
-          {user.can.members && (
-            <a className="account-link" href="#lib=members" onClick={() => setOpen(false)}>
-              {t('people.nav')}
+          <nav className="account-links">
+            <a href="#lib=profile" onClick={() => setOpen(false)}>
+              {t('tokens.nav')}
             </a>
-          )}
+            {user.can.members && (
+              <a href="#lib=members" onClick={() => setOpen(false)}>
+                {t('people.nav')}
+              </a>
+            )}
+          </nav>
           <button type="button" onClick={() => void signOut().catch(() => undefined)}>
             {t('account.signOut')}
           </button>

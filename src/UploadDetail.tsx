@@ -687,7 +687,10 @@ export function UploadDetail({
                     {t(statusKey(entry.status))}
                   </span>{' '}
                   <span className="muted">
-                    {when(uiLang, entry.at)} · {who(entry.by.id)}
+                    {when(uiLang, entry.at)} ·{' '}
+                    {entry.by.token
+                      ? t('tokens.byToken', { who: who(entry.by.id), token: entry.by.token })
+                      : who(entry.by.id)}
                   </span>
                   {entry.note && (
                     <span className="upload-note block" dir="auto">
