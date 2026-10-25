@@ -124,7 +124,7 @@ export function openApi() {
     },
     servers: [{ url: '/' }],
     // The uploads are the library's editors': signed in on its page, or a program by its key.
-    security: [{ session: [] }, { key: [] }],
+    security: [{ session: [] }, { token: [] }],
     paths: {
       '/api/content': {
         get: {
@@ -513,12 +513,14 @@ export function openApi() {
           in: 'cookie',
           name: '__Host-library-session',
           description:
-            'Signed in with a Google account the library names as an editor (`LIBRARY_EDITORS`), from the library’s own page (`/auth/login`). A request that changes something comes from that page (its `Origin`).',
+            'Signed in on the library’s own page, through its provider (`/auth/login`) or, by its owner, by a link of the machine it is installed on (`/auth/local`); over plain HTTP on that machine, the cookie is `library-session`. What it may do is the person’s role (`/api/me`): anyone signed in uploads; a reviewer reviews and publishes; an admin names the members and sets the library up. A request that changes something comes from that page (its `Origin`).',
         },
-        key: {
+        token: {
           type: 'http',
           scheme: 'bearer',
-          description: 'A program’s key, as the Worker’s `LIBRARY_KEYS` names it.',
+          bearerFormat: 'slk_…',
+          description:
+            'A token a person made in their profile (`/api/me/tokens`), sent alone: `Authorization: Bearer slk_…`. It acts as that person, within its scope: `upload` makes, reads, changes and withdraws their own uploads; `publish`, an admin’s, also publishes what waits and an author’s files. One unknown, revoked, expired, or of someone blocked is answered 401. Until programs take tokens, a key of the Worker’s `LIBRARY_KEYS` is taken here too.',
         },
       },
       schemas: {
