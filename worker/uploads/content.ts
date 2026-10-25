@@ -43,6 +43,13 @@ interface Part {
   closed?: string;
 }
 
+/**
+ * The files of art sets, each the set's drawings and its licence. A set is a part of what is drawn
+ * from it (`ART` in the app's `elements/stickers.ts`), as the page counts it (`src/sections.ts`).
+ */
+const artSets = (...sets: string[]) =>
+  sets.flatMap((set) => [`elements/art/${set}.json`, `elements/art/${set}.notice.json`]);
+
 /** A part the app searches: it takes the tags of its items, kept in `tags/<part>.json`. */
 const tagged = (part: Part): Part => ({
   ...part,
@@ -92,30 +99,37 @@ export const PARTS: readonly Part[] = [
   tagged({
     type: 'graphics',
     written: 'base',
-    paths: ['elements/catalogs/graphics-catalog.json'],
+    paths: [
+      'elements/catalogs/graphics-catalog.json',
+      ...artSets(
+        'fluent-color',
+        'fluent-emoji',
+        'noto',
+        'streamline-kameleon-color',
+        'fluent-emoji-flat',
+        'streamline-stickies-color',
+        'streamline-ultimate-color',
+        'streamline-emojis',
+        'streamline-flex-color',
+        'streamline-freehand-color',
+      ),
+    ],
     handlers: [],
     closed:
       "The app's `scripts/generate-graphics-catalog.mjs` writes the catalog whole, from the art " +
-      'sets, and would drop an uploaded graphic.',
+      'sets, and would drop an uploaded graphic. The sets are packages, each published with its ' +
+      'licence, and the app offers only those its code names (`ART` in ' +
+      '`desktop/src/elements/stickers.ts`).',
   }),
   tagged({
     type: 'emoji',
     written: 'base',
-    paths: ['elements/catalogs/emoji-catalog.json'],
+    paths: ['elements/catalogs/emoji-catalog.json', ...artSets('twemoji')],
     handlers: [],
     closed:
       "The app's `scripts/generate-emoji-catalog.mjs` writes the catalog whole, from Twemoji, " +
       'and would drop an uploaded emoji.',
   }),
-  {
-    type: 'art',
-    written: 'none',
-    paths: ['elements/art/'],
-    handlers: [],
-    closed:
-      'The art sets are packages, each published with its licence, and the app offers only the ' +
-      'sets its code names (`ART` in `desktop/src/elements/stickers.ts`).',
-  },
   tagged({
     type: 'icons',
     written: 'base',

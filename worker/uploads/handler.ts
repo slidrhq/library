@@ -23,7 +23,6 @@ export const TYPES = [
   'shapes',
   'graphics',
   'emoji',
-  'art',
   'icons',
   'fonts',
 ] as const;

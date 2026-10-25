@@ -14,6 +14,12 @@ export interface Section {
   paths: string[];
 }
 
+/**
+ * The files of art sets, each the set's drawings and its licence. A set is counted with the part
+ * drawn from it (`ART` in the app's `elements/stickers.ts`), so no file is counted twice.
+ */
+const artSets = (...sets: string[]) => sets.map((set) => `elements/art/${set}.`);
+
 export const SECTIONS: Section[] = [
   {
     id: 'designs',
@@ -49,19 +55,27 @@ export const SECTIONS: Section[] = [
     id: 'graphics',
     nameKey: 'library.section.graphics.name',
     aboutKey: 'library.section.graphics.about',
-    paths: ['elements/catalogs/graphics-catalog'],
+    paths: [
+      'elements/catalogs/graphics-catalog',
+      ...artSets(
+        'fluent-color',
+        'fluent-emoji',
+        'noto',
+        'streamline-kameleon-color',
+        'fluent-emoji-flat',
+        'streamline-stickies-color',
+        'streamline-ultimate-color',
+        'streamline-emojis',
+        'streamline-flex-color',
+        'streamline-freehand-color',
+      ),
+    ],
   },
   {
     id: 'emoji',
     nameKey: 'library.section.emoji.name',
     aboutKey: 'library.section.emoji.about',
-    paths: ['elements/catalogs/emoji-catalog'],
-  },
-  {
-    id: 'art',
-    nameKey: 'library.section.art.name',
-    aboutKey: 'library.section.art.about',
-    paths: ['elements/art/'],
+    paths: ['elements/catalogs/emoji-catalog', ...artSets('twemoji')],
   },
   {
     id: 'icons',

@@ -74,6 +74,7 @@ describe('what the library takes', () => {
         type: string;
         uploads: boolean;
         closed?: string;
+        paths: string[];
         actions: Record<string, unknown>;
       }[];
     }>(response);
@@ -95,7 +96,6 @@ describe('what the library takes', () => {
       'shapes',
       'graphics',
       'emoji',
-      'art',
       'icons',
       'fonts',
     ]);
@@ -108,7 +108,13 @@ describe('what the library takes', () => {
       assert.deepEqual(Object.keys(byType[type]!.actions), ['tag'], type);
       assert.equal(byType[type]!.uploads, true, type);
     }
-    assert.deepEqual(Object.keys(byType.art!.actions), []);
+    // An art set is a part of what is drawn from it, and of nothing else.
+    const art = content.types.flatMap((one) =>
+      one.paths.filter((path) => path.startsWith('elements/art/')).map((path) => [path, one.type]),
+    );
+    assert.equal(new Set(art.map(([path]) => path)).size, art.length);
+    assert.ok(byType.graphics!.paths.includes('elements/art/fluent-color.notice.json'));
+    assert.ok(byType.emoji!.paths.includes('elements/art/twemoji.json'));
   });
 
   test('describes itself as OpenAPI, with the model’s schema of a slide', async () => {

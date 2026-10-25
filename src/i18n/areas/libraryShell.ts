@@ -15,8 +15,6 @@ export const he = {
   'library.section.graphics.about': 'ערכות הגרפיקה, לפי סגנון.',
   'library.section.emoji.name': "אימוג'י",
   'library.section.emoji.about': "האימוג'י, לפי קטגוריה.",
-  'library.section.art.name': 'איורים',
-  'library.section.art.about': 'ערכות האיורים הצבעוניים, עם הרישיון של כל ערכה.',
   'library.section.icons.name': 'אייקונים',
   'library.section.icons.about': 'Lucide ו-Tabler, עם מילות החיפוש בעברית ובאנגלית.',
   'library.section.fonts.name': 'גופנים',
@@ -59,12 +57,6 @@ export const he = {
   'library.files.folderLabel': 'תיקייה',
   'library.files.folderCount': '{count} קבצים',
 
-  'library.art.loadingSet': 'טוען את הערכה…',
-  'library.art.allSets': 'כל הערכות',
-  'library.art.count': '{count} איורים',
-  'library.art.noMatch': 'אין איורים שמתאימים לחיפוש.',
-  'library.art.license': 'רישיון הערכה',
-
   'library.svg.noNotice': 'אין הודעת רישיון ({path}).',
   'library.svg.licenseText': 'נוסח הרישיון',
 
@@ -102,8 +94,6 @@ export const en: Record<keyof typeof he, string> = {
   'library.section.graphics.about': 'The graphics sets, by style.',
   'library.section.emoji.name': 'Emoji',
   'library.section.emoji.about': 'The emoji, by category.',
-  'library.section.art.name': 'Illustrations',
-  'library.section.art.about': 'The colorful illustration sets, with the license of each set.',
   'library.section.icons.name': 'Icons',
   'library.section.icons.about': 'Lucide and Tabler, with search words in Hebrew and English.',
   'library.section.fonts.name': 'Fonts',
@@ -148,12 +138,6 @@ export const en: Record<keyof typeof he, string> = {
   'library.files.andMore': 'and {count} more…',
   'library.files.folderLabel': 'Folder',
   'library.files.folderCount': '{count} files',
-
-  'library.art.loadingSet': 'Loading the set…',
-  'library.art.allSets': 'All sets',
-  'library.art.count': '{count} illustrations',
-  'library.art.noMatch': 'No illustrations match the search.',
-  'library.art.license': 'Set license',
 
   'library.svg.noNotice': 'There is no license notice ({path}).',
   'library.svg.licenseText': 'License text',

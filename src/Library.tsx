@@ -19,7 +19,6 @@ const Cards = lazy(() => import('./Cards').then((m) => ({ default: m.Cards })));
 const Frames = lazy(() => import('./Frames').then((m) => ({ default: m.Frames })));
 const Shapes = lazy(() => import('./Shapes').then((m) => ({ default: m.Shapes })));
 const Stickers = lazy(() => import('./Stickers').then((m) => ({ default: m.Stickers })));
-const Art = lazy(() => import('./Art').then((m) => ({ default: m.Art })));
 const Icons = lazy(() => import('./Icons').then((m) => ({ default: m.Icons })));
 const ArtPeek = lazy(() => import('./Art').then((m) => ({ default: m.ArtPeek })));
 const CardsPeek = lazy(() => import('./Cards').then((m) => ({ default: m.CardsPeek })));
@@ -78,7 +77,6 @@ const PEEKS: Record<string, () => ReactNode> = {
       names={['grinning-face', 'party-popper', 'red-heart', 'thumbs-up', 'rocket', 'light-bulb']}
     />
   ),
-  art: () => <ArtPeek set="noto" />,
   icons: () => <IconsPeek />,
   fonts: () => (
     <span className="peek">
@@ -239,9 +237,6 @@ export function Library({
       break;
     case 'emoji':
       content = <Stickers kind="emoji" {...props} />;
-      break;
-    case 'art':
-      content = <Art {...props} />;
       break;
     case 'icons':
       content = <Icons {...props} />;
