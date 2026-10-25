@@ -1,6 +1,6 @@
 # Slidr Library — implementation plan
 
-Status: **approved 2026-10-25**, then rebased onto `main` at 1875718. It implements the [specification](SPEC.md). Section numbers such as §9.4 are the specification's.
+Status: **approved 2026-10-25**, then rebased onto `main` at 4e2bef5, which serves the media straight from R2 and keeps the publication's bookkeeping beside the uploads. It implements the [specification](SPEC.md). Section numbers such as §9.4 are the specification's.
 
 `main` already has the publication (`worker/media/`). This plan moves it onto ports, adds a second host, people, tokens and stores, and makes approval publish.
 
@@ -32,7 +32,6 @@ The core is moved out of the Worker so a second host can run it.
   - routes, auth, uploads and media go to `server/core/`;
   - today's `index.ts` becomes `server/host/cloudflare/index.ts`, and `node.mjs` moves to `server/node.mjs`;
   - update `wrangler.jsonc` (`main`), both `tsconfig`s, `eslint.config.js`, the scripts of `package.json`, `.prettierignore`, and `.github/workflows/deploy.yml`;
-  - `media-site/` stays where it is.
 - A `Context` handed to every route: `{ store, media, config, clientAddress, waitUntil, now }`. Nothing in `server/core` reads `env` any more. The Cloudflare host builds the context from `env`, as the routes read it today: `UPLOADS`, `MEDIA`, `MEDIA_LIBRARY_URL`, the secrets.
 - Two ports:
   - `StateStore` is today's `Bucket` (`uploads/store.ts`), named for what it is;
@@ -126,10 +125,7 @@ The core is moved out of the Worker so a second host can run it.
   - every path stays inside the root (`isLibraryPath`, then a check after resolving; links are not followed);
   - a file's SHA-256 comes from the manifest, and the manifest's etag is its SHA-256;
   - `test()` writes and removes a probe file.
-- The bookkeeping goes to the state store, on both hosts (D11):
-  - `_history/` becomes `media/history/`, `_staged/` becomes `media/staged/`, and `_publishing.json` becomes `media/lock.json`, taken with put-if-match (§4.7);
-  - on Cloudflare, the bucket's existing `_…` keys stay readable;
-  - `import.ts`'s `hashesIn` no longer lists the `_` keys.
+- The bookkeeping is in the state store already (`main`, 4e2bef5: `media/history/`, `media/staged/`, `media/lock.json`; D11). What remains of it: the lock taken with put-if-match (§4.7), so two never take it together.
 - `/media/` is `serve.ts` over `ctx.media`. The page is built with `define: { __SLIDR_MEDIA_PATH__: '"/media/"' }` in `vite.config.ts`. Check that every reader in `vendor/desktop/src` goes through `mediaUrl`/`mediaBase` and none names the site, and that `src/media.ts` stops naming `MEDIA_LIBRARY_URL`.
 - The checks: `libraryFor` reads `ctx.media` once it has a manifest, and the site before that, as today.
 - Settings:
@@ -194,19 +190,16 @@ The core is moved out of the Worker so a second host can run it.
   - plain FTP refused unless allowed;
   - a manifest changed outside the library, refused.
 
-## P8. Cloudflare from a machine (R2 + Pages)
+## P8. Cloudflare from a machine (R2)
 
 - `server/core/media/r2s3.ts`: the `MediaStore` of an R2 bucket through its S3 API, signed with SigV4 by `aws4fetch`, so it runs on both hosts. It uses `GetObject`, `PutObject` (the SHA-256 in `x-amz-meta-sha256`), `DeleteObject` and `ListObjectsV2`. The manifest is written with `If-Match` where R2 honours it on `PutObject`; check that first, else read again and compare its hash as for SFTP.
-- `media-site/` serves the bucket itself (D10):
-  - its `_worker.js` is built from `serve.ts` with esbuild (`pnpm build:media-site`) and binds `MEDIA` to `slidr-media` (`[[r2_buckets]]` in `wrangler.toml`);
-  - the service binding to `library` goes;
-  - `site.test.ts` is held to the new `_worker.js`.
-- Settings on Node, for R2: the account ID, the bucket, the Pages site's URL, and the S3 credentials. **Test** checks that they read and write that one bucket.
-- The steps to deploy the Pages site of an organization's own bucket, once: `cd media-site; npx wrangler pages deploy` with its bucket named.
+- The cache before the bucket's domain is emptied as on Cloudflare (`media/cache.ts`), with the zone's id and its purge token from the library's settings and vault.
+- Settings on Node, for R2: the account ID, the bucket, its domain, the zone's id, the S3 credentials and the purge token. **Test** checks that they read and write that one bucket, and that the token may purge the zone.
+- The steps to put an organization's own bucket under its own domain, with the zone's rules (README, "Serving the library").
 - **Tests:**
   - the S3 API stood in for: the requests signed, the metadata, the conditional write of the manifest;
   - the tests of `media.test.ts` over it;
-  - by hand, before merging: a bucket made for the test, written by a library on this machine, read through a Pages preview by the app's reader.
+  - by hand, before merging: a bucket made for the test, written by a library on this machine, read at its domain by the app's reader.
 
 ## P9. Moving over, cleaning up, documentation
 
