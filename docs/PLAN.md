@@ -207,7 +207,7 @@ The core is moved out of the Worker so a second host can run it.
 - On Cloudflare:
   - the bootstrap of P3, checked against the real deployment: `LIBRARY_OWNER` set, then the editors imported;
   - `LIBRARY_MASTER_KEY` set, and the Cron Trigger added;
-  - the Pages project `slidr-media` deployed with its own R2 binding (P8);
+  - nothing for the media: media.slidr.studio has been the bucket's own domain since 2026-10-25, with no Pages project (D10), and the Worker keeps `MEDIA_ZONE_ID` and `MEDIA_PURGE_TOKEN`;
   - `deploy.yml` and `.dev.vars.example` follow.
 - Removed:
   - `LIBRARY_KEYS`, `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key);
