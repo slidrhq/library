@@ -405,6 +405,99 @@ const words: Record<MessageKey, string> = {
     'Das Token „{name}“ widerrufen? Ein Programm, das es verwendet, kann dann nicht mehr hochladen.',
   'tokens.signIn': 'Melden Sie sich an, um Ihr Profil zu sehen.',
   'tokens.byToken': '{who}, über das Token „{token}“',
+  'settings.nav': 'Einstellungen',
+  'settings.about':
+    'Wo die Bibliothek liegt, wie man sich anmeldet und wie viel jeder hochladen darf.',
+  'settings.closed': 'Nur die Admins der Bibliothek sehen ihre Einstellungen.',
+  'settings.loading': 'Einstellungen werden gelesen…',
+  'settings.save': 'Speichern',
+  'settings.saved': 'Gespeichert.',
+  'settings.library.title': 'Adresse der Bibliothek',
+  'settings.library.explain':
+    'Die Adresse, unter der man die Bibliothek erreicht, wie der Browser sie anzeigt: hinter einem Proxy oder mit TLS. Ohne sie gilt die Adresse der jeweiligen Anfrage.',
+  'settings.library.host':
+    'Dieser Server ist unter der Adresse erreichbar, die sein Host ihm gibt.',
+  'settings.media.title': 'Medien',
+  'settings.media.explain':
+    'Wo die veröffentlichte Bibliothek liegt. Jeder angenommene Upload wird dorthin geschrieben.',
+  'settings.media.kind.folder': 'Ein Ordner auf diesem Rechner',
+  'settings.media.kind.r2': 'Der R2-Bucket des Workers bei Cloudflare',
+  'settings.media.kind.none': 'Noch kein Medienspeicher',
+  'settings.media.path': 'Ordner',
+  'settings.media.pathHint':
+    'Ein vollständiger Pfad. Der Server muss dort schreiben können; der Ordner enthält nur die Bibliothek.',
+  'settings.media.publicUrl': 'Öffentliche Adresse',
+  'settings.media.publicUrlHint':
+    'Nur wenn ein anderer Webserver den Ordner veröffentlicht. Ohne sie stellt dieser Server ihn unter /media/ bereit.',
+  'settings.media.saveTested': 'Testen und speichern',
+  'settings.media.test': 'Testen',
+  'settings.media.testing': 'Wird getestet…',
+  'settings.media.reachedLibrary':
+    'Erreichbar, Schreiben erfolgreich. Enthält die am {when} veröffentlichte Bibliothek: {files}.',
+  'settings.media.reachedEmpty':
+    'Erreichbar, Schreiben erfolgreich. Noch leer: weiter unten auf der Seite befüllen.',
+  'settings.media.unreachable': 'Schreiben fehlgeschlagen: {error}',
+  'settings.media.address': 'Die Adresse, die installierte Apps lesen',
+  'settings.media.addressHint': 'Geben Sie sie den Apps der Organisation auf eine von zwei Arten:',
+  'settings.media.policy': 'Eine Richtlinie für jeden Rechner (Group Policy oder Intune):',
+  'settings.media.installer': 'Oder ein Installationsprogramm, das die Adresse mitbringt:',
+  'settings.media.notHttps':
+    'Installierte Apps lesen nur eine HTTPS-Adresse (außer localhost). Geben Sie der Bibliothek eine HTTPS-Adresse oder dem Ordner eine öffentliche.',
+  'settings.copy': 'Kopieren',
+  'settings.copied': 'Kopiert',
+  'settings.seed.title': 'Medienspeicher befüllen',
+  'settings.seed.explain':
+    'Ein leerer Medienspeicher wird Datei für Datei mit einer Kopie einer veröffentlichten Bibliothek befüllt. Das lässt sich anhalten und setzt dort fort, wo es aufgehört hat.',
+  'settings.seed.from': 'Quelle',
+  'settings.seed.start': 'Befüllen',
+  'settings.seed.stop': 'Anhalten',
+  'settings.seed.progress': '{present} von {files} Dateien kopiert',
+  'settings.seed.failed':
+    'In dieser Runde nicht kopierte Dateien: {count}. Sie werden erneut versucht.',
+  'settings.seed.done': 'Der Medienspeicher enthält jetzt die ganze Bibliothek.',
+  'settings.seed.live':
+    'Der Medienspeicher enthält die am {when} veröffentlichte Bibliothek: {files}. Ab jetzt ändern ihn nur angenommene Uploads.',
+  'settings.signIn.title': 'Anmeldung',
+  'settings.signIn.explain':
+    'Der Anbieter, über den sich die Mitglieder der Bibliothek und alle, die hochladen, anmelden.',
+  'settings.signIn.local':
+    'Der Eigentümer meldet sich auch über einen Link des Rechners an, auf dem die Bibliothek installiert ist (pnpm library login).',
+  'settings.signIn.provider': 'Anbieter',
+  'settings.signIn.none': 'Keiner: nur der Eigentümer, über den Link des Rechners',
+  'settings.signIn.oidc': 'Anderer Anbieter für OpenID Connect',
+  'settings.signIn.clientId': 'Client-ID',
+  'settings.signIn.secret': 'Clientschlüssel (Client secret)',
+  'settings.signIn.secretKept': 'Gespeichert seit {when}. Leer lassen, um ihn zu behalten.',
+  'settings.signIn.tenant': 'Mandant (Tenant)',
+  'settings.signIn.tenantHint':
+    'Mandanten-ID oder Domain Ihrer Organisation; organizations: jedes Geschäfts-, Schul- oder Unikonto.',
+  'settings.signIn.issuer': 'Aussteller (Issuer)',
+  'settings.signIn.issuerHint':
+    'Die Adresse, deren Discovery-Dokument unter /.well-known/openid-configuration liegt. Es wird vor dem Speichern gelesen.',
+  'settings.signIn.name': 'Name auf der Schaltfläche',
+  'settings.signIn.domains': 'Zugelassene Domains',
+  'settings.signIn.domainsHint':
+    'Nur Adressen dieser Domains melden sich an. Mit Kommas trennen; leer gelassen gilt jede verifizierte Adresse.',
+  'settings.signIn.domainsMicrosoft':
+    'Für Microsoft erforderlich: Der Anbieter bestätigt nicht, dass eine Adresse verifiziert ist; daher entscheiden die Domains, wer sich anmeldet.',
+  'settings.signIn.redirect': 'Umleitungs-URI zum Registrieren beim Anbieter',
+  'settings.signIn.remove': 'Anbieter entfernen',
+  'settings.signIn.removeConfirm':
+    'Den Anbieter entfernen? Dann meldet sich nur der Eigentümer an, über den Link des Rechners.',
+  'settings.signIn.host':
+    'Google, über den eigenen Client des Workers (GOOGLE_CLIENT_ID). Um den Anbieter hier festzulegen, setzen Sie im Worker LIBRARY_MASTER_KEY.',
+  'settings.signIn.hostNone':
+    'Kein Anmeldeanbieter. Um hier einen festzulegen, setzen Sie im Worker LIBRARY_MASTER_KEY.',
+  'settings.limits.title': 'Uploads',
+  'settings.limits.explain':
+    'Wie viel jede Person ohne Rolle zur Prüfung offen haben darf, und wie schnell. Mitglieder sind ausgenommen.',
+  'settings.limits.pending': 'Ausstehende Uploads',
+  'settings.limits.bytes': 'Ausstehende Größe (MiB)',
+  'settings.limits.tokens': 'Tokens pro Person',
+  'settings.limits.writes': 'Schreibvorgänge pro Minute',
+  'settings.limits.default': 'Standard: {value}',
+  'settings.empty': 'Die Bibliothek ist leer: Darin ist noch nichts veröffentlicht.',
+  'settings.emptySeed': 'Medienspeicher in den Einstellungen befüllen',
 };
 
 export default words;

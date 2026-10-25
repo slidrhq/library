@@ -62,17 +62,19 @@ describe('the settings, on a machine', () => {
   test('are shown to an admin, every key only as set or not', async () => {
     const { root, call } = await machine();
     const settings = await read<{
-      editable: { url: boolean; media: boolean };
-      media: { kind: string; path: string; key: { set: boolean } };
+      editable: { url: boolean; media: boolean; signIn: boolean };
+      media: { kind: string; path: string; key: { set: boolean }; address: string };
       signIn: unknown;
       limits: { pending: number };
     }>(await call('/api/settings'));
-    assert.deepEqual(settings.editable, { url: true, media: true });
+    assert.deepEqual(settings.editable, { url: true, media: true, signIn: true });
     assert.equal(settings.media.kind, 'folder');
     assert.equal(settings.media.path, join(root, 'media'));
     assert.deepEqual(settings.media.key, { set: false });
     assert.equal(settings.signIn, null);
     assert.equal(settings.limits.pending, 20);
+    // Installed apps read the library from this server, at /media/.
+    assert.equal(settings.media.address, `${SITE}/media/`);
   });
 
   test('try a media folder before it is kept, and serve it at once', async () => {
@@ -159,10 +161,10 @@ describe('the settings, on Cloudflare', () => {
       'not-an-admin',
     );
     const settings = await read<{
-      editable: { url: boolean; media: boolean };
+      editable: { url: boolean; media: boolean; signIn: boolean };
       signIn: { provider: string; host: boolean };
     }>(await owner.call('/api/settings'));
-    assert.deepEqual(settings.editable, { url: false, media: false });
+    assert.deepEqual(settings.editable, { url: false, media: false, signIn: false });
     // The Worker's own Google client, until the library names a provider.
     assert.deepEqual([settings.signIn.provider, settings.signIn.host], ['google', true]);
     for (const [path, body] of [

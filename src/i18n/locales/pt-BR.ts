@@ -399,6 +399,97 @@ const words: Record<MessageKey, string> = {
     'Revogar o token "{name}"? Um programa que o usa não poderá mais enviar conteúdo.',
   'tokens.signIn': 'Faça login para ver seu perfil.',
   'tokens.byToken': '{who}, com o token "{token}"',
+  'settings.nav': 'Configurações',
+  'settings.about':
+    'Onde a biblioteca fica guardada, como as pessoas fazem login e quanto cada uma pode enviar.',
+  'settings.closed': 'Só os administradores da biblioteca veem as configurações dela.',
+  'settings.loading': 'Lendo as configurações…',
+  'settings.save': 'Salvar',
+  'settings.saved': 'Salvo.',
+  'settings.library.title': 'Endereço da biblioteca',
+  'settings.library.explain':
+    'O endereço pelo qual as pessoas chegam à biblioteca, como o navegador o mostra: atrás de um proxy ou com TLS. Sem ele, a biblioteca usa o endereço de cada solicitação.',
+  'settings.library.host': 'Este servidor usa o endereço que o host dele fornece.',
+  'settings.media.title': 'Mídia',
+  'settings.media.explain':
+    'Onde a biblioteca publicada fica guardada. Todo envio aceito é gravado lá.',
+  'settings.media.kind.folder': 'Uma pasta neste computador',
+  'settings.media.kind.r2': 'O bucket R2 do Worker, no Cloudflare',
+  'settings.media.kind.none': 'Ainda sem armazenamento de mídia',
+  'settings.media.path': 'Pasta',
+  'settings.media.pathHint':
+    'Um caminho completo. O servidor precisa poder gravar nela, e ela guarda só a biblioteca.',
+  'settings.media.publicUrl': 'Endereço público',
+  'settings.media.publicUrlHint':
+    'Só quando outro servidor web publica a pasta. Sem ele, este servidor a serve em /media/.',
+  'settings.media.saveTested': 'Testar e salvar',
+  'settings.media.test': 'Testar',
+  'settings.media.testing': 'Testando…',
+  'settings.media.reachedLibrary':
+    'Acessível e gravável. Contém a biblioteca publicada em {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'Acessível e gravável. Ainda vazio: preencha mais abaixo nesta página.',
+  'settings.media.unreachable': 'Não foi possível gravar lá: {error}',
+  'settings.media.address': 'O endereço que os apps instalados leem',
+  'settings.media.addressHint': 'Passe-o para os apps da organização de uma destas duas formas:',
+  'settings.media.policy': 'Uma política para todos os computadores (Group Policy ou Intune):',
+  'settings.media.installer': 'Ou um instalador que leva o endereço:',
+  'settings.media.notHttps':
+    'Apps instalados só leem um endereço HTTPS (exceto localhost). Dê à biblioteca um endereço HTTPS ou à pasta um endereço público.',
+  'settings.copy': 'Copiar',
+  'settings.copied': 'Copiado',
+  'settings.seed.title': 'Preencher a mídia',
+  'settings.seed.explain':
+    'Um armazenamento de mídia vazio é preenchido com uma cópia de uma biblioteca publicada, arquivo por arquivo. Pode ser interrompido e continua de onde parou.',
+  'settings.seed.from': 'Origem',
+  'settings.seed.start': 'Preencher',
+  'settings.seed.stop': 'Parar',
+  'settings.seed.progress': '{present} de {files} arquivos copiados',
+  'settings.seed.failed': 'Arquivos não copiados nesta rodada: {count}. Haverá nova tentativa.',
+  'settings.seed.done': 'A mídia agora tem a biblioteca inteira.',
+  'settings.seed.live':
+    'A mídia tem a biblioteca publicada em {when}: {files}. De agora em diante, só envios aceitos a alteram.',
+  'settings.signIn.title': 'Login',
+  'settings.signIn.explain':
+    'O provedor pelo qual os membros da biblioteca, e quem envia para ela, fazem login.',
+  'settings.signIn.local':
+    'O proprietário também faz login por um link do computador onde a biblioteca está instalada (pnpm library login).',
+  'settings.signIn.provider': 'Provedor',
+  'settings.signIn.none': 'Nenhum: só o proprietário, pelo link do computador',
+  'settings.signIn.oidc': 'Outro provedor OpenID Connect',
+  'settings.signIn.clientId': 'ID do cliente',
+  'settings.signIn.secret': 'Segredo do cliente',
+  'settings.signIn.secretKept': 'Guardado desde {when}. Se ficar vazio, é mantido.',
+  'settings.signIn.tenant': 'Locatário (Tenant)',
+  'settings.signIn.tenantHint':
+    'ID ou domínio do locatário da sua organização; organizations: qualquer conta corporativa ou de estudante.',
+  'settings.signIn.issuer': 'Emissor (Issuer)',
+  'settings.signIn.issuerHint':
+    'O endereço cujo documento de descoberta fica em /.well-known/openid-configuration. Ele é lido antes de salvar.',
+  'settings.signIn.name': 'Nome no botão',
+  'settings.signIn.domains': 'Domínios permitidos',
+  'settings.signIn.domainsHint':
+    'Só endereços desses domínios fazem login. Separe-os com vírgulas; se ficar vazio, qualquer endereço verificado faz.',
+  'settings.signIn.domainsMicrosoft':
+    'Obrigatório para a Microsoft: ela não garante que um endereço seja verificado, então os domínios decidem quem faz login.',
+  'settings.signIn.redirect': 'URI de redirecionamento para registrar no provedor',
+  'settings.signIn.remove': 'Remover o provedor',
+  'settings.signIn.removeConfirm':
+    'Remover o provedor? Só o proprietário fará login, pelo link do computador.',
+  'settings.signIn.host':
+    'Google, pelo cliente do próprio Worker (GOOGLE_CLIENT_ID). Para definir o provedor aqui, defina LIBRARY_MASTER_KEY no Worker.',
+  'settings.signIn.hostNone':
+    'Nenhum provedor de login. Para definir um aqui, defina LIBRARY_MASTER_KEY no Worker.',
+  'settings.limits.title': 'Envios',
+  'settings.limits.explain':
+    'Quanto cada pessoa sem função pode deixar aguardando revisão, e com que rapidez. Os membros são isentos.',
+  'settings.limits.pending': 'Envios aguardando',
+  'settings.limits.bytes': 'Tamanho aguardando (MiB)',
+  'settings.limits.tokens': 'Tokens por pessoa',
+  'settings.limits.writes': 'Gravações por minuto',
+  'settings.limits.default': 'Padrão: {value}',
+  'settings.empty': 'A biblioteca está vazia: nada foi publicado nela ainda.',
+  'settings.emptySeed': 'Preencher a mídia nas Configurações',
 };
 
 export default words;

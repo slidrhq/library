@@ -46,6 +46,14 @@ async function optionalBody(request: Request): Promise<Record<string, unknown> |
   return body;
 }
 
+/**
+ * Where installed apps read the library: its public address, or this server's own `/media/` on a
+ * machine (at `base`, the library's address, when it has one), or the site it is published to.
+ */
+export const siteOf = (request: Request, ctx: Context, base = request.url) =>
+  ctx.publicUrl ??
+  (ctx.local && ctx.media ? new URL('/media/', base).href : (ctx.site ?? MEDIA_LIBRARY_URL));
+
 // ---- GET /api/library
 
 export const libraryStatus: Route = async (request, ctx) => {
@@ -58,12 +66,7 @@ export const libraryStatus: Route = async (request, ctx) => {
   const files = live ? Object.values(live.manifest.files) : [];
   return json({
     live: live !== undefined,
-    // Where installed apps read it: its public address, or this server's own on a machine.
-    site:
-      ctx.publicUrl ??
-      (ctx.local && ctx.media
-        ? new URL('/media/', request.url).href
-        : (ctx.site ?? MEDIA_LIBRARY_URL)),
+    site: siteOf(request, ctx),
     ...(live
       ? {
           published: live.manifest.published,

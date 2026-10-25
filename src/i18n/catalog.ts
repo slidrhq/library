@@ -8,6 +8,7 @@ import * as libraryBrowse from './areas/libraryBrowse';
 import * as libraryCatalogs from './areas/libraryCatalogs';
 import * as libraryShell from './areas/libraryShell';
 import * as people from './areas/people';
+import * as settings from './areas/settings';
 import * as shell from './areas/shell';
 import * as tokens from './areas/tokens';
 import * as uploads from './areas/uploads';
@@ -21,6 +22,7 @@ const areas = [
   uploads,
   people,
   tokens,
+  settings,
 ];
 
 export const en = Object.assign({}, ...areas.map((area) => area.en)) as Merge<typeof shell.en> &
@@ -30,7 +32,8 @@ export const en = Object.assign({}, ...areas.map((area) => area.en)) as Merge<ty
   Merge<typeof libraryCatalogs.en> &
   Merge<typeof uploads.en> &
   Merge<typeof people.en> &
-  Merge<typeof tokens.en>;
+  Merge<typeof tokens.en> &
+  Merge<typeof settings.en>;
 
 export type MessageKey = keyof typeof en;
 

@@ -406,6 +406,96 @@ const words: Record<MessageKey, string> = {
     'トークン「{name}」を取り消しますか？これを使うプログラムはアップロードできなくなります。',
   'tokens.signIn': 'プロフィールを見るにはログインしてください。',
   'tokens.byToken': '{who}（トークン「{token}」）',
+  'settings.nav': '設定',
+  'settings.about': 'ライブラリの保存先、ログインの方法、各自がアップロードできる量。',
+  'settings.closed': 'ライブラリの設定は管理者だけが見られます。',
+  'settings.loading': '設定を読み込んでいます…',
+  'settings.save': '保存',
+  'settings.saved': '保存しました。',
+  'settings.library.title': 'ライブラリのアドレス',
+  'settings.library.explain':
+    '利用者がブラウザーでライブラリにアクセスするアドレス（プロキシの背後や TLS を使う場合）。未設定の場合は、各リクエストのアドレスを使います。',
+  'settings.library.host': 'このサーバーのアドレスはホストによって決まります。',
+  'settings.media.title': 'メディア',
+  'settings.media.explain':
+    '公開済みライブラリの保存先です。承認されたアップロードはすべてここに書き込まれます。',
+  'settings.media.kind.folder': 'このコンピューターのフォルダー',
+  'settings.media.kind.r2': 'Cloudflare 上の Worker の R2 バケット',
+  'settings.media.kind.none': 'メディアの保存先はまだありません',
+  'settings.media.path': 'フォルダー',
+  'settings.media.pathHint':
+    'フルパス。サーバーが書き込み可能で、ライブラリだけを置くフォルダーです。',
+  'settings.media.publicUrl': '公開アドレス',
+  'settings.media.publicUrlHint':
+    '別の Web サーバーがフォルダーを公開する場合のみ。未設定の場合は、このサーバーが /media/ で配信します。',
+  'settings.media.saveTested': 'テストして保存',
+  'settings.media.test': 'テスト',
+  'settings.media.testing': 'テスト中…',
+  'settings.media.reachedLibrary':
+    'アクセスと書き込みに成功しました。{when} に公開されたライブラリ（{files}）が入っています。',
+  'settings.media.reachedEmpty':
+    'アクセスと書き込みに成功しました。まだ空です。このページの下でインポートできます。',
+  'settings.media.unreachable': '書き込めませんでした: {error}',
+  'settings.media.address': 'インストール済みアプリが読み込むアドレス',
+  'settings.media.addressHint': '組織のアプリには、次のいずれかの方法で設定します:',
+  'settings.media.policy': '全コンピューター向けのポリシー（Group Policy または Intune）:',
+  'settings.media.installer': 'または、アドレスを組み込んだインストーラー:',
+  'settings.media.notHttps':
+    'インストール済みアプリは HTTPS のアドレスしか読み込みません（localhost を除く）。ライブラリに HTTPS のアドレスを設定するか、フォルダーに公開アドレスを設定してください。',
+  'settings.copy': 'コピー',
+  'settings.copied': 'コピーしました',
+  'settings.seed.title': 'メディアのインポート',
+  'settings.seed.explain':
+    '空のメディアに、公開済みライブラリのコピーを 1 ファイルずつ取り込みます。停止しても、止まったところから再開できます。',
+  'settings.seed.from': 'インポート元',
+  'settings.seed.start': 'インポート',
+  'settings.seed.stop': '停止',
+  'settings.seed.progress': '{files} ファイル中 {present} ファイルをコピー済み',
+  'settings.seed.failed': '今回コピーできなかったファイル: {count}。再試行します。',
+  'settings.seed.done': 'メディアにライブラリ全体が揃いました。',
+  'settings.seed.live':
+    'メディアには {when} に公開されたライブラリ（{files}）が入っています。今後は、承認されたアップロードだけがメディアを更新します。',
+  'settings.signIn.title': 'ログイン',
+  'settings.signIn.explain':
+    'ライブラリのメンバーとアップロードする人がログインに使うプロバイダー。',
+  'settings.signIn.local':
+    '所有者は、ライブラリがインストールされているコンピューターのリンクでもログインできます（pnpm library login）。',
+  'settings.signIn.provider': 'プロバイダー',
+  'settings.signIn.none': 'なし: 所有者のみ、コンピューターのリンクでログイン',
+  'settings.signIn.oidc': 'その他の OpenID Connect プロバイダー',
+  'settings.signIn.clientId': 'クライアント ID',
+  'settings.signIn.secret': 'クライアント シークレット',
+  'settings.signIn.secretKept': '{when} から保存されています。空欄のままなら変更されません。',
+  'settings.signIn.tenant': 'テナント',
+  'settings.signIn.tenantHint':
+    '組織のテナント ID またはドメイン。organizations: 任意の職場または学校アカウント。',
+  'settings.signIn.issuer': '発行者（Issuer）',
+  'settings.signIn.issuerHint':
+    '検出ドキュメントが /.well-known/openid-configuration にあるアドレス。保存前に読み込みます。',
+  'settings.signIn.name': 'ボタンに表示する名前',
+  'settings.signIn.domains': '許可するドメイン',
+  'settings.signIn.domainsHint':
+    'これらのドメインのアドレスだけがログインできます。カンマで区切ります。空欄なら、確認済みのアドレスはすべてログインできます。',
+  'settings.signIn.domainsMicrosoft':
+    'Microsoft では必須です。Microsoft はアドレスが確認済みかを保証しないため、ログインできる人はドメインで決まります。',
+  'settings.signIn.redirect': 'プロバイダーに登録するリダイレクト URI',
+  'settings.signIn.remove': 'プロバイダーを削除',
+  'settings.signIn.removeConfirm':
+    'プロバイダーを削除しますか？所有者だけが、コンピューターのリンクでログインできるようになります。',
+  'settings.signIn.host':
+    'Google（Worker 自身のクライアント GOOGLE_CLIENT_ID を使用）。ここでプロバイダーを設定するには、Worker に LIBRARY_MASTER_KEY を設定してください。',
+  'settings.signIn.hostNone':
+    'ログインのプロバイダーがありません。ここで設定するには、Worker に LIBRARY_MASTER_KEY を設定してください。',
+  'settings.limits.title': 'アップロード',
+  'settings.limits.explain':
+    '役割のない人がそれぞれ審査待ちにできる量と、そのペース。メンバーは対象外です。',
+  'settings.limits.pending': '審査待ちのアップロード',
+  'settings.limits.bytes': '審査待ちのサイズ（MiB）',
+  'settings.limits.tokens': '1 人あたりのトークン数',
+  'settings.limits.writes': '1 分あたりの書き込み数',
+  'settings.limits.default': '既定値: {value}',
+  'settings.empty': 'ライブラリは空です。まだ何も公開されていません。',
+  'settings.emptySeed': '設定でメディアをインポート',
 };
 
 export default words;

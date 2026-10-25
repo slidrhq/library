@@ -408,6 +408,98 @@ const words: Record<MessageKey, string> = {
     'Révoquer le jeton « {name} » ? Un programme qui l’utilise ne pourra plus téléverser.',
   'tokens.signIn': 'Connectez-vous pour voir votre profil.',
   'tokens.byToken': '{who}, avec le jeton « {token} »',
+  'settings.nav': 'Paramètres',
+  'settings.about':
+    'Où la médiathèque est conservée, comment on s’y connecte, et combien chacun peut téléverser.',
+  'settings.closed': 'Seuls les administrateurs de la médiathèque voient ses paramètres.',
+  'settings.loading': 'Lecture des paramètres…',
+  'settings.save': 'Enregistrer',
+  'settings.saved': 'Enregistré.',
+  'settings.library.title': 'Adresse de la médiathèque',
+  'settings.library.explain':
+    'L’adresse à laquelle on accède à la médiathèque, telle que le navigateur l’affiche : derrière un proxy, ou avec TLS. Sans elle, la médiathèque prend l’adresse de chaque requête.',
+  'settings.library.host': 'Ce serveur est joignable à l’adresse que lui donne son hébergeur.',
+  'settings.media.title': 'Médias',
+  'settings.media.explain':
+    'Où la médiathèque publiée est conservée. Chaque envoi approuvé y est écrit.',
+  'settings.media.kind.folder': 'Un dossier sur cet ordinateur',
+  'settings.media.kind.r2': 'Le bucket R2 du Worker, sur Cloudflare',
+  'settings.media.kind.none': 'Pas encore de stockage des médias',
+  'settings.media.path': 'Dossier',
+  'settings.media.pathHint':
+    'Un chemin complet. Le serveur doit pouvoir y écrire, et le dossier ne contient que la médiathèque.',
+  'settings.media.publicUrl': 'Adresse publique',
+  'settings.media.publicUrlHint':
+    'Seulement si un autre serveur web publie le dossier. Sans elle, ce serveur le sert à /media/.',
+  'settings.media.saveTested': 'Tester et enregistrer',
+  'settings.media.test': 'Tester',
+  'settings.media.testing': 'Test en cours…',
+  'settings.media.reachedLibrary':
+    'Accessible, écriture réussie. Il contient la médiathèque publiée le {when} : {files}.',
+  'settings.media.reachedEmpty':
+    'Accessible, écriture réussie. Il est encore vide : remplissez-le plus bas sur la page.',
+  'settings.media.unreachable': 'Impossible d’y écrire : {error}',
+  'settings.media.address': 'L’adresse que lisent les applications installées',
+  'settings.media.addressHint':
+    'Donnez-la aux applications de l’organisation de l’une de ces deux façons :',
+  'settings.media.policy': 'Une stratégie pour chaque ordinateur (Group Policy ou Intune) :',
+  'settings.media.installer': 'Ou un programme d’installation qui porte l’adresse :',
+  'settings.media.notHttps':
+    'Les applications installées ne lisent qu’une adresse HTTPS (sauf localhost). Donnez à la médiathèque une adresse HTTPS, ou au dossier une adresse publique.',
+  'settings.copy': 'Copier',
+  'settings.copied': 'Copié',
+  'settings.seed.title': 'Remplir le stockage des médias',
+  'settings.seed.explain':
+    'Un stockage des médias vide est rempli avec une copie d’une médiathèque publiée, fichier par fichier. On peut l’arrêter, et il reprend là où il s’est arrêté.',
+  'settings.seed.from': 'Source',
+  'settings.seed.start': 'Remplir',
+  'settings.seed.stop': 'Arrêter',
+  'settings.seed.progress': '{present} fichiers copiés sur {files}',
+  'settings.seed.failed': 'Fichiers non copiés lors de ce passage : {count}. Ils seront réessayés.',
+  'settings.seed.done': 'Le stockage des médias contient désormais toute la médiathèque.',
+  'settings.seed.live':
+    'Le stockage des médias contient la médiathèque publiée le {when} : {files}. Désormais, seuls les envois approuvés le modifient.',
+  'settings.signIn.title': 'Connexion',
+  'settings.signIn.explain':
+    'Le fournisseur par lequel se connectent les membres de la médiathèque et ceux qui y téléversent.',
+  'settings.signIn.local':
+    'Le propriétaire se connecte aussi par un lien de l’ordinateur où la médiathèque est installée (pnpm library login).',
+  'settings.signIn.provider': 'Fournisseur',
+  'settings.signIn.none': 'Aucun : le propriétaire seul, par le lien de l’ordinateur',
+  'settings.signIn.oidc': 'Un autre fournisseur OpenID Connect',
+  'settings.signIn.clientId': 'ID client',
+  'settings.signIn.secret': 'Secret client',
+  'settings.signIn.secretKept': 'Conservé depuis le {when}. Laissé vide, il reste inchangé.',
+  'settings.signIn.tenant': 'Locataire (Tenant)',
+  'settings.signIn.tenantHint':
+    'L’ID de locataire ou le domaine de votre organisation ; organizations : tout compte professionnel ou scolaire.',
+  'settings.signIn.issuer': 'Émetteur (Issuer)',
+  'settings.signIn.issuerHint':
+    'L’adresse dont le document de découverte se trouve à /.well-known/openid-configuration. Il est lu avant l’enregistrement.',
+  'settings.signIn.name': 'Nom sur le bouton',
+  'settings.signIn.domains': 'Domaines autorisés',
+  'settings.signIn.domainsHint':
+    'Seules les adresses de ces domaines peuvent se connecter. Séparez-les par des virgules ; laissé vide, toute adresse vérifiée le peut.',
+  'settings.signIn.domainsMicrosoft':
+    'Obligatoire pour Microsoft : il ne garantit pas qu’une adresse est vérifiée, donc les domaines décident qui se connecte.',
+  'settings.signIn.redirect': 'URI de redirection à enregistrer auprès du fournisseur',
+  'settings.signIn.remove': 'Supprimer le fournisseur',
+  'settings.signIn.removeConfirm':
+    'Supprimer le fournisseur ? Seul le propriétaire pourra se connecter, par le lien de l’ordinateur.',
+  'settings.signIn.host':
+    'Google, via le client propre du Worker (GOOGLE_CLIENT_ID). Pour définir le fournisseur ici, donnez LIBRARY_MASTER_KEY au Worker.',
+  'settings.signIn.hostNone':
+    'Aucun fournisseur de connexion. Pour en définir un ici, donnez LIBRARY_MASTER_KEY au Worker.',
+  'settings.limits.title': 'Envois',
+  'settings.limits.explain':
+    'Combien chaque personne sans rôle peut laisser en attente d’examen, et à quel rythme. Les membres en sont exemptés.',
+  'settings.limits.pending': 'Envois en attente',
+  'settings.limits.bytes': 'Volume en attente (MiB)',
+  'settings.limits.tokens': 'Jetons par personne',
+  'settings.limits.writes': 'Écritures par minute',
+  'settings.limits.default': 'Par défaut : {value}',
+  'settings.empty': 'La médiathèque est vide : rien n’y est encore publié.',
+  'settings.emptySeed': 'Remplir le stockage des médias dans les Paramètres',
 };
 
 export default words;

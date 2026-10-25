@@ -407,6 +407,97 @@ const words: Record<MessageKey, string> = {
     '¿Revocar el token «{name}»? El programa que lo use ya no podrá subir contenido.',
   'tokens.signIn': 'Inicia sesión para ver tu perfil.',
   'tokens.byToken': '{who}, con el token «{token}»',
+  'settings.nav': 'Configuración',
+  'settings.about':
+    'Dónde se guarda la biblioteca, cómo se inicia sesión y cuánto puede subir cada persona.',
+  'settings.closed': 'Solo los administradores de la biblioteca ven su configuración.',
+  'settings.loading': 'Leyendo la configuración…',
+  'settings.save': 'Guardar',
+  'settings.saved': 'Guardado.',
+  'settings.library.title': 'Dirección de la biblioteca',
+  'settings.library.explain':
+    'La dirección con la que se llega a la biblioteca, tal como la muestra el navegador: detrás de un proxy o con TLS. Sin ella, la biblioteca usa la dirección de cada solicitud.',
+  'settings.library.host': 'Este servidor responde en la dirección que le asigna su hosting.',
+  'settings.media.title': 'Multimedia',
+  'settings.media.explain':
+    'Dónde se guarda la biblioteca publicada. Cada subida aprobada se escribe ahí.',
+  'settings.media.kind.folder': 'Una carpeta en este equipo',
+  'settings.media.kind.r2': 'El bucket R2 del Worker, en Cloudflare',
+  'settings.media.kind.none': 'Aún no hay almacén multimedia',
+  'settings.media.path': 'Carpeta',
+  'settings.media.pathHint':
+    'Una ruta completa. El servidor debe poder escribir en ella, y solo contiene la biblioteca.',
+  'settings.media.publicUrl': 'Dirección pública',
+  'settings.media.publicUrlHint':
+    'Solo si otro servidor web publica la carpeta. Sin ella, este servidor la sirve en /media/.',
+  'settings.media.saveTested': 'Probar y guardar',
+  'settings.media.test': 'Probar',
+  'settings.media.testing': 'Probando…',
+  'settings.media.reachedLibrary':
+    'Accesible y con escritura correcta. Contiene la biblioteca publicada el {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'Accesible y con escritura correcta. Aún está vacío: llénalo más abajo en la página.',
+  'settings.media.unreachable': 'No se pudo escribir ahí: {error}',
+  'settings.media.address': 'La dirección que leen las apps instaladas',
+  'settings.media.addressHint': 'Dásela a las apps de la organización de una de estas dos formas:',
+  'settings.media.policy': 'Una directiva para todos los equipos (Group Policy o Intune):',
+  'settings.media.installer': 'O un instalador que lleve la dirección:',
+  'settings.media.notHttps':
+    'Las apps instaladas solo leen una dirección HTTPS (salvo localhost). Da a la biblioteca una dirección HTTPS, o a la carpeta una pública.',
+  'settings.copy': 'Copiar',
+  'settings.copied': 'Copiado',
+  'settings.seed.title': 'Llenar el almacén multimedia',
+  'settings.seed.explain':
+    'Un almacén multimedia vacío se llena con una copia de una biblioteca publicada, archivo por archivo. Se puede detener, y sigue donde se detuvo.',
+  'settings.seed.from': 'Origen',
+  'settings.seed.start': 'Llenar',
+  'settings.seed.stop': 'Detener',
+  'settings.seed.progress': '{present} de {files} archivos copiados',
+  'settings.seed.failed': 'Archivos no copiados en esta ronda: {count}. Se volverán a intentar.',
+  'settings.seed.done': 'El almacén multimedia ya contiene toda la biblioteca.',
+  'settings.seed.live':
+    'El almacén multimedia contiene la biblioteca publicada el {when}: {files}. A partir de ahora, solo lo cambian las subidas aprobadas.',
+  'settings.signIn.title': 'Inicio de sesión',
+  'settings.signIn.explain':
+    'El proveedor con el que inician sesión los miembros de la biblioteca y quienes suben contenido a ella.',
+  'settings.signIn.local':
+    'El propietario también inicia sesión con un enlace del equipo donde está instalada la biblioteca (pnpm library login).',
+  'settings.signIn.provider': 'Proveedor',
+  'settings.signIn.none': 'Ninguno: solo el propietario, con el enlace del equipo',
+  'settings.signIn.oidc': 'Otro proveedor de OpenID Connect',
+  'settings.signIn.clientId': 'ID de cliente',
+  'settings.signIn.secret': 'Secreto de cliente',
+  'settings.signIn.secretKept': 'Guardado desde el {when}. Si lo dejas vacío, se conserva.',
+  'settings.signIn.tenant': 'Inquilino (Tenant)',
+  'settings.signIn.tenantHint':
+    'El ID de inquilino o el dominio de tu organización; organizations: cualquier cuenta profesional o educativa.',
+  'settings.signIn.issuer': 'Emisor (Issuer)',
+  'settings.signIn.issuerHint':
+    'La dirección cuyo documento de descubrimiento está en /.well-known/openid-configuration. Se lee antes de guardar.',
+  'settings.signIn.name': 'Nombre en el botón',
+  'settings.signIn.domains': 'Dominios permitidos',
+  'settings.signIn.domainsHint':
+    'Solo inician sesión las direcciones de estos dominios. Sepáralos con comas; si lo dejas vacío, puede hacerlo cualquier dirección verificada.',
+  'settings.signIn.domainsMicrosoft':
+    'Obligatorio con Microsoft: no garantiza que una dirección esté verificada, así que los dominios deciden quién inicia sesión.',
+  'settings.signIn.redirect': 'URI de redirección para registrar en el proveedor',
+  'settings.signIn.remove': 'Quitar el proveedor',
+  'settings.signIn.removeConfirm':
+    '¿Quitar el proveedor? Solo el propietario podrá iniciar sesión, con el enlace del equipo.',
+  'settings.signIn.host':
+    'Google, mediante el cliente propio del Worker (GOOGLE_CLIENT_ID). Para configurar el proveedor aquí, define LIBRARY_MASTER_KEY en el Worker.',
+  'settings.signIn.hostNone':
+    'No hay proveedor de inicio de sesión. Para configurarlo aquí, define LIBRARY_MASTER_KEY en el Worker.',
+  'settings.limits.title': 'Subidas',
+  'settings.limits.explain':
+    'Cuánto puede dejar en espera de revisión cada persona sin rol, y a qué ritmo. Los miembros están exentos.',
+  'settings.limits.pending': 'Subidas en espera',
+  'settings.limits.bytes': 'Tamaño en espera (MiB)',
+  'settings.limits.tokens': 'Tokens por persona',
+  'settings.limits.writes': 'Escrituras por minuto',
+  'settings.limits.default': 'Predeterminado: {value}',
+  'settings.empty': 'La biblioteca está vacía: aún no se ha publicado nada en ella.',
+  'settings.emptySeed': 'Llenar el almacén multimedia en Configuración',
 };
 
 export default words;

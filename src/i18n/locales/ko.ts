@@ -395,6 +395,94 @@ const words: Record<MessageKey, string> = {
     '토큰 "{name}"을(를) 취소할까요? 이 토큰을 쓰는 프로그램은 더 이상 업로드할 수 없습니다.',
   'tokens.signIn': '프로필을 보려면 로그인하세요.',
   'tokens.byToken': '{who}, 토큰 "{token}" 사용',
+  'settings.nav': '설정',
+  'settings.about': '라이브러리를 보관하는 곳, 로그인 방법, 각자 업로드할 수 있는 양.',
+  'settings.closed': '라이브러리의 설정은 관리자만 볼 수 있습니다.',
+  'settings.loading': '설정을 읽는 중…',
+  'settings.save': '저장',
+  'settings.saved': '저장했습니다.',
+  'settings.library.title': '라이브러리 주소',
+  'settings.library.explain':
+    '사람들이 브라우저에서 라이브러리에 접속하는 주소입니다(프록시 뒤에 있거나 TLS를 쓰는 경우). 없으면 라이브러리는 각 요청의 주소를 사용합니다.',
+  'settings.library.host': '이 서버의 주소는 호스트가 정합니다.',
+  'settings.media.title': '미디어',
+  'settings.media.explain':
+    '게시된 라이브러리를 보관하는 곳입니다. 승인된 업로드는 모두 여기에 기록됩니다.',
+  'settings.media.kind.folder': '이 컴퓨터의 폴더',
+  'settings.media.kind.r2': 'Cloudflare에 있는 Worker의 R2 버킷',
+  'settings.media.kind.none': '아직 미디어 저장소가 없음',
+  'settings.media.path': '폴더',
+  'settings.media.pathHint': '전체 경로입니다. 서버가 쓸 수 있어야 하며, 라이브러리만 담습니다.',
+  'settings.media.publicUrl': '공개 주소',
+  'settings.media.publicUrlHint':
+    '다른 웹 서버가 폴더를 게시할 때만 입력합니다. 없으면 이 서버가 /media/에서 제공합니다.',
+  'settings.media.saveTested': '테스트 후 저장',
+  'settings.media.test': '테스트',
+  'settings.media.testing': '테스트 중…',
+  'settings.media.reachedLibrary':
+    '접속과 쓰기에 성공했습니다. {when}에 게시된 라이브러리가 들어 있습니다({files}).',
+  'settings.media.reachedEmpty':
+    '접속과 쓰기에 성공했습니다. 아직 비어 있습니다. 페이지 아래에서 채우세요.',
+  'settings.media.unreachable': '쓰기에 실패했습니다: {error}',
+  'settings.media.address': '설치된 앱이 읽는 주소',
+  'settings.media.addressHint': '조직의 앱에 다음 두 방법 중 하나로 전달합니다:',
+  'settings.media.policy': '모든 컴퓨터에 적용하는 정책(Group Policy 또는 Intune):',
+  'settings.media.installer': '또는 주소가 담긴 설치 프로그램:',
+  'settings.media.notHttps':
+    '설치된 앱은 HTTPS 주소만 읽습니다(localhost 제외). 라이브러리에 HTTPS 주소를 지정하거나, 폴더에 공개 주소를 지정하세요.',
+  'settings.copy': '복사',
+  'settings.copied': '복사됨',
+  'settings.seed.title': '미디어 채우기',
+  'settings.seed.explain':
+    '빈 미디어 저장소를 게시된 라이브러리의 사본으로 파일 하나씩 채웁니다. 중지할 수 있으며, 중지한 곳부터 이어서 진행합니다.',
+  'settings.seed.from': '원본',
+  'settings.seed.start': '채우기',
+  'settings.seed.stop': '중지',
+  'settings.seed.progress': '파일 {files}개 중 {present}개 복사됨',
+  'settings.seed.failed': '이번에 복사하지 못한 파일: {count}개. 다시 시도합니다.',
+  'settings.seed.done': '이제 미디어에 라이브러리 전체가 들어 있습니다.',
+  'settings.seed.live':
+    '미디어에 {when}에 게시된 라이브러리가 들어 있습니다({files}). 이제부터는 승인된 업로드만 미디어를 바꿉니다.',
+  'settings.signIn.title': '로그인',
+  'settings.signIn.explain': '라이브러리 멤버와 업로드하는 사람이 로그인할 때 쓰는 공급자입니다.',
+  'settings.signIn.local':
+    '소유자는 라이브러리가 설치된 컴퓨터의 링크로도 로그인합니다(pnpm library login).',
+  'settings.signIn.provider': '공급자',
+  'settings.signIn.none': '없음: 소유자만, 컴퓨터의 링크로',
+  'settings.signIn.oidc': '다른 OpenID Connect 공급자',
+  'settings.signIn.clientId': '클라이언트 ID',
+  'settings.signIn.secret': '클라이언트 암호(Client secret)',
+  'settings.signIn.secretKept': '{when}부터 저장되어 있습니다. 비워 두면 그대로 유지됩니다.',
+  'settings.signIn.tenant': '테넌트',
+  'settings.signIn.tenantHint':
+    '조직의 테넌트 ID 또는 도메인입니다. organizations: 모든 회사 또는 학교 계정.',
+  'settings.signIn.issuer': '발급자(Issuer)',
+  'settings.signIn.issuerHint':
+    '검색 문서가 /.well-known/openid-configuration에 있는 주소입니다. 저장하기 전에 읽습니다.',
+  'settings.signIn.name': '버튼에 표시할 이름',
+  'settings.signIn.domains': '허용된 도메인',
+  'settings.signIn.domainsHint':
+    '이 도메인의 주소만 로그인합니다. 쉼표로 구분하세요. 비워 두면 확인된 주소는 모두 로그인합니다.',
+  'settings.signIn.domainsMicrosoft':
+    'Microsoft에서는 필수입니다. 주소가 확인되었는지 보증하지 않으므로, 도메인이 로그인할 사람을 정합니다.',
+  'settings.signIn.redirect': '공급자에 등록할 리디렉션 URI',
+  'settings.signIn.remove': '공급자 제거',
+  'settings.signIn.removeConfirm':
+    '공급자를 제거할까요? 소유자만 컴퓨터의 링크로 로그인할 수 있게 됩니다.',
+  'settings.signIn.host':
+    'Google(Worker 자체 클라이언트 GOOGLE_CLIENT_ID 사용). 여기서 공급자를 설정하려면 Worker에 LIBRARY_MASTER_KEY를 지정하세요.',
+  'settings.signIn.hostNone':
+    '로그인 공급자가 없습니다. 여기서 설정하려면 Worker에 LIBRARY_MASTER_KEY를 지정하세요.',
+  'settings.limits.title': '업로드',
+  'settings.limits.explain':
+    '역할이 없는 사람이 각자 검토 대기로 남길 수 있는 양과 속도입니다. 멤버는 제외됩니다.',
+  'settings.limits.pending': '대기 중인 업로드',
+  'settings.limits.bytes': '대기 중인 크기(MiB)',
+  'settings.limits.tokens': '1인당 토큰 수',
+  'settings.limits.writes': '분당 쓰기 수',
+  'settings.limits.default': '기본값: {value}',
+  'settings.empty': '라이브러리가 비어 있습니다. 아직 게시된 것이 없습니다.',
+  'settings.emptySeed': '설정에서 미디어 채우기',
 };
 
 export default words;

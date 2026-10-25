@@ -400,6 +400,96 @@ const words: Record<MessageKey, string> = {
     'टोकन "{name}" रद्द करें? इसका उपयोग करने वाला प्रोग्राम अब अपलोड नहीं कर पाएगा।',
   'tokens.signIn': 'अपनी प्रोफ़ाइल देखने के लिए साइन इन करें।',
   'tokens.byToken': '{who}, टोकन "{token}" से',
+  'settings.nav': 'सेटिंग्स',
+  'settings.about':
+    'लाइब्रेरी कहाँ रखी है, लोग साइन इन कैसे करते हैं, और हर कोई कितना अपलोड कर सकता है।',
+  'settings.closed': 'लाइब्रेरी की सेटिंग्स केवल उसके एडमिन देखते हैं।',
+  'settings.loading': 'सेटिंग्स पढ़ी जा रही हैं…',
+  'settings.save': 'सहेजें',
+  'settings.saved': 'सहेजा गया।',
+  'settings.library.title': 'लाइब्रेरी का पता',
+  'settings.library.explain':
+    'वह पता जिससे लोग लाइब्रेरी तक पहुँचते हैं, जैसा उनके ब्राउज़र में दिखता है: प्रॉक्सी के पीछे, या TLS के साथ। पता न हो, तो लाइब्रेरी हर अनुरोध के पते का उपयोग करती है।',
+  'settings.library.host': 'इस सर्वर का पता उसका होस्ट तय करता है।',
+  'settings.media.title': 'मीडिया',
+  'settings.media.explain': 'प्रकाशित लाइब्रेरी कहाँ रखी है। हर स्वीकृत अपलोड वहीं लिखा जाता है।',
+  'settings.media.kind.folder': 'इस कंप्यूटर पर एक फ़ोल्डर',
+  'settings.media.kind.r2': 'Cloudflare पर Worker का R2 बकेट',
+  'settings.media.kind.none': 'अभी कोई मीडिया स्टोर नहीं',
+  'settings.media.path': 'फ़ोल्डर',
+  'settings.media.pathHint':
+    'पूरा पाथ। सर्वर को वहाँ लिखने की अनुमति होनी चाहिए, और उसमें केवल लाइब्रेरी रहती है।',
+  'settings.media.publicUrl': 'सार्वजनिक पता',
+  'settings.media.publicUrlHint':
+    'केवल तब, जब कोई दूसरा वेब सर्वर फ़ोल्डर प्रकाशित करता हो। पता न हो, तो यह सर्वर उसे /media/ पर देता है।',
+  'settings.media.saveTested': 'जाँचें और सहेजें',
+  'settings.media.test': 'जाँचें',
+  'settings.media.testing': 'जाँच हो रही है…',
+  'settings.media.reachedLibrary':
+    'पहुँच मिली, और लिखना सफल रहा। इसमें {when} को प्रकाशित लाइब्रेरी है: {files}।',
+  'settings.media.reachedEmpty':
+    'पहुँच मिली, और लिखना सफल रहा। यह अभी खाली है: इसे पेज में नीचे भरें।',
+  'settings.media.unreachable': 'वहाँ लिखा नहीं जा सका: {error}',
+  'settings.media.address': 'वह पता जिसे इंस्टॉल किए गए ऐप पढ़ते हैं',
+  'settings.media.addressHint': 'इसे संगठन के ऐप्स को दो में से किसी एक तरीके से दें:',
+  'settings.media.policy': 'हर कंप्यूटर के लिए एक पॉलिसी (Group Policy या Intune):',
+  'settings.media.installer': 'या एक इंस्टॉलर जिसमें यह पता हो:',
+  'settings.media.notHttps':
+    'इंस्टॉल किए गए ऐप केवल HTTPS पता पढ़ते हैं (localhost को छोड़कर)। लाइब्रेरी को HTTPS पता दें, या फ़ोल्डर को सार्वजनिक पता।',
+  'settings.copy': 'कॉपी करें',
+  'settings.copied': 'कॉपी हो गया',
+  'settings.seed.title': 'मीडिया भरें',
+  'settings.seed.explain':
+    'खाली मीडिया स्टोर को किसी प्रकाशित लाइब्रेरी की कॉपी से फ़ाइल-दर-फ़ाइल भरा जाता है। इसे रोका जा सकता है, और यह वहीं से आगे बढ़ता है जहाँ रुका था।',
+  'settings.seed.from': 'स्रोत',
+  'settings.seed.start': 'भरें',
+  'settings.seed.stop': 'रोकें',
+  'settings.seed.progress': '{files} में से {present} फ़ाइलें कॉपी हुईं',
+  'settings.seed.failed': 'इस दौर में कॉपी न हुई फ़ाइलें: {count}। इन्हें फिर से आज़माया जाएगा।',
+  'settings.seed.done': 'मीडिया में अब पूरी लाइब्रेरी है।',
+  'settings.seed.live':
+    'मीडिया में {when} को प्रकाशित लाइब्रेरी है: {files}। अब से केवल स्वीकृत अपलोड ही इसे बदलते हैं।',
+  'settings.signIn.title': 'साइन इन',
+  'settings.signIn.explain':
+    'वह प्रदाता जिससे लाइब्रेरी के सदस्य, और उसमें अपलोड करने वाले, साइन इन करते हैं।',
+  'settings.signIn.local':
+    'मालिक उस कंप्यूटर के लिंक से भी साइन इन करता है जिस पर लाइब्रेरी इंस्टॉल है (pnpm library login)।',
+  'settings.signIn.provider': 'प्रदाता',
+  'settings.signIn.none': 'कोई नहीं: केवल मालिक, कंप्यूटर के लिंक से',
+  'settings.signIn.oidc': 'कोई अन्य OpenID Connect प्रदाता',
+  'settings.signIn.clientId': 'क्लाइंट ID (Client ID)',
+  'settings.signIn.secret': 'क्लाइंट सीक्रेट (Client secret)',
+  'settings.signIn.secretKept': '{when} से सहेजा हुआ है। खाली छोड़ें, तो यही बना रहेगा।',
+  'settings.signIn.tenant': 'टेनेंट (Tenant)',
+  'settings.signIn.tenantHint':
+    'आपके संगठन की टेनेंट ID या डोमेन; organizations: कोई भी कार्य या स्कूल खाता।',
+  'settings.signIn.issuer': 'जारीकर्ता (Issuer)',
+  'settings.signIn.issuerHint':
+    'वह पता जिसका डिस्कवरी दस्तावेज़ /.well-known/openid-configuration पर है। सहेजने से पहले इसे पढ़ा जाता है।',
+  'settings.signIn.name': 'बटन पर नाम',
+  'settings.signIn.domains': 'अनुमत डोमेन',
+  'settings.signIn.domainsHint':
+    'केवल इन डोमेन के पते साइन इन करते हैं। अल्पविराम से अलग करें; खाली छोड़ें, तो कोई भी सत्यापित पता साइन इन कर सकता है।',
+  'settings.signIn.domainsMicrosoft':
+    'Microsoft के लिए ज़रूरी: वह पते के सत्यापित होने की पुष्टि नहीं करता, इसलिए डोमेन ही तय करते हैं कि कौन साइन इन करे।',
+  'settings.signIn.redirect': 'प्रदाता के पास दर्ज करने के लिए रीडायरेक्ट URI',
+  'settings.signIn.remove': 'प्रदाता हटाएँ',
+  'settings.signIn.removeConfirm':
+    'प्रदाता हटाएँ? केवल मालिक साइन इन कर पाएगा, कंप्यूटर के लिंक से।',
+  'settings.signIn.host':
+    'Google, Worker के अपने क्लाइंट से (GOOGLE_CLIENT_ID)। प्रदाता यहाँ सेट करने के लिए Worker को LIBRARY_MASTER_KEY दें।',
+  'settings.signIn.hostNone':
+    'कोई साइन-इन प्रदाता नहीं। उसे यहाँ सेट करने के लिए Worker को LIBRARY_MASTER_KEY दें।',
+  'settings.limits.title': 'अपलोड',
+  'settings.limits.explain':
+    'बिना भूमिका वाला हर व्यक्ति समीक्षा के लिए कितना प्रतीक्षा में छोड़ सकता है, और कितनी तेज़ी से। सदस्यों पर यह लागू नहीं।',
+  'settings.limits.pending': 'प्रतीक्षारत अपलोड',
+  'settings.limits.bytes': 'प्रतीक्षारत आकार (MiB)',
+  'settings.limits.tokens': 'प्रति व्यक्ति टोकन',
+  'settings.limits.writes': 'प्रति मिनट लेखन',
+  'settings.limits.default': 'डिफ़ॉल्ट: {value}',
+  'settings.empty': 'लाइब्रेरी खाली है: इसमें अभी कुछ भी प्रकाशित नहीं हुआ है।',
+  'settings.emptySeed': 'सेटिंग्स में मीडिया भरें',
 };
 
 export default words;

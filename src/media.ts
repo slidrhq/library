@@ -28,12 +28,15 @@ export interface Manifest {
 
 const reads = new Map<string, Promise<unknown>>();
 
+/** A file the library does not have; its manifest, while a library on a machine is not seeded. */
+export class NotInLibrary extends Error {}
+
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(mediaUrl(path));
   if (!response.ok) {
-    throw new Error(
-      response.status === 404 ? `${path} is not in the library.` : `${path}: ${response.status}`,
-    );
+    throw response.status === 404
+      ? new NotInLibrary(`${path} is not in the library.`)
+      : new Error(`${path}: ${response.status}`);
   }
   return response.text();
 }

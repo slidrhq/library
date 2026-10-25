@@ -398,6 +398,96 @@ const words: Record<MessageKey, string> = {
     '"{name}" belirteci iptal edilsin mi? Onu kullanan program artık yükleme yapamaz.',
   'tokens.signIn': 'Profilinizi görmek için oturum açın.',
   'tokens.byToken': '{who}, "{token}" belirteciyle',
+  'settings.nav': 'Ayarlar',
+  'settings.about':
+    'Kütüphanenin nerede saklandığı, nasıl oturum açıldığı ve herkesin ne kadar yükleyebileceği.',
+  'settings.closed': 'Kütüphanenin ayarlarını yalnızca yöneticileri görür.',
+  'settings.loading': 'Ayarlar okunuyor…',
+  'settings.save': 'Kaydet',
+  'settings.saved': 'Kaydedildi.',
+  'settings.library.title': 'Kütüphanenin adresi',
+  'settings.library.explain':
+    'Kişilerin kütüphaneye ulaştığı, tarayıcılarının gördüğü adres: bir proxy arkasında ya da TLS ile. Adres yoksa kütüphane her isteğin adresini kullanır.',
+  'settings.library.host': 'Bu sunucunun adresini barındırma hizmeti belirler.',
+  'settings.media.title': 'Medya',
+  'settings.media.explain':
+    'Yayımlanmış kütüphanenin saklandığı yer. Kabul edilen her yükleme buraya yazılır.',
+  'settings.media.kind.folder': 'Bu bilgisayardaki bir klasör',
+  'settings.media.kind.r2': 'Worker’ın Cloudflare’deki R2 kovası',
+  'settings.media.kind.none': 'Henüz medya deposu yok',
+  'settings.media.path': 'Klasör',
+  'settings.media.pathHint':
+    'Tam yol. Sunucunun oraya yazabilmesi gerekir ve orada yalnızca kütüphane bulunur.',
+  'settings.media.publicUrl': 'Herkese açık adres',
+  'settings.media.publicUrlHint':
+    'Yalnızca klasörü başka bir web sunucusu yayımlıyorsa. Yoksa bu sunucu onu /media/ altında sunar.',
+  'settings.media.saveTested': 'Test et ve kaydet',
+  'settings.media.test': 'Test et',
+  'settings.media.testing': 'Test ediliyor…',
+  'settings.media.reachedLibrary':
+    'Erişildi ve yazıldı. {when} tarihinde yayımlanan kütüphaneyi içeriyor: {files}.',
+  'settings.media.reachedEmpty': 'Erişildi ve yazıldı. Henüz boş: sayfanın aşağısından doldurun.',
+  'settings.media.unreachable': 'Oraya yazılamadı: {error}',
+  'settings.media.address': 'Kurulu uygulamaların okuduğu adres',
+  'settings.media.addressHint': 'Kuruluşun uygulamalarına iki yoldan biriyle verin:',
+  'settings.media.policy': 'Tüm bilgisayarlar için bir ilke (Group Policy veya Intune):',
+  'settings.media.installer': 'Ya da adresi taşıyan bir yükleyici:',
+  'settings.media.notHttps':
+    'Kurulu uygulamalar yalnızca HTTPS adresini okur (localhost hariç). Kütüphaneye bir HTTPS adresi ya da klasöre herkese açık bir adres verin.',
+  'settings.copy': 'Kopyala',
+  'settings.copied': 'Kopyalandı',
+  'settings.seed.title': 'Medyayı doldur',
+  'settings.seed.explain':
+    'Boş bir medya deposu, yayımlanmış bir kütüphanenin kopyasıyla dosya dosya doldurulur. Durdurulabilir; durduğu yerden devam eder.',
+  'settings.seed.from': 'Kaynak',
+  'settings.seed.start': 'Doldur',
+  'settings.seed.stop': 'Durdur',
+  'settings.seed.progress': '{files} dosyadan {present} tanesi kopyalandı',
+  'settings.seed.failed': 'Bu turda kopyalanamayan dosyalar: {count}. Yeniden denenecekler.',
+  'settings.seed.done': 'Medya artık kütüphanenin tamamını içeriyor.',
+  'settings.seed.live':
+    'Medya, {when} tarihinde yayımlanan kütüphaneyi içeriyor: {files}. Bundan sonra onu yalnızca kabul edilen yüklemeler değiştirir.',
+  'settings.signIn.title': 'Oturum açma',
+  'settings.signIn.explain':
+    'Kütüphanenin üyelerinin ve ona yükleme yapanların oturum açtığı sağlayıcı.',
+  'settings.signIn.local':
+    'Sahip, kütüphanenin kurulu olduğu bilgisayarın bağlantısıyla da oturum açar (pnpm library login).',
+  'settings.signIn.provider': 'Sağlayıcı',
+  'settings.signIn.none': 'Yok: yalnızca sahip, bilgisayarın bağlantısıyla',
+  'settings.signIn.oidc': 'Başka bir OpenID Connect sağlayıcısı',
+  'settings.signIn.clientId': 'İstemci kimliği (Client ID)',
+  'settings.signIn.secret': 'İstemci gizli anahtarı (Client secret)',
+  'settings.signIn.secretKept': '{when} tarihinden beri saklanıyor. Boş bırakılırsa korunur.',
+  'settings.signIn.tenant': 'Kiracı (Tenant)',
+  'settings.signIn.tenantHint':
+    'Kuruluşunuzun kiracı kimliği veya alan adı; organizations: herhangi bir iş veya okul hesabı.',
+  'settings.signIn.issuer': 'Veren (Issuer)',
+  'settings.signIn.issuerHint':
+    'Keşif belgesi /.well-known/openid-configuration konumunda olan adres. Kaydetmeden önce okunur.',
+  'settings.signIn.name': 'Düğmedeki ad',
+  'settings.signIn.domains': 'İzin verilen alan adları',
+  'settings.signIn.domainsHint':
+    'Yalnızca bu alan adlarındaki adresler oturum açar. Virgülle ayırın; boş bırakılırsa doğrulanmış her adres açar.',
+  'settings.signIn.domainsMicrosoft':
+    'Microsoft için zorunlu: Microsoft bir adresin doğrulandığını garanti etmez, bu yüzden kimin oturum açacağına alan adları karar verir.',
+  'settings.signIn.redirect': 'Sağlayıcıya kaydedilecek yeniden yönlendirme URI’si',
+  'settings.signIn.remove': 'Sağlayıcıyı kaldır',
+  'settings.signIn.removeConfirm':
+    'Sağlayıcı kaldırılsın mı? Yalnızca sahip, bilgisayarın bağlantısıyla oturum açabilecek.',
+  'settings.signIn.host':
+    'Google, Worker’ın kendi istemcisiyle (GOOGLE_CLIENT_ID). Sağlayıcıyı burada ayarlamak için Worker için LIBRARY_MASTER_KEY tanımlayın.',
+  'settings.signIn.hostNone':
+    'Oturum açma sağlayıcısı yok. Burada ayarlamak için Worker için LIBRARY_MASTER_KEY tanımlayın.',
+  'settings.limits.title': 'Yüklemeler',
+  'settings.limits.explain':
+    'Rolü olmayan her kişinin incelenmek üzere ne kadar bekletebileceği ve ne hızla. Üyeler muaftır.',
+  'settings.limits.pending': 'Bekleyen yüklemeler',
+  'settings.limits.bytes': 'Bekleyen boyut (MiB)',
+  'settings.limits.tokens': 'Kişi başına belirteç',
+  'settings.limits.writes': 'Dakikada yazma',
+  'settings.limits.default': 'Varsayılan: {value}',
+  'settings.empty': 'Kütüphane boş: henüz hiçbir şey yayımlanmadı.',
+  'settings.emptySeed': 'Medyayı Ayarlar’da doldur',
 };
 
 export default words;

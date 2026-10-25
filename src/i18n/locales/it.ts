@@ -404,6 +404,97 @@ const words: Record<MessageKey, string> = {
     'Revocare il token «{name}»? Un programma che lo usa non potrà più caricare.',
   'tokens.signIn': 'Accedi per vedere il tuo profilo.',
   'tokens.byToken': '{who}, con il token «{token}»',
+  'settings.nav': 'Impostazioni',
+  'settings.about': 'Dove è conservata la libreria, come si accede e quanto può caricare ciascuno.',
+  'settings.closed': 'Solo gli amministratori della libreria ne vedono le impostazioni.',
+  'settings.loading': 'Lettura delle impostazioni…',
+  'settings.save': 'Salva',
+  'settings.saved': 'Salvato.',
+  'settings.library.title': 'Indirizzo della libreria',
+  'settings.library.explain':
+    'L’indirizzo da cui si raggiunge la libreria, come lo mostra il browser: dietro un proxy o con TLS. Senza, la libreria usa l’indirizzo di ogni richiesta.',
+  'settings.library.host': 'Questo server usa l’indirizzo che gli assegna il suo host.',
+  'settings.media.title': 'Media',
+  'settings.media.explain':
+    'Dove è conservata la libreria pubblicata. Ogni caricamento approvato viene scritto lì.',
+  'settings.media.kind.folder': 'Una cartella su questo computer',
+  'settings.media.kind.r2': 'Il bucket R2 del Worker, su Cloudflare',
+  'settings.media.kind.none': 'Ancora nessun archivio media',
+  'settings.media.path': 'Cartella',
+  'settings.media.pathHint':
+    'Un percorso completo. Il server deve poterci scrivere, e contiene solo la libreria.',
+  'settings.media.publicUrl': 'Indirizzo pubblico',
+  'settings.media.publicUrlHint':
+    'Solo se un altro server web pubblica la cartella. Senza, questo server la serve su /media/.',
+  'settings.media.saveTested': 'Verifica e salva',
+  'settings.media.test': 'Verifica',
+  'settings.media.testing': 'Verifica in corso…',
+  'settings.media.reachedLibrary':
+    'Raggiunto, scrittura riuscita. Contiene la libreria pubblicata il {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'Raggiunto, scrittura riuscita. È ancora vuoto: riempilo più in basso nella pagina.',
+  'settings.media.unreachable': 'Scrittura non riuscita: {error}',
+  'settings.media.address': 'L’indirizzo che leggono le app installate',
+  'settings.media.addressHint':
+    'Comunicalo alle app dell’organizzazione in uno di questi due modi:',
+  'settings.media.policy': 'Un criterio per ogni computer (Group Policy o Intune):',
+  'settings.media.installer': 'Oppure un programma di installazione che porta l’indirizzo:',
+  'settings.media.notHttps':
+    'Le app installate leggono solo un indirizzo HTTPS (localhost a parte). Dai alla libreria un indirizzo HTTPS, o alla cartella uno pubblico.',
+  'settings.copy': 'Copia',
+  'settings.copied': 'Copiato',
+  'settings.seed.title': 'Riempi l’archivio media',
+  'settings.seed.explain':
+    'Un archivio media vuoto viene riempito con una copia di una libreria pubblicata, file per file. Si può fermare, e riprende da dove si è fermato.',
+  'settings.seed.from': 'Origine',
+  'settings.seed.start': 'Riempi',
+  'settings.seed.stop': 'Ferma',
+  'settings.seed.progress': '{present} di {files} file copiati',
+  'settings.seed.failed': 'File non copiati in questo giro: {count}. Verranno ritentati.',
+  'settings.seed.done': 'L’archivio media ora contiene tutta la libreria.',
+  'settings.seed.live':
+    'L’archivio media contiene la libreria pubblicata il {when}: {files}. D’ora in poi lo cambiano solo i caricamenti approvati.',
+  'settings.signIn.title': 'Accesso',
+  'settings.signIn.explain':
+    'Il provider con cui accedono i membri della libreria e chi vi carica contenuti.',
+  'settings.signIn.local':
+    'Il proprietario accede anche con un link del computer in cui è installata la libreria (pnpm library login).',
+  'settings.signIn.provider': 'Provider',
+  'settings.signIn.none': 'Nessuno: solo il proprietario, con il link del computer',
+  'settings.signIn.oidc': 'Un altro provider OpenID Connect',
+  'settings.signIn.clientId': 'ID client',
+  'settings.signIn.secret': 'Segreto client (Client secret)',
+  'settings.signIn.secretKept': 'Conservato dal {when}. Se lo lasci vuoto, resta.',
+  'settings.signIn.tenant': 'Tenant',
+  'settings.signIn.tenantHint':
+    'L’ID tenant o il dominio della tua organizzazione; organizations: qualsiasi account aziendale o scolastico.',
+  'settings.signIn.issuer': 'Emittente (Issuer)',
+  'settings.signIn.issuerHint':
+    'L’indirizzo il cui documento di individuazione è in /.well-known/openid-configuration. Viene letto prima del salvataggio.',
+  'settings.signIn.name': 'Nome sul pulsante',
+  'settings.signIn.domains': 'Domini consentiti',
+  'settings.signIn.domainsHint':
+    'Accedono solo gli indirizzi di questi domini. Separali con virgole; se lasci vuoto, accede qualsiasi indirizzo verificato.',
+  'settings.signIn.domainsMicrosoft':
+    'Obbligatorio per Microsoft: non garantisce che un indirizzo sia verificato, quindi sono i domini a decidere chi accede.',
+  'settings.signIn.redirect': 'URI di reindirizzamento da registrare presso il provider',
+  'settings.signIn.remove': 'Rimuovi il provider',
+  'settings.signIn.removeConfirm':
+    'Rimuovere il provider? Accederà solo il proprietario, con il link del computer.',
+  'settings.signIn.host':
+    'Google, tramite il client del Worker (GOOGLE_CLIENT_ID). Per impostare qui il provider, assegna al Worker LIBRARY_MASTER_KEY.',
+  'settings.signIn.hostNone':
+    'Nessun provider di accesso. Per impostarne uno qui, assegna al Worker LIBRARY_MASTER_KEY.',
+  'settings.limits.title': 'Caricamenti',
+  'settings.limits.explain':
+    'Quanto ogni persona senza ruolo può lasciare in attesa di revisione, e con che rapidità. I membri sono esenti.',
+  'settings.limits.pending': 'Caricamenti in attesa',
+  'settings.limits.bytes': 'Dimensione in attesa (MiB)',
+  'settings.limits.tokens': 'Token per persona',
+  'settings.limits.writes': 'Scritture al minuto',
+  'settings.limits.default': 'Predefinito: {value}',
+  'settings.empty': 'La libreria è vuota: non vi è ancora pubblicato nulla.',
+  'settings.emptySeed': 'Riempi l’archivio media nelle Impostazioni',
 };
 
 export default words;

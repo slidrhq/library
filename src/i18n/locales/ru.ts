@@ -399,6 +399,96 @@ const words: Record<MessageKey, string> = {
     'Отозвать токен «{name}»? Программа, которая его использует, больше не сможет загружать материалы.',
   'tokens.signIn': 'Войдите, чтобы увидеть свой профиль.',
   'tokens.byToken': '{who}, по токену «{token}»',
+  'settings.nav': 'Настройки',
+  'settings.about': 'Где хранится медиатека, как в неё входят и сколько каждый может загрузить.',
+  'settings.closed': 'Настройки медиатеки видят только её администраторы.',
+  'settings.loading': 'Читаем настройки…',
+  'settings.save': 'Сохранить',
+  'settings.saved': 'Сохранено.',
+  'settings.library.title': 'Адрес медиатеки',
+  'settings.library.explain':
+    'Адрес, по которому медиатеку открывают в браузере: за прокси или с TLS. Если он не задан, медиатека берёт адрес из каждого запроса.',
+  'settings.library.host': 'Адрес этого сервера задаёт его хостинг.',
+  'settings.media.title': 'Хранилище',
+  'settings.media.explain':
+    'Где хранится опубликованная медиатека. Сюда записывается каждая принятая загрузка.',
+  'settings.media.kind.folder': 'Папка на этом компьютере',
+  'settings.media.kind.r2': 'R2-бакет Worker в Cloudflare',
+  'settings.media.kind.none': 'Хранилища пока нет',
+  'settings.media.path': 'Папка',
+  'settings.media.pathHint':
+    'Полный путь. У сервера должно быть право записи туда, и там хранится только медиатека.',
+  'settings.media.publicUrl': 'Публичный адрес',
+  'settings.media.publicUrlHint':
+    'Только если папку публикует другой веб-сервер. Без него этот сервер раздаёт её по /media/.',
+  'settings.media.saveTested': 'Проверить и сохранить',
+  'settings.media.test': 'Проверить',
+  'settings.media.testing': 'Проверка…',
+  'settings.media.reachedLibrary':
+    'Доступ есть, запись прошла. Там медиатека, опубликованная {when} ({files}).',
+  'settings.media.reachedEmpty':
+    'Доступ есть, запись прошла. Пока там пусто: заполните хранилище ниже на странице.',
+  'settings.media.unreachable': 'Записать туда не удалось: {error}',
+  'settings.media.address': 'Адрес, который читают установленные приложения',
+  'settings.media.addressHint': 'Передайте его приложениям организации одним из двух способов:',
+  'settings.media.policy': 'Политика для всех компьютеров (Group Policy или Intune):',
+  'settings.media.installer': 'Или установщик, в котором есть адрес:',
+  'settings.media.notHttps':
+    'Установленные приложения читают только адрес HTTPS (кроме localhost). Задайте медиатеке адрес HTTPS или папке — публичный адрес.',
+  'settings.copy': 'Копировать',
+  'settings.copied': 'Скопировано',
+  'settings.seed.title': 'Заполнение хранилища',
+  'settings.seed.explain':
+    'Пустое хранилище заполняется копией опубликованной медиатеки, файл за файлом. Копирование можно остановить, и оно продолжится с того же места.',
+  'settings.seed.from': 'Откуда',
+  'settings.seed.start': 'Заполнить',
+  'settings.seed.stop': 'Остановить',
+  'settings.seed.progress': 'Скопировано файлов: {present} из {files}',
+  'settings.seed.failed': 'Не скопировано в этом проходе: {count}. Попытка повторится.',
+  'settings.seed.done': 'Теперь в хранилище вся медиатека.',
+  'settings.seed.live':
+    'В хранилище медиатека, опубликованная {when} ({files}). Отныне его меняют только принятые загрузки.',
+  'settings.signIn.title': 'Вход',
+  'settings.signIn.explain':
+    'Поставщик, через который входят участники медиатеки и те, кто в неё загружает.',
+  'settings.signIn.local':
+    'Владелец также входит по ссылке с компьютера, где установлена медиатека (pnpm library login).',
+  'settings.signIn.provider': 'Поставщик',
+  'settings.signIn.none': 'Нет: только владелец, по ссылке с компьютера',
+  'settings.signIn.oidc': 'Другой поставщик OpenID Connect',
+  'settings.signIn.clientId': 'Идентификатор клиента (Client ID)',
+  'settings.signIn.secret': 'Секрет клиента (Client secret)',
+  'settings.signIn.secretKept': 'Хранится с {when}. Если оставить пустым, он сохранится.',
+  'settings.signIn.tenant': 'Тенант (Tenant)',
+  'settings.signIn.tenantHint':
+    'ID или домен тенанта вашей организации; organizations: любая рабочая или учебная учётная запись.',
+  'settings.signIn.issuer': 'Издатель (Issuer)',
+  'settings.signIn.issuerHint':
+    'Адрес, документ обнаружения которого лежит в /.well-known/openid-configuration. Он читается перед сохранением.',
+  'settings.signIn.name': 'Надпись на кнопке',
+  'settings.signIn.domains': 'Разрешённые домены',
+  'settings.signIn.domainsHint':
+    'Входят только адреса из этих доменов. Разделяйте их запятыми; если пусто, входит любой подтверждённый адрес.',
+  'settings.signIn.domainsMicrosoft':
+    'Обязательно для Microsoft: подтверждённость адреса там не гарантируется, поэтому кто входит, решают домены.',
+  'settings.signIn.redirect': 'URI перенаправления для регистрации у поставщика',
+  'settings.signIn.remove': 'Удалить поставщика',
+  'settings.signIn.removeConfirm':
+    'Удалить поставщика? Входить сможет только владелец, по ссылке с компьютера.',
+  'settings.signIn.host':
+    'Google, через собственный клиент Worker (GOOGLE_CLIENT_ID). Чтобы задать поставщика здесь, задайте для Worker LIBRARY_MASTER_KEY.',
+  'settings.signIn.hostNone':
+    'Нет поставщика входа. Чтобы задать его здесь, задайте для Worker LIBRARY_MASTER_KEY.',
+  'settings.limits.title': 'Загрузки',
+  'settings.limits.explain':
+    'Сколько каждый без роли может оставить на проверке и как быстро. На участников ограничения не распространяются.',
+  'settings.limits.pending': 'Загрузок на проверке',
+  'settings.limits.bytes': 'Объём на проверке (MiB)',
+  'settings.limits.tokens': 'Токенов на человека',
+  'settings.limits.writes': 'Записей в минуту',
+  'settings.limits.default': 'По умолчанию: {value}',
+  'settings.empty': 'Медиатека пуста: в ней ещё ничего не опубликовано.',
+  'settings.emptySeed': 'Заполнить хранилище в настройках',
 };
 
 export default words;

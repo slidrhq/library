@@ -400,6 +400,98 @@ const words: Record<MessageKey, string> = {
     'Cabut token "{name}"? Program yang memakainya tidak bisa mengunggah lagi.',
   'tokens.signIn': 'Login untuk melihat profil Anda.',
   'tokens.byToken': '{who}, dengan token "{token}"',
+  'settings.nav': 'Pengaturan',
+  'settings.about':
+    'Tempat pustaka disimpan, cara login, dan berapa banyak yang boleh diunggah setiap orang.',
+  'settings.closed': 'Hanya admin pustaka yang dapat melihat pengaturannya.',
+  'settings.loading': 'Membaca pengaturan…',
+  'settings.save': 'Simpan',
+  'settings.saved': 'Tersimpan.',
+  'settings.library.title': 'Alamat pustaka',
+  'settings.library.explain':
+    'Alamat yang dipakai orang untuk membuka pustaka, sebagaimana tertulis di browser mereka: di balik proxy, atau dengan TLS. Tanpa alamat, pustaka memakai alamat dari setiap permintaan.',
+  'settings.library.host': 'Server ini memakai alamat yang diberikan oleh host-nya.',
+  'settings.media.title': 'Media',
+  'settings.media.explain':
+    'Tempat pustaka yang diterbitkan disimpan. Setiap unggahan yang disetujui ditulis ke sana.',
+  'settings.media.kind.folder': 'Folder di komputer ini',
+  'settings.media.kind.r2': 'Bucket R2 milik Worker, di Cloudflare',
+  'settings.media.kind.none': 'Belum ada penyimpanan media',
+  'settings.media.path': 'Folder',
+  'settings.media.pathHint':
+    'Jalur lengkap. Server harus dapat menulis di sana, dan isinya hanya pustaka.',
+  'settings.media.publicUrl': 'Alamat publik',
+  'settings.media.publicUrlHint':
+    'Hanya jika server web lain menerbitkan folder ini. Tanpa alamat, server ini menyajikannya di /media/.',
+  'settings.media.saveTested': 'Uji dan simpan',
+  'settings.media.test': 'Uji',
+  'settings.media.testing': 'Menguji…',
+  'settings.media.reachedLibrary':
+    'Terjangkau, dan berhasil ditulisi. Isinya pustaka yang diterbitkan pada {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'Terjangkau, dan berhasil ditulisi. Masih kosong: isi di bagian bawah halaman.',
+  'settings.media.unreachable': 'Tidak dapat ditulisi: {error}',
+  'settings.media.address': 'Alamat yang dibaca aplikasi terpasang',
+  'settings.media.addressHint':
+    'Berikan alamat ini ke aplikasi organisasi dengan salah satu dari dua cara:',
+  'settings.media.policy': 'Kebijakan untuk semua komputer (Group Policy atau Intune):',
+  'settings.media.installer': 'Atau penginstal yang membawa alamat ini:',
+  'settings.media.notHttps':
+    'Aplikasi terpasang hanya membaca alamat HTTPS (kecuali localhost). Berikan pustaka alamat HTTPS, atau folder alamat publik.',
+  'settings.copy': 'Salin',
+  'settings.copied': 'Tersalin',
+  'settings.seed.title': 'Isi penyimpanan media',
+  'settings.seed.explain':
+    'Penyimpanan media yang kosong diisi dengan salinan pustaka yang diterbitkan, file demi file. Proses dapat dihentikan, dan berlanjut dari titik berhentinya.',
+  'settings.seed.from': 'Sumber',
+  'settings.seed.start': 'Mulai mengisi',
+  'settings.seed.stop': 'Hentikan',
+  'settings.seed.progress': '{present} dari {files} file tersalin',
+  'settings.seed.failed': 'File yang tidak tersalin di putaran ini: {count}. Akan dicoba lagi.',
+  'settings.seed.done': 'Penyimpanan media kini berisi seluruh pustaka.',
+  'settings.seed.live':
+    'Penyimpanan media berisi pustaka yang diterbitkan pada {when}: {files}. Mulai sekarang, hanya unggahan yang disetujui yang mengubahnya.',
+  'settings.signIn.title': 'Login',
+  'settings.signIn.explain':
+    'Penyedia yang dipakai anggota pustaka, dan siapa pun yang mengunggah ke sana, untuk login.',
+  'settings.signIn.local':
+    'Pemilik juga login lewat tautan dari komputer tempat pustaka dipasang (pnpm library login).',
+  'settings.signIn.provider': 'Penyedia',
+  'settings.signIn.none': 'Tidak ada: hanya pemilik, lewat tautan komputer',
+  'settings.signIn.oidc': 'Penyedia OpenID Connect lain',
+  'settings.signIn.clientId': 'ID klien (Client ID)',
+  'settings.signIn.secret': 'Rahasia klien (Client secret)',
+  'settings.signIn.secretKept': 'Tersimpan sejak {when}. Jika dikosongkan, tetap dipakai.',
+  'settings.signIn.tenant': 'Penyewa (Tenant)',
+  'settings.signIn.tenantHint':
+    'ID penyewa atau domain organisasi Anda; organizations: akun kerja atau sekolah mana pun.',
+  'settings.signIn.issuer': 'Penerbit (Issuer)',
+  'settings.signIn.issuerHint':
+    'Alamat yang dokumen penemuannya ada di /.well-known/openid-configuration. Dokumen ini dibaca sebelum disimpan.',
+  'settings.signIn.name': 'Nama pada tombol',
+  'settings.signIn.domains': 'Domain yang diizinkan',
+  'settings.signIn.domainsHint':
+    'Hanya alamat di domain ini yang dapat login. Pisahkan dengan koma; jika dikosongkan, alamat terverifikasi mana pun dapat login.',
+  'settings.signIn.domainsMicrosoft':
+    'Wajib untuk Microsoft: Microsoft tidak menjamin alamat sudah terverifikasi, jadi domainlah yang menentukan siapa yang login.',
+  'settings.signIn.redirect': 'URI pengalihan untuk didaftarkan di penyedia',
+  'settings.signIn.remove': 'Hapus penyedia',
+  'settings.signIn.removeConfirm':
+    'Hapus penyedia? Hanya pemilik yang dapat login, lewat tautan komputer.',
+  'settings.signIn.host':
+    'Google, melalui klien milik Worker sendiri (GOOGLE_CLIENT_ID). Untuk mengatur penyedia di sini, berikan LIBRARY_MASTER_KEY ke Worker.',
+  'settings.signIn.hostNone':
+    'Belum ada penyedia login. Untuk mengaturnya di sini, berikan LIBRARY_MASTER_KEY ke Worker.',
+  'settings.limits.title': 'Unggahan',
+  'settings.limits.explain':
+    'Berapa banyak yang boleh dibiarkan menunggu peninjauan oleh setiap orang tanpa peran, dan seberapa cepat. Anggota dikecualikan.',
+  'settings.limits.pending': 'Unggahan menunggu',
+  'settings.limits.bytes': 'Ukuran menunggu (MiB)',
+  'settings.limits.tokens': 'Token per orang',
+  'settings.limits.writes': 'Penulisan per menit',
+  'settings.limits.default': 'Bawaan: {value}',
+  'settings.empty': 'Pustaka masih kosong: belum ada yang diterbitkan di dalamnya.',
+  'settings.emptySeed': 'Isi penyimpanan media di Pengaturan',
 };
 
 export default words;

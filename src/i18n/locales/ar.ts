@@ -383,6 +383,93 @@ const words: Record<MessageKey, string> = {
   'tokens.revokeConfirm': 'إبطال الرمز «{name}»؟ لن يتمكن البرنامج الذي يستخدمه من الرفع بعد الآن.',
   'tokens.signIn': 'سجّل الدخول لرؤية ملفك الشخصي.',
   'tokens.byToken': '{who}، باستخدام الرمز «{token}»',
+  'settings.nav': 'الإعدادات',
+  'settings.about': 'أين تُحفظ المكتبة، وكيف يسجّل الناس الدخول، وكم يمكن لكلٍّ منهم أن يرفع.',
+  'settings.closed': 'لا يرى إعدادات المكتبة إلا مشرفوها.',
+  'settings.loading': 'جارٍ قراءة الإعدادات…',
+  'settings.save': 'حفظ',
+  'settings.saved': 'تم الحفظ.',
+  'settings.library.title': 'عنوان المكتبة',
+  'settings.library.explain':
+    'العنوان الذي يصل به الناس إلى المكتبة، كما يراه المتصفح: خلف خادم وكيل أو مع TLS. من دونه، تستخدم المكتبة عنوان كل طلب.',
+  'settings.library.host': 'يحصل هذا الخادم على عنوانه من الجهة التي تستضيفه.',
+  'settings.media.title': 'الوسائط',
+  'settings.media.explain': 'أين تُحفظ المكتبة المنشورة. يُكتب إليها كل رفع تتم الموافقة عليه.',
+  'settings.media.kind.folder': 'مجلد على هذا الجهاز',
+  'settings.media.kind.r2': 'حاوية R2 الخاصة بـ Worker على Cloudflare',
+  'settings.media.kind.none': 'لا يوجد مخزن للوسائط بعد',
+  'settings.media.path': 'المجلد',
+  'settings.media.pathHint':
+    'مسار كامل. يجب أن يتمكن الخادم من الكتابة فيه، ولا يحتوي إلا على المكتبة.',
+  'settings.media.publicUrl': 'العنوان العام',
+  'settings.media.publicUrlHint':
+    'فقط عندما ينشر خادم ويب آخر المجلد. من دونه، يقدّمه هذا الخادم على /media/.',
+  'settings.media.saveTested': 'اختبار وحفظ',
+  'settings.media.test': 'اختبار',
+  'settings.media.testing': 'جارٍ الاختبار…',
+  'settings.media.reachedLibrary':
+    'تم الوصول إليه ونجحت الكتابة. يحتوي على المكتبة المنشورة في {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'تم الوصول إليه ونجحت الكتابة. لا يزال فارغًا: املأه في أسفل الصفحة.',
+  'settings.media.unreachable': 'تعذّرت الكتابة إليه: {error}',
+  'settings.media.address': 'العنوان الذي تقرأ منه التطبيقات المثبّتة',
+  'settings.media.addressHint': 'أعطه لتطبيقات المؤسسة بإحدى طريقتين:',
+  'settings.media.policy': 'نهج لكل الأجهزة (Group Policy أو Intune):',
+  'settings.media.installer': 'أو مثبّت يحمل العنوان:',
+  'settings.media.notHttps':
+    'لا تقرأ التطبيقات المثبّتة إلا من عنوان HTTPS (باستثناء localhost). أعطِ المكتبة عنوان HTTPS، أو أعطِ المجلد عنوانًا عامًا.',
+  'settings.copy': 'نسخ',
+  'settings.copied': 'تم النسخ',
+  'settings.seed.title': 'ملء مخزن الوسائط',
+  'settings.seed.explain':
+    'يُملأ مخزن الوسائط الفارغ بنسخة من مكتبة منشورة، ملفًا تلو الآخر. يمكن إيقاف ذلك، ثم يُستأنف من حيث توقف.',
+  'settings.seed.from': 'المصدر',
+  'settings.seed.start': 'بدء الملء',
+  'settings.seed.stop': 'إيقاف',
+  'settings.seed.progress': 'الملفات المنسوخة: {present} من {files}',
+  'settings.seed.failed': 'ملفات لم تُنسخ في هذه الجولة: {count}. ستُعاد محاولة نسخها.',
+  'settings.seed.done': 'يحتوي مخزن الوسائط الآن على المكتبة كاملة.',
+  'settings.seed.live':
+    'يحتوي مخزن الوسائط على المكتبة المنشورة في {when}: {files}. من الآن فصاعدًا، لا تغيّره إلا عمليات الرفع المقبولة.',
+  'settings.signIn.title': 'تسجيل الدخول',
+  'settings.signIn.explain': 'الموفّر الذي يسجّل عبره أعضاء المكتبة ومن يرفعون إليها الدخول.',
+  'settings.signIn.local':
+    'يسجّل المالك الدخول أيضًا عبر رابط من الجهاز المثبّتة عليه المكتبة (pnpm library login).',
+  'settings.signIn.provider': 'الموفّر',
+  'settings.signIn.none': 'لا يوجد: المالك وحده، عبر رابط الجهاز',
+  'settings.signIn.oidc': 'موفّر OpenID Connect آخر',
+  'settings.signIn.clientId': 'معرّف العميل (Client ID)',
+  'settings.signIn.secret': 'سر العميل (Client secret)',
+  'settings.signIn.secretKept': 'محفوظ منذ {when}. إذا تُرك فارغًا، يبقى كما هو.',
+  'settings.signIn.tenant': 'المستأجر (Tenant)',
+  'settings.signIn.tenantHint':
+    'معرّف المستأجر أو نطاق مؤسستك؛ organizations: أي حساب عمل أو مؤسسة تعليمية.',
+  'settings.signIn.issuer': 'المُصدِر (Issuer)',
+  'settings.signIn.issuerHint':
+    'العنوان الذي يوجد مستند الاكتشاف الخاص به في /.well-known/openid-configuration. يُقرأ قبل الحفظ.',
+  'settings.signIn.name': 'الاسم على الزر',
+  'settings.signIn.domains': 'النطاقات المسموح بها',
+  'settings.signIn.domainsHint':
+    'لا يسجّل الدخول إلا من عناوينهم في هذه النطاقات. افصل بينها بفواصل؛ إذا تُركت فارغة، يسجّل الدخول أي عنوان موثّق.',
+  'settings.signIn.domainsMicrosoft':
+    'مطلوب مع Microsoft: فهي لا تؤكد أن العنوان موثّق، لذا تحدد النطاقات من يسجّل الدخول.',
+  'settings.signIn.redirect': 'عنوان إعادة التوجيه (Redirect URI) لتسجيله لدى الموفّر',
+  'settings.signIn.remove': 'إزالة الموفّر',
+  'settings.signIn.removeConfirm': 'إزالة الموفّر؟ لن يسجّل الدخول إلا المالك، عبر رابط الجهاز.',
+  'settings.signIn.host':
+    'Google، عبر العميل الخاص بـ Worker (GOOGLE_CLIENT_ID). لضبط الموفّر هنا، عيّن LIBRARY_MASTER_KEY في Worker.',
+  'settings.signIn.hostNone':
+    'لا يوجد موفّر لتسجيل الدخول. لضبطه هنا، عيّن LIBRARY_MASTER_KEY في Worker.',
+  'settings.limits.title': 'عمليات الرفع',
+  'settings.limits.explain':
+    'كم يمكن لكل شخص بلا دور أن يترك بانتظار المراجعة، وبأي سرعة. الأعضاء مستثنون.',
+  'settings.limits.pending': 'عمليات الرفع المنتظرة',
+  'settings.limits.bytes': 'الحجم المنتظر (MiB)',
+  'settings.limits.tokens': 'الرموز لكل شخص',
+  'settings.limits.writes': 'عمليات الكتابة في الدقيقة',
+  'settings.limits.default': 'الافتراضي: {value}',
+  'settings.empty': 'المكتبة فارغة: لم يُنشر فيها شيء بعد.',
+  'settings.emptySeed': 'ملء مخزن الوسائط في الإعدادات',
 };
 
 export default words;

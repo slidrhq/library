@@ -239,6 +239,11 @@ export function AccountControl() {
                 {t('people.nav')}
               </a>
             )}
+            {user.can.settings && (
+              <a href="#lib=settings" onClick={() => setOpen(false)}>
+                {t('settings.nav')}
+              </a>
+            )}
           </nav>
           <button type="button" onClick={() => void signOut().catch(() => undefined)}>
             {t('account.signOut')}

@@ -6,7 +6,7 @@ import { hasWords, loadWords } from './app';
 import { FileFacts, FilePreview, Files } from './Files';
 import { Fonts } from './Fonts';
 import { WhenSeen } from './Lazy';
-import { manifest, MEDIA_LIBRARY_URL, mediaUrl, size, type Manifest } from './media';
+import { manifest, MEDIA_LIBRARY_URL, mediaUrl, NotInLibrary, size, type Manifest } from './media';
 import { ItemOverlay } from './Overlay';
 import { inSection, sectionOf, SECTIONS, type Section } from './sections';
 import { useRead, type LibraryRoute } from './shared';
@@ -28,6 +28,7 @@ const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPe
 const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
 const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
 const Profile = lazy(() => import('./Profile').then((m) => ({ default: m.Profile })));
+const Settings = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
 
 export type { LibraryRoute };
 
@@ -38,6 +39,8 @@ const UPLOADS = 'uploads';
 const MEMBERS = 'members';
 /** The account signed in, and its tokens (docs/SPEC.md §7). */
 const PROFILE = 'profile';
+/** Where the library is kept, how people sign in, the limits: for its admins (§5.3). */
+const SETTINGS = 'settings';
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
 const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
@@ -195,11 +198,20 @@ export function Library({
 }) {
   const t = useT();
   const [uiLang] = useLang();
-  const read = useRead(manifest, []);
+  // A media with nothing published in it (a library on a machine, before it is seeded): null.
+  const read = useRead(
+    () =>
+      manifest().catch((error: unknown) => {
+        if (error instanceof NotInLibrary) return null;
+        throw error;
+      }),
+    [],
+  );
   const section = sectionOf(route.section);
   const uploads = route.section === UPLOADS;
   const members = route.section === MEMBERS;
   const profile = route.section === PROFILE;
+  const settings = route.section === SETTINGS;
   const access = useRead(readAccess, []);
   // A language is shown once the app's words in it are read; until then, the one before.
   const [shown, setShown] = useState<Lang>(() => (hasWords(lang) ? lang : 'en'));
@@ -223,7 +235,16 @@ export function Library({
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
-  switch (uploads ? UPLOADS : members ? MEMBERS : profile ? PROFILE : section?.id) {
+  const page = uploads
+    ? UPLOADS
+    : members
+      ? MEMBERS
+      : profile
+        ? PROFILE
+        : settings
+          ? SETTINGS
+          : section?.id;
+  switch (page) {
     case UPLOADS:
       content = <Uploads {...props} />;
       break;
@@ -232,6 +253,9 @@ export function Library({
       break;
     case PROFILE:
       content = <Profile />;
+      break;
+    case SETTINGS:
+      content = <Settings />;
       break;
     case 'designs':
       content = <Designs {...props} variants={variants} onOpenVariant={onOpenVariant} />;
@@ -266,6 +290,18 @@ export function Library({
     default:
       content = <Overview go={go} />;
   }
+  if (read.value === null && (section || !page)) {
+    content = (
+      <div className="upload-empty">
+        <p>{t('settings.empty')}</p>
+        {access.value?.user?.can.settings && (
+          <button type="button" className="primary" onClick={() => go({ section: SETTINGS })}>
+            {t('settings.emptySeed')}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="library">
@@ -294,7 +330,7 @@ export function Library({
         <nav className="lib-sections">
           <button
             type="button"
-            aria-current={!section && !uploads && !members && !profile ? 'page' : undefined}
+            aria-current={!section && !page ? 'page' : undefined}
             onClick={() => go({ section: OVERVIEW })}
           >
             {t('library.overview')}
@@ -327,6 +363,15 @@ export function Library({
               {t('people.nav')}
             </button>
           )}
+          {access.value?.user?.can.settings && (
+            <button
+              type="button"
+              aria-current={settings ? 'page' : undefined}
+              onClick={() => go({ section: SETTINGS })}
+            >
+              {t('settings.nav')}
+            </button>
+          )}
         </nav>
         <button
           type="button"
@@ -348,9 +393,11 @@ export function Library({
                   ? t('people.nav')
                   : profile
                     ? t('tokens.nav')
-                    : section
-                      ? t(section.nameKey)
-                      : t('library.overview')}
+                    : settings
+                      ? t('settings.nav')
+                      : section
+                        ? t(section.nameKey)
+                        : t('library.overview')}
             </h2>
             <p className="muted small">
               {uploads
@@ -359,9 +406,11 @@ export function Library({
                   ? t('people.about')
                   : profile
                     ? t('tokens.about')
-                    : section
-                      ? t(section.aboutKey)
-                      : t('library.overviewAbout')}
+                    : settings
+                      ? t('settings.about')
+                      : section
+                        ? t(section.aboutKey)
+                        : t('library.overviewAbout')}
             </p>
           </div>
           {(section || uploads || members) && (
@@ -381,7 +430,9 @@ export function Library({
             />
           )}
         </header>
-        {read.error && (
+        {/* Of the media's parts and the overview: the uploads, the members and the settings
+            read none of it, and are where an empty media is seeded. */}
+        {read.error && (section || !page) && (
           <p className="error-text">{t('library.readFailed', { error: read.error })}</p>
         )}
         <Suspense fallback={<p className="muted">{t('library.loading')}</p>}>{content}</Suspense>

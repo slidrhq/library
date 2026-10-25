@@ -21,6 +21,7 @@ import type { Context, MediaStore } from './context.ts';
 import { isRecord, json, jsonBody, problem } from './http.ts';
 import { LIMITS, limitsOf } from './limits.ts';
 import { MANIFEST, PROBE } from './media/live.ts';
+import { siteOf } from './media/routes.ts';
 import { GOOGLE_ISSUER, ProviderUnreachable, microsoftIssuer, saveSignIn } from './oidc.ts';
 import { authorize } from './uploads/access.ts';
 
@@ -42,12 +43,18 @@ const read: Route = async (request, ctx) => {
   if (actor instanceof Response) return actor;
   if (!ctx.state) return notSetUp();
   const config = await readConfig(ctx.state);
+  const url = config?.url ?? new URL('/', request.url).href;
   return json({
-    editable: { url: Boolean(ctx.editable?.url), media: Boolean(ctx.editable?.media) },
-    library: { url: config?.url ?? new URL('/', request.url).href },
+    editable: {
+      url: Boolean(ctx.editable?.url),
+      media: Boolean(ctx.editable?.media),
+      signIn: Boolean(ctx.vault),
+    },
+    library: { url },
     media: {
       ...(config?.media ?? { kind: ctx.media ? 'r2' : 'none' }),
       key: await aboutKey(ctx, 'media'),
+      address: siteOf(request, ctx, url),
     },
     signIn: config?.signIn
       ? { ...config.signIn, secret: await aboutKey(ctx, 'oidc') }

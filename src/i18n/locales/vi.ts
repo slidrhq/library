@@ -400,6 +400,98 @@ const words: Record<MessageKey, string> = {
     'Thu hồi token "{name}"? Chương trình đang dùng token này sẽ không thể tải lên nữa.',
   'tokens.signIn': 'Hãy đăng nhập để xem hồ sơ của bạn.',
   'tokens.byToken': '{who}, bằng token "{token}"',
+  'settings.nav': 'Cài đặt',
+  'settings.about':
+    'Nơi lưu thư viện, cách mọi người đăng nhập và mỗi người được tải lên bao nhiêu.',
+  'settings.closed': 'Chỉ quản trị viên của thư viện mới thấy phần cài đặt.',
+  'settings.loading': 'Đang đọc cài đặt…',
+  'settings.save': 'Lưu',
+  'settings.saved': 'Đã lưu.',
+  'settings.library.title': 'Địa chỉ của thư viện',
+  'settings.library.explain':
+    'Địa chỉ mọi người dùng để vào thư viện, đúng như trình duyệt thấy: sau proxy, hoặc dùng TLS. Nếu để trống, thư viện dùng địa chỉ của từng yêu cầu.',
+  'settings.library.host': 'Máy chủ này dùng địa chỉ do dịch vụ lưu trữ cấp.',
+  'settings.media.title': 'Phương tiện',
+  'settings.media.explain':
+    'Nơi lưu thư viện đã xuất bản. Mọi bản tải lên được chấp nhận đều được ghi vào đó.',
+  'settings.media.kind.folder': 'Một thư mục trên máy này',
+  'settings.media.kind.r2': 'Bucket R2 của Worker, trên Cloudflare',
+  'settings.media.kind.none': 'Chưa có nơi lưu phương tiện',
+  'settings.media.path': 'Thư mục',
+  'settings.media.pathHint':
+    'Đường dẫn đầy đủ. Máy chủ phải ghi được vào đó, và thư mục chỉ chứa thư viện.',
+  'settings.media.publicUrl': 'Địa chỉ công khai',
+  'settings.media.publicUrlHint':
+    'Chỉ khi một máy chủ web khác xuất bản thư mục. Nếu để trống, máy chủ này phục vụ thư mục tại /media/.',
+  'settings.media.saveTested': 'Kiểm tra và lưu',
+  'settings.media.test': 'Kiểm tra',
+  'settings.media.testing': 'Đang kiểm tra…',
+  'settings.media.reachedLibrary':
+    'Đã truy cập và ghi được. Nơi này chứa thư viện xuất bản lúc {when}: {files}.',
+  'settings.media.reachedEmpty':
+    'Đã truy cập và ghi được. Hiện vẫn trống: hãy nạp ở phần dưới trang.',
+  'settings.media.unreachable': 'Không ghi được vào đó: {error}',
+  'settings.media.address': 'Địa chỉ mà ứng dụng đã cài đặt đọc',
+  'settings.media.addressHint':
+    'Cung cấp địa chỉ này cho ứng dụng của tổ chức theo một trong hai cách:',
+  'settings.media.policy': 'Chính sách cho mọi máy (Group Policy hoặc Intune):',
+  'settings.media.installer': 'Hoặc trình cài đặt mang sẵn địa chỉ:',
+  'settings.media.notHttps':
+    'Ứng dụng đã cài đặt chỉ đọc địa chỉ HTTPS (trừ localhost). Hãy đặt cho thư viện một địa chỉ HTTPS, hoặc cho thư mục một địa chỉ công khai.',
+  'settings.copy': 'Sao chép',
+  'settings.copied': 'Đã sao chép',
+  'settings.seed.title': 'Nạp phương tiện',
+  'settings.seed.explain':
+    'Nơi lưu phương tiện trống được nạp bản sao của một thư viện đã xuất bản, từng tệp một. Có thể dừng, rồi sẽ tiếp tục từ chỗ đã dừng.',
+  'settings.seed.from': 'Nguồn',
+  'settings.seed.start': 'Nạp',
+  'settings.seed.stop': 'Dừng',
+  'settings.seed.progress': 'Đã sao chép {present} trên {files} tệp',
+  'settings.seed.failed': 'Tệp chưa sao chép được ở lượt này: {count}. Sẽ thử lại.',
+  'settings.seed.done': 'Giờ phương tiện đã chứa toàn bộ thư viện.',
+  'settings.seed.live':
+    'Phương tiện chứa thư viện xuất bản lúc {when}: {files}. Từ giờ, chỉ các bản tải lên được chấp nhận mới thay đổi nó.',
+  'settings.signIn.title': 'Đăng nhập',
+  'settings.signIn.explain':
+    'Nhà cung cấp mà thành viên của thư viện và những người tải lên dùng để đăng nhập.',
+  'settings.signIn.local':
+    'Chủ sở hữu cũng đăng nhập bằng liên kết của máy đã cài thư viện (pnpm library login).',
+  'settings.signIn.provider': 'Nhà cung cấp',
+  'settings.signIn.none': 'Không có: chỉ chủ sở hữu, bằng liên kết của máy',
+  'settings.signIn.oidc': 'Nhà cung cấp OpenID Connect khác',
+  'settings.signIn.clientId': 'Mã ứng dụng khách (Client ID)',
+  'settings.signIn.secret': 'Mật khẩu ứng dụng khách (Client secret)',
+  'settings.signIn.secretKept': 'Đã lưu từ {when}. Để trống thì giữ nguyên.',
+  'settings.signIn.tenant': 'Đối tượng thuê (Tenant)',
+  'settings.signIn.tenantHint':
+    'ID hoặc tên miền đối tượng thuê của tổ chức bạn; organizations: mọi tài khoản cơ quan hoặc trường học.',
+  'settings.signIn.issuer': 'Bên phát hành (Issuer)',
+  'settings.signIn.issuerHint':
+    'Địa chỉ có tài liệu khám phá nằm tại /.well-known/openid-configuration. Tài liệu được đọc trước khi lưu.',
+  'settings.signIn.name': 'Tên trên nút',
+  'settings.signIn.domains': 'Tên miền được phép',
+  'settings.signIn.domainsHint':
+    'Chỉ địa chỉ thuộc các tên miền này mới đăng nhập được. Phân tách bằng dấu phẩy; để trống thì mọi địa chỉ đã xác minh đều được.',
+  'settings.signIn.domainsMicrosoft':
+    'Bắt buộc với Microsoft: Microsoft không đảm bảo địa chỉ đã được xác minh, nên tên miền quyết định ai được đăng nhập.',
+  'settings.signIn.redirect': 'URI chuyển hướng để đăng ký với nhà cung cấp',
+  'settings.signIn.remove': 'Gỡ nhà cung cấp',
+  'settings.signIn.removeConfirm':
+    'Gỡ nhà cung cấp? Chỉ chủ sở hữu đăng nhập được, bằng liên kết của máy.',
+  'settings.signIn.host':
+    'Google, qua ứng dụng khách riêng của Worker (GOOGLE_CLIENT_ID). Để đặt nhà cung cấp tại đây, hãy đặt LIBRARY_MASTER_KEY cho Worker.',
+  'settings.signIn.hostNone':
+    'Không có nhà cung cấp đăng nhập. Để đặt tại đây, hãy đặt LIBRARY_MASTER_KEY cho Worker.',
+  'settings.limits.title': 'Tải lên',
+  'settings.limits.explain':
+    'Mỗi người không có vai trò được để bao nhiêu nội dung chờ duyệt, và nhanh đến đâu. Thành viên được miễn.',
+  'settings.limits.pending': 'Bản tải lên đang chờ',
+  'settings.limits.bytes': 'Dung lượng đang chờ (MiB)',
+  'settings.limits.tokens': 'Token mỗi người',
+  'settings.limits.writes': 'Lượt ghi mỗi phút',
+  'settings.limits.default': 'Mặc định: {value}',
+  'settings.empty': 'Thư viện đang trống: chưa có gì được xuất bản.',
+  'settings.emptySeed': 'Nạp phương tiện trong Cài đặt',
 };
 
 export default words;

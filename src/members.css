@@ -1,5 +1,5 @@
-/* The library's members (Members.tsx), and what the account shows of signing in and of the
-   members (account.tsx), in the colours and type of styles.css. */
+/* The library's members (Members.tsx), its settings (Settings.tsx), and what the account shows
+   of signing in and of the members (account.tsx), in the colours and type of styles.css. */
 
 /* ------------------------------------------------------------ the members */
 
@@ -244,4 +244,113 @@ button.danger {
 .token-example {
   display: block;
   width: 100%;
+}
+
+/* ------------------------------------------------------------ the settings */
+
+.settings {
+  display: grid;
+  gap: 1.2rem;
+  max-width: 52rem;
+}
+
+.settings-part {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.settings-part h3,
+.settings-part h4,
+.settings-part p {
+  margin: 0;
+}
+
+.settings-part h3 {
+  font-size: 0.95rem;
+}
+
+.settings-part h4 {
+  font-size: 0.85rem;
+}
+
+.settings-part .row input {
+  flex: 1 1 16rem;
+  width: auto;
+}
+
+.settings-kind {
+  font-weight: 600;
+}
+
+/* A label over its input, and what it means under it. */
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field select {
+  width: auto;
+  justify-self: start;
+}
+
+/* The address installed apps read, and the lines that give it to them. */
+.settings-address {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.settings-address details {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.settings-address details[open] > * + * {
+  margin-top: 0.5rem;
+}
+
+.copyable {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.copyable code {
+  flex: 1;
+  min-width: 0;
+}
+
+.copyable.block code {
+  white-space: pre-wrap;
+  font-size: 0.78rem;
+}
+
+.settings-progress {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.settings-progress progress {
+  width: 100%;
+}
+
+.settings-limits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+/* A command or a path in a sentence stays on one line. */
+.settings-part bdi[dir='ltr'] {
+  white-space: nowrap;
 }
