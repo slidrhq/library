@@ -2397,6 +2397,62 @@
       "svgInline": "Đồ họa có màu chỉnh sửa được"
     }
   },
+  "pptx": {
+    "filter": "Bản trình bày PowerPoint",
+    "export": {
+      "title": "Xuất sang PowerPoint",
+      "description": "Một tệp .pptx mở được trong PowerPoint, Keynote và Google Trang trình bày, trong đó mọi văn bản, hình, bảng và biểu đồ đều chỉnh sửa được.",
+      "working": "Đang xuất bản trình bày…",
+      "mediaOne": "Một tệp đa phương tiện trong tệp, {{size}}",
+      "mediaMany": "{{n}} tệp đa phương tiện trong tệp, {{size}}",
+      "noMedia": "Tệp không có hình ảnh hay đa phương tiện.",
+      "fonts": "Phông chữ",
+      "fontsBody": "Phông chữ không nằm trong tệp: PowerPoint chỉ hiển thị chúng trên máy tính đã cài đặt chúng, trên máy khác văn bản sẽ hiển thị bằng phông chữ khác.",
+      "promptTitle": "Bấm để thêm tiêu đề",
+      "promptText": "Bấm để thêm văn bản"
+    },
+    "import": {
+      "working": "Đang đọc bản trình bày…",
+      "title": "Đã nhập bản trình bày",
+      "summaryOne": "Đã nhập một trang chiếu từ {{name}}.",
+      "summaryMany": "Đã nhập {{n}} trang chiếu từ {{name}}.",
+      "failed": "Không nhập được bản trình bày",
+      "protected": "Tệp được bảo vệ bằng mật khẩu hoặc ở định dạng .ppt cũ. Hãy lưu tệp trong PowerPoint dưới dạng .pptx không có mật khẩu rồi nhập lại.",
+      "notPptx": "Tệp không phải là bản trình bày PowerPoint (.pptx).",
+      "broken": "Tệp bị hỏng và không đọc được bản trình bày từ tệp.",
+      "unreadable": "Không đọc được tệp từ ổ đĩa."
+    },
+    "slideOne": "trang chiếu {{slides}}",
+    "slideMany": "các trang chiếu {{slides}}",
+    "exported": {
+      "html-picture": "Các đối tượng HTML được đưa vào tệp dưới dạng hình ảnh của chính chúng: trông giống hệt, nhưng không chỉnh sửa được ở đó.",
+      "html-missing": "Không vẽ được một đối tượng HTML và đối tượng đó không có trong tệp.",
+      "element-picture": "Các hình vẽ và hình ảnh có kiểu dáng mà PowerPoint không có được đưa vào tệp dưới dạng hình ảnh của chính chúng.",
+      "asset-missing": "Không đọc được tệp {{detail}} và tệp đó không có trong tệp.",
+      "image-placeholder": "Một chỗ dành sẵn cho hình ảnh chưa có ảnh đã bị bỏ qua.",
+      "fill-approximated": "Một kiểu tô màu mà PowerPoint không có (chuyển màu hình nón, sọc) được vẽ thành kiểu gần nhất.",
+      "slide-css": "Biểu định kiểu riêng của trang chiếu không được đưa vào tệp.",
+      "blur": "Hiệu ứng làm mờ của nền hoặc đối tượng không được giữ lại: PowerPoint không có hiệu ứng này.",
+      "media-format": "PowerPoint có thể không phát được {{detail}}: định dạng đó không được hỗ trợ ở đó.",
+      "animation-approximated": "Hiệu ứng động {{detail}} được ghi thành hiệu ứng gần nhất trong PowerPoint.",
+      "transition-approximated": "Hiệu ứng chuyển trang {{detail}} được ghi thành hiệu ứng gần nhất trong PowerPoint.",
+      "fonts": "Văn bản dùng phông chữ {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "Không nhập một đối tượng mà Slidr không hiển thị được ({{detail}}).",
+      "picture-format": "Không nhập một hình ảnh ở định dạng {{detail}} mà Slidr không hiển thị được.",
+      "linked-media": "Không nhập hình ảnh, video hoặc âm thanh mà tệp chỉ liên kết tới thay vì chứa bên trong.",
+      "broken-part": "Không đọc được một phần của tệp.",
+      "smartart": "Đồ họa SmartArt được nhập dưới dạng các hình tạo nên nó.",
+      "object-picture": "Phương trình hoặc đối tượng nhúng được nhập dưới dạng hình ảnh của nó.",
+      "chart-approximated": "Một biểu đồ ({{detail}}) được vẽ thành biểu đồ gần nhất trong Slidr.",
+      "vertical-text": "Văn bản dọc được nhập dưới dạng hộp văn bản xoay.",
+      "shape-approximated": "Một hình mà Slidr không có ({{detail}}) được vẽ thành hình gần nhất.",
+      "animation-approximated": "Một hiệu ứng động ({{detail}}) được nhập thành hiệu ứng gần nhất trong Slidr.",
+      "transition-approximated": "Một hiệu ứng chuyển trang ({{detail}}) được nhập thành hiệu ứng gần nhất trong Slidr.",
+      "fonts": "Phông chữ không có trên máy tính này: {{detail}}. Văn bản của chúng hiển thị bằng phông chữ khác."
+    }
+  },
   "present": {
     "controls": "Điều khiển trình chiếu",
     "previous": "Lùi lại",
@@ -2520,7 +2576,9 @@
       "recent": "Mở gần đây",
       "noRecent": "Không có tệp gần đây",
       "importHtml": "Nhập HTML…",
+      "importPptx": "Nhập PowerPoint…",
       "exportHtml": "Xuất HTML…",
+      "exportPptx": "Xuất sang PowerPoint…",
       "missing": "Không tìm thấy tệp",
       "save": "Lưu",
       "saveAs": "Lưu thành…",
@@ -2767,7 +2825,7 @@
       "blank": "Bản trình bày trống",
       "blankBody": "Một trang chiếu mở đầu theo mẫu mặc định, cùng khung trò chuyện với AI đã mở sẵn.",
       "load": "Mở từ tệp",
-      "loadBody": "Tệp Slidr được mở nguyên trạng, còn tệp HTML được nhập thành các trang chiếu có thể chỉnh sửa.",
+      "loadBody": "Tệp Slidr được mở nguyên trạng, còn tệp HTML hoặc PowerPoint được nhập thành các trang chiếu có thể chỉnh sửa.",
       "allTemplates": "Tất cả mẫu",
       "templateBody": "Các mẫu được thiết kế sẵn cho mọi chủ đề. Xem từng trang chiếu trước khi chọn.",
       "noTemplates": "Thư viện chưa có mẫu nào.",

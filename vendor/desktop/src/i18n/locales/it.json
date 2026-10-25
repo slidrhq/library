@@ -2409,6 +2409,62 @@
       "svgInline": "Grafica con colori modificabili"
     }
   },
+  "pptx": {
+    "filter": "Presentazione PowerPoint",
+    "export": {
+      "title": "Esporta in PowerPoint",
+      "description": "Un file .pptx che si apre in PowerPoint, Keynote e Presentazioni Google, con ogni testo, forma, tabella e grafico modificabile.",
+      "working": "Esportazione della presentazione…",
+      "mediaOne": "Un file multimediale nel file, {{size}}",
+      "mediaMany": "{{n}} file multimediali nel file, {{size}}",
+      "noMedia": "Il file non contiene immagini né file multimediali.",
+      "fonts": "Caratteri",
+      "fontsBody": "I caratteri non sono nel file: PowerPoint li mostra solo su un computer in cui sono installati, altrove il testo appare con un altro carattere.",
+      "promptTitle": "Fai clic per aggiungere un titolo",
+      "promptText": "Fai clic per aggiungere testo"
+    },
+    "import": {
+      "working": "Lettura della presentazione…",
+      "title": "La presentazione è stata importata",
+      "summaryOne": "È stata importata una diapositiva da {{name}}.",
+      "summaryMany": "Sono state importate {{n}} diapositive da {{name}}.",
+      "failed": "La presentazione non è stata importata",
+      "protected": "Il file è protetto da password o è nel vecchio formato .ppt. Salvalo in PowerPoint come .pptx senza password e importalo di nuovo.",
+      "notPptx": "Il file non è una presentazione PowerPoint (.pptx).",
+      "broken": "Il file è danneggiato e non è stato possibile leggerne la presentazione.",
+      "unreadable": "Non è stato possibile leggere il file dal disco."
+    },
+    "slideOne": "diapositiva {{slides}}",
+    "slideMany": "diapositive {{slides}}",
+    "exported": {
+      "html-picture": "Gli oggetti HTML sono entrati nel file come immagine di sé stessi: hanno lo stesso aspetto, ma lì non sono modificabili.",
+      "html-missing": "Un oggetto HTML non è stato disegnato e manca nel file.",
+      "element-picture": "Disegni e immagini con un aspetto che PowerPoint non prevede sono entrati nel file come immagine di sé stessi.",
+      "asset-missing": "Non è stato possibile leggere il file {{detail}}, che manca nel file.",
+      "image-placeholder": "Un segnaposto per immagine ancora vuoto è stato omesso.",
+      "fill-approximated": "Un riempimento che PowerPoint non ha (una sfumatura conica, delle strisce) è stato disegnato come il più simile.",
+      "slide-css": "Il foglio di stile proprio della diapositiva non entra nel file.",
+      "blur": "La sfocatura di uno sfondo o di un oggetto non viene mantenuta: PowerPoint non la prevede.",
+      "media-format": "PowerPoint potrebbe non riprodurre {{detail}}: il suo formato non è supportato.",
+      "animation-approximated": "L’animazione {{detail}} è stata scritta come l’animazione più simile di PowerPoint.",
+      "transition-approximated": "La transizione {{detail}} è stata scritta come la transizione più simile di PowerPoint.",
+      "fonts": "Il testo usa i caratteri {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "Un oggetto che Slidr non può mostrare ({{detail}}) non è stato importato.",
+      "picture-format": "Un’immagine in formato {{detail}}, che Slidr non può mostrare, non è stata importata.",
+      "linked-media": "Un’immagine, un video o un suono a cui il file rimanda invece di contenerlo non è stato importato.",
+      "broken-part": "Non è stato possibile leggere una parte del file.",
+      "smartart": "Un elemento grafico SmartArt è stato importato come le forme con cui è disegnato.",
+      "object-picture": "Un’equazione o un oggetto incorporato è stato importato come immagine.",
+      "chart-approximated": "Un grafico ({{detail}}) è disegnato come il grafico più simile di Slidr.",
+      "vertical-text": "Il testo verticale è stato importato come casella di testo ruotata.",
+      "shape-approximated": "Una forma che Slidr non ha ({{detail}}) è disegnata come la più simile.",
+      "animation-approximated": "Un’animazione ({{detail}}) è stata importata come la più simile di Slidr.",
+      "transition-approximated": "Una transizione ({{detail}}) è stata importata come la più simile di Slidr.",
+      "fonts": "Caratteri assenti su questo computer: {{detail}}. Il loro testo appare con un altro carattere."
+    }
+  },
   "present": {
     "controls": "Controlli della presentazione",
     "previous": "Indietro",
@@ -2532,7 +2588,9 @@
       "recent": "Apri recenti",
       "noRecent": "Nessun file recente",
       "importHtml": "Importa HTML…",
+      "importPptx": "Importa PowerPoint…",
       "exportHtml": "Esporta HTML…",
+      "exportPptx": "Esporta in PowerPoint…",
       "missing": "File non trovato",
       "save": "Salva",
       "saveAs": "Salva con nome…",
@@ -2779,7 +2837,7 @@
       "blank": "Presentazione vuota",
       "blankBody": "Una diapositiva iniziale con il modello predefinito, con la chat AI aperta e pronta.",
       "load": "Carica da file",
-      "loadBody": "Un file Slidr si apre così com'è, mentre un file HTML viene importato come diapositive da modificare.",
+      "loadBody": "Un file Slidr si apre così com'è, mentre un file HTML o PowerPoint viene importato come diapositive da modificare.",
       "allTemplates": "Tutti i modelli",
       "templateBody": "Modelli progettati per ogni argomento. Visualizza tutte le diapositive prima di scegliere.",
       "noTemplates": "La libreria non contiene ancora modelli.",

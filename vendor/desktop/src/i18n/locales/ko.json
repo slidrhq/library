@@ -2397,6 +2397,62 @@
       "svgInline": "색 편집 가능한 그래픽"
     }
   },
+  "pptx": {
+    "filter": "PowerPoint 프레젠테이션",
+    "export": {
+      "title": "PowerPoint로 내보내기",
+      "description": "PowerPoint, Keynote, Google 프레젠테이션에서 열리는 .pptx 파일로, 모든 텍스트, 도형, 표, 차트를 편집할 수 있습니다.",
+      "working": "프레젠테이션을 내보내는 중…",
+      "mediaOne": "파일 안의 미디어 파일 1개, {{size}}",
+      "mediaMany": "파일 안의 미디어 파일 {{n}}개, {{size}}",
+      "noMedia": "파일에 이미지나 미디어가 없습니다.",
+      "fonts": "글꼴",
+      "fontsBody": "글꼴은 파일에 포함되지 않습니다. PowerPoint는 글꼴이 설치된 컴퓨터에서만 그 글꼴로 표시하며, 다른 컴퓨터에서는 다른 글꼴로 표시합니다.",
+      "promptTitle": "클릭하여 제목 추가",
+      "promptText": "클릭하여 텍스트 추가"
+    },
+    "import": {
+      "working": "프레젠테이션을 읽는 중…",
+      "title": "프레젠테이션을 가져왔습니다",
+      "summaryOne": "{{name}}에서 슬라이드 1개를 가져왔습니다.",
+      "summaryMany": "{{name}}에서 슬라이드 {{n}}개를 가져왔습니다.",
+      "failed": "프레젠테이션을 가져오지 못했습니다",
+      "protected": "파일이 암호로 보호되어 있거나 이전 .ppt 형식입니다. PowerPoint에서 암호 없이 .pptx로 저장한 뒤 다시 가져오세요.",
+      "notPptx": "이 파일은 PowerPoint 프레젠테이션(.pptx)이 아닙니다.",
+      "broken": "파일이 손상되어 프레젠테이션을 읽을 수 없습니다.",
+      "unreadable": "디스크에서 파일을 읽을 수 없습니다."
+    },
+    "slideOne": "슬라이드 {{slides}}",
+    "slideMany": "슬라이드 {{slides}}",
+    "exported": {
+      "html-picture": "HTML 개체는 그 모습의 그림으로 파일에 들어갔습니다. 보기에는 같지만 PowerPoint에서는 편집할 수 없습니다.",
+      "html-missing": "HTML 개체를 그릴 수 없어 파일에서 빠졌습니다.",
+      "element-picture": "PowerPoint에 해당 설정이 없는 모양의 그림과 이미지는 그 모습의 그림으로 파일에 들어갔습니다.",
+      "asset-missing": "{{detail}} 파일을 읽을 수 없어 파일에서 빠졌습니다.",
+      "image-placeholder": "아직 이미지가 없는 이미지 개체 틀은 포함하지 않았습니다.",
+      "fill-approximated": "PowerPoint에 없는 채우기(원뿔형 그라데이션, 줄무늬)는 가장 가까운 채우기로 그렸습니다.",
+      "slide-css": "슬라이드 자체의 스타일시트는 파일에 들어가지 않습니다.",
+      "blur": "배경이나 개체의 흐림 효과는 유지되지 않습니다. PowerPoint에는 해당 기능이 없습니다.",
+      "media-format": "PowerPoint에서 {{detail}}을(를) 재생하지 못할 수 있습니다. 그 형식은 지원되지 않습니다.",
+      "animation-approximated": "{{detail}} 애니메이션은 PowerPoint에서 가장 가까운 애니메이션으로 기록했습니다.",
+      "transition-approximated": "{{detail}} 전환은 PowerPoint에서 가장 가까운 전환으로 기록했습니다.",
+      "fonts": "텍스트 글꼴: {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "Slidr에서 표시할 수 없는 개체({{detail}})는 가져오지 않았습니다.",
+      "picture-format": "Slidr에서 표시할 수 없는 {{detail}} 형식의 이미지는 가져오지 않았습니다.",
+      "linked-media": "파일에 포함되지 않고 연결만 된 이미지, 동영상, 소리는 가져오지 않았습니다.",
+      "broken-part": "파일의 일부를 읽을 수 없습니다.",
+      "smartart": "SmartArt 그래픽은 그것을 이루는 도형으로 가져왔습니다.",
+      "object-picture": "수식이나 포함된 개체는 그 모습의 그림으로 가져왔습니다.",
+      "chart-approximated": "차트({{detail}})는 Slidr에서 가장 가까운 차트로 그립니다.",
+      "vertical-text": "세로 텍스트는 회전된 텍스트 상자로 가져왔습니다.",
+      "shape-approximated": "Slidr에 없는 도형({{detail}})은 가장 가까운 도형으로 그립니다.",
+      "animation-approximated": "애니메이션({{detail}})은 Slidr에서 가장 가까운 애니메이션으로 가져왔습니다.",
+      "transition-approximated": "전환({{detail}})은 Slidr에서 가장 가까운 전환으로 가져왔습니다.",
+      "fonts": "이 컴퓨터에 없는 글꼴: {{detail}}. 해당 텍스트는 다른 글꼴로 표시됩니다."
+    }
+  },
   "present": {
     "controls": "슬라이드 쇼 컨트롤",
     "previous": "이전",
@@ -2520,7 +2576,9 @@
       "recent": "최근 항목 열기",
       "noRecent": "최근 파일 없음",
       "importHtml": "HTML 가져오기…",
+      "importPptx": "PowerPoint 가져오기…",
       "exportHtml": "HTML 내보내기…",
+      "exportPptx": "PowerPoint로 내보내기…",
       "missing": "파일을 찾을 수 없음",
       "save": "저장",
       "saveAs": "다른 이름으로 저장…",
@@ -2767,7 +2825,7 @@
       "blank": "빈 프레젠테이션",
       "blankBody": "기본 템플릿의 시작 슬라이드와 바로 사용할 수 있는 AI 채팅으로 시작합니다.",
       "load": "파일에서 열기",
-      "loadBody": "Slidr 파일은 그대로 열리고, HTML 파일은 편집할 수 있는 슬라이드로 가져옵니다.",
+      "loadBody": "Slidr 파일은 그대로 열리고, HTML 또는 PowerPoint 파일은 편집할 수 있는 슬라이드로 가져옵니다.",
       "allTemplates": "모든 템플릿",
       "templateBody": "모든 주제에 맞게 디자인된 템플릿입니다. 선택하기 전에 모든 슬라이드를 미리 볼 수 있습니다.",
       "noTemplates": "라이브러리에 아직 템플릿이 없습니다.",

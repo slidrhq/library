@@ -2403,6 +2403,62 @@
       "svgInline": "Renkleri düzenlenebilir çizim"
     }
   },
+  "pptx": {
+    "filter": "PowerPoint sunusu",
+    "export": {
+      "title": "PowerPoint’e aktar",
+      "description": "PowerPoint, Keynote ve Google Slaytlar’da açılan, içindeki her metnin, şeklin, tablonun ve grafiğin düzenlenebildiği bir .pptx dosyası.",
+      "working": "Sunu dışarı aktarılıyor…",
+      "mediaOne": "Dosyanın içinde bir medya dosyası, {{size}}",
+      "mediaMany": "Dosyanın içinde {{n}} medya dosyası, {{size}}",
+      "noMedia": "Dosyada resim veya medya yok.",
+      "fonts": "Yazı tipleri",
+      "fontsBody": "Yazı tipleri dosyanın içinde değildir: PowerPoint onları yalnızca yüklü oldukları bir bilgisayarda gösterir, başka bir bilgisayarda metin başka bir yazı tipiyle görünür.",
+      "promptTitle": "Başlık eklemek için tıklayın",
+      "promptText": "Metin eklemek için tıklayın"
+    },
+    "import": {
+      "working": "Sunu okunuyor…",
+      "title": "Sunu içeri aktarıldı",
+      "summaryOne": "{{name}} dosyasından bir slayt içeri aktarıldı.",
+      "summaryMany": "{{name}} dosyasından {{n}} slayt içeri aktarıldı.",
+      "failed": "Sunu içeri aktarılamadı",
+      "protected": "Dosya parolayla korunuyor ya da eski .ppt biçiminde. PowerPoint’te parolasız bir .pptx olarak kaydedip yeniden içeri aktarın.",
+      "notPptx": "Dosya bir PowerPoint sunusu (.pptx) değil.",
+      "broken": "Dosya bozuk ve sunu dosyadan okunamadı.",
+      "unreadable": "Dosya diskten okunamadı."
+    },
+    "slideOne": "slayt {{slides}}",
+    "slideMany": "slaytlar {{slides}}",
+    "exported": {
+      "html-picture": "HTML nesneleri dosyaya kendi resimleri olarak girdi: aynı görünürler, ancak orada düzenlenemezler.",
+      "html-missing": "Bir HTML nesnesi çizilemedi ve dosyada yok.",
+      "element-picture": "PowerPoint’te karşılığı olmayan bir görünüme sahip çizimler ve resimler dosyaya kendi resimleri olarak girdi.",
+      "asset-missing": "{{detail}} dosyası okunamadı ve dosyada yok.",
+      "image-placeholder": "Henüz resmi olmayan bir resim yer tutucusu dahil edilmedi.",
+      "fill-approximated": "PowerPoint’te olmayan bir dolgu (konik degrade, şeritler) en yakın dolgu olarak çizildi.",
+      "slide-css": "Slaydın kendi stil sayfası dosyaya girmez.",
+      "blur": "Bir arka planın veya nesnenin bulanıklığı korunmaz: PowerPoint’te bulanıklık yok.",
+      "media-format": "PowerPoint {{detail}} dosyasını oynatamayabilir: biçimi orada desteklenmiyor.",
+      "animation-approximated": "{{detail}} animasyonu PowerPoint’teki en yakın animasyon olarak yazıldı.",
+      "transition-approximated": "{{detail}} geçişi PowerPoint’teki en yakın geçiş olarak yazıldı.",
+      "fonts": "Metnin yazı tipleri: {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "Slidr’ın gösteremediği bir nesne ({{detail}}) içeri aktarılmadı.",
+      "picture-format": "Slidr’ın gösteremediği {{detail}} biçimindeki bir resim içeri aktarılmadı.",
+      "linked-media": "Dosyanın içermek yerine bağlantı verdiği bir resim, video veya ses içeri aktarılmadı.",
+      "broken-part": "Dosyanın bir bölümü okunamadı.",
+      "smartart": "Bir SmartArt grafiği, çizildiği şekiller olarak içeri aktarıldı.",
+      "object-picture": "Bir denklem veya katıştırılmış nesne, resmi olarak içeri aktarıldı.",
+      "chart-approximated": "Bir grafik ({{detail}}), Slidr’daki en yakın grafik olarak çiziliyor.",
+      "vertical-text": "Dikey metin, döndürülmüş bir metin kutusu olarak içeri aktarıldı.",
+      "shape-approximated": "Slidr’da olmayan bir şekil ({{detail}}) en yakın şekil olarak çiziliyor.",
+      "animation-approximated": "Bir animasyon ({{detail}}), Slidr’daki en yakın animasyon olarak içeri aktarıldı.",
+      "transition-approximated": "Bir geçiş ({{detail}}), Slidr’daki en yakın geçiş olarak içeri aktarıldı.",
+      "fonts": "Bu bilgisayarda olmayan yazı tipleri: {{detail}}. Metinleri başka bir yazı tipiyle görünür."
+    }
+  },
   "present": {
     "controls": "Gösteri denetimleri",
     "previous": "Geri",
@@ -2526,7 +2582,9 @@
       "recent": "Son kullanılanlar",
       "noRecent": "Son kullanılan dosya yok",
       "importHtml": "HTML içeri aktar…",
+      "importPptx": "PowerPoint içeri aktar…",
       "exportHtml": "HTML olarak dışarı aktar…",
+      "exportPptx": "PowerPoint’e aktar…",
       "missing": "Dosya bulunamadı",
       "save": "Kaydet",
       "saveAs": "Farklı kaydet…",
@@ -2773,7 +2831,7 @@
       "blank": "Boş sunu",
       "blankBody": "Varsayılan şablonda bir açılış slaytı; yapay zekâ sohbeti açık ve hazır.",
       "load": "Dosyadan yükle",
-      "loadBody": "Slidr dosyası olduğu gibi açılır; HTML dosyası ise düzenlenebilir slaytlar olarak içeri aktarılır.",
+      "loadBody": "Slidr dosyası olduğu gibi açılır; HTML veya PowerPoint dosyası ise düzenlenebilir slaytlar olarak içeri aktarılır.",
       "allTemplates": "Tüm şablonlar",
       "templateBody": "Her konu için tasarlanmış şablonlar. Seçmeden önce tüm slaytları görün.",
       "noTemplates": "Kitaplıkta henüz şablon yok.",

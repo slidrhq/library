@@ -2403,6 +2403,62 @@
       "svgInline": "Grafik mit bearbeitbaren Farben"
     }
   },
+  "pptx": {
+    "filter": "PowerPoint-Präsentation",
+    "export": {
+      "title": "Nach PowerPoint exportieren",
+      "description": "Eine .pptx-Datei, die sich in PowerPoint, Keynote und Google Präsentationen öffnen lässt und in der jeder Text, jede Form, Tabelle und jedes Diagramm bearbeitbar ist.",
+      "working": "Präsentation wird exportiert…",
+      "mediaOne": "Eine Mediendatei in der Datei, {{size}}",
+      "mediaMany": "{{n}} Mediendateien in der Datei, {{size}}",
+      "noMedia": "Die Datei enthält keine Bilder oder Medien.",
+      "fonts": "Schriftarten",
+      "fontsBody": "Die Schriftarten sind nicht in der Datei: PowerPoint zeigt sie nur auf einem Computer an, auf dem sie installiert sind, sonst erscheint der Text in einer anderen Schrift.",
+      "promptTitle": "Klicken, um einen Titel hinzuzufügen",
+      "promptText": "Klicken, um Text hinzuzufügen"
+    },
+    "import": {
+      "working": "Präsentation wird gelesen…",
+      "title": "Die Präsentation wurde importiert",
+      "summaryOne": "Eine Folie wurde aus {{name}} importiert.",
+      "summaryMany": "{{n}} Folien wurden aus {{name}} importiert.",
+      "failed": "Die Präsentation wurde nicht importiert",
+      "protected": "Die Datei ist kennwortgeschützt oder im alten .ppt-Format. Speichern Sie sie in PowerPoint als .pptx ohne Kennwort und importieren Sie sie erneut.",
+      "notPptx": "Die Datei ist keine PowerPoint-Präsentation (.pptx).",
+      "broken": "Die Datei ist beschädigt, die Präsentation konnte nicht daraus gelesen werden.",
+      "unreadable": "Die Datei konnte nicht vom Datenträger gelesen werden."
+    },
+    "slideOne": "Folie {{slides}}",
+    "slideMany": "Folien {{slides}}",
+    "exported": {
+      "html-picture": "HTML-Objekte sind als Bild ihrer selbst in die Datei eingegangen: Sie sehen gleich aus, sind dort aber nicht bearbeitbar.",
+      "html-missing": "Ein HTML-Objekt konnte nicht gezeichnet werden und fehlt in der Datei.",
+      "element-picture": "Zeichnungen und Bilder mit einem Aussehen, für das PowerPoint keine Einstellung hat, sind als Bild ihrer selbst in die Datei eingegangen.",
+      "asset-missing": "Die Datei {{detail}} konnte nicht gelesen werden und fehlt in der Datei.",
+      "image-placeholder": "Ein Bildplatzhalter, der noch kein Bild enthält, wurde weggelassen.",
+      "fill-approximated": "Eine Füllung, die PowerPoint nicht kennt (ein konischer Verlauf, Streifen), wurde als die nächstliegende gezeichnet.",
+      "slide-css": "Das eigene Stylesheet der Folie geht nicht in die Datei ein.",
+      "blur": "Die Unschärfe eines Hintergrunds oder Objekts bleibt nicht erhalten: PowerPoint hat keine.",
+      "media-format": "PowerPoint spielt {{detail}} möglicherweise nicht ab: Das Format wird dort nicht unterstützt.",
+      "animation-approximated": "Die Animation {{detail}} wurde als die nächstliegende Animation in PowerPoint geschrieben.",
+      "transition-approximated": "Der Übergang {{detail}} wurde als der nächstliegende Übergang in PowerPoint geschrieben.",
+      "fonts": "Der Text ist in {{detail}} gesetzt."
+    },
+    "imported": {
+      "unsupported-object": "Ein Objekt, das Slidr nicht anzeigen kann ({{detail}}), wurde nicht importiert.",
+      "picture-format": "Ein Bild im Format {{detail}}, das Slidr nicht anzeigen kann, wurde nicht importiert.",
+      "linked-media": "Ein Bild, Video oder Ton, auf das die Datei verweist, statt es zu enthalten, wurde nicht importiert.",
+      "broken-part": "Ein Teil der Datei konnte nicht gelesen werden.",
+      "smartart": "Eine SmartArt-Grafik wurde als die Formen importiert, aus denen sie gezeichnet ist.",
+      "object-picture": "Eine Formel oder ein eingebettetes Objekt wurde als Bild importiert.",
+      "chart-approximated": "Ein Diagramm ({{detail}}) wird als das nächstliegende Diagramm in Slidr gezeichnet.",
+      "vertical-text": "Vertikaler Text wurde als gedrehtes Textfeld importiert.",
+      "shape-approximated": "Eine Form, die Slidr nicht hat ({{detail}}), wird als die nächstliegende gezeichnet.",
+      "animation-approximated": "Eine Animation ({{detail}}) wurde als die nächstliegende in Slidr importiert.",
+      "transition-approximated": "Ein Übergang ({{detail}}) wurde als der nächstliegende in Slidr importiert.",
+      "fonts": "Schriftarten, die auf diesem Computer fehlen: {{detail}}. Ihr Text erscheint in einer anderen Schrift."
+    }
+  },
   "present": {
     "controls": "Steuerelemente anzeigen",
     "previous": "Zurück",
@@ -2526,7 +2582,9 @@
       "recent": "Zuletzt verwendet",
       "noRecent": "Keine zuletzt verwendeten Dateien",
       "importHtml": "HTML importieren…",
+      "importPptx": "PowerPoint importieren…",
       "exportHtml": "HTML exportieren…",
+      "exportPptx": "Nach PowerPoint exportieren…",
       "missing": "Datei nicht gefunden",
       "save": "Speichern",
       "saveAs": "Speichern unter…",
@@ -2773,7 +2831,7 @@
       "blank": "Leere Präsentation",
       "blankBody": "Eine Eröffnungsfolie in der Standardvorlage, mit geöffnetem und bereitem KI-Chat.",
       "load": "Aus Datei laden",
-      "loadBody": "Eine Slidr-Datei wird unverändert geöffnet, eine HTML-Datei als bearbeitbare Folien importiert.",
+      "loadBody": "Eine Slidr-Datei wird unverändert geöffnet, eine HTML- oder PowerPoint-Datei als bearbeitbare Folien importiert.",
       "allTemplates": "Alle Vorlagen",
       "templateBody": "Gestaltete Vorlagen für jedes Thema. Sehen Sie sich alle Folien an, bevor Sie sich entscheiden.",
       "noTemplates": "Die Bibliothek enthält noch keine Vorlagen.",

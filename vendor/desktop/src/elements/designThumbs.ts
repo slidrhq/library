@@ -6,11 +6,11 @@ import { designRevs, type DesignId } from './designs';
  * The pictures of the designs, made ahead (ADR-109). A design is a whole slide with a large
  * picture: drawn live, the first screens of the gallery read the full pictures of eighty designs
  * (12.9 MB, 108 megapixels to decode) and laid out their text in fonts read for it. So each
- * design has a picture of the renderer's own drawing in each of its languages, at two widths
- * (`scripts/generate-design-thumbs.mjs`): the gallery shows that, and the browser takes the width
- * the tile needs. A picture is of a word of the design (`elements/designs/revs.json`, written on
- * publishing). A design whose word has changed since, or that has no picture, is drawn live as
- * before.
+ * design has a picture of the renderer's own drawing in each of its languages, 320 pixels wide
+ * (`scripts/generate-design-thumbs.mjs`, ADR-111): the gallery shows that. The index names the
+ * widths, and where it names more, the browser takes the one the tile needs. A picture is of a
+ * word of the design (`elements/designs/revs.json`, written on publishing). A design whose word
+ * has changed since, or that has no picture, is drawn live as before.
  */
 
 /** `images/designs/thumbs/index.json`: the widths, and the word each picture was drawn from. */

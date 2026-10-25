@@ -1,21 +1,7 @@
 import { mediaFiles, mediaUrl } from '@slidr/media-library';
-import {
-  createDeck,
-  createElement,
-  createSlide as blankSlide,
-  languageDir,
-  richText,
-  type AssetMeta,
-  type Deck,
-  type Slide,
-} from '@slidr/model';
+import { createDeck, languageDir, type AssetMeta, type Deck, type Slide } from '@slidr/model';
 import { loadCharts } from '@slidr/renderer';
-import {
-  createSlide,
-  deckFromTemplate,
-  withStandardLayouts,
-  type Template,
-} from '@slidr/templates';
+import { templateCover, withStandardLayouts, type Template } from '@slidr/templates';
 import { pictures } from '@slidr/templates/builtin/pictures';
 import { useEffect, useMemo, useState } from 'react';
 import { useT } from './i18n';
@@ -64,45 +50,25 @@ const COVERS: Record<string, AssetMeta | undefined> = {
 };
 
 /**
- * A template's cover as the app's gallery draws it (`coverOf` in `covers.ts`): its opening layout
- * with its name, and the photograph of a template that opens with one.
+ * A template's cover as the app's gallery draws it (`templateCover`): its opening layout with its
+ * name, and the photograph of a template that opens with one.
  */
 function coverOf(
   template: Template,
   lang: Lang,
   files: ReadonlySet<string>,
 ): { deck: Deck; slide: Slide; resolve: (asset: AssetMeta) => string | undefined } {
-  const deck = deckFromTemplate(template, { lang, dir: dirOf(lang) });
   const picture = COVERS[template.theme.id];
   const path = picture ? `images/templates/${picture.name}` : undefined;
   const url = path && files.has(path) ? mediaUrl(path) : undefined;
   const resolve = (asset: AssetMeta) => (asset.id === picture?.id ? url : undefined);
-  const first = deck.layouts[0];
-  if (!first) {
-    // A template without layouts: its name in its own display style.
-    const plain = createDeck({ lang, dir: dirOf(lang), theme: template.theme });
-    const slide = blankSlide({
-      elements: [
-        createElement.text({
-          frame: { x: 160, y: 380, w: 1600, h: 320 },
-          vAlign: 'middle',
-          content: richText(nameOf(template, lang), { align: 'center', styleRef: 'display' }),
-        }),
-      ],
-    });
-    return { deck: plain, slide, resolve };
-  }
-  const has = (role: string) => first.placeholders.some((p) => p.role === role);
-  const withPicture = has('image') && picture && url;
-  if (withPicture) deck.assets[picture.id] = picture;
-  const { slide } = createSlide(deck, {
-    layoutId: first.id,
-    content: {
-      ...(has('title') ? { title: richText(nameOf(template, lang), { dir: 'auto' }) } : {}),
-      ...(withPicture ? { image: { assetId: picture.id } } : {}),
-    },
+  const cover = templateCover(template, {
+    lang,
+    dir: dirOf(lang),
+    name: nameOf(template, lang),
+    ...(url ? { picture } : {}),
   });
-  return { deck, slide, resolve };
+  return { ...cover, resolve };
 }
 
 function Cover({

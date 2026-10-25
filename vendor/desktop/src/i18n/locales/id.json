@@ -2397,6 +2397,62 @@
       "svgInline": "Grafik dengan warna yang dapat diedit"
     }
   },
+  "pptx": {
+    "filter": "Presentasi PowerPoint",
+    "export": {
+      "title": "Ekspor ke PowerPoint",
+      "description": "File .pptx yang dapat dibuka di PowerPoint, Keynote, dan Google Slide, dengan setiap teks, bentuk, tabel, dan diagram di dalamnya dapat diedit.",
+      "working": "Mengekspor presentasi…",
+      "mediaOne": "Satu file media di dalam file, {{size}}",
+      "mediaMany": "{{n}} file media di dalam file, {{size}}",
+      "noMedia": "File tidak berisi gambar atau media.",
+      "fonts": "Font",
+      "fontsBody": "Font tidak disertakan di dalam file: PowerPoint hanya menampilkannya di komputer tempat font itu terpasang, dan di komputer lain teks ditampilkan dengan font lain.",
+      "promptTitle": "Klik untuk menambahkan judul",
+      "promptText": "Klik untuk menambahkan teks"
+    },
+    "import": {
+      "working": "Membaca presentasi…",
+      "title": "Presentasi telah diimpor",
+      "summaryOne": "Satu slide diimpor dari {{name}}.",
+      "summaryMany": "{{n}} slide diimpor dari {{name}}.",
+      "failed": "Presentasi tidak diimpor",
+      "protected": "File dilindungi kata sandi, atau dalam format lama .ppt. Simpan di PowerPoint sebagai .pptx tanpa kata sandi, lalu impor lagi.",
+      "notPptx": "File ini bukan presentasi PowerPoint (.pptx).",
+      "broken": "File rusak, dan presentasi tidak dapat dibaca darinya.",
+      "unreadable": "File tidak dapat dibaca dari disk."
+    },
+    "slideOne": "slide {{slides}}",
+    "slideMany": "slide {{slides}}",
+    "exported": {
+      "html-picture": "Objek HTML masuk ke file sebagai gambarnya sendiri: tampilannya sama, tetapi tidak dapat diedit di sana.",
+      "html-missing": "Sebuah objek HTML tidak dapat digambar, dan tidak ada di file.",
+      "element-picture": "Gambar dan ilustrasi dengan tampilan yang tidak dimiliki PowerPoint masuk ke file sebagai gambarnya sendiri.",
+      "asset-missing": "File {{detail}} tidak dapat dibaca, dan tidak ada di file.",
+      "image-placeholder": "Tempat penampung gambar yang belum berisi gambar tidak disertakan.",
+      "fill-approximated": "Isian yang tidak dimiliki PowerPoint (gradien kerucut, garis-garis) digambar sebagai isian yang paling mendekati.",
+      "slide-css": "Lembar gaya milik slide tidak masuk ke file.",
+      "blur": "Efek buram pada latar belakang atau objek tidak dipertahankan: PowerPoint tidak memilikinya.",
+      "media-format": "PowerPoint mungkin tidak memutar {{detail}}: formatnya tidak didukung di sana.",
+      "animation-approximated": "Animasi {{detail}} ditulis sebagai animasi PowerPoint yang paling mendekati.",
+      "transition-approximated": "Transisi {{detail}} ditulis sebagai transisi PowerPoint yang paling mendekati.",
+      "fonts": "Teks menggunakan font {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "Objek yang tidak dapat ditampilkan Slidr ({{detail}}) tidak diimpor.",
+      "picture-format": "Gambar berformat {{detail}}, yang tidak dapat ditampilkan Slidr, tidak diimpor.",
+      "linked-media": "Gambar, video, atau suara yang ditautkan oleh file alih-alih disimpan di dalamnya tidak diimpor.",
+      "broken-part": "Sebagian file tidak dapat dibaca.",
+      "smartart": "Grafik SmartArt diimpor sebagai bentuk-bentuk penyusunnya.",
+      "object-picture": "Persamaan atau objek tersemat diimpor sebagai gambarnya.",
+      "chart-approximated": "Diagram ({{detail}}) digambar sebagai diagram Slidr yang paling mendekati.",
+      "vertical-text": "Teks vertikal diimpor sebagai kotak teks yang diputar.",
+      "shape-approximated": "Bentuk yang tidak dimiliki Slidr ({{detail}}) digambar sebagai bentuk yang paling mendekati.",
+      "animation-approximated": "Animasi ({{detail}}) diimpor sebagai animasi Slidr yang paling mendekati.",
+      "transition-approximated": "Transisi ({{detail}}) diimpor sebagai transisi Slidr yang paling mendekati.",
+      "fonts": "Font yang tidak ada di komputer ini: {{detail}}. Teksnya ditampilkan dengan font lain."
+    }
+  },
   "present": {
     "controls": "Kontrol peragaan",
     "previous": "Kembali",
@@ -2520,7 +2576,9 @@
       "recent": "Buka terbaru",
       "noRecent": "Tidak ada file terbaru",
       "importHtml": "Impor HTML…",
+      "importPptx": "Impor PowerPoint…",
       "exportHtml": "Ekspor HTML…",
+      "exportPptx": "Ekspor ke PowerPoint…",
       "missing": "File tidak ditemukan",
       "save": "Simpan",
       "saveAs": "Simpan sebagai…",
@@ -2767,7 +2825,7 @@
       "blank": "Presentasi kosong",
       "blankBody": "Slide pembuka dengan templat default, lengkap dengan obrolan AI yang terbuka dan siap digunakan.",
       "load": "Muat dari file",
-      "loadBody": "File Slidr dibuka apa adanya, dan file HTML diimpor sebagai slide yang dapat diedit.",
+      "loadBody": "File Slidr dibuka apa adanya, dan file HTML atau PowerPoint diimpor sebagai slide yang dapat diedit.",
       "allTemplates": "Semua templat",
       "templateBody": "Templat berdesain untuk setiap topik. Lihat setiap slide sebelum memilih.",
       "noTemplates": "Pustaka belum memiliki templat.",

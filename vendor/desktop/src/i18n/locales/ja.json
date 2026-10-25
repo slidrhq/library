@@ -2397,6 +2397,62 @@
       "svgInline": "色を編集可能なグラフィック"
     }
   },
+  "pptx": {
+    "filter": "PowerPoint プレゼンテーション",
+    "export": {
+      "title": "PowerPoint にエクスポート",
+      "description": "PowerPoint、Keynote、Google スライドで開ける .pptx ファイルです。テキスト、図形、表、グラフはすべて編集できます。",
+      "working": "プレゼンテーションをエクスポートしています…",
+      "mediaOne": "ファイル内のメディア ファイル 1 個、{{size}}",
+      "mediaMany": "ファイル内のメディア ファイル {{n}} 個、{{size}}",
+      "noMedia": "ファイルに画像やメディアはありません。",
+      "fonts": "フォント",
+      "fontsBody": "フォントはファイルに含まれません。PowerPoint はフォントがインストールされているコンピューターでのみそのフォントで表示し、それ以外では別のフォントで表示します。",
+      "promptTitle": "クリックしてタイトルを追加",
+      "promptText": "クリックしてテキストを追加"
+    },
+    "import": {
+      "working": "プレゼンテーションを読み込んでいます…",
+      "title": "プレゼンテーションをインポートしました",
+      "summaryOne": "{{name}} からスライドを 1 枚インポートしました。",
+      "summaryMany": "{{name}} からスライドを {{n}} 枚インポートしました。",
+      "failed": "プレゼンテーションをインポートできませんでした",
+      "protected": "ファイルがパスワードで保護されているか、古い .ppt 形式です。PowerPoint でパスワードなしの .pptx として保存し、もう一度インポートしてください。",
+      "notPptx": "このファイルは PowerPoint プレゼンテーション (.pptx) ではありません。",
+      "broken": "ファイルが破損しているため、プレゼンテーションを読み込めませんでした。",
+      "unreadable": "ディスクからファイルを読み込めませんでした。"
+    },
+    "slideOne": "スライド {{slides}}",
+    "slideMany": "スライド {{slides}}",
+    "exported": {
+      "html-picture": "HTML オブジェクトはその画像としてファイルに入りました。見た目は同じですが、PowerPoint では編集できません。",
+      "html-missing": "HTML オブジェクトを描画できなかったため、ファイルにありません。",
+      "element-picture": "PowerPoint に設定のない見た目の図形や画像は、その画像としてファイルに入りました。",
+      "asset-missing": "ファイル {{detail}} を読み込めなかったため、ファイルにありません。",
+      "image-placeholder": "まだ画像のない画像プレースホルダーは含めませんでした。",
+      "fill-approximated": "PowerPoint にない塗りつぶし (円錐グラデーション、ストライプ) は、最も近い塗りつぶしで描画しました。",
+      "slide-css": "スライド独自のスタイルシートはファイルに入りません。",
+      "blur": "背景やオブジェクトのぼかしは保持されません。PowerPoint にはぼかしがありません。",
+      "media-format": "PowerPoint では {{detail}} を再生できない可能性があります。その形式はサポートされていません。",
+      "animation-approximated": "アニメーション {{detail}} は、PowerPoint で最も近いアニメーションとして書き出しました。",
+      "transition-approximated": "画面切り替え {{detail}} は、PowerPoint で最も近い画面切り替えとして書き出しました。",
+      "fonts": "テキストのフォント: {{detail}}。"
+    },
+    "imported": {
+      "unsupported-object": "Slidr で表示できないオブジェクト ({{detail}}) はインポートしませんでした。",
+      "picture-format": "Slidr で表示できない {{detail}} 形式の画像はインポートしませんでした。",
+      "linked-media": "ファイルに含まれず、リンクされているだけの画像、動画、音声はインポートしませんでした。",
+      "broken-part": "ファイルの一部を読み込めませんでした。",
+      "smartart": "SmartArt グラフィックは、それを構成する図形としてインポートしました。",
+      "object-picture": "数式または埋め込みオブジェクトは、その画像としてインポートしました。",
+      "chart-approximated": "グラフ ({{detail}}) は、Slidr で最も近いグラフとして描画しています。",
+      "vertical-text": "縦書きテキストは、回転したテキスト ボックスとしてインポートしました。",
+      "shape-approximated": "Slidr にない図形 ({{detail}}) は、最も近い図形で描画しています。",
+      "animation-approximated": "アニメーション ({{detail}}) は、Slidr で最も近いアニメーションとしてインポートしました。",
+      "transition-approximated": "画面切り替え ({{detail}}) は、Slidr で最も近い画面切り替えとしてインポートしました。",
+      "fonts": "このコンピューターにないフォント: {{detail}}。そのテキストは別のフォントで表示されます。"
+    }
+  },
   "present": {
     "controls": "スライドショーのコントロール",
     "previous": "戻る",
@@ -2520,7 +2576,9 @@
       "recent": "最近使ったファイルを開く",
       "noRecent": "最近使ったファイルはありません",
       "importHtml": "HTML のインポート…",
+      "importPptx": "PowerPoint のインポート…",
       "exportHtml": "HTML のエクスポート…",
+      "exportPptx": "PowerPoint にエクスポート…",
       "missing": "ファイルが見つかりません",
       "save": "保存",
       "saveAs": "名前を付けて保存…",
@@ -2767,7 +2825,7 @@
       "blank": "空白のプレゼンテーション",
       "blankBody": "既定のテンプレートのタイトルスライドから始めます。AI チャットも開いて準備ができています。",
       "load": "ファイルから読み込む",
-      "loadBody": "Slidr ファイルはそのまま開き、HTML ファイルは編集可能なスライドとしてインポートします。",
+      "loadBody": "Slidr ファイルはそのまま開き、HTML ファイルや PowerPoint ファイルは編集可能なスライドとしてインポートします。",
       "allTemplates": "すべてのテンプレート",
       "templateBody": "あらゆるトピックに合わせたデザイン済みテンプレート。選ぶ前にすべてのスライドを確認できます。",
       "noTemplates": "ライブラリにはまだテンプレートがありません。",

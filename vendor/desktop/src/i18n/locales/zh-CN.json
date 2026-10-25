@@ -2397,6 +2397,62 @@
       "svgInline": "使图形颜色可编辑"
     }
   },
+  "pptx": {
+    "filter": "PowerPoint 演示文稿",
+    "export": {
+      "title": "导出为 PowerPoint",
+      "description": "可在 PowerPoint、Keynote 和 Google 幻灯片中打开的 .pptx 文件，其中的每段文字、每个形状、表格和图表都可以编辑。",
+      "working": "正在导出演示文稿…",
+      "mediaOne": "文件中有 1 个媒体文件，{{size}}",
+      "mediaMany": "文件中有 {{n}} 个媒体文件，{{size}}",
+      "noMedia": "文件中没有图片或媒体。",
+      "fonts": "字体",
+      "fontsBody": "字体不包含在文件中：PowerPoint 只在安装了这些字体的电脑上显示它们，在其他电脑上文字会以其他字体显示。",
+      "promptTitle": "单击此处添加标题",
+      "promptText": "单击此处添加文本"
+    },
+    "import": {
+      "working": "正在读取演示文稿…",
+      "title": "演示文稿已导入",
+      "summaryOne": "已从 {{name}} 导入 1 张幻灯片。",
+      "summaryMany": "已从 {{name}} 导入 {{n}} 张幻灯片。",
+      "failed": "演示文稿未导入",
+      "protected": "文件受密码保护，或者是旧的 .ppt 格式。请在 PowerPoint 中将其另存为无密码的 .pptx，然后重新导入。",
+      "notPptx": "该文件不是 PowerPoint 演示文稿 (.pptx)。",
+      "broken": "文件已损坏，无法从中读取演示文稿。",
+      "unreadable": "无法从磁盘读取文件。"
+    },
+    "slideOne": "幻灯片 {{slides}}",
+    "slideMany": "幻灯片 {{slides}}",
+    "exported": {
+      "html-picture": "HTML 对象以其图片的形式放入了文件：外观相同，但在那里无法编辑。",
+      "html-missing": "一个 HTML 对象无法绘制，文件中缺少该对象。",
+      "element-picture": "外观在 PowerPoint 中没有对应设置的绘图和图片，以其图片的形式放入了文件。",
+      "asset-missing": "无法读取文件 {{detail}}，文件中缺少该文件。",
+      "image-placeholder": "尚无图片的图片占位符未包含在内。",
+      "fill-approximated": "PowerPoint 没有的填充（锥形渐变、条纹）已按最接近的填充绘制。",
+      "slide-css": "幻灯片自身的样式表不会放入文件。",
+      "blur": "背景或对象的模糊效果不会保留：PowerPoint 没有这种效果。",
+      "media-format": "PowerPoint 可能无法播放 {{detail}}：其格式在那里不受支持。",
+      "animation-approximated": "动画 {{detail}} 已写为 PowerPoint 中最接近的动画。",
+      "transition-approximated": "切换效果 {{detail}} 已写为 PowerPoint 中最接近的切换效果。",
+      "fonts": "文字使用的字体：{{detail}}。"
+    },
+    "imported": {
+      "unsupported-object": "Slidr 无法显示的对象（{{detail}}）未导入。",
+      "picture-format": "Slidr 无法显示的 {{detail}} 格式图片未导入。",
+      "linked-media": "文件仅链接而未包含的图片、视频或声音未导入。",
+      "broken-part": "文件的一部分无法读取。",
+      "smartart": "SmartArt 图形已导入为构成它的形状。",
+      "object-picture": "公式或嵌入对象已导入为其图片。",
+      "chart-approximated": "图表（{{detail}}）按 Slidr 中最接近的图表绘制。",
+      "vertical-text": "竖排文字已导入为旋转的文本框。",
+      "shape-approximated": "Slidr 没有的形状（{{detail}}）按最接近的形状绘制。",
+      "animation-approximated": "动画（{{detail}}）已导入为 Slidr 中最接近的动画。",
+      "transition-approximated": "切换效果（{{detail}}）已导入为 Slidr 中最接近的切换效果。",
+      "fonts": "这台电脑上没有的字体：{{detail}}。其文字以其他字体显示。"
+    }
+  },
   "present": {
     "controls": "放映控件",
     "previous": "上一步",
@@ -2520,7 +2576,9 @@
       "recent": "打开最近使用的文件",
       "noRecent": "没有最近使用的文件",
       "importHtml": "导入 HTML…",
+      "importPptx": "导入 PowerPoint…",
       "exportHtml": "导出 HTML…",
+      "exportPptx": "导出为 PowerPoint…",
       "missing": "找不到文件",
       "save": "保存",
       "saveAs": "另存为…",
@@ -2767,7 +2825,7 @@
       "blank": "空白演示文稿",
       "blankBody": "一张使用默认模板的开场幻灯片，AI 对话已打开并准备就绪。",
       "load": "从文件加载",
-      "loadBody": "Slidr 文件会原样打开，HTML 文件则会导入为可编辑的幻灯片。",
+      "loadBody": "Slidr 文件会原样打开，HTML 或 PowerPoint 文件则会导入为可编辑的幻灯片。",
       "allTemplates": "全部模板",
       "templateBody": "适合各种主题的精美模板。选择前可预览每一张幻灯片。",
       "noTemplates": "模板库中还没有模板。",

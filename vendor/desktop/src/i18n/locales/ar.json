@@ -2427,6 +2427,62 @@
       "svgInline": "رسم بألوان قابلة للتحرير"
     }
   },
+  "pptx": {
+    "filter": "عرض تقديمي في PowerPoint",
+    "export": {
+      "title": "تصدير إلى PowerPoint",
+      "description": "ملف ‎.pptx يُفتح في PowerPoint وKeynote وGoogle Slides، وكل نص وشكل وجدول ومخطط فيه قابل للتحرير.",
+      "working": "جارٍ تصدير العرض…",
+      "mediaOne": "ملف وسائط واحد داخل الملف، {{size}}",
+      "mediaMany": "{{n}} من ملفات الوسائط داخل الملف، {{size}}",
+      "noMedia": "لا يحتوي الملف على صور أو وسائط.",
+      "fonts": "الخطوط",
+      "fontsBody": "الخطوط ليست داخل الملف: يعرضها PowerPoint فقط على جهاز مثبتة عليه، وعلى جهاز آخر يظهر النص بخط آخر.",
+      "promptTitle": "انقر لإضافة عنوان",
+      "promptText": "انقر لإضافة نص"
+    },
+    "import": {
+      "working": "جارٍ قراءة العرض…",
+      "title": "تم استيراد العرض",
+      "summaryOne": "تم استيراد شريحة واحدة من {{name}}.",
+      "summaryMany": "تم استيراد {{n}} من الشرائح من {{name}}.",
+      "failed": "لم يتم استيراد العرض",
+      "protected": "الملف محمي بكلمة مرور، أو بتنسيق ‎.ppt القديم. احفظه في PowerPoint بتنسيق ‎.pptx دون كلمة مرور، ثم استورده مرة أخرى.",
+      "notPptx": "الملف ليس عرضًا تقديميًا من PowerPoint ‏(‎.pptx).",
+      "broken": "الملف تالف، وتعذّرت قراءة العرض منه.",
+      "unreadable": "تعذّرت قراءة الملف من القرص."
+    },
+    "slideOne": "الشريحة {{slides}}",
+    "slideMany": "الشرائح {{slides}}",
+    "exported": {
+      "html-picture": "دخلت كائنات HTML إلى الملف كصور لها: تبدو كما هي، لكنها غير قابلة للتحرير هناك.",
+      "html-missing": "تعذّر رسم كائن HTML، وهو مفقود من الملف.",
+      "element-picture": "دخلت رسومات وصور بمظهر لا يوفّره PowerPoint إلى الملف كصور لها.",
+      "asset-missing": "تعذّرت قراءة الملف {{detail}}، وهو مفقود من الملف.",
+      "image-placeholder": "لم يُضمَّن عنصر نائب لصورة لا يحتوي على صورة بعد.",
+      "fill-approximated": "رُسمت تعبئة لا يوفّرها PowerPoint (تدرّج مخروطي، خطوط) كأقرب تعبئة لها.",
+      "slide-css": "ورقة أنماط الشريحة الخاصة لا تدخل الملف.",
+      "blur": "لا يُحفظ تمويه الخلفية أو الكائن: لا يوجد مقابل له في PowerPoint.",
+      "media-format": "قد لا يشغّل PowerPoint الملف {{detail}}: تنسيقه غير مدعوم هناك.",
+      "animation-approximated": "كُتبت الحركة {{detail}} كأقرب حركة في PowerPoint.",
+      "transition-approximated": "كُتب الانتقال {{detail}} كأقرب انتقال في PowerPoint.",
+      "fonts": "النص مكتوب بالخطوط {{detail}}."
+    },
+    "imported": {
+      "unsupported-object": "لم يتم استيراد كائن لا يعرضه Slidr ‏({{detail}}).",
+      "picture-format": "لم يتم استيراد صورة بتنسيق {{detail}} لا يعرضه Slidr.",
+      "linked-media": "لم يتم استيراد صورة أو فيديو أو صوت يرتبط به الملف بدل أن يحتويه.",
+      "broken-part": "تعذّرت قراءة جزء من الملف.",
+      "smartart": "تم استيراد رسم SmartArt كالأشكال التي يتكوّن منها.",
+      "object-picture": "تم استيراد معادلة أو كائن مضمَّن كصورة له.",
+      "chart-approximated": "يُرسم مخطط ({{detail}}) كأقرب مخطط في Slidr.",
+      "vertical-text": "تم استيراد النص العمودي كمربع نص مُدار.",
+      "shape-approximated": "يُرسم شكل لا يوجد في Slidr ‏({{detail}}) كأقرب شكل له.",
+      "animation-approximated": "تم استيراد حركة ({{detail}}) كأقرب حركة في Slidr.",
+      "transition-approximated": "تم استيراد انتقال ({{detail}}) كأقرب انتقال في Slidr.",
+      "fonts": "خطوط غير موجودة على هذا الجهاز: {{detail}}. يظهر نصها بخط آخر."
+    }
+  },
   "present": {
     "controls": "عناصر التحكم في العرض",
     "previous": "السابق",
@@ -2550,7 +2606,9 @@
       "recent": "الملفات الأخيرة",
       "noRecent": "لا توجد ملفات أخيرة",
       "importHtml": "استيراد HTML…",
+      "importPptx": "استيراد PowerPoint…",
       "exportHtml": "تصدير HTML…",
+      "exportPptx": "تصدير إلى PowerPoint…",
       "missing": "الملف غير موجود",
       "save": "حفظ",
       "saveAs": "حفظ باسم…",
@@ -2797,7 +2855,7 @@
       "blank": "عرض تقديمي فارغ",
       "blankBody": "شريحة افتتاحية بالقالب الافتراضي، مع دردشة الذكاء الاصطناعي مفتوحة وجاهزة.",
       "load": "فتح من ملف",
-      "loadBody": "يفتح ملف Slidr كما هو، ويتم استيراد ملف HTML كشرائح قابلة للتحرير.",
+      "loadBody": "يفتح ملف Slidr كما هو، ويتم استيراد ملف HTML أو PowerPoint كشرائح قابلة للتحرير.",
       "allTemplates": "كل القوالب",
       "templateBody": "قوالب مصممة لكل موضوع. شاهد كل الشرائح قبل أن تختار.",
       "noTemplates": "لا توجد قوالب في المكتبة بعد.",
