@@ -117,7 +117,7 @@ An upload holds its content by language, under the codes of `CONTENT_LANGUAGES` 
 
 - a design's slide in it is a `Slide` of the model. It shows its own picture (`__subject__`, and `__backdrop__` where a photograph lies under it) and no other file. It says something real: three texts at least, more than 25 characters, no placeholder words. Every run of its text is set in a family of the library that has the language's letters; where its family lacks them, the answer names the family's counterpart (`fonts/catalog.json`, ADR-105 of the app);
 - a design and its group are named in Hebrew and English only, as the catalog names them, and a new design comes with its search tags in both (`tags`): the words people type to find it in the app's Ready slides, beside its name (ADR-108 of the app);
-- every list of tags, a design's or an item's, holds 3 to 20 tags of one to four words each, in the language's own letters: Hebrew without niqqud, English in lower case, none twice, and none about how the item is drawn (`icon`, `illustration`, `outline`…; `server/core/uploads/tags.ts`);
+- every list of tags, a design's or an item's, holds 3 to 20 tags of one to four words each, in the language's own letters (Hebrew without niqqud, English in lower case) or of numbers and signs alone, as `16:9` or `24/7`, which are typed alike in every language; none twice, and none about how the item is drawn (`icon`, `illustration`, `outline`…; `server/core/uploads/tags.ts`);
 - a template's sample is seated on the template's layouts by the template's own engine (`sampleSlides`), as `export-templates.mjs` checks the languages it keeps, and names only pictures the templates have (`templates/pictures.json`).
 
 ```text

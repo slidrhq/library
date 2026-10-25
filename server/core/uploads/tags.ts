@@ -88,9 +88,15 @@ const MEDIUM = new Set([
 const tidy = (tag: string) => tag.normalize('NFC').replace(/\s+/g, ' ').trim();
 
 /**
+ * A tag of numbers and the signs between them, with no letters ("16:9", "24/7", "1+1", "911"):
+ * people type it as it is in every language, so it is in none's letters.
+ */
+const isNumbers = (tag: string) => /\p{Nd}/u.test(tag) && !/\p{L}/u.test(tag);
+
+/**
  * The issues of the tags of one item in one language, at `at`: a list of 3 to 20 tags, each of
- * one to four words, in the language's own letters (Hebrew without niqqud, English in lower case),
- * none twice, and none about how the item is drawn.
+ * one to four words, in the language's own letters (Hebrew without niqqud, English in lower case)
+ * or of numbers alone, none twice, and none about how the item is drawn.
  */
 export function checkTags(at: string, lang: ContentLanguage, value: unknown, issues: Issues) {
   const language = LANGUAGE_NAMES[lang].english;
@@ -120,7 +126,10 @@ export function checkTags(at: string, lang: ContentLanguage, value: unknown, iss
       );
     } else if (plain !== tag) {
       issues.add(where, `${quote(tag)} is written ${quote(plain)}, with single spaces.`, lang);
-    } else if (!LETTERS[lang].test(tag) || (lang !== 'he' && HEBREW.test(tag))) {
+    } else if (
+      !isNumbers(tag) &&
+      (!LETTERS[lang].test(tag) || (lang !== 'he' && HEBREW.test(tag)))
+    ) {
       issues.add(where, `${quote(tag)} is not written in ${language} letters.`, lang);
     } else if (lang === 'he' && NIQQUD.test(tag)) {
       issues.add(where, `${quote(tag)} is written without niqqud.`, lang);

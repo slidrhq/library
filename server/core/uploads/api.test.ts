@@ -318,6 +318,22 @@ describe('a new design', () => {
       ],
     );
 
+    // Numbers are typed alike in every language: a tag of numbers and signs alone is in any of
+    // them. Signs without a number are in none.
+    const numbers = await issuesOf(
+      await upload(
+        newDesign({
+          he: { ...he, tags: ['יחס 16:9', '16:9', '24/7', '1+1', '!!!'] },
+          en: { ...en, tags: ['widescreen', '16:9', '12:00', '911', '100%'] },
+        }),
+        { picture: webp(800, 800) },
+      ),
+    );
+    assert.deepEqual(
+      numbers.map((one) => [one.path, one.message]),
+      [['languages.he.tags.4', '"!!!" is not written in Hebrew letters.']],
+    );
+
     // Tags are in the languages the search reads, and in no other.
     const french = await issuesOf(
       await upload(
