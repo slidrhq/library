@@ -221,7 +221,7 @@ One publication runs at a time: it holds `media/lock.json` beside the uploads, t
    ```
 2. Bring the published library into the bucket, from media.slidr.studio as Pages serves it now. A call copies a batch, checked file by file; the script calls until the bucket has every file and the manifest:
    ```powershell
-   $env:LIBRARY_KEY = '<a key of LIBRARY_KEYS>'
+   $env:LIBRARY_TOKEN = 'slk_…'   # an admin's token, of the publish scope (the profile)
    node scripts/import-library.mjs
    ```
    `https://library.slidr.workers.dev/media/manifest.json` then answers with the library.

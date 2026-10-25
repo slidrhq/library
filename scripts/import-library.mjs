@@ -4,7 +4,7 @@
 // Pages serves it before it is the bucket's), checked against its SHA-256; nothing is copied to
 // this machine. Run it again after a failure: a file already in the bucket is not read again.
 //
-//   $env:LIBRARY_KEY = '<a key of LIBRARY_KEYS>'
+//   $env:LIBRARY_TOKEN = 'slk_…'        an admin's token, of the `publish` scope (the profile)
 //   node scripts/import-library.mjs                                  https://library.slidr.workers.dev
 //   node scripts/import-library.mjs --url http://127.0.0.1:5176      the page's dev server
 //   node scripts/import-library.mjs --from https://<another site>/
@@ -21,9 +21,12 @@ const option = (name, fallback) => {
 const url = option('--url', 'https://library.slidr.workers.dev').replace(/\/+$/, '');
 const from = option('--from');
 const batch = Number(option('--batch', '60'));
-const key = process.env.LIBRARY_KEY;
+// A token of an admin's, or, until the programs take tokens, a key of the Worker's LIBRARY_KEYS.
+const key = process.env.LIBRARY_TOKEN ?? process.env.LIBRARY_KEY;
 if (!key) {
-  console.error('LIBRARY_KEY is not set: a key of the Worker’s LIBRARY_KEYS.');
+  console.error(
+    'LIBRARY_TOKEN is not set: a token of the publish scope, made by an admin in the profile.',
+  );
   process.exit(1);
 }
 
