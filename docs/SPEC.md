@@ -416,12 +416,9 @@ The page's words are in Hebrew and English, and every other locale of `src/i18n`
 
 1. At the first start of the new version on Cloudflare, `LIBRARY_OWNER` becomes the owner, and each address in `LIBRARY_EDITORS` becomes a reviewer. The audit records both. The variables may then be removed.
 2. The bucket `MEDIA` stays the media store, and holds the library only. It never held `_…` keys: it was empty until the library was brought in on 2026-10-25, by `main` (4e2bef5), which keeps the bookkeeping beside the uploads, under `media/history/`, `media/staged/` and `media/lock.json`. The state store takes those keys over as they are.
-3. Programs move from program keys to a person's token:
-   - the app's `pnpm media:publish` (`LIBRARY_KEY`) and `import-library.mjs` take an admin's `publish` token;
-   - the studio (`SLIDR_LIBRARY_KEY`) takes an `upload` token, or a `publish` one if it should still press publish;
-   - `tag-elements.mjs --upload` (`LIBRARY_KEY`) takes an `upload` token.
-
-   All of them already send `Authorization: Bearer`, so only their documentation and settings change. `LIBRARY_KEYS` stops working in the release after that.
+3. Programs moved from program keys to a person's token on 2026-10-25, and `LIBRARY_KEYS` was taken away with it (the app's `pnpm media:publish` was gone by then):
+   - the studio, as `SLIDR_LIBRARY_TOKEN` or in its keychain (`library-token`), and `import-library.mjs`, as `LIBRARY_TOKEN`, take an admin's `publish` token, since they publish;
+   - the app's `tag-elements.mjs --upload`, as `LIBRARY_TOKEN`, takes an `upload` token.
 
 4. media.slidr.studio moved from the Pages project `slidr-media` to the bucket's own domain (`main`, 4e2bef5; README, "Serving the library"), and was set up on Cloudflare on 2026-10-25: the library brought into the bucket, the zone's rules, the purge token, and the Pages project deleted. Nothing of it is left to this work.
 5. The studio's README and the app's `docs/media-library.md` say what changed: approval publishes, tokens replace keys, and an organization can install its own library. These are changes in the other repositories, made with this work.

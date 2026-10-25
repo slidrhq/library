@@ -520,7 +520,7 @@ export function openApi() {
           scheme: 'bearer',
           bearerFormat: 'slk_…',
           description:
-            'A token a person made in their profile (`/api/me/tokens`), sent alone: `Authorization: Bearer slk_…`. It acts as that person, within its scope: `upload` makes, reads, changes and withdraws their own uploads; `publish`, an admin’s, also publishes what waits and an author’s files. One unknown, revoked, expired, or of someone blocked is answered 401. Until programs take tokens, a key of the Worker’s `LIBRARY_KEYS` is taken here too.',
+            'A token a person made in their profile (`/api/me/tokens`), sent alone: `Authorization: Bearer slk_…`. It acts as that person, within its scope: `upload` makes, reads, changes and withdraws their own uploads; `publish`, an admin’s, also publishes what waits and an author’s files. One unknown, revoked, expired, or of someone blocked is answered 401, as is anything else sent there.',
         },
       },
       schemas: {

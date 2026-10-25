@@ -7,7 +7,7 @@ import type { Bucket } from './bucket.ts';
 
 export interface AuditEntry {
   at: string;
-  /** An address, `key:<name>`, `install`, or the host's own (`cli`). */
+  /** An address, `install`, or the host's own (`cli`); `key:<name>` in entries of before. */
   by: string;
   /** What was done: `member.role`, `member.removed`, `person.blocked`, `owner.handed`… */
   action: string;

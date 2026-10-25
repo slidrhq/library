@@ -16,6 +16,3 @@ SESSION_SECRET=
 # Until the library names its members: the Google accounts that review uploads, separated by
 # commas. They are imported once, as reviewers (the first is the owner, without LIBRARY_OWNER).
 LIBRARY_EDITORS=
-# Until the programs take tokens (README, "Uploading"): <name>=<key>, separated by commas, each key
-# at least 32 characters.
-LIBRARY_KEYS=

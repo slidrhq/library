@@ -22,7 +22,7 @@
   // The library's own jobs (server/core/media/sweep.ts), which the Worker runs from a Cron Trigger,
   // are off for now: an approved upload that waits is written by Try again. To turn them on, once
   // a minute: "triggers": { "crons": ["* * * * *"] } (README, "Publishing the uploads").
-  // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET, LIBRARY_EDITORS and LIBRARY_KEYS are
+  // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET and LIBRARY_EDITORS are
   // secrets of the Worker (`wrangler secret put`), and `.dev.vars` on this machine (README,
   // "Signing in", "Uploading"). MEDIA_ZONE_ID and MEDIA_PURGE_TOKEN, which empty the cache before
   // the library, are secrets of the Worker only (README, "Serving the library").

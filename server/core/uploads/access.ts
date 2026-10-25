@@ -11,8 +11,10 @@
  *   `Authorization: Bearer`: it sends no cookie, and so is not asked which site it comes from. It
  *   acts as its owner, within its scope: `upload`, or, an admin's, `publish`. Reviewing and
  *   administering are a session's (D8).
- * - **A program by a key of the host's** (`LIBRARY_KEYS`), as before people had tokens: it uploads
- *   and publishes. It goes once the programs use tokens (docs/PLAN.md, P9).
+ *
+ * A program is a person's too: it sends their token. The keys of the host's that programs sent
+ * before (`LIBRARY_KEYS`) open nothing any more; the records of what they did keep their names
+ * (`key:<name>`).
  *
  * Anyone without a role is held to the limits of open uploading (`../limits.ts`). What the API
  * describes (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is open to anyone.
@@ -69,16 +71,15 @@ const PUBLISHING: readonly Permission[] = [
   'publish-files',
 ];
 
-/** What a token of each scope may do, and a program by a key of the host's. */
-const MAY: Record<Scope | 'program', ReadonlySet<Permission>> = {
+/** What a token of each scope may do. */
+const MAY: Record<Scope, ReadonlySet<Permission>> = {
   upload: new Set(['read-own', 'upload']),
   publish: new Set(PUBLISHING),
-  program: new Set(PUBLISHING),
 };
 
 /** Who did something, as an upload records it. */
 export interface Recorded {
-  /** A person's address, or `key:<name>` for a program. */
+  /** A person's address; `key:<name>` in the records of a program's key of before. */
   id: string;
   name?: string;
   /** The name of the token it was done by, when it was. */
@@ -89,8 +90,8 @@ export interface Recorded {
 export interface Actor extends Recorded {
   /** A person's role, when they have one. */
   role?: Role;
-  /** How the request came: a person's session or token, a program's key, or the library's own job. */
-  via: 'session' | 'token' | 'key' | 'job';
+  /** How the request came: a person's session or token, or the library's own job. */
+  via: 'session' | 'token' | 'job';
   /** A token's scope. */
   scope?: Scope;
 }
@@ -104,46 +105,14 @@ export const recordOf = (actor: Recorded): Recorded => ({
 
 /** Whether an actor sees every upload, and may change any of those that wait. */
 export const seesAll = (actor: Actor) =>
-  actor.via === 'key' ||
   actor.via === 'job' ||
   (actor.via === 'token' ? actor.scope === 'publish' : rankOf(actor.role) >= rankOf('reviewer'));
 
 /** Whether an actor is held to the limits of open uploading: anyone without a role. */
-export const limited = (actor: Actor) =>
-  actor.via !== 'key' && actor.via !== 'job' && rankOf(actor.role) === 0;
-
-const KEY_LEAST = 32;
-
-const encoder = new TextEncoder();
-
-async function digest(text: string) {
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', encoder.encode(text)));
-}
-
-/** Whether two texts are the same, taking as long whatever they are. */
-async function same(a: string, b: string) {
-  const [x, y] = await Promise.all([digest(a), digest(b)]);
-  let differ = 0;
-  for (let i = 0; i < x.length; i += 1) differ |= x[i]! ^ y[i]!;
-  return differ === 0;
-}
-
-/** The program a key is of, by the host's list of keys (`LIBRARY_KEYS`). */
-async function programOf(key: string, ctx: Context): Promise<string | undefined> {
-  let found: string | undefined;
-  for (const entry of (ctx.auth.keys ?? '').split(',')) {
-    const at = entry.indexOf('=');
-    const name = entry.slice(0, at).trim();
-    const known = entry.slice(at + 1).trim();
-    if (at <= 0 || known.length < KEY_LEAST) continue;
-    // Every key is compared, so the time taken says nothing of which one matched.
-    if ((await same(key, known)) && !found) found = name;
-  }
-  return found;
-}
+export const limited = (actor: Actor) => actor.via !== 'job' && rankOf(actor.role) === 0;
 
 const REFUSED: Record<string, string> = {
-  'bad-key': 'The key is not one of the library’s, or no longer holds.',
+  'bad-key': 'The token is not one of the library’s, or no longer holds.',
   'signed-out': 'Sign in on the library’s page, or send a token.',
   'another-site': 'This is changed from the library’s own page, or by a token.',
   blocked: 'This account may not upload to the library.',
@@ -161,44 +130,31 @@ const NOT_ENOUGH: Record<Role, string> = {
   owner: 'not-the-owner',
 };
 
-/** The programs that used a key of the host's, said once each. */
-const warned = new Set<string>();
-
-/** The actor of a request that sends `Authorization`: a person's token, or a program's key. */
-async function byKey(header: string, ctx: Context, permission: Permission) {
-  const key = /^Bearer\s+(\S+)$/i.exec(header)?.[1];
-  if (key && isToken(key)) {
-    const token = ctx.state ? await tokenOf(ctx.state, key) : undefined;
-    if (!token || !ctx.state) return refuse(401, 'bad-key');
-    await settlePeople(ctx);
-    const person = await readPerson(ctx.state, token.owner);
-    // A token of someone blocked is no different from one that is not there.
-    if (person?.blocked) return refuse(401, 'bad-key');
-    const role = person?.role;
-    // A token that publishes is an admin's, while they are one: after, it does nothing at all,
-    // not even what any token may.
-    if (token.scope === 'publish' && rankOf(role) < rankOf('admin')) {
-      return refuse(403, 'token-scope');
-    }
-    if (!MAY[token.scope].has(permission)) return refuse(403, 'token-scope');
-    const actor: Actor = {
-      id: token.owner,
-      ...(person?.name ? { name: person.name } : {}),
-      token: token.name,
-      ...(role ? { role } : {}),
-      via: 'token',
-      scope: token.scope,
-    };
-    return actor;
+/** The actor of a request that sends `Authorization`: a person's token, and nothing else. */
+async function byToken(header: string, ctx: Context, permission: Permission) {
+  const sent = /^Bearer\s+(\S+)$/i.exec(header)?.[1];
+  if (!sent || !isToken(sent) || !ctx.state) return refuse(401, 'bad-key');
+  const token = await tokenOf(ctx.state, sent);
+  if (!token) return refuse(401, 'bad-key');
+  await settlePeople(ctx);
+  const person = await readPerson(ctx.state, token.owner);
+  // A token of someone blocked is no different from one that is not there.
+  if (person?.blocked) return refuse(401, 'bad-key');
+  const role = person?.role;
+  // A token that publishes is an admin's, while they are one: after, it does nothing at all, not
+  // even what any token may.
+  if (token.scope === 'publish' && rankOf(role) < rankOf('admin')) {
+    return refuse(403, 'token-scope');
   }
-  const program = key ? await programOf(key, ctx) : undefined;
-  if (!program) return refuse(401, 'bad-key');
-  if (!warned.has(program)) {
-    warned.add(program);
-    console.warn(`The program ${program} uses a key of LIBRARY_KEYS: give it a person's token.`);
-  }
-  if (!MAY.program.has(permission)) return refuse(403, 'token-scope');
-  const actor: Actor = { id: `key:${program}`, name: program, via: 'key' };
+  if (!MAY[token.scope].has(permission)) return refuse(403, 'token-scope');
+  const actor: Actor = {
+    id: token.owner,
+    ...(person?.name ? { name: person.name } : {}),
+    token: token.name,
+    ...(role ? { role } : {}),
+    via: 'token',
+    scope: token.scope,
+  };
   return actor;
 }
 
@@ -231,7 +187,7 @@ export async function authorize(
   const actor =
     header === null
       ? await bySession(request, ctx, permission)
-      : await byKey(header, ctx, permission);
+      : await byToken(header, ctx, permission);
   if (actor instanceof Response) return actor;
   if (permission === 'upload' && limited(actor)) {
     const wait = tooFast(actor.id, (await limitsOf(ctx)).writesPerMinute);

@@ -148,7 +148,7 @@ export interface Filter {
   status?: string;
   target?: string;
   language?: string;
-  /** Who made it: an address, or `key:<name>`. */
+  /** Who made it: an address; `key:<name>` for an upload a program's key made before. */
   by?: string;
 }
 

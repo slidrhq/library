@@ -7,7 +7,6 @@ import {
   ALL_LANGUAGES,
   PICTURE,
   EDITOR,
-  KEY,
   SITE,
   caller,
   designLanguages,
@@ -896,36 +895,28 @@ describe('who may upload', () => {
     assert.equal((await call(`/api/uploads/${made.id}`)).status, 200);
   });
 
-  test('a program uploads by its key, and is recorded by its name', async () => {
-    publishLibrary();
-    const studio = await caller({ key: KEY });
-    const response = await studio.upload(newDesign(), { picture: webp(800, 800) });
-    assert.equal(response.status, 201);
-    const made = await read<Answer>(response);
-    assert.equal(made.history[0]!.by.id, 'key:studio');
-    // A program uploads and publishes; a person reviews, on the library's page.
-    const accept = await studio.send(`/api/uploads/${made.id}/status`, 'POST', {
-      status: 'rejected',
-    });
-    await refused(accept, 403, 'token-scope');
-    const wrong = await caller({ key: 'not-the-key-of-anything-at-all-0000' });
-    await refused(await wrong.call('/api/uploads'), 401, 'bad-key');
-    const none = await caller({ key: KEY });
-    const keyless = await worker.fetch(
+  test('a program sends a person’s token: a key of the host’s, as before, opens nothing', async () => {
+    const editor = await caller();
+    // A key as the host's LIBRARY_KEYS named them, even where the Worker still has the secret.
+    const key = 'a-key-of-the-studio-of-at-least-32-characters';
+    const studio = await caller({ bearer: key }, editor.bucket, {
+      LIBRARY_KEYS: `studio=${key}`,
+    } as object);
+    await refused(await studio.call('/api/uploads'), 401, 'bad-key');
+    await refused(await studio.send('/api/publish', 'POST', {}), 401, 'bad-key');
+    const basic = await worker.fetch(
       new Request(`${SITE}/api/uploads`, { headers: { Authorization: 'Basic abc' } }),
-      none.env,
+      studio.env,
     );
-    await refused(keyless, 401, 'bad-key');
+    await refused(basic, 401, 'bad-key');
   });
 });
 
 describe('the server', () => {
   test('keeps no uploads without its bucket', async () => {
-    const { env } = await caller({ key: KEY });
-    const request = new Request(`${SITE}/api/uploads`, {
-      headers: { Authorization: `Bearer ${KEY}` },
-    });
-    const response = await worker.fetch(request, { ...env, UPLOADS: undefined });
+    // The editor, signed in, on a Worker without the bucket of the uploads.
+    const editor = await caller({}, undefined, { UPLOADS: undefined });
+    const response = await editor.call('/api/uploads');
     assert.equal(response.status, 503);
     assert.equal((await read<Problem>(response)).error, 'not-set-up');
   });

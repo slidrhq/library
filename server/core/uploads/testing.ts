@@ -378,16 +378,14 @@ export function publishLibrary(also: readonly string[] = [], more: Record<string
   });
 }
 
-/** The Worker's settings of signing in, and the people and programs it names. */
+/** The Worker's settings of signing in, and the people it names. */
 const CLIENT = 'client-1.apps.googleusercontent.com';
 export const EDITOR = 'editor@example.com';
-export const KEY = 'a-key-of-the-studio-of-at-least-32-characters';
 const SIGN_IN = {
   GOOGLE_CLIENT_ID: CLIENT,
   GOOGLE_CLIENT_SECRET: 'client-secret',
   SESSION_SECRET: 'a-session-secret-of-at-least-32-characters',
   LIBRARY_EDITORS: `${EDITOR}, other-editor@example.com`,
-  LIBRARY_KEYS: `studio=${KEY}`,
 };
 
 const base64url = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -439,7 +437,8 @@ async function sessionAs(email: string, env: object): Promise<string> {
  * account, a program by its key, or no one; with a bucket of its own for each test (`env`).
  */
 export async function caller<B extends Bucket = MemoryBucket>(
-  as: { email?: string; key?: string; nobody?: boolean } = {},
+  /** Signed in as `email` (the editor's by default), sending `bearer` alone, or as nobody. */
+  as: { email?: string; bearer?: string; nobody?: boolean } = {},
   bucket: B = new MemoryBucket() as Bucket as B,
   /** More of the Worker's settings, or others. */
   more: Partial<Env> = {},
@@ -452,7 +451,7 @@ export async function caller<B extends Bucket = MemoryBucket>(
     ...more,
   };
   const headers: Record<string, string> = {};
-  if (as.key) headers.Authorization = `Bearer ${as.key}`;
+  if (as.bearer) headers.Authorization = `Bearer ${as.bearer}`;
   else if (!as.nobody) {
     headers.Cookie = await sessionAs(as.email ?? EDITOR, env);
     // The page's own requests say where they come from.

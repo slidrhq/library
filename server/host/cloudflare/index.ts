@@ -35,7 +35,6 @@ export interface Env {
   /** Who becomes the owner when the library names no one yet (`settlePeople`). */
   LIBRARY_OWNER?: string;
   LIBRARY_EDITORS?: string;
-  LIBRARY_KEYS?: string;
 }
 
 /** What the server is given: the Worker's bindings and secrets, by what they are for. */
@@ -56,7 +55,6 @@ export async function contextOf(env: Partial<Env>): Promise<Context> {
       sessionSecret: env.SESSION_SECRET,
       owner: env.LIBRARY_OWNER,
       editors: env.LIBRARY_EDITORS,
-      keys: env.LIBRARY_KEYS,
     },
   };
 }

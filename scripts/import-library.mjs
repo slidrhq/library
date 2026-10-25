@@ -21,8 +21,8 @@ const option = (name, fallback) => {
 const url = option('--url', 'https://library.slidr.workers.dev').replace(/\/+$/, '');
 const from = option('--from');
 const batch = Number(option('--batch', '60'));
-// A token of an admin's, or, until the programs take tokens, a key of the Worker's LIBRARY_KEYS.
-const key = process.env.LIBRARY_TOKEN ?? process.env.LIBRARY_KEY;
+// A token of an admin's, of the publish scope: all the library takes from a program.
+const key = process.env.LIBRARY_TOKEN;
 if (!key) {
   console.error(
     'LIBRARY_TOKEN is not set: a token of the publish scope, made by an admin in the profile.',

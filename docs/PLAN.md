@@ -18,7 +18,7 @@ A local install that works end to end is **P1 to P6**: a local folder as its med
 ## How the work is done
 
 - The work is on the branch `standalone`, in the worktree `.claude/worktrees/standalone`. Other sessions work in this repository's `main` at the same time (a re-vendoring was under way on 2026-10-25). The branch is rebased onto `main` at the start of each phase and before each merge. Nothing is stashed or reset in the main checkout.
-- **A push to `main` deploys to production** (`.github/workflows/deploy.yml`, https://library.slidr.workers.dev). A phase is merged only when the Cloudflare host behaves as it did, or better, with the secrets it has. Until P9, the Cloudflare host keeps accepting `LIBRARY_EDITORS`, `LIBRARY_KEYS` and its Google secrets. Merging and pushing are done only when the user asks.
+- **A push to `main` deploys to production** (`.github/workflows/deploy.yml`, https://library.slidr.workers.dev). A phase is merged only when the Cloudflare host behaves as it did, or better, with the secrets it has. Until P9, the Cloudflare host keeps accepting `LIBRARY_EDITORS` and its Google secrets; `LIBRARY_KEYS` was taken away on 2026-10-25. Merging and pushing are done only when the user asks.
 - A phase is done when:
   - `pnpm check` and `pnpm test` pass;
   - its acceptance holds;
@@ -210,9 +210,8 @@ The core is moved out of the Worker so a second host can run it.
   - nothing for the media: media.slidr.studio has been the bucket's own domain since 2026-10-25, with no Pages project (D10), and the Worker keeps `MEDIA_ZONE_ID` and `MEDIA_PURGE_TOKEN`;
   - `deploy.yml` and `.dev.vars.example` follow.
 - Removed:
-  - `LIBRARY_KEYS`, `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key);
-  - `key:<name>` as a way in (old records still show it);
-  - `scripts/import-library.mjs`'s `LIBRARY_KEY`, which becomes a token.
+  - `LIBRARY_KEYS` and `key:<name>` as a way in (old records still show it): done on 2026-10-25, with the programs moved to tokens (`LIBRARY_TOKEN` of `import-library.mjs` and the app's `tag-elements.mjs`; `SLIDR_LIBRARY_TOKEN` of the studio);
+  - `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key).
 - The README written again: installing, settings, people, tokens, publishing, the stores. Also the OpenAPI (`openapi.ts`: the `bearer` and cookie schemes, the scopes, the new routes, no `path`).
 - Other repositories, each in a commit of its own and only after asking:
   - the app: `docs/media-library.md` (approval publishes; a library of one's own), and the help of `media-publish.mjs` and `tag-elements.mjs` (`LIBRARY_KEY` is a person's token);

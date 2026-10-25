@@ -32,12 +32,6 @@ export interface AuthSettings {
   editors?: string;
   /** Who becomes the owner when the library names no one yet: else the first of `editors`. */
   owner?: string;
-  /**
-   * The programs that may upload, each with its key: `<name>=<key>`, separated by commas, as
-   * `studio=…, ci=…`. A key is at least 32 characters; a program sends it as
-   * `Authorization: Bearer <key>`.
-   */
-  keys?: string;
 }
 
 export interface Context {
