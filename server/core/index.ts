@@ -2,19 +2,20 @@
  * The library's server, on whatever host it runs (`../host/`). It answers what the page's files
  * cannot, under `/auth/`, `/api/` and `/media/`:
  *
- * - signing in with Google (`auth.ts`);
- * - the uploads to the library, which its editors make and publish (`uploads/api.ts`,
- *   `uploads/access.ts`, `media/publish.ts`);
+ * - signing in (`auth.ts`, `oidc.ts`), and the library's people (`members.ts`, `people.ts`);
+ * - the uploads to the library, which anyone signed in makes, and its reviewers accept and
+ *   publish (`uploads/api.ts`, `uploads/access.ts`, `media/publish.ts`);
  * - the published library itself, from its store (`media/serve.ts`), as a dev server serves it.
  *   media.slidr.studio is that bucket itself, and no Worker runs when it is read
  *   (`media/live.ts`).
  *
  * Everything else is the page's, which the host serves as it was built.
  */
-import { callback, json, login, logout, me } from './auth.ts';
+import { callback, json, local, login, logout, me } from './auth.ts';
 import type { Context } from './context.ts';
 import { problem } from './http.ts';
 import { MEDIA_PREFIX, serveMedia } from './media/serve.ts';
+import { membersApi } from './members.ts';
 import { uploadsApi } from './uploads/api.ts';
 
 type Route = (request: Request, ctx: Context) => Response | Promise<Response>;
@@ -23,6 +24,7 @@ const routes: Record<string, Partial<Record<string, Route>>> = {
   '/auth/login': { GET: login },
   '/auth/callback': { GET: callback },
   '/auth/logout': { POST: logout },
+  '/auth/local': { GET: local },
   '/api/me': { GET: me },
 };
 
@@ -45,14 +47,18 @@ export async function handle(request: Request, ctx: Context): Promise<Response> 
     url.protocol = 'https:';
     return Response.redirect(url.toString(), 308);
   }
-  const methods = routes[url.pathname];
-  if (methods) {
-    const route = methods[request.method];
-    if (!route) return json({ error: 'method-not-allowed' }, 405);
-    return route(request, ctx);
-  }
   try {
-    return (await uploadsApi(request, ctx)) ?? json({ error: 'not-found' }, 404);
+    const methods = routes[url.pathname];
+    if (methods) {
+      const route = methods[request.method];
+      if (!route) return json({ error: 'method-not-allowed' }, 405);
+      return await route(request, ctx);
+    }
+    return (
+      (await membersApi(request, ctx)) ??
+      (await uploadsApi(request, ctx)) ??
+      json({ error: 'not-found' }, 404)
+    );
   } catch (error) {
     console.error(error);
     return problem(500, 'failed', 'The server failed to answer. Try again.');

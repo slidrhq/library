@@ -21,8 +21,13 @@ export interface AuthSettings {
   googleClientSecret?: string;
   /** The key the cookies are signed with: at least 32 characters. */
   sessionSecret?: string;
-  /** The Google accounts that may upload, by address, separated by commas or spaces. */
+  /**
+   * The Google accounts that edited the library before it named its own people, by address,
+   * separated by commas or spaces: imported once, as reviewers (`settlePeople` of `people.ts`).
+   */
   editors?: string;
+  /** Who becomes the owner when the library names no one yet: else the first of `editors`. */
+  owner?: string;
   /**
    * The programs that may upload, each with its key: `<name>=<key>`, separated by commas, as
    * `studio=…, ci=…`. A key is at least 32 characters; a program sends it as
@@ -48,4 +53,6 @@ export interface Context {
   auth: AuthSettings;
   /** The address the request came from, where the host knows it. */
   clientAddress?: string;
+  /** Whether the owner signs in by a link of the CLI: a library on a machine (`auth.ts`). */
+  local?: boolean;
 }

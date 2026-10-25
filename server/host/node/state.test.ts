@@ -192,10 +192,17 @@ describe('a store in a folder', () => {
     assert.equal(((await rejected.json()) as { status: string }).status, 'rejected');
     assert.equal((await call(at, { method: 'DELETE' })).status, 204);
     assert.equal((await call(at)).status, 404);
-    const left = await readdir(join(folder, 'objects'), { recursive: true, withFileTypes: true });
-    assert.deepEqual(
-      left.filter((entry) => entry.isFile()),
-      [],
-    );
+    // Nothing of the upload is kept; the library's people are.
+    for (const part of ['uploads', 'files']) {
+      const left = await readdir(join(folder, 'objects', part), {
+        recursive: true,
+        withFileTypes: true,
+      }).catch(() => []);
+      assert.deepEqual(
+        left.filter((entry) => entry.isFile()),
+        [],
+        part,
+      );
+    }
   });
 });

@@ -4,12 +4,16 @@ import { request as httpRequest } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { issueLocalLink } from '../../core/auth.ts';
+import type { Context } from '../../core/context.ts';
+import { handle } from '../../core/index.ts';
 import { contextOf, install, openLibrary } from './install.ts';
 import { memoryKeys } from './master.ts';
 import { serve, type Serving } from './server.ts';
 
 const folders: string[] = [];
 let serving: Serving;
+let context: Context;
 let base: string;
 
 async function newFolder() {
@@ -55,7 +59,8 @@ before(async () => {
   const keys = memoryKeys();
   await install({ data, owner: 'owner@example.org', master: 'keychain', keys });
   const library = await openLibrary(data, keys);
-  serving = await serve({ context: await contextOf(library), client, port: 0 });
+  context = await contextOf(library);
+  serving = await serve({ context, client, port: 0 });
   base = serving.url;
 });
 
@@ -96,7 +101,8 @@ describe('the library on a machine', () => {
   test('answers the API with the library’s server', async () => {
     const me = await fetch(new URL('api/me', base));
     assert.equal(me.headers.get('Content-Type'), 'application/json; charset=utf-8');
-    assert.deepEqual(await me.json(), { signIn: false, user: null });
+    // No provider yet: the owner signs in by a link of the CLI.
+    assert.deepEqual(await me.json(), { signIn: true, provider: null, local: true, user: null });
     assert.equal((await fetch(new URL('api/content', base))).status, 200);
     assert.equal((await fetch(new URL('api/nothing', base))).status, 404);
     const media = await fetch(new URL('media/manifest.json', base));
@@ -131,5 +137,71 @@ describe('the library on a machine', () => {
     const rebound = await raw('/api/me', { Host: `evil.example:${port}` });
     assert.equal(rebound.status, 421);
     assert.equal((await raw('/', { Host: 'evil.example' })).status, 421);
+  });
+});
+
+describe('the owner’s link', () => {
+  /** The session an answer starts, as a cookie to send back. */
+  const sessionOf = (answer: Response) =>
+    answer.headers
+      .getSetCookie()
+      .find((one) => one.startsWith('library-session='))
+      ?.split(';')[0];
+
+  test('signs the owner in on this machine, once', async () => {
+    const code = await issueLocalLink(context, 'owner@example.org');
+    const link = new URL(`auth/local?code=${code}`, base);
+    const first = await fetch(link, { redirect: 'manual' });
+    assert.equal(first.status, 302);
+    assert.equal(first.headers.get('Location'), new URL('/', base).toString());
+    const session = sessionOf(first);
+    assert.ok(session);
+    const me = (await (
+      await fetch(new URL('api/me', base), { headers: { Cookie: session } })
+    ).json()) as {
+      user: { email: string; provider: string; role: string };
+    };
+    assert.deepEqual(
+      [me.user.email, me.user.provider, me.user.role],
+      ['owner@example.org', 'local', 'owner'],
+    );
+    const again = await fetch(link, { redirect: 'manual' });
+    assert.match(again.headers.get('Location') ?? '', /signin=failed/);
+    assert.equal(sessionOf(again), undefined);
+  });
+
+  test('opens nothing from another machine, once expired, or for another than the owner', async () => {
+    const away = async (code: string, address: string) =>
+      handle(new Request(`http://127.0.0.1/auth/local?code=${code}`), {
+        ...context,
+        clientAddress: address,
+      });
+    const remote = await away(await issueLocalLink(context, 'owner@example.org'), '192.168.1.20');
+    assert.match(remote.headers.get('Location') ?? '', /signin=failed/);
+    assert.ok(
+      sessionOf(await away(await issueLocalLink(context, 'owner@example.org'), '::ffff:127.0.0.1')),
+    );
+    const notOwner = await away(await issueLocalLink(context, 'someone@example.org'), '127.0.0.1');
+    assert.equal(sessionOf(notOwner), undefined);
+    // Expired: the link as the store keeps it, ten minutes and more ago.
+    const code = await issueLocalLink(context, 'owner@example.org');
+    const listed = await context.state!.list({ prefix: 'links/' });
+    for (const { key } of listed.objects) {
+      const held = JSON.parse(await (await context.state!.get(key))!.text()) as object;
+      await context.state!.put(key, JSON.stringify({ ...held, exp: 1 }));
+    }
+    assert.equal(sessionOf(await away(code, '127.0.0.1')), undefined);
+    const forged = await away('x'.repeat(43), '127.0.0.1');
+    assert.match(forged.headers.get('Location') ?? '', /signin=failed/);
+  });
+
+  test('is no way in on a host that does not offer it', async () => {
+    const code = await issueLocalLink(context, 'owner@example.org');
+    const answer = await handle(new Request(`http://127.0.0.1/auth/local?code=${code}`), {
+      ...context,
+      local: false,
+      clientAddress: '127.0.0.1',
+    });
+    assert.equal(answer.status, 404);
   });
 });

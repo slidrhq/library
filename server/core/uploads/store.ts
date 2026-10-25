@@ -12,7 +12,7 @@
  */
 import type { ContentLanguage } from '@slidr/model';
 import type { Bucket } from '../bucket.ts';
-import type { Actor } from './access.ts';
+import type { Recorded } from './access.ts';
 import type { Draft, StoredFile } from './handler.ts';
 
 /**
@@ -29,8 +29,8 @@ export interface Upload extends Draft {
   note?: string;
   created: string;
   updated: string;
-  by: Actor;
-  history: { status: Status; at: string; by: Actor; note?: string }[];
+  by: Recorded;
+  history: { status: Status; at: string; by: Recorded; note?: string }[];
 }
 
 /** What a listing says of each upload. */
@@ -131,6 +131,8 @@ export interface Filter {
   status?: string;
   target?: string;
   language?: string;
+  /** Who made it: an address, or `key:<name>`. */
+  by?: string;
 }
 
 /**
@@ -160,6 +162,7 @@ export async function listUploads(
         (!filter.action || meta.action === filter.action) &&
         (!filter.status || meta.status === filter.status) &&
         (!filter.target || meta.target === filter.target) &&
+        (!filter.by || meta.by === filter.by) &&
         (!filter.language || languages.includes(filter.language as ContentLanguage));
       if (!matches) continue;
       found.push({

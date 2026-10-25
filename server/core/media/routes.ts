@@ -7,8 +7,9 @@
  *   PUT  /api/library/staged/…   a file of an author's publication, by its hash (`files.ts`)
  *   POST /api/library/files      an author's publication: the files changed since the copy was pulled
  *
- * Reading is the editors' (`read`); bringing the library in and publishing are what saying an
- * upload is published was (`publish`).
+ * Reading it is anyone's who signs in (`read-own`); publishing what was accepted and waits is a
+ * reviewer's (`publish-waiting`); bringing the library in, and an author's files, an admin's
+ * (`publish-files`). A program's key does all of these (`../uploads/access.ts`).
  */
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import type { Context } from '../context.ts';
@@ -48,7 +49,7 @@ async function optionalBody(request: Request): Promise<Record<string, unknown> |
 // ---- GET /api/library
 
 export const libraryStatus: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'read');
+  const actor = await authorize(request, ctx, 'read-own');
   if (actor instanceof Response) return actor;
   const live = ctx.media ? await readManifest(ctx.media) : undefined;
   const accepted = ctx.state
@@ -73,7 +74,7 @@ export const libraryStatus: Route = async (request, ctx) => {
 // ---- POST /api/library/import
 
 export const importRoute: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'publish');
+  const actor = await authorize(request, ctx, 'publish-files');
   if (actor instanceof Response) return actor;
   if (!ctx.media) return noBucket('the library (MEDIA)');
   const body = await optionalBody(request);
@@ -101,7 +102,7 @@ export const importRoute: Route = async (request, ctx) => {
 // ---- POST /api/publish
 
 export const publishRoute: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'publish');
+  const actor = await authorize(request, ctx, 'publish-waiting');
   if (actor instanceof Response) return actor;
   if (!ctx.media) return noBucket('the library (MEDIA)');
   if (!ctx.state) return noBucket('the uploads (UPLOADS)');
@@ -141,7 +142,7 @@ export const publishRoute: Route = async (request, ctx) => {
 // ---- PUT /api/library/staged/{sha256}
 
 export const stageRoute = async (request: Request, ctx: Context, [sha256]: string[]) => {
-  const actor = await authorize(request, ctx, 'publish');
+  const actor = await authorize(request, ctx, 'publish-files');
   if (actor instanceof Response) return actor;
   if (!ctx.media) return noBucket('the library (MEDIA)');
   if (!ctx.state) return noBucket('the uploads (UPLOADS)');
@@ -161,7 +162,7 @@ export const stageRoute = async (request: Request, ctx: Context, [sha256]: strin
 // ---- POST /api/library/files
 
 export const filesRoute: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'publish');
+  const actor = await authorize(request, ctx, 'publish-files');
   if (actor instanceof Response) return actor;
   if (!ctx.media) return noBucket('the library (MEDIA)');
   if (!ctx.state) return noBucket('the uploads (UPLOADS)');

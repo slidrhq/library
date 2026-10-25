@@ -23,6 +23,22 @@ const FolderMedia = z.object({
 export const MediaSettings = z.discriminatedUnion('kind', [FolderMedia]);
 export type MediaSettings = z.infer<typeof MediaSettings>;
 
+/**
+ * Signing in through an OpenID Connect provider (docs/SPEC.md §6.2): Google, Microsoft's Entra
+ * ID, or any issuer. The client's secret is the vault's `oidc`.
+ */
+export const SignInSettings = z.object({
+  provider: z.enum(['google', 'microsoft', 'oidc']),
+  /** The issuer: for Microsoft, its tenant's; for another provider, its own. */
+  issuer: address.optional(),
+  clientId: z.string().min(1),
+  /** The name on the button, for another provider. */
+  name: z.string().min(1).max(60).optional(),
+  /** The domains whose addresses may sign in; none, any. */
+  allowedDomains: z.array(z.string().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/)).default([]),
+});
+export type SignInSettings = z.infer<typeof SignInSettings>;
+
 export const LibraryConfig = z.object({
   version: z.literal(1),
   /** When the library was installed. */
@@ -33,6 +49,7 @@ export const LibraryConfig = z.object({
    */
   url: address.optional(),
   media: MediaSettings.optional(),
+  signIn: SignInSettings.optional(),
 });
 export type LibraryConfig = z.infer<typeof LibraryConfig>;
 

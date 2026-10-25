@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { after, describe, test } from 'node:test';
+import { sessionKeyOf } from '../../core/auth.ts';
 import { readConfig } from '../../core/config.ts';
 import { readPerson } from '../../core/people.ts';
 import { masterKeyText, newMasterKey } from '../../core/vault.ts';
@@ -73,7 +74,9 @@ describe('installing a library', () => {
     assert.equal((await readPerson(library.state, 'OWNER@example.org'))?.role, 'owner');
     const session = await library.vault.get('session');
     assert.ok(session && session.length >= 43);
-    assert.equal((await contextOf(library)).auth.sessionSecret, session);
+    const ctx = await contextOf(library);
+    assert.equal(ctx.local, true);
+    assert.equal(await sessionKeyOf(ctx), session);
   });
 
   test('keeps no key in clear in its folder', async () => {

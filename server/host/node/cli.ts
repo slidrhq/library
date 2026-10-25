@@ -4,6 +4,8 @@
  *
  *   init          installs a library into a data folder, its installer as its owner
  *   start         serves it, on http://127.0.0.1:5176 unless told otherwise
+ *   login         prints a link that signs the owner in, once, on this machine
+ *   sign-in       names the provider everyone else signs in through, and its client
  *   vault rotate  seals every key of it again, under a new master key
  *
  * `--data <dir>` names the data folder of each; it is `SLIDR_LIBRARY_DATA`, or a folder of the
@@ -13,14 +15,19 @@ import { access, readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { writeConfig } from '../../core/config.ts';
+import { LINK_SECONDS, issueLocalLink } from '../../core/auth.ts';
+import { writeConfig, type SignInSettings } from '../../core/config.ts';
+import { ProviderUnreachable, microsoftIssuer, saveSignIn } from '../../core/oidc.ts';
+import { listPeople } from '../../core/people.ts';
 import {
   LibraryError,
   contextOf,
   defaultDataDir,
   install,
+  markRunning,
   openLibrary,
   rotate,
+  running,
 } from './install.ts';
 import { MasterKeyError, type MasterSource } from './master.ts';
 import { DEFAULT_HOST, DEFAULT_PORT, isLoopback, serve } from './server.ts';
@@ -33,7 +40,51 @@ const USAGE = `pnpm library <command>
                 [--master-key-file <file> | --master-key-env]
   start         [--data <dir>] [--port ${DEFAULT_PORT}] [--url <address>]
                 [--host <address> (--tls-cert <file> --tls-key <file> | --behind-proxy)]
+  login         [--data <dir>]
+  sign-in       google --client-id <id> [--allowed-domains <a.org,b.org>] [--data <dir>]
+                microsoft --tenant <id> --client-id <id> [--allowed-domains …]
+                oidc --issuer <address> --client-id <id> [--name <shown>] [--allowed-domains …]
+                off
+                (the client's secret is asked for, or read from standard input)
   vault rotate  [--data <dir>]`;
+
+/**
+ * Asks for a secret on the terminal, showing nothing of it; without a terminal, the first line of
+ * standard input. Never from an option, which a shell keeps in its history.
+ */
+async function askSecret(question: string): Promise<string | undefined> {
+  const input = process.stdin;
+  if (!input.isTTY) {
+    const chunks: Buffer[] = [];
+    for await (const chunk of input) chunks.push(Buffer.from(chunk as Buffer));
+    return Buffer.concat(chunks).toString('utf8').split(/\r?\n/)[0]?.trim() || undefined;
+  }
+  process.stdout.write(question);
+  input.setRawMode(true);
+  input.setEncoding('utf8');
+  input.resume();
+  return new Promise((done) => {
+    let value = '';
+    const finish = () => {
+      input.off('data', read);
+      input.setRawMode(false);
+      input.pause();
+      process.stdout.write('\n');
+      done(value.trim() || undefined);
+    };
+    const read = (chunk: string) => {
+      for (const char of chunk) {
+        if (char === '\r' || char === '\n') return finish();
+        if (char === '\u0003') {
+          finish();
+          process.exit(130);
+        }
+        value = char === '\u007f' || char === '\b' ? value.slice(0, -1) : value + char;
+      }
+    };
+    input.on('data', read);
+  });
+}
 
 /** Asks on the terminal; none when there is no one at it. */
 async function ask(question: string): Promise<string | undefined> {
@@ -139,11 +190,92 @@ async function start(args: string[]) {
     ...(library.config.url ? { url: library.config.url } : {}),
   });
   console.log(`Slidr Library: ${serving.url}  (data: ${library.data})`);
+  await markRunning(library.data, {
+    url: serving.url,
+    ...(serving.local ? { local: serving.local } : {}),
+  });
   const stop = () => {
-    void serving.close().then(() => process.exit(0));
+    void serving
+      .close()
+      .then(() => markRunning(library.data, undefined))
+      .then(() => process.exit(0));
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
+}
+
+async function login(args: string[]) {
+  const { values } = parseArgs({ args, options: { data: { type: 'string' } } });
+  const library = await openLibrary(values.data ?? defaultDataDir());
+  const owner = (await listPeople(library.state)).find((person) => person.role === 'owner');
+  if (!owner) throw new LibraryError('The library names no owner.');
+  const code = await issueLocalLink(await contextOf(library), owner.email);
+  const runs = await running(library.data);
+  const base = runs?.local ?? runs?.url ?? `http://${DEFAULT_HOST}:${DEFAULT_PORT}/`;
+  console.log(
+    `Open this on this machine, within ${LINK_SECONDS / 60} minutes, to sign ${owner.email} in (once):`,
+  );
+  console.log(`  ${new URL(`auth/local?code=${code}`, base).toString()}`);
+  if (!runs) console.log('The library is not running: start it first (pnpm library start).');
+}
+
+async function signIn(args: string[]) {
+  const [kind, ...rest] = args;
+  const { values } = parseArgs({
+    args: rest,
+    options: {
+      data: { type: 'string' },
+      'client-id': { type: 'string' },
+      tenant: { type: 'string' },
+      issuer: { type: 'string' },
+      name: { type: 'string' },
+      'allowed-domains': { type: 'string' },
+    },
+  });
+  const library = await openLibrary(values.data ?? defaultDataDir());
+  const ctx = await contextOf(library);
+  if (kind === 'off') {
+    await saveSignIn(ctx, undefined, undefined, 'cli');
+    console.log('No one signs in through a provider now; the owner, by pnpm library login.');
+    return;
+  }
+  if (kind !== 'google' && kind !== 'microsoft' && kind !== 'oidc') throw new LibraryError(USAGE);
+  const clientId = values['client-id'];
+  if (!clientId) throw new LibraryError('Name the client: --client-id <id>.');
+  const issuer =
+    kind === 'microsoft'
+      ? microsoftIssuer(values.tenant ?? 'organizations')
+      : kind === 'oidc'
+        ? values.issuer
+        : undefined;
+  if (kind === 'oidc' && !issuer) throw new LibraryError('Name the issuer: --issuer https://….');
+  const allowedDomains = (values['allowed-domains'] ?? '')
+    .split(/[\s,;]+/)
+    .map((one) => one.trim().toLowerCase())
+    .filter(Boolean);
+  const settings: SignInSettings = {
+    provider: kind,
+    clientId,
+    allowedDomains,
+    ...(issuer ? { issuer } : {}),
+    ...(values.name ? { name: values.name } : {}),
+  };
+  const secret = await askSecret('The client’s secret: ');
+  if (!secret) throw new LibraryError('The client comes with its secret.');
+  try {
+    await saveSignIn(ctx, settings, secret, 'cli');
+  } catch (error) {
+    if (error instanceof ProviderUnreachable) throw new LibraryError(error.message);
+    throw error;
+  }
+  const base =
+    library.config.url ??
+    (await running(library.data))?.url ??
+    `http://${DEFAULT_HOST}:${DEFAULT_PORT}/`;
+  console.log(`People sign in through ${kind} now.`);
+  console.log(
+    `Register this redirect URI with the client: ${new URL('auth/callback', base).toString()}`,
+  );
 }
 
 async function vault(args: string[]) {
@@ -158,7 +290,13 @@ async function vault(args: string[]) {
   console.log('Start the library again if it runs.');
 }
 
-const COMMANDS: Record<string, (args: string[]) => Promise<void>> = { init, start, vault };
+const COMMANDS: Record<string, (args: string[]) => Promise<void>> = {
+  init,
+  start,
+  login,
+  'sign-in': signIn,
+  vault,
+};
 
 const [command = '', ...args] = process.argv.slice(2);
 const run = COMMANDS[command];

@@ -8,11 +8,12 @@ import type { Bucket } from '../../core/bucket.ts';
 import type { Context } from '../../core/context.ts';
 import { handle, isServed } from '../../core/index.ts';
 import { purgerFor } from '../../core/media/cache.ts';
+import { Vault, masterKeyFromText } from '../../core/vault.ts';
 
 export interface Env {
   /** The built page (`dist/client`). */
   ASSETS: { fetch(request: Request): Promise<Response> };
-  /** What is uploaded, until it is published (README, "Uploading"). */
+  /** What the library keeps for itself: the uploads until they are published, its people. */
   UPLOADS?: Bucket;
   /** The published library (README, "Publishing the uploads"). */
   MEDIA?: Bucket;
@@ -21,18 +22,30 @@ export interface Env {
   /** The zone of the library's address, and a token that purges its cache (`media/cache.ts`). */
   MEDIA_ZONE_ID?: string;
   MEDIA_PURGE_TOKEN?: string;
+  /**
+   * The master key of the library's vault (docs/SPEC.md §4.4), a secret of the Worker; without
+   * it, the Worker keeps no keys of its own, and takes its session key from `SESSION_SECRET`.
+   */
+  LIBRARY_MASTER_KEY?: string;
   /** Secrets of the Worker (README, "Signing in"): what `AuthSettings` of the context says. */
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   SESSION_SECRET?: string;
+  /** Who becomes the owner when the library names no one yet (`settlePeople`). */
+  LIBRARY_OWNER?: string;
   LIBRARY_EDITORS?: string;
   LIBRARY_KEYS?: string;
 }
 
 /** What the server is given: the Worker's bindings and secrets, by what they are for. */
-export function contextOf(env: Partial<Env>): Context {
+export async function contextOf(env: Partial<Env>): Promise<Context> {
+  const vault =
+    env.UPLOADS && env.LIBRARY_MASTER_KEY
+      ? new Vault(env.UPLOADS, [await masterKeyFromText(env.LIBRARY_MASTER_KEY)])
+      : undefined;
   return {
     state: env.UPLOADS,
+    ...(vault ? { vault } : {}),
     media: env.MEDIA,
     site: env.MEDIA_LIBRARY_URL,
     purge: purgerFor(env),
@@ -40,6 +53,7 @@ export function contextOf(env: Partial<Env>): Context {
       googleClientId: env.GOOGLE_CLIENT_ID,
       googleClientSecret: env.GOOGLE_CLIENT_SECRET,
       sessionSecret: env.SESSION_SECRET,
+      owner: env.LIBRARY_OWNER,
       editors: env.LIBRARY_EDITORS,
       keys: env.LIBRARY_KEYS,
     },
@@ -47,8 +61,8 @@ export function contextOf(env: Partial<Env>): Context {
 }
 
 export default {
-  fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     if (!isServed(new URL(request.url).pathname)) return env.ASSETS.fetch(request);
-    return handle(request, contextOf(env));
+    return handle(request, await contextOf(env));
   },
 };

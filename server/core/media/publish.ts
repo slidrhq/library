@@ -16,7 +16,7 @@
  */
 import type { Bucket } from '../bucket.ts';
 import type { Issue } from '../http.ts';
-import type { Actor } from '../uploads/access.ts';
+import { recordOf, type Actor } from '../uploads/access.ts';
 import { handlerOf } from '../uploads/content.ts';
 import { forgetLibrary, type Library } from '../uploads/library.ts';
 import { listUploads, readFile, readUpload, saveUpload, type Upload } from '../uploads/store.ts';
@@ -233,7 +233,7 @@ async function markPublished(uploads: Bucket, id: string, at: string, actor: Act
     upload.status = 'published';
     upload.updated = at;
     delete upload.note;
-    upload.history.push({ status: 'published', at, by: actor });
+    upload.history.push({ status: 'published', at, by: recordOf(actor) });
     if (await saveUpload(uploads, upload, etag)) return;
   }
 }

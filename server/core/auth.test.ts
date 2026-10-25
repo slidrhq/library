@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
-import { requireEditor } from './auth.ts';
-import worker, { contextOf, type Env } from '../host/cloudflare/index.ts';
+import worker, { type Env } from '../host/cloudflare/index.ts';
+import { MemoryBucket } from './uploads/testing.ts';
 
 const SITE = 'https://library.example';
 const CLIENT = 'client-1.apps.googleusercontent.com';
@@ -26,9 +26,13 @@ function idToken(claims: Record<string, unknown>) {
   ].join('.');
 }
 
+/** The library's own store, a new one for each test. */
+let store: MemoryBucket;
+
 const call = (path: string, init: RequestInit = {}, environment: Partial<Env> = env, site = SITE) =>
   worker.fetch(new Request(site + path, { redirect: 'manual', ...init }), {
     ...env,
+    UPLOADS: store,
     ...environment,
   });
 
@@ -86,14 +90,27 @@ function sessionOf(response: Response) {
   return `__Host-library-session=${session.value}`;
 }
 
+interface Me {
+  signIn: boolean;
+  provider: { kind: string; name: string } | null;
+  local: boolean;
+  user: {
+    email: string;
+    name: string;
+    role: string | null;
+    editor: boolean;
+    can: Record<string, boolean>;
+  } | null;
+}
+
 const meOf = async (cookie?: string) =>
-  (await (await call('/api/me', { headers: cookie ? { Cookie: cookie } : {} })).json()) as {
-    signIn: boolean;
-    user: { email: string; name: string; editor: boolean } | null;
-  };
+  (await (await call('/api/me', { headers: cookie ? { Cookie: cookie } : {} })).json()) as Me;
 
 // A sign-in that fails says why in the Worker's log.
-beforeEach(() => mock.method(console, 'warn', () => undefined));
+beforeEach(() => {
+  store = new MemoryBucket();
+  mock.method(console, 'warn', () => undefined);
+});
 afterEach(() => mock.restoreAll());
 
 describe('the Worker', () => {
@@ -113,14 +130,24 @@ describe('the Worker', () => {
 
 describe('signing in with Google', () => {
   test('is not offered without its client or with a short key', async () => {
-    assert.deepEqual(await meOf(), { signIn: true, user: null });
+    assert.deepEqual(await meOf(), {
+      signIn: true,
+      provider: { kind: 'google', name: 'Google' },
+      local: false,
+      user: null,
+    });
     for (const missing of [
       { GOOGLE_CLIENT_ID: '' },
       { GOOGLE_CLIENT_SECRET: '' },
       { SESSION_SECRET: 'short' },
     ]) {
       const response = await call('/api/me', {}, { ...env, ...missing });
-      assert.deepEqual(await response.json(), { signIn: false, user: null });
+      assert.deepEqual(await response.json(), {
+        signIn: false,
+        provider: null,
+        local: false,
+        user: null,
+      });
       assert.equal((await call('/auth/login', {}, { ...env, ...missing })).status, 503);
     }
   });
@@ -176,12 +203,25 @@ describe('signing in with Google', () => {
     assert.equal(cookies['__Host-library-signin']?.value, '');
     assert.match(cookies['__Host-library-signin'].attributes, /Max-Age=0/);
     assert.match(cookies['__Host-library-session']!.attributes, /HttpOnly; SameSite=Lax/);
+    // The first editor the Worker named is the library's owner (`settlePeople`).
+    const everything = {
+      upload: true,
+      review: true,
+      publish: true,
+      members: true,
+      settings: true,
+      owner: true,
+    };
     assert.deepEqual((await meOf(sessionOf(response))).user, {
       sub: '1234567890',
       email: 'editor@example.com',
       name: 'An Editor',
       picture: 'https://lh3.googleusercontent.com/a/photo',
+      provider: 'google',
+      role: 'owner',
+      blocked: false,
       editor: true,
+      can: everything,
     });
   });
 
@@ -197,11 +237,17 @@ describe('signing in with Google', () => {
     }
   });
 
-  test('names who may upload by address, in any case', async () => {
+  test('knows the people by their address, in any case', async () => {
     const editor = sessionOf(await signIn({ email: 'EDITOR@example.com' }));
-    assert.equal((await meOf(editor)).user?.editor, true);
-    const someone = sessionOf(await signIn({ email: 'someone@example.com' }));
-    assert.equal((await meOf(someone)).user?.editor, false);
+    assert.equal((await meOf(editor)).user?.role, 'owner');
+    const other = sessionOf(await signIn({ email: 'Other@Example.com' }));
+    assert.equal((await meOf(other)).user?.role, 'reviewer');
+    // Anyone who signs in may upload; only the members review.
+    const someone = (await meOf(sessionOf(await signIn({ email: 'someone@example.com' })))).user;
+    assert.equal(someone?.role, null);
+    assert.equal(someone?.editor, false);
+    assert.equal(someone?.can.upload, true);
+    assert.equal(someone?.can.review, false);
   });
 
   test('fails back to the page when the answer does not hold', async () => {
@@ -294,31 +340,5 @@ describe('the session', () => {
     });
     assert.equal(response.status, 200);
     assert.equal(cookiesOf(response)['__Host-library-session']?.value, '');
-  });
-});
-
-describe('requireEditor', () => {
-  const post = (cookie?: string, origin = SITE) =>
-    new Request(`${SITE}/api/upload`, {
-      method: 'POST',
-      headers: { Origin: origin, ...(cookie ? { Cookie: cookie } : {}) },
-    });
-
-  test('lets an editor through, from the page', async () => {
-    const session = sessionOf(await signIn());
-    const user = await requireEditor(post(session), contextOf(env));
-    assert.ok(!(user instanceof Response));
-    assert.equal(user.email, 'editor@example.com');
-    const away = await requireEditor(post(session, 'https://evil.example'), contextOf(env));
-    assert.equal((away as Response).status, 403);
-  });
-
-  test('turns away no session, and an account the library does not name', async () => {
-    assert.equal(((await requireEditor(post(), contextOf(env))) as Response).status, 401);
-    const someone = sessionOf(await signIn({ email: 'someone@example.com' }));
-    assert.equal(((await requireEditor(post(someone), contextOf(env))) as Response).status, 403);
-    const editor = sessionOf(await signIn());
-    const taken = await requireEditor(post(editor), contextOf({ ...env, LIBRARY_EDITORS: '' }));
-    assert.equal((taken as Response).status, 403);
   });
 });

@@ -9,7 +9,7 @@
  * its mode is 0700.
  */
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -207,12 +207,10 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
 }
 
 /** What the server is given, of a library on this machine. */
-export async function contextOf(library: Library): Promise<Context> {
-  return {
-    state: library.state,
-    vault: library.vault,
-    auth: { sessionSecret: await library.vault.get('session') },
-  };
+export function contextOf(library: Library): Promise<Context> {
+  // The session key is the vault's, read as each request needs it (`sessionKeyOf`); the owner
+  // signs in on this machine by a link of the CLI.
+  return Promise.resolve({ state: library.state, vault: library.vault, auth: {}, local: true });
 }
 
 /**
@@ -226,4 +224,32 @@ export async function rotate(library: Library): Promise<string[]> {
   await library.keys.write(next);
   await library.keys.writeNext(undefined);
   return names;
+}
+
+const RUNNING = 'running.json';
+
+interface Running {
+  /** The address the library is reached at, and its own on this machine. */
+  url: string;
+  local?: string;
+  pid: number;
+}
+
+/** Records where the server of a data folder listens, while it runs; none, that it stopped. */
+export async function markRunning(data: string, running: Omit<Running, 'pid'> | undefined) {
+  if (running) {
+    await writeFile(join(data, RUNNING), JSON.stringify({ ...running, pid: process.pid }));
+  } else await rm(join(data, RUNNING), { force: true });
+}
+
+/** Where the server of a data folder listens, when it runs. */
+export async function running(data: string): Promise<Running | undefined> {
+  try {
+    const found = JSON.parse(await readFile(join(data, RUNNING), 'utf8')) as Running;
+    // Throws when no such process runs: the server stopped without saying so.
+    process.kill(found.pid, 0);
+    return found;
+  } catch {
+    return undefined;
+  }
 }

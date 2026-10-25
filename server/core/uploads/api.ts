@@ -31,7 +31,7 @@ import {
 import type { Bucket } from '../bucket.ts';
 import type { Context } from '../context.ts';
 import { isRecord, json, jsonBody, problem, type Issue } from '../http.ts';
-import { authorize, type Actor, type Permission } from './access.ts';
+import { authorize, recordOf, seesAll, type Actor, type Permission } from './access.ts';
 import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
@@ -147,11 +147,16 @@ async function rivals(bucket: Bucket, draft: Draft, self?: string): Promise<Issu
 
 const invalid = (issues: Issue[]) => problem(422, 'invalid', 'The upload does not hold.', issues);
 
-/** Reads the upload of a route, or the answer to give instead. */
-async function load(ctx: Context, id: string | undefined) {
+/**
+ * Reads the upload of a route, or the answer to give instead. An uploader sees their own uploads
+ * only: another's is not there, as far as they can tell.
+ */
+async function load(ctx: Context, id: string | undefined, actor: Actor) {
   if (!ctx.state) return notSetUp();
   const found = id ? await readUpload(ctx.state, id) : undefined;
-  if (!found) return problem(404, 'not-found', `There is no upload ${id}.`);
+  if (!found || !(seesAll(actor) || found.upload.by.id === actor.id)) {
+    return problem(404, 'not-found', `There is no upload ${id}.`);
+  }
   return { bucket: ctx.state, ...found };
 }
 
@@ -176,7 +181,7 @@ const schema: Route = (_request, _ctx, [name]) => {
 // ---- GET /api/uploads
 
 const list: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'read');
+  const actor = await authorize(request, ctx, 'read-own');
   if (actor instanceof Response) return actor;
   if (!ctx.state) return notSetUp();
   const query = new URL(request.url).searchParams;
@@ -190,6 +195,8 @@ const list: Route = async (request, ctx) => {
     status: query.get('status') ?? undefined,
     target: query.get('target') ?? undefined,
     language: query.get('language') ?? undefined,
+    // An uploader lists their own.
+    by: seesAll(actor) ? undefined : actor.id,
   };
   if (filter.status && !(STATUSES as readonly string[]).includes(filter.status)) {
     return problem(400, 'bad-query', `status is one of ${STATUSES.join(', ')}.`);
@@ -413,8 +420,8 @@ const create: Route = async (request, ctx) => {
     status: 'pending',
     created: at,
     updated: at,
-    by: actor,
-    history: [{ status: 'pending', at, by: actor }],
+    by: recordOf(actor),
+    history: [{ status: 'pending', at, by: recordOf(actor) }],
   };
   await createUpload(ctx.state, upload, bytes);
   return json(view(upload), 201, { Location: `/api/uploads/${upload.id}` });
@@ -423,9 +430,9 @@ const create: Route = async (request, ctx) => {
 // ---- GET, DELETE /api/uploads/{id}
 
 const read: Route = async (request, ctx, [id]) => {
-  const actor = await authorize(request, ctx, 'read');
+  const actor = await authorize(request, ctx, 'read-own');
   if (actor instanceof Response) return actor;
-  const found = await load(ctx, id);
+  const found = await load(ctx, id, actor);
   if (found instanceof Response) return found;
   return json(view(found.upload));
 };
@@ -433,7 +440,7 @@ const read: Route = async (request, ctx, [id]) => {
 const withdraw: Route = async (request, ctx, [id]) => {
   const actor = await authorize(request, ctx, 'upload');
   if (actor instanceof Response) return actor;
-  const found = await load(ctx, id);
+  const found = await load(ctx, id, actor);
   if (found instanceof Response) return found;
   const { status } = found.upload;
   if (status !== 'pending' && status !== 'rejected') {
@@ -450,9 +457,9 @@ const withdraw: Route = async (request, ctx, [id]) => {
 // ---- GET /api/uploads/{id}/files/{name}
 
 const file: Route = async (request, ctx, [id, name]) => {
-  const actor = await authorize(request, ctx, 'read');
+  const actor = await authorize(request, ctx, 'read-own');
   if (actor instanceof Response) return actor;
-  const found = await load(ctx, id);
+  const found = await load(ctx, id, actor);
   if (found instanceof Response) return found;
   const stored = name ? found.upload.files[name] : undefined;
   const object = stored && name ? await readFile(found.bucket, found.upload.id, name) : null;
@@ -475,13 +482,14 @@ const file: Route = async (request, ctx, [id, name]) => {
  */
 async function change(
   ctx: Context,
+  actor: Actor,
   id: string | undefined,
   lang: string | undefined,
   edit: (upload: Upload, handler: Handler, lang: ContentLanguage) => Issue[] | Response,
   /** The languages the change asks to check again. */
   recheck: (lang: ContentLanguage) => ContentLanguage[],
 ): Promise<Response> {
-  const found = await load(ctx, id);
+  const found = await load(ctx, id, actor);
   if (found instanceof Response) return found;
   const { bucket, upload, etag } = found;
   const handler = handlerOf(upload.type, upload.action);
@@ -525,6 +533,7 @@ const putLanguage: Route = async (request, ctx, [id, lang]) => {
   if (body instanceof Response) return body;
   return change(
     ctx,
+    actor,
     id,
     lang,
     (upload, handler, code) => {
@@ -549,6 +558,7 @@ const deleteLanguage: Route = async (request, ctx, [id, lang]) => {
   if (actor instanceof Response) return actor;
   return change(
     ctx,
+    actor,
     id,
     lang,
     (upload, handler, code) => {
@@ -582,11 +592,11 @@ const deleteLanguage: Route = async (request, ctx, [id, lang]) => {
 /** The statuses an upload goes to from each, and what it takes to send it there. */
 const MOVES: Record<Status, Partial<Record<Status, Permission>>> = {
   pending: { accepted: 'review', rejected: 'review' },
-  accepted: { pending: 'review', rejected: 'review', published: 'publish' },
+  accepted: { pending: 'review', rejected: 'review', published: 'publish-waiting' },
   rejected: { pending: 'review' },
   // An upload marked published that the library does not have after all goes back to wait for
   // a publication, by whoever may say it is published.
-  published: { accepted: 'publish' },
+  published: { accepted: 'publish-waiting' },
 };
 
 const setStatus: Route = async (request, ctx, [id]) => {
@@ -603,7 +613,9 @@ const setStatus: Route = async (request, ctx, [id]) => {
     ]);
   }
   const status = to as Status;
-  const found = await load(ctx, id);
+  const reader = await authorize(request, ctx, 'read-own');
+  if (reader instanceof Response) return reader;
+  const found = await load(ctx, id, reader);
   if (found instanceof Response) return found;
   const { bucket, upload, etag } = found;
   const permission = MOVES[upload.status][status];
@@ -641,7 +653,12 @@ const setStatus: Route = async (request, ctx, [id]) => {
   upload.updated = at;
   if (note === undefined) delete upload.note;
   else upload.note = note;
-  upload.history.push({ status, at, by: actor, ...(note === undefined ? {} : { note }) });
+  upload.history.push({
+    status,
+    at,
+    by: recordOf(actor),
+    ...(note === undefined ? {} : { note }),
+  });
   if (!(await saveUpload(bucket, upload, etag))) {
     return problem(
       409,

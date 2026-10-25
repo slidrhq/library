@@ -15,7 +15,7 @@ import {
   type Slide,
 } from '@slidr/model';
 import type { Template } from '@slidr/templates';
-import worker from '../../host/cloudflare/index.ts';
+import worker, { type Env } from '../../host/cloudflare/index.ts';
 import { forgetLibrary } from './library.ts';
 import type { Bucket, BucketObject, HttpMetadata } from '../bucket.ts';
 
@@ -418,12 +418,15 @@ async function sessionAs(email: string, env: object): Promise<string> {
 export async function caller<B extends Bucket = MemoryBucket>(
   as: { email?: string; key?: string; nobody?: boolean } = {},
   bucket: B = new MemoryBucket() as Bucket as B,
+  /** More of the Worker's settings, or others. */
+  more: Partial<Env> = {},
 ) {
   const env = {
     ...SIGN_IN,
     UPLOADS: bucket,
     MEDIA_LIBRARY_URL: MEDIA,
     ASSETS: { fetch: () => Promise.resolve(new Response('the page')) },
+    ...more,
   };
   const headers: Record<string, string> = {};
   if (as.key) headers.Authorization = `Bearer ${as.key}`;

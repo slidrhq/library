@@ -715,7 +715,9 @@ describe('the status of an upload', () => {
     assert.equal(rejected.history.at(-1)!.note, 'The picture is cropped.');
     assert.equal((await call(at, { method: 'DELETE' })).status, 204);
     assert.equal((await call(at)).status, 404);
-    assert.equal(bucket.objects.size, 0);
+    // Nothing of the upload is kept; the library's people are.
+    const left = [...bucket.objects.keys()].filter((key) => /^(uploads|files)\//.test(key));
+    assert.deepEqual(left, []);
   });
 
   test('is published only once accepted, and an accepted upload stays', async () => {
@@ -830,9 +832,39 @@ describe('who may upload', () => {
     await refused(await upload(newDesign(), { picture: webp(800, 800) }), 403, 'another-site');
   });
 
-  test('an account the library does not name is refused', async () => {
-    const { call } = await caller({ email: 'someone@example.com' });
-    await refused(await call('/api/uploads'), 403, 'not-an-editor');
+  test('anyone signed in uploads, and sees and changes only their own', async () => {
+    publishLibrary(['images/designs/m-techmeetup.webp']);
+    const owner = await caller();
+    const someone = await caller({ email: 'someone@example.com' }, owner.bucket);
+    const french = {
+      type: 'designs',
+      action: 'translate',
+      id: 'm-techmeetup',
+      languages: { fr: { slide: designSlide('fr') } },
+    };
+    const theirs = await read<Answer>(await someone.send('/api/uploads', 'POST', french));
+    assert.equal(theirs.history[0]!.by.id, 'someone@example.com');
+    const mine = await read<Answer>(await owner.upload(newDesign(), { picture: webp(800, 800) }));
+    const listed = async (who: typeof owner) =>
+      (await read<{ uploads: { id: string }[] }>(await who.call('/api/uploads'))).uploads.map(
+        (one) => one.id,
+      );
+    assert.deepEqual(await listed(someone), [theirs.id]);
+    assert.deepEqual((await listed(owner)).sort(), [theirs.id, mine.id].sort());
+    // Another's upload is not there, as far as an uploader can tell.
+    const at = `/api/uploads/${mine.id}`;
+    await refused(await someone.call(at), 404, 'not-found');
+    await refused(await someone.call(`${at}/files/picture`), 404, 'not-found');
+    await refused(await someone.call(at, { method: 'DELETE' }), 404, 'not-found');
+    // Reviewing is the members'.
+    const accept = await someone.send(`/api/uploads/${theirs.id}/status`, 'POST', {
+      status: 'accepted',
+    });
+    await refused(accept, 403, 'not-a-reviewer');
+    assert.equal(
+      (await someone.call(`/api/uploads/${theirs.id}`, { method: 'DELETE' })).status,
+      204,
+    );
   });
 
   test('an editor changes the uploads from the library’s own page only', async () => {
@@ -857,6 +889,11 @@ describe('who may upload', () => {
     assert.equal(response.status, 201);
     const made = await read<Answer>(response);
     assert.equal(made.history[0]!.by.id, 'key:studio');
+    // A program uploads and publishes; a person reviews, on the library's page.
+    const accept = await studio.send(`/api/uploads/${made.id}/status`, 'POST', {
+      status: 'rejected',
+    });
+    await refused(accept, 403, 'token-scope');
     const wrong = await caller({ key: 'not-the-key-of-anything-at-all-0000' });
     await refused(await wrong.call('/api/uploads'), 401, 'bad-key');
     const none = await caller({ key: KEY });

@@ -21,6 +21,7 @@ import { extname, join, resolve, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { Context } from '../../core/context.ts';
+import { fromThisMachine } from '../../core/auth.ts';
 import { handle, isServed } from '../../core/index.ts';
 
 export interface ServeOptions {
@@ -37,7 +38,10 @@ export interface ServeOptions {
 }
 
 export interface Serving {
+  /** The address the library is reached at. */
   url: string;
+  /** Its address on this machine, where the owner's link of the CLI is opened. */
+  local?: string;
   close(): Promise<void>;
 }
 
@@ -118,15 +122,39 @@ export async function pageFile(request: Request, client: string): Promise<Respon
 function originOf(request: IncomingMessage, options: ServeOptions): string | undefined {
   const named = request.headers.host;
   if (!named) return undefined;
+  const scheme = options.tls ? 'https' : 'http';
+  let hostname: string;
+  try {
+    hostname = new URL(`http://${named}`).hostname;
+  } catch {
+    return undefined;
+  }
+  // From this machine, by a name of this machine: the owner's link, wherever else it is reached.
+  if (isLoopback(hostname) && fromThisMachine(request.socket.remoteAddress)) {
+    return `${scheme}://${named}`;
+  }
   if (options.url && (options.tls || options.behindProxy)) {
     const own = new URL(options.url);
     const forwarded = options.behindProxy ? request.headers['x-forwarded-host'] : undefined;
     const names = [named, ...(Array.isArray(forwarded) ? forwarded : [forwarded])];
     return names.includes(own.host) ? own.origin : undefined;
   }
-  const { hostname } = new URL(`http://${named}`);
-  if (!isLoopback(hostname)) return undefined;
-  return `${options.tls ? 'https' : 'http'}://${named}`;
+  return isLoopback(hostname) ? `${scheme}://${named}` : undefined;
+}
+
+/**
+ * The address a request came from: behind a proxy, the last the proxy names
+ * (`X-Forwarded-For`), since what comes before it is whatever the client said.
+ */
+function clientOf(request: IncomingMessage, options: ServeOptions): string | undefined {
+  const socket = request.socket.remoteAddress;
+  if (!options.behindProxy) return socket;
+  const header = request.headers['x-forwarded-for'];
+  const named = (Array.isArray(header) ? header.join(',') : (header ?? ''))
+    .split(',')
+    .map((one) => one.trim())
+    .filter(Boolean);
+  return named.at(-1) ?? socket;
 }
 
 /** A request of Node's as the web's. */
@@ -179,7 +207,7 @@ export async function serve(options: ServeOptions): Promise<Serving> {
       }
       const web = toRequest(request, origin);
       const reply = isServed(new URL(web.url).pathname)
-        ? await handle(web, { ...options.context, clientAddress: request.socket.remoteAddress })
+        ? await handle(web, { ...options.context, clientAddress: clientOf(request, options) })
         : await pageFile(web, options.client);
       await send(response, reply, method);
     } catch (error) {
@@ -203,11 +231,13 @@ export async function serve(options: ServeOptions): Promise<Serving> {
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : options.port;
   const shown = host.includes(':') ? `[${host}]` : host;
+  const direct = `${options.tls ? 'https' : 'http'}://${shown}:${port}/`;
+  const everywhere = host === '0.0.0.0' || host === '::';
   return {
-    url:
-      options.url && (options.tls || options.behindProxy)
-        ? options.url
-        : `${options.tls ? 'https' : 'http'}://${shown}:${port}/`,
+    url: options.url && (options.tls || options.behindProxy) ? options.url : direct,
+    ...(isLoopback(host) || everywhere
+      ? { local: `${options.tls ? 'https' : 'http'}://127.0.0.1:${port}/` }
+      : {}),
     close: () =>
       new Promise<void>((done) => {
         server.close(() => done());
