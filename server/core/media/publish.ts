@@ -5,29 +5,25 @@
  * the manifest, written last, says what the library is now. The app reads it the next time it
  * reads the manifest.
  *
- * - Each upload is checked once more, against the library as it is (as accepting it did), and
- *   one that no longer holds stays accepted, saying why. So does one that cannot be written.
- * - What a publication replaces is kept beside the uploads, under `media/history/<published>/`:
- *   the manifest before it, and each file it wrote over.
- * - One publication runs at a time (`media/lock.json`, beside the uploads too); the manifest is
- *   written only over the one read at the start, so two never write over each other.
+ * - Each upload is checked once more, against the library as it is (as accepting it did); one
+ *   that no longer holds, or cannot be written, is skipped, saying why (`settle.ts` decides what
+ *   becomes of it).
+ * - It writes as `writing.ts` does: what it replaces kept beside the uploads first, the manifest
+ *   last, and the media put back as it was when it fails before then.
+ * - One publication runs at a time (`lease.ts`).
  * - Once the manifest is written, the cache before the library is emptied of the files written
- *   (`cache.ts`).
+ *   (`cache.ts`), and what the publication did is kept, `media/publications/<published>.json`.
  */
 import type { Bucket } from '../bucket.ts';
 import type { Issue } from '../http.ts';
-import { recordOf, type Actor } from '../uploads/access.ts';
+import { recordOf, type Actor, type Recorded } from '../uploads/access.ts';
 import { handlerOf } from '../uploads/content.ts';
 import { forgetLibrary, type Library } from '../uploads/library.ts';
 import { listUploads, readFile, readUpload, saveUpload, type Upload } from '../uploads/store.ts';
 import type { Purge, Purger } from './cache.ts';
+import { Lease, NotNow } from './lease.ts';
 import {
-  HISTORY,
-  LOCK,
-  MANIFEST,
-  encodeManifest,
-  putFile,
-  putManifest,
+  PUBLICATIONS,
   readBytes,
   readManifest,
   sha256Hex,
@@ -50,10 +46,12 @@ import {
   type ManagedCatalog,
 } from './merge.ts';
 
+import { Writing } from './writing.ts';
+
+export { NotNow };
+
 /** The most uploads one publication takes: the rest wait for the next. */
 export const MOST_UPLOADS = 50;
-/** How long a publication may hold the library before another may take it. */
-const LOCK_MS = 10 * 60 * 1000;
 
 /** What came of a publication. */
 export interface Publication {
@@ -68,8 +66,16 @@ export interface Publication {
     languages: string[];
     paths: string[];
   }[];
-  /** The uploads left accepted, and why. */
-  skipped: { id: string; message: string; issues?: Issue[] }[];
+  /**
+   * The uploads not written, and why: not there, or not accepted; no longer holding against the
+   * library (`invalid`); or not to be written now (`unwritable`).
+   */
+  skipped: {
+    id: string;
+    reason: 'missing' | 'status' | 'invalid' | 'unwritable';
+    message: string;
+    issues?: Issue[];
+  }[];
   /** The library's files the publication added, and those it changed. */
   added: string[];
   changed: string[];
@@ -77,16 +83,6 @@ export interface Publication {
   remaining: number;
   /** What became of the cache before the library, once something was written. */
   cache?: Purge;
-}
-
-/** Why a publication cannot run now. */
-export class NotNow extends Error {
-  readonly code: string;
-
-  constructor(code: string, message: string) {
-    super(message);
-    this.code = code;
-  }
 }
 
 /** The files a publication changes, as it changes them: read from the bucket once, written once. */
@@ -196,25 +192,19 @@ async function apply(upload: Upload, changes: Changes, uploads: Bucket): Promise
   throw new PublishError(`The library does not publish ${type}: ${action}.`);
 }
 
-/** Holds the library for one publication, or says who holds it: in the bucket of the uploads. */
-export async function lock(bucket: Bucket, actor: Actor) {
-  const held = await bucket.get(LOCK);
-  if (held) {
-    const { by, at } = JSON.parse(await held.text()) as { by?: string; at?: string };
-    if (at && Date.now() - Date.parse(at) < LOCK_MS) {
-      throw new NotNow(
-        'publishing',
-        `A publication by ${by} runs since ${at}. Try again once it is done.`,
-      );
-    }
-  }
-  await bucket.put(LOCK, JSON.stringify({ by: actor.id, at: new Date().toISOString() }), {
+/** What a publication did, kept beside the uploads under its moment (docs/SPEC.md §9.5). */
+export async function recordPublication(
+  state: Bucket,
+  published: string,
+  record: { kind: 'uploads' | 'files'; by: Recorded } & object,
+) {
+  await state.put(`${PUBLICATIONS}/${published}.json`, JSON.stringify({ published, ...record }), {
     httpMetadata: { contentType: 'application/json' },
   });
 }
 
 /** The uploads a publication takes: those named, or every accepted one, oldest first. */
-async function chosen(uploads: Bucket, ids: readonly string[] | undefined) {
+export async function chosen(uploads: Bucket, ids: readonly string[] | undefined) {
   if (ids) return { ids: [...ids], remaining: 0 };
   const { uploads: found } = await listUploads(uploads, { status: 'accepted' }, 1000);
   const oldest = found.map((one) => one.id).reverse();
@@ -233,6 +223,7 @@ async function markPublished(uploads: Bucket, id: string, at: string, actor: Act
     upload.status = 'published';
     upload.updated = at;
     delete upload.note;
+    delete upload.publication;
     upload.history.push({ status: 'published', at, by: recordOf(actor) });
     if (await saveUpload(uploads, upload, etag)) return;
   }
@@ -257,9 +248,9 @@ export async function publish(
       'The library is not in its bucket yet: bring it in first (POST /api/library/import).',
     );
   }
-  await lock(uploads, actor);
+  const lease = await Lease.take(uploads, actor);
   try {
-    const { manifest, etag } = live;
+    const { manifest } = live;
     const changes = new Changes(media, manifest);
     const result: Publication = { uploads: [], skipped: [], added: [], changed: [], remaining: 0 };
     const picked = await chosen(uploads, ids);
@@ -267,13 +258,14 @@ export async function publish(
     for (const id of picked.ids) {
       const found = await readUpload(uploads, id);
       if (!found) {
-        result.skipped.push({ id, message: `There is no upload ${id}.` });
+        result.skipped.push({ id, reason: 'missing', message: `There is no upload ${id}.` });
         continue;
       }
       const { upload } = found;
       if (upload.status !== 'accepted') {
         result.skipped.push({
           id,
+          reason: 'status',
           message: `It is ${upload.status}: only an accepted upload is published.`,
         });
         continue;
@@ -282,13 +274,19 @@ export async function publish(
       if (!handler) {
         result.skipped.push({
           id,
+          reason: 'invalid',
           message: `The library no longer takes ${upload.type}: ${upload.action}.`,
         });
         continue;
       }
       const issues = await handler.check(upload, library);
       if (issues.length > 0) {
-        result.skipped.push({ id, message: 'It no longer holds against the library.', issues });
+        result.skipped.push({
+          id,
+          reason: 'invalid',
+          message: 'It no longer holds against the library.',
+          issues,
+        });
         continue;
       }
       try {
@@ -303,45 +301,42 @@ export async function publish(
         });
       } catch (error) {
         if (!(error instanceof PublishError)) throw error;
-        result.skipped.push({ id, message: error.message });
+        result.skipped.push({ id, reason: 'unwritable', message: error.message });
       }
     }
     if (result.uploads.length === 0) return result;
 
-    const published = new Date().toISOString();
-    const history = `${HISTORY}/${published}`;
-    await uploads.put(`${history}/${MANIFEST}`, encodeManifest(manifest), {
-      httpMetadata: { contentType: 'application/json' },
-    });
-    const files = { ...manifest.files };
-    for (const [path, bytes] of changes.written()) {
-      const sha256 = await sha256Hex(bytes);
-      const before = files[path];
-      if (before?.sha256 === sha256) continue;
-      if (before) {
-        const old = await media.get(path);
-        if (old) await uploads.put(`${history}/${path}`, await old.arrayBuffer());
-        result.changed.push(path);
-      } else result.added.push(path);
-      await putFile(media, path, bytes, sha256);
-      files[path] = { size: bytes.length, sha256 };
+    const writing = new Writing(media, uploads, lease, live);
+    try {
+      for (const [path, bytes] of changes.written()) await writing.put(path, bytes);
+      await writing.finish();
+    } catch (error) {
+      await undo(writing);
+      throw error;
     }
-    const written = await putManifest(
-      media,
-      encodeManifest({ version: 1, published, files }),
-      etag,
-    );
-    if (!written) {
-      throw new NotNow('changed-meanwhile', 'The library was published meanwhile. Try again.');
-    }
+    const { published } = writing;
     forgetLibrary();
-    result.added.sort();
-    result.changed.sort();
+    result.added = writing.added;
+    result.changed = writing.changed;
     if (purge) result.cache = await purge([...result.added, ...result.changed]);
     for (const one of result.uploads) await markPublished(uploads, one.id, published, actor);
     result.published = published;
+    await recordPublication(uploads, published, {
+      kind: 'uploads',
+      by: recordOf(actor),
+      ...result,
+    });
     return result;
   } finally {
-    await uploads.delete(LOCK);
+    await lease.release();
+  }
+}
+
+/** Puts the media back after a publication failed; says so when even that cannot be done. */
+export async function undo(writing: Writing) {
+  try {
+    await writing.undo();
+  } catch (error) {
+    console.error(`The media could not be put back as it was: ${String(error)}`);
   }
 }

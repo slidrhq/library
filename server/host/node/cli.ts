@@ -31,6 +31,7 @@ import {
   rotate,
   running,
   seed,
+  sweeping,
 } from './install.ts';
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { MasterKeyError, type MasterSource } from './master.ts';
@@ -205,8 +206,9 @@ async function start(args: string[]) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new LibraryError(`${values.port} is not a port.`);
   }
+  const source = contextSource(library);
   const serving = await serve({
-    context: contextSource(library),
+    context: source,
     mediaPath: '/media/',
     client: CLIENT,
     host,
@@ -220,7 +222,9 @@ async function start(args: string[]) {
     url: serving.url,
     ...(serving.local ? { local: serving.local } : {}),
   });
+  const jobs = sweeping(source);
   const stop = () => {
+    jobs.stop();
     void serving
       .close()
       .then(() => markRunning(library.data, undefined))

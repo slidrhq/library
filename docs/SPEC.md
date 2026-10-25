@@ -185,7 +185,7 @@ Reading the media is public, as the published library is today. Only managing it
 
 ### 4.7 Jobs
 
-- **The lease.** One publication or author's publication runs at a time. It holds `media/lock.json` in the state store (10 minutes, as `_publishing.json` does today). The lock is taken with put-if-match, so two never take it together.
+- **The lease.** One publication or author's publication runs at a time. It holds `media/lock.json` in the state store (10 minutes, as `_publishing.json` does today). The lock is taken, kept and let go with put-if-match, so two never take it together. It stays in the store once made (when the library goes live), written as free when let go, since no store makes a file only when it is absent. A publication keeps it once a minute while it writes, and checks it still holds it before it writes the manifest.
 - **The sweep.** Each minute it publishes the uploads that are approved and not yet written, oldest first, up to 50, as `POST /api/publish` does today. It skips an upload that is waiting before its next try (§8). It runs from a timer of the process on Node, and from a Cron Trigger on Cloudflare.
 - **Clearing.** Once a day, rejected uploads older than 30 days are removed, and the history of publications is kept to the last 100.
 
@@ -352,7 +352,7 @@ As today (`encodeManifest`): the manifest read at the start, with the written fi
 
 ### 9.5 What is recorded
 
-Each upload records when it was published and by whom, in its history, as today. Each publication's answer (`Publication` of `publish.ts`: the uploads written and their paths, those skipped and why, the files added and changed) is kept as `media/history/<published>/publication.json`. The page's **Publications** view lists them for reviewers.
+Each upload records when it was published and by whom, in its history, as today. Each publication's answer (`Publication` of `publish.ts`: the uploads written and their paths, those skipped and why, the files added and changed) is kept as `media/publications/<published>.json`, apart from the history, so the publications are listed without reading it. The page's **Publications** view lists them for reviewers.
 
 ## 10. API
 

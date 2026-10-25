@@ -285,7 +285,11 @@ export function openApi() {
           description:
             'pending → accepted or rejected; accepted → pending, rejected or published; rejected → ' +
             'pending. An upload is accepted when it holds against the library as it is, written in ' +
-            'every language it needs.',
+            'every language it needs. Once the library is in its bucket, an accepted upload is ' +
+            'written into it at once: the answer is the upload as it is then (published; pending ' +
+            'again, with a note, when it no longer held; or accepted, waiting, with `publication`: ' +
+            'why, the tries and the next), and `publishing`, what the publication did ' +
+            '(`publication`) or why it could not run (`failed`).',
           requestBody: {
             required: true,
             content: {
@@ -318,7 +322,6 @@ export function openApi() {
                     type: 'object',
                     properties: {
                       live: { type: 'boolean' },
-                      bucket: { type: 'boolean' },
                       site: { type: 'string' },
                       published: { type: 'string' },
                       files: { type: 'integer' },
@@ -363,9 +366,9 @@ export function openApi() {
       },
       '/api/publish': {
         post: {
-          summary: 'Writes the accepted uploads into the published library',
+          summary: 'Writes the accepted uploads into the published library (Try again)',
           description:
-            'Every accepted upload, oldest first, or those named: each checked once more against the library as it is, written into its files, and marked published once the manifest names them. One that no longer holds stays accepted, in `skipped`.',
+            'Every accepted upload, oldest first, or those named: each checked once more against the library as it is, written into its files, and marked published once the manifest names them. One that no longer holds goes back to pending, with a note; one that cannot be written stays accepted, waiting; each is in `skipped`, with its `reason`. When the media cannot be written, it is put back as it was, and the answer is 502.',
           requestBody: {
             content: {
               'application/json': {
@@ -383,7 +386,44 @@ export function openApi() {
                 'The uploads published and the files each wrote, those skipped and why, and the library’s files added and changed.',
               content: { 'application/json': { schema: { type: 'object' } } },
             },
-            ...errors(400, 401, 403, 409, 503),
+            ...errors(400, 401, 403, 409, 502, 503),
+          },
+        },
+      },
+      '/api/publications': {
+        get: {
+          summary: 'What each publication did, newest first',
+          parameters: [
+            { name: 'before', in: 'query', schema: { type: 'string', format: 'date-time' } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100 } },
+          ],
+          responses: {
+            200: {
+              description:
+                '`publications`: each with its moment (`published`), its `kind` (`uploads` or `files`), who made it (`by`), and what it wrote; `next`, the `before` of the next page.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(401, 403, 503),
+          },
+        },
+      },
+      '/api/publications/{published}': {
+        parameters: [
+          {
+            name: 'published',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'date-time' },
+          },
+        ],
+        get: {
+          summary: 'What one publication did',
+          responses: {
+            200: {
+              description: 'The publication, as the list gives it.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(401, 403, 404, 503),
           },
         },
       },
@@ -594,6 +634,7 @@ export function openApi() {
           [413, 'The upload is too large.'],
           [415, 'The body is not of a type this takes.'],
           [422, 'The upload does not hold: `issues` says where.'],
+          [502, 'The media could not be written: it was put back as it was, and what waits waits.'],
           [503, 'The server keeps no uploads, or the published library could not be read.'],
         ].map(([code, description]) => [
           String(code),

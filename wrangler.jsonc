@@ -19,6 +19,9 @@
     { "binding": "UPLOADS", "bucket_name": "slidr-library-uploads" },
     { "binding": "MEDIA", "bucket_name": "slidr-media" },
   ],
+  // The library's own jobs, once a minute (server/core/media/sweep.ts): approved uploads that
+  // wait are written, and once a day what is no longer needed is cleared.
+  "triggers": { "crons": ["* * * * *"] },
   // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET, LIBRARY_EDITORS and LIBRARY_KEYS are
   // secrets of the Worker (`wrangler secret put`), and `.dev.vars` on this machine (README,
   // "Signing in", "Uploading"). MEDIA_ZONE_ID and MEDIA_PURGE_TOKEN, which empty the cache before

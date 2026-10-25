@@ -12,15 +12,18 @@
  * (`publish-files`). A program's key does all of these (`../uploads/access.ts`).
  */
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
+import { keysUnder, type Bucket } from '../bucket.ts';
 import type { Context } from '../context.ts';
 import { isRecord, json, jsonBody, problem } from '../http.ts';
 import { authorize } from '../uploads/access.ts';
 import { isUploadId, listUploads } from '../uploads/store.ts';
-import { forgetLibrary, libraryFor } from '../uploads/library.ts';
+import { forgetLibrary } from '../uploads/library.ts';
 import { BATCH, ImportRefused, importLibrary } from './import.ts';
 import { MOST_BYTES, Refused, publishFiles, stage } from './files.ts';
-import { readManifest } from './live.ts';
-import { MOST_UPLOADS, NotNow, publish } from './publish.ts';
+import { PUBLICATIONS, readManifest } from './live.ts';
+import { openLease } from './lease.ts';
+import { MOST_UPLOADS, NotNow, chosen } from './publish.ts';
+import { publishNow } from './settle.ts';
 
 type Route = (request: Request, ctx: Context) => Promise<Response>;
 
@@ -96,7 +99,11 @@ export const importRoute: Route = async (request, ctx) => {
   }
   try {
     const imported = await importLibrary(ctx.media, from, limit);
-    if (imported.done) forgetLibrary();
+    if (imported.done) {
+      forgetLibrary();
+      // Live from now on: the lease publications take is made while none can run.
+      if (ctx.state) await openLease(ctx.state);
+    }
     return json(imported);
   } catch (error) {
     if (error instanceof ImportRefused) {
@@ -129,21 +136,58 @@ export const publishRoute: Route = async (request, ctx) => {
       `uploads names the uploads to publish, 1 to ${MOST_UPLOADS} ids; left out, every accepted one.`,
     );
   }
-  try {
-    return json(
-      await publish(
-        ctx.media,
-        ctx.state,
-        libraryFor(ctx),
-        actor,
-        ids as string[] | undefined,
-        ctx.purge,
-      ),
+  if (!(await readManifest(ctx.media))) {
+    return problem(
+      409,
+      'not-live',
+      'The library is not in its bucket yet: bring it in first (POST /api/library/import).',
     );
-  } catch (error) {
-    if (error instanceof NotNow) return problem(409, error.code, error.message);
-    throw error;
   }
+  // Those named (Try again), or every accepted one; each not written is settled (`settle.ts`).
+  const picked = await chosen(ctx.state, ids as string[] | undefined);
+  const { publication, failed } = await publishNow(ctx, actor, picked.ids);
+  if (publication) return json({ ...publication, remaining: picked.remaining });
+  const { code, message } = failed!;
+  return problem(code === 'not-written' ? 502 : 409, code, message);
+};
+
+// ---- GET /api/publications, GET /api/publications/{published}
+
+/** A publication's moment, as it is kept under. */
+export const MOMENT = String.raw`(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)`;
+
+const recordAt = async (state: Bucket, moment: string): Promise<unknown> => {
+  const object = await state.get(`${PUBLICATIONS}/${moment}.json`);
+  return object ? (JSON.parse(await object.text()) as unknown) : undefined;
+};
+
+/** What each publication did, newest first, a page at a time: those before `before`. */
+export const publicationsRoute: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'read-all');
+  if (actor instanceof Response) return actor;
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
+  const state = ctx.state;
+  const url = new URL(request.url);
+  const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 20, 1), 100);
+  const before = url.searchParams.get('before');
+  const moments = (await keysUnder(state, `${PUBLICATIONS}/`))
+    .map((key) => key.slice(PUBLICATIONS.length + 1).replace(/\.json$/, ''))
+    .filter((moment) => !before || moment < before)
+    .sort()
+    .reverse();
+  const page = moments.slice(0, limit);
+  const publications = (await Promise.all(page.map((moment) => recordAt(state, moment)))).filter(
+    Boolean,
+  );
+  return json({ publications, ...(moments.length > limit ? { next: page.at(-1) } : {}) });
+};
+
+export const publicationRoute = async (request: Request, ctx: Context, [moment]: string[]) => {
+  const actor = await authorize(request, ctx, 'read-all');
+  if (actor instanceof Response) return actor;
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
+  const record = await recordAt(ctx.state, moment ?? '');
+  return record ? json(record) : problem(404, 'not-found', `No publication was made at ${moment}.`);
 };
 
 // ---- PUT /api/library/staged/{sha256}

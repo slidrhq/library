@@ -33,6 +33,8 @@ export const PROBE = '.slidr-library-probe.json';
 /** In the bucket of the uploads. */
 export const HISTORY = 'media/history';
 export const LOCK = 'media/lock.json';
+/** What each publication did, under its moment: `<published>.json`. */
+export const PUBLICATIONS = 'media/publications';
 
 export interface ManifestEntry {
   size: number;

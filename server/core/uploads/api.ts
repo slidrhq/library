@@ -41,9 +41,13 @@ import {
   importRoute,
   isLive,
   libraryStatus,
+  MOMENT,
+  publicationRoute,
+  publicationsRoute,
   publishRoute,
   stageRoute,
 } from '../media/routes.ts';
+import { publishNow } from '../media/settle.ts';
 import { LibraryUnreachable, libraryFor, type Library } from './library.ts';
 import { openApi } from './openapi.ts';
 import {
@@ -674,6 +678,8 @@ const setStatus: Route = async (request, ctx, [id]) => {
   const at = now();
   upload.status = status;
   upload.updated = at;
+  // Why it waited to be written is told again by the next approval, if any.
+  delete upload.publication;
   if (note === undefined) delete upload.note;
   else upload.note = note;
   upload.history.push({
@@ -688,6 +694,13 @@ const setStatus: Route = async (request, ctx, [id]) => {
       'changed-meanwhile',
       'The upload was changed while this was written. Try again.',
     );
+  }
+  // Approved, it is written into the media at once (docs/SPEC.md §8), and the answer says how
+  // that went: published, sent back, or waiting, and why.
+  if (status === 'accepted' && (await isLive(ctx))) {
+    const publishing = await publishNow(ctx, actor, [upload.id]);
+    const after = (await readUpload(bucket, upload.id))?.upload ?? upload;
+    return json({ ...view(after), publishing });
   }
   return json(view(upload));
 };
@@ -710,6 +723,8 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [/^\/api\/library$/, { GET: libraryStatus }],
   [/^\/api\/library\/import$/, { POST: importRoute }],
   [/^\/api\/publish$/, { POST: publishRoute }],
+  [/^\/api\/publications$/, { GET: publicationsRoute }],
+  [new RegExp(`^/api/publications/${MOMENT}$`), { GET: publicationRoute }],
   [/^\/api\/library\/staged\/([0-9a-f]{64})$/, { PUT: stageRoute }],
   [/^\/api\/library\/files$/, { POST: filesRoute }],
 ];

@@ -89,8 +89,8 @@ export interface Recorded {
 export interface Actor extends Recorded {
   /** A person's role, when they have one. */
   role?: Role;
-  /** How the request came: a person's session or token, or a program's key. */
-  via: 'session' | 'token' | 'key';
+  /** How the request came: a person's session or token, a program's key, or the library's own job. */
+  via: 'session' | 'token' | 'key' | 'job';
   /** A token's scope. */
   scope?: Scope;
 }
@@ -105,10 +105,12 @@ export const recordOf = (actor: Recorded): Recorded => ({
 /** Whether an actor sees every upload, and may change any of those that wait. */
 export const seesAll = (actor: Actor) =>
   actor.via === 'key' ||
+  actor.via === 'job' ||
   (actor.via === 'token' ? actor.scope === 'publish' : rankOf(actor.role) >= rankOf('reviewer'));
 
 /** Whether an actor is held to the limits of open uploading: anyone without a role. */
-export const limited = (actor: Actor) => actor.via !== 'key' && rankOf(actor.role) === 0;
+export const limited = (actor: Actor) =>
+  actor.via !== 'key' && actor.via !== 'job' && rankOf(actor.role) === 0;
 
 const KEY_LEAST = 32;
 

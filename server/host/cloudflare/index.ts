@@ -8,6 +8,7 @@ import type { Bucket } from '../../core/bucket.ts';
 import type { Context } from '../../core/context.ts';
 import { handle, isServed } from '../../core/index.ts';
 import { purgerFor } from '../../core/media/cache.ts';
+import { sweep } from '../../core/media/sweep.ts';
 import { Vault, masterKeyFromText } from '../../core/vault.ts';
 
 export interface Env {
@@ -64,5 +65,11 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (!isServed(new URL(request.url).pathname)) return env.ASSETS.fetch(request);
     return handle(request, await contextOf(env));
+  },
+
+  /** Once a minute (`triggers.crons`): the library's own jobs. */
+  async scheduled(_controller: unknown, env: Env): Promise<void> {
+    const { outcome } = await sweep(await contextOf(env));
+    if (outcome?.failed) console.warn(`The sweep wrote nothing: ${outcome.failed.message}`);
   },
 };

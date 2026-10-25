@@ -13,26 +13,19 @@
  * that was published, is a conflict, and nothing is written: the author pulls, and publishes
  * again. A path the author did not change is not named, and stays as the library has it.
  *
- * The staged files, the history and the lock are kept beside the uploads (`state`), as a
- * publication of uploads keeps them (`live.ts`), and the cache is emptied of what was written.
+ * The staged files, the history and the lease are kept beside the uploads (`state`), as a
+ * publication of uploads keeps them (`live.ts`). It writes as that does (`writing.ts`): the media
+ * is put back as it was when it fails before the manifest; and the cache is emptied of what was
+ * written.
  */
-import {
-  HISTORY,
-  LOCK,
-  MANIFEST,
-  encodeManifest,
-  isLibraryPath,
-  putFile,
-  putManifest,
-  readManifest,
-  sha256Hex,
-  type ManifestEntry,
-} from './live.ts';
-import type { Actor } from '../uploads/access.ts';
+import { MANIFEST, isLibraryPath, readManifest, sha256Hex, type ManifestEntry } from './live.ts';
+import { recordOf, type Actor } from '../uploads/access.ts';
 import type { Bucket } from '../bucket.ts';
 import { forgetLibrary } from '../uploads/library.ts';
 import type { Purge, Purger } from './cache.ts';
-import { NotNow, lock } from './publish.ts';
+import { Lease, NotNow } from './lease.ts';
+import { recordPublication, undo } from './publish.ts';
+import { Writing } from './writing.ts';
 
 /** In the bucket of the uploads. */
 export const STAGED = 'media/staged';
@@ -142,9 +135,9 @@ export async function publishFiles(
       'The library is not in its bucket yet: bring it in first (POST /api/library/import).',
     );
   }
-  await lock(state, actor);
+  const lease = await Lease.take(state, actor);
   try {
-    const { manifest, etag } = live;
+    const { manifest } = live;
     const result: FilesPublished = { added: [], changed: [], removed: [], same: [] };
     const conflicts: string[] = [];
     const missing: string[] = [];
@@ -183,36 +176,30 @@ export async function publishFiles(
     }
     if (writes.length === 0) return result;
 
-    const published = new Date().toISOString();
-    const history = `${HISTORY}/${published}`;
-    await state.put(`${history}/${MANIFEST}`, encodeManifest(manifest), {
-      httpMetadata: { contentType: 'application/json' },
-    });
-    const next = { ...manifest.files };
-    for (const [path, change] of writes) {
-      if (next[path]) {
-        const old = await media.get(path);
-        if (old) await state.put(`${history}/${path}`, await old.arrayBuffer());
-      }
-      if (change.to) {
+    const writing = new Writing(media, state, lease, live);
+    try {
+      for (const [path, change] of writes) {
+        if (!change.to) {
+          await writing.remove(path);
+          continue;
+        }
         const staged = await state.get(stagedKey(change.to.sha256));
         if (!staged) throw new Refused('not-staged', 'A staged file went missing.', [path]);
         const bytes = new Uint8Array(await staged.arrayBuffer());
         if (bytes.byteLength !== change.to.size) {
           throw new Refused('bad-request', 'A file is not of the size named for it.', [path]);
         }
-        await putFile(media, path, bytes, change.to.sha256);
-        (next[path] ? result.changed : result.added).push(path);
-        next[path] = { size: change.to.size, sha256: change.to.sha256 };
-      } else {
-        await media.delete(path);
-        delete next[path];
-        result.removed.push(path);
+        await writing.put(path, bytes, change.to.sha256);
       }
+      await writing.finish();
+    } catch (error) {
+      await undo(writing);
+      throw error;
     }
-    const text = encodeManifest({ version: 1, published, files: next });
-    if (!(await putManifest(media, text, etag)))
-      throw new NotNow('changed-meanwhile', 'The library was published meanwhile. Try again.');
+    const { published } = writing;
+    result.added.push(...writing.added);
+    result.changed.push(...writing.changed);
+    result.removed.push(...writing.removed);
     const used = [
       ...new Set(writes.flatMap(([, change]) => (change.to ? [stagedKey(change.to.sha256)] : []))),
     ];
@@ -220,8 +207,9 @@ export async function publishFiles(
     forgetLibrary();
     if (purge) result.cache = await purge([...result.added, ...result.changed, ...result.removed]);
     result.published = published;
+    await recordPublication(state, published, { kind: 'files', by: recordOf(actor), ...result });
     return result;
   } finally {
-    await state.delete(LOCK);
+    await lease.release();
   }
 }

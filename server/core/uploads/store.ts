@@ -22,11 +22,25 @@ import type { Draft, StoredFile } from './handler.ts';
 export const STATUSES = ['pending', 'accepted', 'rejected', 'published'] as const;
 export type Status = (typeof STATUSES)[number];
 
+/**
+ * Of an accepted upload not yet written, why, and when it is tried again (docs/SPEC.md §8): after
+ * 1, 5 and 30 minutes; with no `next`, it waits to be tried again by hand.
+ */
+export interface Waiting {
+  message: string;
+  at: string;
+  /** The tries that failed. */
+  attempts: number;
+  next?: string;
+}
+
 export interface Upload extends Draft {
   id: string;
   status: Status;
   /** What the last change of status said: why it was rejected. */
   note?: string;
+  /** While it is accepted and not yet written: why. */
+  publication?: Waiting;
   created: string;
   updated: string;
   by: Recorded;

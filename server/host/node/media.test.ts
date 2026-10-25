@@ -13,15 +13,21 @@ import {
   type Manifest,
 } from '../../core/media/live.ts';
 import { encodeTags } from '../../core/media/merge.ts';
+import { forgetMediaManifest, mediaManifest, mediaUrl } from '@slidr/media-library';
+import { LOCK } from '../../core/media/live.ts';
 import {
+  ALL_LANGUAGES,
   CATALOGS,
   FONTS,
   MemoryBucket,
   PICTURE,
   TEMPLATE,
   caller,
+  designLanguages,
+  failing,
+  webp,
 } from '../../core/uploads/testing.ts';
-import { seed } from './install.ts';
+import { seed, sweeping } from './install.ts';
 import { FolderMedia } from './media.ts';
 
 const folders: string[] = [];
@@ -156,29 +162,66 @@ const LIBRARY: Record<string, unknown> = {
   ...CATALOGS,
 };
 
-describe('a library on a machine, in a folder', () => {
-  test('publishes into the folder, and serves it at /media/', async () => {
-    const folder = await newFolder();
-    const media = new FolderMedia(folder);
-    await liveFolder(media, LIBRARY);
-    const owner = await caller({}, new MemoryBucket(), { MEDIA: media });
+const cake = {
+  type: 'emoji',
+  action: 'tag',
+  id: 'emoji',
+  languages: {
+    he: { tags: { 'birthday-cake': ['עוגה', 'יום הולדת', 'מסיבה'] } },
+    en: { tags: { 'birthday-cake': ['cake', 'birthday', 'party'] } },
+  },
+};
+
+const design = {
+  type: 'designs',
+  action: 'add',
+  id: 'm-harbour-launch',
+  group: 'events',
+  subject: [1500, 540],
+  languages: designLanguages(ALL_LANGUAGES),
+};
+
+/** A library in a folder of its own, live, which goes away when `control.fails` says so. */
+async function machine() {
+  const folder = await newFolder();
+  const media = new FolderMedia(folder);
+  await liveFolder(media, LIBRARY);
+  const { store, control } = failing(media);
+  const owner = await caller({}, new MemoryBucket(), { MEDIA: store });
+  /** Uploads it and approves it, while `held`, another publication holds the library. */
+  const approve = async (body: unknown, held = false) => {
     const made = (await (
-      await owner.send('/api/uploads', 'POST', {
-        type: 'emoji',
-        action: 'tag',
-        id: 'emoji',
-        languages: {
-          he: { tags: { 'birthday-cake': ['עוגה', 'יום הולדת', 'מסיבה'] } },
-          en: { tags: { 'birthday-cake': ['cake', 'birthday', 'party'] } },
-        },
-      })
+      body === design
+        ? await owner.upload(body, { picture: webp(1008, 1496) })
+        : await owner.send('/api/uploads', 'POST', body)
     ).json()) as { id: string };
-    const accepted = await owner.send(`/api/uploads/${made.id}/status`, 'POST', {
+    if (held) {
+      await owner.bucket.put(LOCK, JSON.stringify({ by: 'someone', at: new Date().toISOString() }));
+    }
+    const approved = await owner.send(`/api/uploads/${made.id}/status`, 'POST', {
       status: 'accepted',
     });
-    assert.equal(accepted.status, 200, await accepted.clone().text());
-    const published = await owner.send('/api/publish', 'POST', {});
-    assert.equal(published.status, 200, await published.clone().text());
+    assert.equal(approved.status, 200, await approved.clone().text());
+    if (held) await owner.bucket.put(LOCK, JSON.stringify({ free: true }));
+    return (await approved.json()) as { id: string; status: string };
+  };
+  return { folder, media, control, owner, approve };
+}
+
+/** Every file under a folder, by its path in it, with the SHA-256 of its bytes. */
+async function hashesIn(folder: string) {
+  const hashes: Record<string, string> = {};
+  for (const path of await filesIn(folder)) {
+    hashes[path] = await sha256Hex(await readFile(join(folder, ...path.split('/'))));
+  }
+  return hashes;
+}
+
+describe('a library on a machine, in a folder', () => {
+  test('writes an approved upload into the folder at once, and serves it at /media/', async () => {
+    const { folder, owner, approve } = await machine();
+    const approved = await approve(cake);
+    assert.equal(approved.status, 'published');
     const tags = JSON.parse(await readFile(join(folder, 'tags', 'emoji.json'), 'utf8')) as {
       tags: Record<string, unknown>;
     };
@@ -193,6 +236,63 @@ describe('a library on a machine, in a folder', () => {
     const served = await owner.call('/media/tags/emoji.json');
     assert.equal(served.headers.get('ETag'), `"${manifest.files['tags/emoji.json']!.sha256}"`);
     assert.match(await served.text(), /birthday-cake/);
+  });
+
+  test('is put back as it was when a publication fails part-way, at whichever write', async () => {
+    mock.method(console, 'error', () => {});
+    for (let at = 1; at <= 4; at += 1) {
+      const { folder, control, owner, approve } = await machine();
+      await approve(cake, true);
+      await approve(design, true);
+      const before = await hashesIn(folder);
+      control.writes = 0;
+      control.fails = (write) => write === at;
+      const failed = await owner.send('/api/publish', 'POST', {});
+      assert.equal(failed.status, 502, `at write ${at}`);
+      // As it was, file for file, and nothing half-written left behind.
+      assert.deepEqual(await hashesIn(folder), before, `at write ${at}`);
+      const hidden = (await readdir(folder, { recursive: true })).filter((name) =>
+        name.split(/[\\/]/).some((part) => part.startsWith('.')),
+      );
+      assert.deepEqual(hidden, [], `at write ${at}`);
+    }
+  });
+
+  test('what it writes, the app reads: every file against its manifest', async () => {
+    const { owner, approve } = await machine();
+    await approve(design);
+    await approve(cake);
+    // The app's own reader, reading the library from this server's /media/.
+    mock.method(globalThis, 'fetch', (input: string | URL | Request) => {
+      const url = String(input instanceof Request ? input.url : input);
+      return owner.call(`/media/${url.slice(mediaUrl('').length)}`);
+    });
+    forgetMediaManifest();
+    const manifest = await mediaManifest();
+    assert.ok(manifest.files['images/designs/m-harbour-launch.webp']);
+    for (const [path, entry] of Object.entries(manifest.files)) {
+      const bytes = new Uint8Array(await (await fetch(mediaUrl(path))).arrayBuffer());
+      assert.deepEqual([bytes.length, await sha256Hex(bytes)], [entry.size, entry.sha256], path);
+    }
+    forgetMediaManifest();
+  });
+
+  test('runs its jobs once a minute, one round at a time', async () => {
+    let open = () => undefined as void;
+    const gate = new Promise<void>((resolve) => (open = resolve));
+    let rounds = 0;
+    const jobs = sweeping(async () => {
+      rounds += 1;
+      await gate;
+      return { auth: {} };
+    });
+    const first = jobs.round();
+    assert.equal(jobs.round(), first);
+    open();
+    await first;
+    await jobs.round();
+    jobs.stop();
+    assert.equal(rounds, 2);
   });
 
   test('is seeded from a published library, file by file, and goes on where it stopped', async () => {

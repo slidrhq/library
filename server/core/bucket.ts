@@ -48,3 +48,21 @@ export interface BucketObject {
   text(): Promise<string>;
   arrayBuffer(): Promise<ArrayBuffer>;
 }
+
+/** Every key under `prefix`, in order. */
+export async function keysUnder(bucket: Bucket, prefix: string): Promise<string[]> {
+  const keys: string[] = [];
+  let startAfter: string | undefined;
+  for (;;) {
+    const page = await bucket.list({ prefix, startAfter, limit: 1000 });
+    keys.push(...page.objects.map((one) => one.key));
+    if (!page.truncated || page.objects.length === 0) return keys;
+    startAfter = page.objects.at(-1)!.key;
+  }
+}
+
+/** Takes away every object under `prefix`. */
+export async function removeUnder(bucket: Bucket, prefix: string): Promise<void> {
+  const keys = await keysUnder(bucket, prefix);
+  for (let at = 0; at < keys.length; at += 1000) await bucket.delete(keys.slice(at, at + 1000));
+}

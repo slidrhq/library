@@ -8,14 +8,27 @@ import {
   MEDIA,
   PICTURE,
   TEMPLATE,
+  EDITOR,
   MemoryBucket,
   caller,
   designLanguages,
+  failing,
   frenchSample,
   webp,
 } from '../uploads/testing.ts';
+import worker, { contextOf } from '../../host/cloudflare/index.ts';
+import { createUpload, newUploadId, readUpload, type Upload } from '../uploads/store.ts';
 import { purgerFor } from './cache.ts';
-import { MANIFEST, encodeManifest, sha256Hex, toBytes, toText, type Manifest } from './live.ts';
+import {
+  LOCK,
+  MANIFEST,
+  encodeManifest,
+  sha256Hex,
+  toBytes,
+  toText,
+  type Manifest,
+} from './live.ts';
+import { clear, sweep } from './sweep.ts';
 import {
   emptyCatalog,
   encodeTags,
@@ -63,6 +76,10 @@ const stored = (bucket: MemoryBucket, path: string) => {
 };
 
 const manifestOf = (bucket: MemoryBucket) => JSON.parse(stored(bucket, MANIFEST)!) as Manifest;
+
+/** Every object of a bucket, by its key, with its bytes: to compare what it holds before and after. */
+const snapshot = (bucket: MemoryBucket) =>
+  Object.fromEntries([...bucket.objects].map(([key, held]) => [key, held.data.join(',')]));
 
 /** The bucket holds the library and nothing else: it is public. */
 const onlyTheLibrary = (bucket: MemoryBucket) =>
@@ -328,35 +345,57 @@ describe('the library in its bucket', () => {
 });
 
 describe('a publication', () => {
-  /** An editor, with the library live in its bucket. */
+  /** An editor, with the library live in its bucket, which goes away when `control.fails` says. */
   async function live() {
     const session = await caller();
     const media = new MemoryBucket();
-    Object.assign(session.env, { MEDIA: media });
+    const { store, control } = failing(media);
+    Object.assign(session.env, { MEDIA: store });
     const before = await liveLibrary(media, LIBRARY);
-    const accept = async (body: unknown, files?: Record<string, Uint8Array<ArrayBuffer>>) => {
+    /** Uploads it, and approves it: what the approval answered. */
+    const approve = async (body: unknown, files?: Record<string, Uint8Array<ArrayBuffer>>) => {
       const made = await read<{ id: string }>(
         files
           ? await session.upload(body, files)
           : await session.send('/api/uploads', 'POST', body),
       );
       assert.ok(made.id, JSON.stringify(made));
-      const accepted = await session.send(`/api/uploads/${made.id}/status`, 'POST', {
+      const answer = await session.send(`/api/uploads/${made.id}/status`, 'POST', {
         status: 'accepted',
       });
-      assert.equal(accepted.status, 200, await accepted.clone().text());
-      return made.id;
+      assert.equal(answer.status, 200, await answer.clone().text());
+      return read<Approved>(answer);
     };
-    return { ...session, media, before, accept };
+    /** Approved while another publication holds the library: it waits, accepted. */
+    const waiting = async (body: unknown, files?: Record<string, Uint8Array<ArrayBuffer>>) => {
+      await session.bucket.put(
+        LOCK,
+        JSON.stringify({ by: 'someone', at: new Date().toISOString() }),
+      );
+      const approved = await approve(body, files);
+      assert.equal(approved.status, 'accepted');
+      await session.bucket.put(LOCK, JSON.stringify({ free: true }));
+      return approved.id;
+    };
+    return { ...session, media, control, before, approve, waiting };
   }
 
   interface Published {
     published?: string;
     uploads: { id: string; paths: string[] }[];
-    skipped: { id: string; message: string }[];
+    skipped: { id: string; reason: string; message: string }[];
     added: string[];
     changed: string[];
     cache?: { emptied: string; files?: number; host?: string; message?: string };
+  }
+
+  interface Approved {
+    id: string;
+    status: string;
+    note?: string;
+    history: { status: string; by: { id: string }; note?: string }[];
+    publication?: { message: string; attempts: number; next?: string };
+    publishing?: { publication?: Published; failed?: { code: string; message: string } };
   }
 
   const cake = {
@@ -369,21 +408,38 @@ describe('a publication', () => {
     },
   };
 
-  test('writes the accepted tags into the part’s file, and marks the upload published', async () => {
-    const { send, call, bucket, media, before, accept } = await live();
-    const id = await accept({
-      type: 'emoji',
-      action: 'tag',
-      id: 'emoji',
+  const balloons = {
+    type: 'graphics',
+    action: 'tag',
+    id: 'graphics',
+    languages: {
+      he: { tags: { 'fluent-emoji:balloon': balloon.he } },
+      en: { tags: { 'fluent-emoji:balloon': balloon.en } },
+    },
+  };
+
+  const design = {
+    type: 'designs',
+    action: 'add',
+    id: 'm-harbour-launch',
+    group: 'events',
+    subject: [1500, 540],
+    languages: designLanguages(ALL_LANGUAGES),
+  };
+
+  test('writes an approved upload at once, and the upload is published', async () => {
+    const { send, call, bucket, media, before, approve } = await live();
+    const approved = await approve({
+      ...cake,
       languages: {
-        he: { tags: { 'birthday-cake': balloon.he } },
-        en: { tags: { 'birthday-cake': balloon.en } },
+        ...cake.languages,
         fr: { tags: { 'birthday-cake': ['anniversaire', 'gâteau', 'fête'] } },
       },
     });
-    const response = await send('/api/publish', 'POST', {});
-    assert.equal(response.status, 200, await response.clone().text());
-    const done = await read<Published>(response);
+    const { id } = approved;
+    assert.equal(approved.status, 'published');
+    assert.equal(approved.publication, undefined);
+    const done = approved.publishing!.publication!;
     assert.deepEqual(
       done.uploads.map((one) => [one.id, one.paths]),
       [[id, ['tags/emoji.json']]],
@@ -413,19 +469,28 @@ describe('a publication', () => {
     assert.ok(
       stored(bucket, `media/history/${done.published}/tags/emoji.json`)!.includes('"other"'),
     );
-    assert.equal(bucket.objects.has('media/lock.json'), false);
+    // The lease is let go, and stays, free.
+    assert.deepEqual(JSON.parse(stored(bucket, LOCK)!), { free: true });
     onlyTheLibrary(media);
     // A Worker not set up to empty the cache says so.
     assert.equal(done.cache?.emptied, 'none');
     assert.match(done.cache.message!, /MEDIA_ZONE_ID/);
-    const upload = await read<{ status: string; history: { status: string }[] }>(
-      await call(`/api/uploads/${id}`),
-    );
-    assert.equal(upload.status, 'published');
     assert.deepEqual(
-      upload.history.map((one) => one.status),
+      approved.history.map((one) => one.status),
       ['pending', 'accepted', 'published'],
     );
+    // What it did is kept, for the reviewers.
+    const kept = await read<{ publications: (Published & { kind: string; by: { id: string } })[] }>(
+      await call('/api/publications'),
+    );
+    assert.deepEqual(
+      kept.publications.map((one) => [one.published, one.kind, one.by.id, one.uploads[0]!.id]),
+      [[done.published, 'uploads', EDITOR, id]],
+    );
+    const one = await call(`/api/publications/${done.published}`);
+    assert.equal(one.status, 200);
+    assert.deepEqual((await read<Published>(one)).changed, ['tags/emoji.json']);
+    assert.equal((await call('/api/publications/2020-01-01T00:00:00.000Z')).status, 404);
     // The library serves it, and nothing waits any more.
     assert.ok((await (await call('/media/tags/emoji.json')).text()).includes('birthday-cake'));
     const status = await read<{ accepted: number; published: string }>(await call('/api/library'));
@@ -435,33 +500,19 @@ describe('a publication', () => {
   });
 
   test('puts a new design into the studio’s catalog, with its picture, and a sample into its template', async () => {
-    const { send, call, media, accept } = await live();
-    const design = await accept(
-      {
-        type: 'designs',
-        action: 'add',
-        id: 'm-harbour-launch',
-        group: 'events',
-        subject: [1500, 540],
-        languages: designLanguages(ALL_LANGUAGES),
-      },
-      { picture: webp(1008, 1496) },
-    );
-    const sample = await accept({
+    const { send, call, media, approve } = await live();
+    const added = await approve(design, { picture: webp(1008, 1496) });
+    assert.deepEqual(added.publishing?.publication?.added, [
+      'elements/designs/managed.json',
+      'images/designs/m-harbour-launch.webp',
+    ]);
+    const sample = await approve({
       type: 'templates',
       action: 'translate',
       id: 'harbour',
       languages: { fr: { sample: frenchSample() } },
     });
-    const done = await read<Published>(
-      await send('/api/publish', 'POST', { uploads: [design, sample] }),
-    );
-    assert.deepEqual(done.skipped, []);
-    assert.deepEqual(done.added, [
-      'elements/designs/managed.json',
-      'images/designs/m-harbour-launch.webp',
-    ]);
-    assert.deepEqual(done.changed, ['templates/catalog.json']);
+    assert.deepEqual(sample.publishing?.publication?.changed, ['templates/catalog.json']);
     const managed = JSON.parse(stored(media, 'elements/designs/managed.json')!) as ReturnType<
       typeof emptyCatalog
     >;
@@ -485,86 +536,128 @@ describe('a publication', () => {
     const picture = await call('/media/images/designs/m-harbour-launch.webp');
     assert.equal(picture.headers.get('Content-Type'), 'image/webp');
     const again = await send('/api/uploads', 'POST', {
-      type: 'designs',
-      action: 'add',
-      id: 'm-harbour-launch',
-      group: 'events',
+      ...design,
       subject: [1, 1],
       languages: designLanguages(),
     });
     assert.equal(again.status, 422);
   });
 
-  test('leaves accepted what no longer holds, or cannot be written, saying why', async () => {
-    const { send, call, media, accept } = await live();
-    const id = await accept({
-      type: 'emoji',
-      action: 'tag',
-      id: 'emoji',
-      languages: {
-        he: { tags: { 'birthday-cake': balloon.he } },
-        en: { tags: { 'birthday-cake': balloon.en } },
-      },
-    });
-    // The item is gone from the library since the upload was accepted.
+  test('sends back to pending what no longer holds, saying why, and writes the rest', async () => {
+    const { send, call, media, waiting } = await live();
+    const gone = await waiting(cake);
+    const kept = await waiting(balloons);
+    // The item is gone from the library since the upload was approved.
     const catalog = 'elements/catalogs/emoji-catalog.json';
     const empty = toBytes('[]');
     await media.put(catalog, empty, { customMetadata: { sha256: await sha256Hex(empty) } });
     forgetLibrary();
     const done = await read<Published>(await send('/api/publish', 'POST', {}));
-    assert.deepEqual(done.uploads, []);
-    assert.equal(done.skipped[0]!.id, id);
-    assert.match(done.skipped[0]!.message, /no longer holds/);
-    assert.equal(
-      (await read<{ status: string }>(await call(`/api/uploads/${id}`))).status,
-      'accepted',
+    assert.deepEqual(
+      done.uploads.map((one) => one.id),
+      [kept],
+    );
+    assert.deepEqual(
+      done.skipped.map((one) => [one.id, one.reason]),
+      [[gone, 'invalid']],
+    );
+    const back = await read<Approved>(await call(`/api/uploads/${gone}`));
+    assert.equal(back.status, 'pending');
+    assert.match(back.note!, /no longer holds/);
+    assert.deepEqual(
+      back.history.map((one) => [one.status, one.by.id]),
+      [
+        ['pending', EDITOR],
+        ['accepted', EDITOR],
+        ['pending', EDITOR],
+      ],
     );
     // An upload that is not accepted is not published.
-    const pending = await read<{ id: string }>(
-      await send('/api/uploads', 'POST', {
-        type: 'graphics',
-        action: 'tag',
-        id: 'graphics',
-        languages: {
-          he: { tags: { 'fluent-emoji:balloon': balloon.he } },
-          en: { tags: { 'fluent-emoji:balloon': balloon.en } },
-        },
-      }),
+    const named = await read<Published>(await send('/api/publish', 'POST', { uploads: [gone] }));
+    assert.deepEqual(
+      named.skipped.map((one) => one.reason),
+      ['status'],
     );
-    const named = await read<Published>(
-      await send('/api/publish', 'POST', { uploads: [pending.id] }),
-    );
-    assert.match(named.skipped[0]!.message, /pending/);
     assert.equal((await send('/api/publish', 'POST', { uploads: ['nothing'] })).status, 400);
   });
 
-  test('is one at a time, and an upload is no longer marked published by hand', async () => {
-    const { send, bucket, accept } = await live();
-    const id = await accept(cake);
-    const marked = await send(`/api/uploads/${id}/status`, 'POST', { status: 'published' });
+  test('is one at a time: approved while another publishes, an upload waits, and says why', async () => {
+    const { send, bucket, approve } = await live();
+    await bucket.put(LOCK, JSON.stringify({ by: 'someone', at: new Date().toISOString() }));
+    const held = await approve(cake);
+    assert.equal(held.status, 'accepted');
+    assert.equal(held.publishing?.failed?.code, 'publishing');
+    assert.match(held.publication!.message, /someone/);
+    // Waiting on another publication is no failed try: it is tried at the next round.
+    assert.equal(held.publication!.attempts, 0);
+    const marked = await send(`/api/uploads/${held.id}/status`, 'POST', { status: 'published' });
     assert.equal(marked.status, 409);
     assert.equal((await read<{ error: string }>(marked)).error, 'publish-instead');
-    await bucket.put(
-      'media/lock.json',
-      JSON.stringify({ by: 'someone', at: new Date().toISOString() }),
-    );
     const busy = await send('/api/publish', 'POST', {});
     assert.equal(busy.status, 409);
     assert.equal((await read<{ error: string }>(busy)).error, 'publishing');
     // A publication left behind long ago does not hold the library.
-    await bucket.put(
-      'media/lock.json',
-      JSON.stringify({ by: 'someone', at: '2026-01-01T00:00:00.000Z' }),
-    );
+    await bucket.put(LOCK, JSON.stringify({ by: 'someone', at: '2026-01-01T00:00:00.000Z' }));
     assert.equal((await read<Published>(await send('/api/publish', 'POST', {}))).uploads.length, 1);
   });
 
+  test('two approved at the same moment are never written together', async () => {
+    const { media, approve, env } = await live();
+    const both = await Promise.all([approve(cake), approve(balloons)]);
+    // One publication ran; the other upload waits for the next round, which writes it.
+    await sweep(await contextOf(env));
+    const manifest = manifestOf(media);
+    for (const path of ['tags/emoji.json', 'tags/graphics.json']) {
+      assert.equal(
+        manifest.files[path]?.sha256,
+        await sha256Hex(media.objects.get(path)!.data),
+        path,
+      );
+    }
+    assert.ok(stored(media, 'tags/emoji.json')!.includes('birthday-cake'));
+    assert.ok(stored(media, 'tags/graphics.json')!.includes('fluent-emoji:balloon'));
+    assert.ok(both.some((one) => one.status === 'published'));
+  });
+
+  test('puts the media back as it was when it fails part-way, at whichever write', async () => {
+    mock.method(console, 'error', () => {});
+    // How many writes a publication of a design and a tag makes into the media.
+    const whole = await live();
+    await whole.waiting(cake);
+    await whole.waiting(design, { picture: webp(1008, 1496) });
+    whole.control.writes = 0;
+    await whole.send('/api/publish', 'POST', {});
+    const writes = whole.control.writes;
+    assert.equal(writes, 4);
+    for (let at = 1; at <= writes; at += 1) {
+      const { send, call, bucket, media, control, waiting } = await live();
+      const first = await waiting(cake);
+      await waiting(design, { picture: webp(1008, 1496) });
+      const before = snapshot(media);
+      control.writes = 0;
+      control.fails = (write) => write === at;
+      const failed = await send('/api/publish', 'POST', {});
+      assert.equal(failed.status, 502, `at write ${at}`);
+      assert.deepEqual(snapshot(media), before, `at write ${at}`);
+      // The history of a publication that did not happen is not kept.
+      assert.deepEqual(
+        [...bucket.objects.keys()].filter((key) => key.startsWith('media/history/')),
+        [],
+      );
+      assert.deepEqual(JSON.parse(stored(bucket, LOCK)!), { free: true });
+      const waits = await read<Approved>(await call(`/api/uploads/${first}`));
+      assert.equal(waits.status, 'accepted');
+      assert.equal(waits.publication?.attempts, 1);
+      assert.match(waits.publication.message, /went away/);
+    }
+  });
+
   test('empties the cache of the files it wrote, and of the manifest', async () => {
-    const { env, send, accept } = await live();
+    const { env, approve } = await live();
     Object.assign(env, ZONE);
-    const id = await accept(cake);
     const calls = cloudflare();
-    const done = await read<Published>(await send('/api/publish', 'POST', {}));
+    const approved = await approve(cake);
+    const done = approved.publishing!.publication!;
     assert.deepEqual(done.cache, { emptied: 'files', files: 2 });
     assert.deepEqual(calls, [
       {
@@ -575,14 +668,13 @@ describe('a publication', () => {
     ]);
     assert.deepEqual(
       done.uploads.map((one) => one.id),
-      [id],
+      [approved.id],
     );
   });
 
   test('is published all the same when Cloudflare refuses to empty the cache, and says so', async () => {
-    const { env, send, call, accept } = await live();
+    const { env, approve } = await live();
     Object.assign(env, ZONE);
-    const id = await accept(cake);
     const calls = cloudflare(() =>
       Response.json(
         { success: false, errors: [{ code: 10000, message: 'Authentication error' }] },
@@ -590,18 +682,13 @@ describe('a publication', () => {
       ),
     );
     mock.method(console, 'error', () => {});
-    const response = await send('/api/publish', 'POST', {});
-    assert.equal(response.status, 200);
-    const done = await read<Published>(response);
+    const approved = await approve(cake);
+    const done = approved.publishing!.publication!;
     assert.equal(done.cache?.emptied, 'none');
     assert.match(done.cache.message!, /Authentication error/);
     // A token Cloudflare refuses is not tried again.
     assert.equal(calls.length, 1);
-    mock.restoreAll();
-    assert.equal(
-      (await read<{ status: string }>(await call(`/api/uploads/${id}`))).status,
-      'published',
-    );
+    assert.equal(approved.status, 'published');
   });
 
   test('waits for the library to be brought in, and is only by whoever may publish', async () => {
@@ -613,6 +700,96 @@ describe('a publication', () => {
     const nobody = await caller({ nobody: true });
     Object.assign(nobody.env, { MEDIA: new MemoryBucket() });
     assert.ok([401, 403].includes((await nobody.send('/api/publish', 'POST', {})).status));
+  });
+
+  test('the sweep tries what waits again after 1, 5 and 30 minutes, then it waits for Try again', async () => {
+    mock.method(console, 'error', () => {});
+    const { send, call, env, control, waiting } = await live();
+    const id = await waiting(cake);
+    const ctx = await contextOf(env);
+    control.fails = () => true;
+    const waits = async () => (await read<Approved>(await call(`/api/uploads/${id}`))).publication;
+    const minute = 60_000;
+    let at = Date.now();
+    const tries: (number | undefined)[] = [];
+    for (const wait of [1, 5, 30]) {
+      const swept = await sweep(ctx, at);
+      assert.equal(swept.outcome?.failed?.code, 'not-written');
+      const waiting = await waits();
+      tries.push(waiting?.attempts);
+      assert.equal(Date.parse(waiting!.next!) - at, wait * minute);
+      // Not due before then.
+      assert.equal((await sweep(ctx, at + wait * minute - 1000)).outcome, undefined);
+      at += wait * minute;
+    }
+    await sweep(ctx, at);
+    const last = await waits();
+    assert.deepEqual([...tries, last?.attempts, last?.next], [1, 2, 3, 4, undefined]);
+    assert.equal((await sweep(ctx, at + 24 * 60 * minute)).outcome, undefined);
+    // Try again, by hand, once the store is back.
+    control.fails = () => false;
+    const again = await read<Published>(await send('/api/publish', 'POST', { uploads: [id] }));
+    assert.deepEqual(
+      again.uploads.map((one) => one.id),
+      [id],
+    );
+    const published = await read<Approved>(await call(`/api/uploads/${id}`));
+    assert.deepEqual([published.status, published.publication], ['published', undefined]);
+    assert.equal(published.history.at(-1)!.by.id, EDITOR);
+  });
+
+  test('the sweep runs on Cloudflare once a minute, as the library', async () => {
+    const { call, env, waiting } = await live();
+    const id = await waiting(cake);
+    await worker.scheduled({}, env);
+    const published = await read<Approved>(await call(`/api/uploads/${id}`));
+    assert.equal(published.status, 'published');
+    assert.equal(published.history.at(-1)!.by.id, 'library');
+  });
+});
+
+describe('clearing', () => {
+  test('takes away rejected uploads after 30 days, and keeps the last 100 publications', async () => {
+    const bucket = new MemoryBucket();
+    /** An upload rejected `days` ago. */
+    const rejectedAt = async (days: number) => {
+      const at = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const id = newUploadId();
+      const upload = {
+        id,
+        type: 'emoji',
+        action: 'tag',
+        target: 'emoji',
+        languages: {},
+        files: {},
+        status: 'rejected',
+        created: at,
+        updated: at,
+        by: { id: EDITOR },
+        history: [],
+      } as unknown as Upload;
+      await createUpload(bucket, upload, new Map());
+      return id;
+    };
+    const old = await rejectedAt(31);
+    const recent = await rejectedAt(29);
+    for (let second = 0; second < 102; second += 1) {
+      const moment = new Date(Date.UTC(2026, 9, 1, 0, 0, second)).toISOString();
+      await bucket.put(`media/publications/${moment}.json`, '{}');
+      await bucket.put(`media/history/${moment}/manifest.json`, '{}');
+    }
+    const cleared = await clear(bucket);
+    assert.deepEqual(cleared, { rejected: 1, publications: 2 });
+    assert.equal(await readUpload(bucket, old), undefined);
+    assert.ok(await readUpload(bucket, recent));
+    const moments = [...bucket.objects.keys()].filter((key) =>
+      key.startsWith('media/publications/'),
+    );
+    assert.equal(moments.length, 100);
+    assert.equal(moments.sort()[0], 'media/publications/2026-10-01T00:00:02.000Z.json');
+    assert.equal(bucket.objects.has('media/history/2026-10-01T00:00:01.000Z/manifest.json'), false);
+    // Once a day.
+    assert.equal(await clear(bucket), undefined);
   });
 });
 
@@ -760,7 +937,7 @@ describe('an author’s publication of files', () => {
     // All or none: the icons are not written either.
     assert.deepEqual(manifestOf(media), live);
     assert.equal(stored(media, 'icons/lucide/tags.json'), '{"cake":["birthday"]}');
-    assert.equal(bucket.objects.has('media/lock.json'), false);
+    assert.deepEqual(JSON.parse(stored(bucket, LOCK)!), { free: true });
   });
 
   test('takes only files sent first, under their own hash, by whoever may publish', async () => {

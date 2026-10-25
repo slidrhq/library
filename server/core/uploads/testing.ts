@@ -96,6 +96,27 @@ export class MemoryBucket implements Bucket {
   }
 }
 
+/**
+ * A store that goes away when `fails` says so, for the write it counts (puts and deletes alike,
+ * from 1), as a store lost part-way through a publication; reading always works.
+ */
+export function failing(bucket: Bucket, fails: (write: number) => boolean = () => false) {
+  const control = { fails, writes: 0 };
+  const write = <T>(work: () => Promise<T>) => {
+    control.writes += 1;
+    return control.fails(control.writes)
+      ? Promise.reject(new Error('The store went away.'))
+      : work();
+  };
+  const store: Bucket = {
+    get: (key) => bucket.get(key),
+    list: (options) => bucket.list(options),
+    put: (key, value, options) => write(() => bucket.put(key, value, options)),
+    delete: (keys) => write(() => bucket.delete(keys)),
+  };
+  return { store, control };
+}
+
 /** A WebP picture's first bytes, as far as its size is read from them (an extended one). */
 export function webp(width: number, height: number): Uint8Array<ArrayBuffer> {
   const bytes = new Uint8Array(30);

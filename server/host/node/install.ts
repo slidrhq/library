@@ -21,6 +21,8 @@ import {
   type MediaSettings,
 } from '../../core/config.ts';
 import type { Context, MediaStore } from '../../core/context.ts';
+import { openLease } from '../../core/media/lease.ts';
+import { sweep } from '../../core/media/sweep.ts';
 import { emailOf, isEmail, writePerson } from '../../core/people.ts';
 import { Vault, masterKeyText, newMasterKey, randomKey } from '../../core/vault.ts';
 import { masterKeysOf, type MasterKeys, type MasterSource } from './master.ts';
@@ -176,6 +178,7 @@ export async function install(options: InstallOptions): Promise<Installed> {
     ...(media ? { media } : {}),
   });
   await writePerson(state, { email: owner, role: 'owner', added: now, by: 'install' });
+  await openLease(state);
   const host: HostFile = { version: 1, master: options.master };
   await writeFile(join(data, HOST), `${JSON.stringify(host, null, 2)}\n`);
   return { data, owner, master: keys.where, warnings };
@@ -318,7 +321,10 @@ export async function seed(
       throw error;
     }
     progress(step);
-    if (step.done) return step;
+    if (step.done) {
+      if (ctx.state) await openLease(ctx.state);
+      return step;
+    }
     idle = step.copied === 0 ? idle + 1 : 0;
     if (idle >= 3) {
       throw new LibraryError(
@@ -326,4 +332,30 @@ export async function seed(
       );
     }
   }
+}
+
+/**
+ * Runs the library's jobs (`sweep.ts`) every `every` milliseconds, one round at a time, until
+ * stopped: on a machine, the process's own timer does what a Cron Trigger does on Cloudflare.
+ */
+export function sweeping(source: () => Promise<Context>, every = 60_000) {
+  let running: Promise<void> | undefined;
+  const round = () => {
+    running ??= (async () => {
+      try {
+        const { outcome } = await sweep(await source());
+        if (outcome?.failed) console.warn(`The sweep wrote nothing: ${outcome.failed.message}`);
+      } catch (error) {
+        console.error(
+          `The sweep failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      } finally {
+        running = undefined;
+      }
+    })();
+    return running;
+  };
+  const timer = setInterval(() => void round(), every);
+  timer.unref();
+  return { round, stop: () => clearInterval(timer) };
 }
