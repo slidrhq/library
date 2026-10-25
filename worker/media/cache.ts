@@ -1,7 +1,7 @@
 /**
  * Cloudflare's cache before the published library. media.slidr.studio is the library's bucket
  * itself (`live.ts`), and Cloudflare keeps each file it answered for a day, and the manifest for
- * five minutes (README, "Serving the library"). A publication writes files under the paths they
+ * two hours, the least the Free plan allows (README, "Serving the library"). A publication writes files under the paths they
  * had, so once the manifest is written it empties the cache of every file it wrote, and of the
  * manifest: the next request for one reads it from the bucket. Every other file stays in the cache.
  *
