@@ -14,15 +14,23 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import {
+  CONFIG,
+  LibraryConfig,
   readConfig,
   writeConfig,
-  type LibraryConfig,
   type MediaSettings,
 } from '../../core/config.ts';
-import type { Context } from '../../core/context.ts';
+import type { Context, MediaStore } from '../../core/context.ts';
 import { emailOf, isEmail, writePerson } from '../../core/people.ts';
 import { Vault, masterKeyText, newMasterKey, randomKey } from '../../core/vault.ts';
 import { masterKeysOf, type MasterKeys, type MasterSource } from './master.ts';
+import {
+  ImportRefused,
+  MOST_BATCH,
+  importLibrary,
+  type Imported,
+} from '../../core/media/import.ts';
+import { FolderMedia } from './media.ts';
 import { FolderBucket } from './state.ts';
 
 export interface HostFile {
@@ -207,10 +215,44 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
 }
 
 /** What the server is given, of a library on this machine. */
-export function contextOf(library: Library): Promise<Context> {
+/** The media store of some settings: a folder of this machine. */
+export const openMedia = (settings: MediaSettings): MediaStore => new FolderMedia(settings.path);
+
+function contextFor(library: Library): Context {
+  const media = library.config.media;
   // The session key is the vault's, read as each request needs it (`sessionKeyOf`); the owner
-  // signs in on this machine by a link of the CLI.
-  return Promise.resolve({ state: library.state, vault: library.vault, auth: {}, local: true });
+  // signs in on this machine by a link of the CLI. On a machine, an admin changes it all.
+  return {
+    state: library.state,
+    vault: library.vault,
+    ...(media ? { media: openMedia(media) } : {}),
+    ...(media?.publicUrl ? { publicUrl: media.publicUrl } : {}),
+    auth: {},
+    local: true,
+    editable: { url: true, media: true },
+    openMedia,
+  };
+}
+
+export function contextOf(library: Library): Promise<Context> {
+  return Promise.resolve(contextFor(library));
+}
+
+/**
+ * The context of each request: made again once the library's settings change (an admin names
+ * another media folder), so the server need not be started again for it.
+ */
+export function contextSource(library: Library): () => Promise<Context> {
+  let held: { etag: string; context: Context } | undefined;
+  return async () => {
+    const object = await library.state.get(CONFIG);
+    if (!object) return held?.context ?? contextFor(library);
+    if (held?.etag !== object.etag) {
+      library.config = LibraryConfig.parse(JSON.parse(await object.text()));
+      held = { etag: object.etag, context: contextFor(library) };
+    }
+    return held.context;
+  };
 }
 
 /**
@@ -251,5 +293,37 @@ export async function running(data: string): Promise<Running | undefined> {
     return found;
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * Copies a published library into the library's media store, while it holds none
+ * (`pnpm library seed`; docs/SPEC.md §4.5): every file, checked against the site's manifest, a
+ * batch at a time, and the manifest last. A file already there with its bytes is not copied
+ * again, so a seed that stopped goes on where it was.
+ */
+export async function seed(
+  ctx: Context,
+  from: string,
+  progress: (step: Imported) => void = () => undefined,
+): Promise<Imported> {
+  if (!ctx.media) throw new LibraryError('The library has no media store to seed: name one first.');
+  let idle = 0;
+  for (;;) {
+    let step: Imported;
+    try {
+      step = await importLibrary(ctx.media, from, MOST_BATCH);
+    } catch (error) {
+      if (error instanceof ImportRefused) throw new LibraryError(error.message);
+      throw error;
+    }
+    progress(step);
+    if (step.done) return step;
+    idle = step.copied === 0 ? idle + 1 : 0;
+    if (idle >= 3) {
+      throw new LibraryError(
+        `Nothing was copied three times running: ${step.failed.map((one) => `${one.path}: ${one.message}`).join('; ')}`,
+      );
+    }
   }
 }

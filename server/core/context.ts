@@ -5,6 +5,7 @@
  * (`../host/cloudflare/index.ts`).
  */
 import type { Bucket } from './bucket.ts';
+import type { MediaSettings } from './config.ts';
 import type { Purger } from './media/cache.ts';
 import type { Vault } from './vault.ts';
 
@@ -48,6 +49,8 @@ export interface Context {
    * published library (`MEDIA_LIBRARY_URL` of `@slidr/media-library`) unless the host names another.
    */
   site?: string;
+  /** Where installed apps read the published library, when the host names it. */
+  publicUrl?: string;
   /** Empties the cache before the published library of what a publication wrote (`media/cache.ts`). */
   purge?: Purger;
   auth: AuthSettings;
@@ -55,4 +58,8 @@ export interface Context {
   clientAddress?: string;
   /** Whether the owner signs in by a link of the CLI: a library on a machine (`auth.ts`). */
   local?: boolean;
+  /** What of the library's settings the host lets an admin change (`settings.ts`). */
+  editable?: { url?: boolean; media?: boolean };
+  /** Opens the media store of some settings, to try them before they are kept (`settings.ts`). */
+  openMedia?: (settings: MediaSettings) => MediaStore;
 }

@@ -6,10 +6,12 @@
  * frame and hands it the page's `@font-face` rules. A face is fetched only when text uses it, or
  * when a conversion asks for a family ahead of measuring, so nothing unused is downloaded.
  */
+import { mediaBase } from '@slidr/media-library';
 import { familyForLetters, type FontFamilyEntry } from '@slidr/model';
 import { hebrewFace, hebrewFaces, setFontCounterparts } from '@slidr/renderer';
 
-export const MEDIA_URL = 'https://media.slidr.studio/';
+/** Where the fonts are: the library this page reads (`./media`). */
+export const MEDIA_URL = mediaBase();
 
 interface Face {
   family: string;

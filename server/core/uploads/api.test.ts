@@ -32,10 +32,7 @@ interface Answer {
   target: string;
   languages: Record<string, unknown>;
   missing: string[];
-  files: Record<
-    string,
-    { path: string; sha256: string; width: number; height: number; url: string }
-  >;
+  files: Record<string, { sha256: string; width: number; height: number; url: string }>;
   history: { status: string; note?: string; by: { id: string } }[];
   note?: string;
 }
@@ -162,7 +159,8 @@ describe('a new design', () => {
     assert.equal(made.target, 'm-harbour-launch');
     assert.deepEqual(Object.keys(made.languages), ['he', 'en']);
     assert.deepEqual(made.missing, ALL_LANGUAGES.slice(2));
-    assert.equal(made.files.picture!.path, 'images/designs/m-harbour-launch.webp');
+    // Where the library will keep it is the library's own business (D7).
+    assert.equal('path' in made.files.picture!, false);
     assert.deepEqual([made.files.picture!.width, made.files.picture!.height], [1008, 1496]);
     assert.equal(made.history[0]!.by.id, EDITOR);
     assert.ok(bucket.objects.has(`uploads/${made.id}.json`));

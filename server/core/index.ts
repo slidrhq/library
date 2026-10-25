@@ -18,6 +18,7 @@ import { problem } from './http.ts';
 import { MEDIA_PREFIX, serveMedia } from './media/serve.ts';
 import { membersApi } from './members.ts';
 import { profileApi } from './profile.ts';
+import { settingsApi } from './settings.ts';
 import { uploadsApi } from './uploads/api.ts';
 
 type Route = (request: Request, ctx: Context) => Response | Promise<Response>;
@@ -59,6 +60,7 @@ export async function handle(request: Request, ctx: Context): Promise<Response> 
     return (
       (await membersApi(request, ctx)) ??
       (await profileApi(request, ctx)) ??
+      (await settingsApi(request, ctx)) ??
       (await uploadsApi(request, ctx)) ??
       json({ error: 'not-found' }, 404)
     );

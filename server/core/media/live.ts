@@ -28,6 +28,8 @@
 import type { Bucket } from '../bucket.ts';
 
 export const MANIFEST = 'manifest.json';
+/** A file a media store is tried with (`settings.ts`): never one of the library's, and hidden. */
+export const PROBE = '.slidr-library-probe.json';
 /** In the bucket of the uploads. */
 export const HISTORY = 'media/history';
 export const LOCK = 'media/lock.json';

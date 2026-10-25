@@ -741,7 +741,7 @@ function FileFact({ name, file }: { name: string; file: Upload['files'][string] 
       <dt dir="ltr">{name}</dt>
       <dd dir="ltr">
         <a href={file.url} target="_blank" rel="noreferrer">
-          {file.path}
+          {file.type}
         </a>
         <span className="muted block">
           {file.width && file.height ? `${file.width}×${file.height} · ` : ''}

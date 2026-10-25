@@ -40,7 +40,6 @@ export interface Actor {
 }
 
 export interface UploadFile {
-  path: string;
   type: string;
   bytes: number;
   sha256: string;

@@ -5,6 +5,7 @@
  *   init          installs a library into a data folder, its installer as its owner
  *   start         serves it, on http://127.0.0.1:5176 unless told otherwise
  *   login         prints a link that signs the owner in, once, on this machine
+ *   seed          copies a published library into the library's empty media folder
  *   sign-in       names the provider everyone else signs in through, and its client
  *   vault rotate  seals every key of it again, under a new master key
  *
@@ -22,13 +23,16 @@ import { listPeople } from '../../core/people.ts';
 import {
   LibraryError,
   contextOf,
+  contextSource,
   defaultDataDir,
   install,
   markRunning,
   openLibrary,
   rotate,
   running,
+  seed,
 } from './install.ts';
+import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { MasterKeyError, type MasterSource } from './master.ts';
 import { DEFAULT_HOST, DEFAULT_PORT, isLoopback, serve } from './server.ts';
 
@@ -36,11 +40,12 @@ const CLIENT = fileURLToPath(new URL('../../../dist/client/', import.meta.url));
 
 const USAGE = `pnpm library <command>
 
-  init          [--data <dir>] --owner <email> [--media-path <dir>] [--url <address>]
+  init          [--data <dir>] --owner <email> [--media-path <dir> [--seed]] [--url <address>]
                 [--master-key-file <file> | --master-key-env]
   start         [--data <dir>] [--port ${DEFAULT_PORT}] [--url <address>]
                 [--host <address> (--tls-cert <file> --tls-key <file> | --behind-proxy)]
   login         [--data <dir>]
+  seed          [--data <dir>] [--from <address>]   (the published library unless named)
   sign-in       google --client-id <id> [--allowed-domains <a.org,b.org>] [--data <dir>]
                 microsoft --tenant <id> --client-id <id> [--allowed-domains …]
                 oidc --issuer <address> --client-id <id> [--name <shown>] [--allowed-domains …]
@@ -107,6 +112,7 @@ async function init(args: string[]) {
       url: { type: 'string' },
       'master-key-file': { type: 'string' },
       'master-key-env': { type: 'boolean' },
+      seed: { type: 'boolean' },
     },
   });
   const data = values.data ?? defaultDataDir();
@@ -133,7 +139,26 @@ async function init(args: string[]) {
   console.log(`Installed the library in ${installed.data}.`);
   console.log(`  owner:      ${installed.owner}`);
   console.log(`  master key: ${installed.master}`);
+  if (values.seed && mediaPath) await seedFrom(installed.data, MEDIA_LIBRARY_URL);
   console.log('Start it: pnpm library start');
+}
+
+/** Seeds the library of a data folder from a published library, saying how far it got. */
+async function seedFrom(data: string, from: string) {
+  const library = await openLibrary(data);
+  const done = await seed(await contextOf(library), from, (step) => {
+    const failed = step.failed.length ? `, ${step.failed.length} failed` : '';
+    console.log(`  ${step.present} of ${step.files} files${failed}`);
+  });
+  console.log(`Seeded the media folder with the library published ${done.published}.`);
+}
+
+async function seedCommand(args: string[]) {
+  const { values } = parseArgs({
+    args,
+    options: { data: { type: 'string' }, from: { type: 'string' } },
+  });
+  await seedFrom(values.data ?? defaultDataDir(), values.from ?? MEDIA_LIBRARY_URL);
 }
 
 async function start(args: string[]) {
@@ -181,7 +206,8 @@ async function start(args: string[]) {
     throw new LibraryError(`${values.port} is not a port.`);
   }
   const serving = await serve({
-    context: await contextOf(library),
+    context: contextSource(library),
+    mediaPath: '/media/',
     client: CLIENT,
     host,
     port,
@@ -294,6 +320,7 @@ const COMMANDS: Record<string, (args: string[]) => Promise<void>> = {
   init,
   start,
   login,
+  seed: seedCommand,
   'sign-in': signIn,
   vault,
 };

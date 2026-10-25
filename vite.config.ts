@@ -10,6 +10,10 @@ export default defineConfig({
   // The Worker of `wrangler.jsonc` runs inside the dev server and is built beside the page.
   plugins: [react(), cloudflare()],
   clearScreen: false,
+  // The app's readers ask `__SLIDR_MEDIA_PATH__` where the library is served on this page's own
+  // origin (`@slidr/media-library`): a library on a machine names `/media/` to the page
+  // (server/host/node/server.ts); on Cloudflare it names nothing, and they read the published site.
+  define: { __SLIDR_MEDIA_PATH__: 'globalThis.__slidrMediaPath' },
   resolve: {
     alias: { '@desktop': desktop },
   },

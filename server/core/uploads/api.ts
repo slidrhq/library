@@ -83,7 +83,10 @@ const ordered = (languages: Draft['languages']): Draft['languages'] =>
 const missingOf = (handler: Handler, upload: Draft) =>
   handler.languages.complete.filter((lang) => !Object.hasOwn(upload.languages, lang));
 
-/** An upload as the API answers it: with the languages it lacks, and where its files are. */
+/**
+ * An upload as the API answers it: with the languages it lacks, and where to read its files. Where
+ * the library will keep them is the library's own business (D7), and no answer says it.
+ */
 function view(upload: Upload) {
   const handler = handlerOf(upload.type, upload.action);
   const base = `/api/uploads/${upload.id}`;
@@ -91,7 +94,7 @@ function view(upload: Upload) {
     ...upload,
     missing: handler ? missingOf(handler, upload) : [],
     files: Object.fromEntries(
-      Object.entries(upload.files).map(([name, file]) => [
+      Object.entries(upload.files).map(([name, { path: _kept, ...file }]) => [
         name,
         { ...file, url: `${base}/files/${name}` },
       ]),

@@ -205,3 +205,45 @@ describe('the owner’s link', () => {
     assert.equal(answer.status, 404);
   });
 });
+
+describe('the library on a machine, with its media folder', () => {
+  test('names its /media/ to the page, and serves the folder there', async () => {
+    const root = await newFolder();
+    const client = join(root, 'client');
+    await mkdir(client);
+    await writeFile(
+      join(client, 'index.html'),
+      '<!doctype html><html><head><title>L</title></head></html>',
+    );
+    const keys = memoryKeys();
+    await install({
+      data: join(root, 'data'),
+      owner: 'owner@example.org',
+      master: 'keychain',
+      keys,
+      media: { kind: 'folder', path: join(root, 'media') },
+    });
+    await writeFile(
+      join(root, 'media', 'manifest.json'),
+      '{"version":1,"published":"x","files":{}}',
+    );
+    const context = await contextOf(await openLibrary(join(root, 'data'), keys));
+    const own = await serve({ context, client, port: 0, mediaPath: '/media/' });
+    try {
+      const page = await (await fetch(own.url)).text();
+      assert.match(
+        page,
+        /<head><script>globalThis.__slidrMediaPath = "\/media\/";<\/script><title>/,
+      );
+      const manifest = await fetch(new URL('media/manifest.json', own.url));
+      assert.equal(manifest.status, 200);
+      assert.equal(manifest.headers.get('Cache-Control'), 'no-cache');
+      const library = (await (await fetch(new URL('api/me', own.url))).json()) as object;
+      assert.ok(library);
+    } finally {
+      await own.close();
+    }
+    // Without a folder, the page reads the published library: nothing is named to it.
+    assert.doesNotMatch(await (await fetch(base)).text(), /__slidrMediaPath/);
+  });
+});

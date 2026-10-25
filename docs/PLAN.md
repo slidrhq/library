@@ -120,16 +120,16 @@ The core is moved out of the Worker so a second host can run it.
 
 ## P5. Media stores: the folder, the bookkeeping, `/media/`
 
-- `server/host/node/media/folder.ts`, the `MediaStore` of a local folder (§4.5):
-  - writes go to a temporary name in the same folder, then a rename;
-  - every path stays inside the root (`isLibraryPath`, then a check after resolving; links are not followed);
-  - a file's SHA-256 comes from the manifest, and the manifest's etag is its SHA-256;
-  - `test()` writes and removes a probe file.
-- The bookkeeping is in the state store already (`main`, 4e2bef5: `media/history/`, `media/staged/`, `media/lock.json`; D11). What remains of it: the lock taken with put-if-match (§4.7), so two never take it together.
-- `/media/` is `serve.ts` over `ctx.media`. The page is built with `define: { __SLIDR_MEDIA_PATH__: '"/media/"' }` in `vite.config.ts`. Check that every reader in `vendor/desktop/src` goes through `mediaUrl`/`mediaBase` and none names the site, and that `src/media.ts` stops naming `MEDIA_LIBRARY_URL`.
+- `server/host/node/media.ts`, `FolderMedia`, the `MediaStore` of a local folder (§4.5):
+  - writes go to a hidden name in the same folder, then a rename;
+  - every path stays inside the root (`isLibraryPath`, then a check after resolving; a link out of the root leads nowhere);
+  - a file's SHA-256 comes from the manifest, or is read once and kept while the file is unchanged; a file's etag is its size and the moment it was written, and one process writes the folder, so put-if-match holds;
+  - `testStore` (`settings.ts`) reads the manifest, then writes and removes a hidden probe file.
+- The bookkeeping is in the state store already (`main`, 4e2bef5: `media/history/`, `media/staged/`, `media/lock.json`; D11). What remains of it, the lock taken with put-if-match (§4.7), moves to P6: until approving publishes, publications start by hand, and the manifest is written with put-if-match.
+- `/media/` is `serve.ts` over `ctx.media`. The page is built with `define: { __SLIDR_MEDIA_PATH__: 'globalThis.__slidrMediaPath' }` in `vite.config.ts`, and the server on a machine sets it to `/media/` in the page it serves; on Cloudflare it stays unset, and the page reads the published site. Check that every reader in `vendor/desktop/src` goes through `mediaUrl`/`mediaBase` and none names the site, and that `src/media.ts` stops naming `MEDIA_LIBRARY_URL`.
 - The checks: `libraryFor` reads `ctx.media` once it has a manifest, and the site before that, as today.
 - Settings:
-  - `GET/PUT /api/settings/*`, `PUT /api/settings/media/key`, `POST /api/settings/media/test`;
+  - `GET/PUT /api/settings/*` and `POST /api/settings/media/test` (`server/core/settings.ts`); a store is tried before it is kept, and the server reads the settings again when they change (`contextSource`). `PUT /api/settings/media/key` comes with the first store that has a key (P7);
   - the **Settings** page (§5.3) with the folder;
   - **Seed**, which is today's import over any store, from the CLI (`init --seed`) and from the page.
 - D7: take `path` out of upload views, and `bucket` out of `GET /api/library`. First find what the page reads of them (`src/uploadsApi.ts`, `src/Uploads.tsx`, `src/UploadDetail.tsx`), and keep them inside the core (`publish.ts` checks `stored.path`).
@@ -142,6 +142,7 @@ The core is moved out of the Worker so a second host can run it.
 
 ## P6. Approval publishes
 
+- The lease (`media/lock.json`) is taken with put-if-match: two reviewers who approve at once never both write. It stays in the store once made, and is let go by writing it as free, again with put-if-match, so taking it never depends on a file being absent.
 - Approving (`setStatus` to `accepted`) checks the upload, saves it, then calls `publish(…, [id])`, and answers the upload together with the publication.
   - When the lease is held, it answers `accepted`, waiting.
   - When the upload no longer holds, it goes back to `pending` with the note (§8).

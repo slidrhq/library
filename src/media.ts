@@ -1,14 +1,19 @@
 /**
- * The published media library, read from the site itself (docs/media-library.md): the files the
- * app reads while it runs, as every installed app sees them. The site answers any origin, so these
- * pages read it directly, through `@slidr/media-library` as the app's own readers do (`./app`).
+ * The published media library (docs/media-library.md): the files the app reads while it runs, as
+ * every installed app sees them. These pages read it through `@slidr/media-library`, as the app's
+ * own readers do (`./app`): from the published site, which answers any origin; or, on a library
+ * installed on a machine, from its own server's `/media/`, which that server names to the page
+ * (`__slidrMediaPath`, server/host/node/server.ts; `vite.config.ts`).
  *
  * Every file is read once per visit of the page; reloading the page reads what is published now
  * (the site asks the browser to check every file again).
  */
-import { MEDIA_LIBRARY_URL, mediaUrl } from '@slidr/media-library';
+import { mediaBase, mediaUrl } from '@slidr/media-library';
 
-export { MEDIA_LIBRARY_URL, mediaUrl };
+/** Where this page reads the library: the published site, or its own server's `/media/`. */
+export const MEDIA_LIBRARY_URL = mediaBase();
+
+export { mediaUrl };
 
 export interface ManifestFile {
   size: number;

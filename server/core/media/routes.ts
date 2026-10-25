@@ -58,8 +58,12 @@ export const libraryStatus: Route = async (request, ctx) => {
   const files = live ? Object.values(live.manifest.files) : [];
   return json({
     live: live !== undefined,
-    bucket: ctx.media !== undefined,
-    site: ctx.site ?? MEDIA_LIBRARY_URL,
+    // Where installed apps read it: its public address, or this server's own on a machine.
+    site:
+      ctx.publicUrl ??
+      (ctx.local && ctx.media
+        ? new URL('/media/', request.url).href
+        : (ctx.site ?? MEDIA_LIBRARY_URL)),
     ...(live
       ? {
           published: live.manifest.published,

@@ -25,7 +25,13 @@ import { fromThisMachine } from '../../core/auth.ts';
 import { handle, isServed } from '../../core/index.ts';
 
 export interface ServeOptions {
-  context: Context;
+  /** What the server is given; made again for each request when it is a function. */
+  context: Context | (() => Promise<Context>);
+  /**
+   * Where the page reads the library on this server, when it has one (`ctx.media`); none, and the
+   * page reads the published site.
+   */
+  mediaPath?: string;
   /** The built page. */
   client: string;
   host?: string;
@@ -89,7 +95,11 @@ async function fileAt(path: string): Promise<{ path: string; bytes: Buffer } | u
  * the page's own (`/designs/…`): `index.html` answers it, as Cloudflare's assets do
  * (`not_found_handling: single-page-application`).
  */
-export async function pageFile(request: Request, client: string): Promise<Response> {
+export async function pageFile(
+  request: Request,
+  client: string,
+  mediaPath?: string,
+): Promise<Response> {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
   }
@@ -106,6 +116,11 @@ export async function pageFile(request: Request, client: string): Promise<Respon
     (await fileAt(target)) ??
     (extname(path) === '' ? await fileAt(join(root, 'index.html')) : undefined);
   if (!found) return notFound();
+  if (mediaPath && found.path.endsWith('index.html')) {
+    // Before the page's modules: the app's readers ask it as they are loaded (`vite.config.ts`).
+    const named = `<script>globalThis.__slidrMediaPath = ${JSON.stringify(mediaPath)};</script>`;
+    found.bytes = Buffer.from(found.bytes.toString('utf8').replace('<head>', `<head>${named}`));
+  }
   const headers = {
     'Content-Type': TYPES[extname(found.path).toLowerCase()] ?? 'application/octet-stream',
     'Content-Length': String(found.bytes.length),
@@ -206,9 +221,11 @@ export async function serve(options: ServeOptions): Promise<Serving> {
         return;
       }
       const web = toRequest(request, origin);
+      const context =
+        typeof options.context === 'function' ? await options.context() : options.context;
       const reply = isServed(new URL(web.url).pathname)
-        ? await handle(web, { ...options.context, clientAddress: clientOf(request, options) })
-        : await pageFile(web, options.client);
+        ? await handle(web, { ...context, clientAddress: clientOf(request, options) })
+        : await pageFile(web, options.client, context.media ? options.mediaPath : undefined);
       await send(response, reply, method);
     } catch (error) {
       console.error(error);
