@@ -517,6 +517,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Принята и записана в библиотеку:',
   'publications.publishSkipped':
     'Не опубликовано: {count}. Те, что больше не проходят проверку, вернулись в ожидание, остальные ждут записи. Откройте их, чтобы узнать причину.',
+  'settings.media.kind.sftp': 'Папка на сервере, по SFTP',
+  'settings.media.kind.ftp': 'Папка на сервере, по FTP',
+  'settings.media.where': 'Где',
+  'settings.media.host': 'Сервер',
+  'settings.media.port': 'Порт',
+  'settings.media.user': 'Пользователь',
+  'settings.media.root': 'Папка на сервере',
+  'settings.media.rootHint':
+    'Полный путь на сервере, например /var/www/media. Медиатека пишет только внутри неё.',
+  'settings.media.auth': 'Способ входа',
+  'settings.media.auth.key': 'Закрытый ключ',
+  'settings.media.auth.password': 'Пароль',
+  'settings.media.privateKey': 'Закрытый ключ (OpenSSH или PEM)',
+  'settings.media.privateKeyFile': 'Выбрать файл…',
+  'settings.media.passphrase': 'Парольная фраза',
+  'settings.media.password': 'Пароль',
+  'settings.media.keyKept': 'Хранится с {when}. Если оставить пустым, он сохранится.',
+  'settings.media.tls': 'Шифрование',
+  'settings.media.tls.explicit': 'FTPS: переход на TLS при подключении (рекомендуется)',
+  'settings.media.tls.implicit': 'FTPS: TLS с самого начала, порт 990',
+  'settings.media.tls.none': 'Нет',
+  'settings.media.allowUnencrypted':
+    'Разрешить FTP без шифрования: пароль и файлы передаются по сети как есть.',
+  'settings.media.unencrypted': 'Подключение к этому серверу не шифруется.',
+  'settings.media.hostKey': 'Ключ хоста',
+  'settings.media.hostKeyConfirmed': 'Подтверждён',
+  'settings.media.confirmTitle': 'Ключ хоста этого сервера ещё не подтверждён',
+  'settings.media.confirmChangedTitle': 'Ключ хоста сервера изменился',
+  'settings.media.confirmExplain':
+    'Уточните у администратора сервера, что это его ключ, например с помощью этой команды на сервере. Пока ключ не подтверждён, на сервер ничего не отправляется.',
+  'settings.media.confirmChanged':
+    'Раньше был подтверждён другой ключ. Подтверждайте, только если администратор сервера его сменил.',
+  'settings.media.confirm': 'Подтвердить и сохранить',
+  'settings.media.publicUrlRemoteHint':
+    'Адрес HTTPS, по которому тот сервер раздаёт папку. Без него этот сервер раздаёт её по /media/.',
 };
 
 export default words;

@@ -519,6 +519,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Đã chấp nhận và ghi vào thư viện:',
   'publications.publishSkipped':
     'Chưa xuất bản: {count}. Những bản không còn hợp lệ đã trở lại trạng thái chờ, số còn lại đang chờ ghi. Mở chúng để xem lý do.',
+  'settings.media.kind.sftp': 'Một thư mục trên máy chủ, qua SFTP',
+  'settings.media.kind.ftp': 'Một thư mục trên máy chủ, qua FTP',
+  'settings.media.where': 'Nơi lưu',
+  'settings.media.host': 'Máy chủ',
+  'settings.media.port': 'Cổng',
+  'settings.media.user': 'Người dùng',
+  'settings.media.root': 'Thư mục trên máy chủ',
+  'settings.media.rootHint':
+    'Đường dẫn đầy đủ trên máy chủ, như /var/www/media. Thư viện chỉ ghi vào bên trong thư mục này.',
+  'settings.media.auth': 'Đăng nhập bằng',
+  'settings.media.auth.key': 'Khóa riêng tư',
+  'settings.media.auth.password': 'Mật khẩu',
+  'settings.media.privateKey': 'Khóa riêng tư (OpenSSH hoặc PEM)',
+  'settings.media.privateKeyFile': 'Chọn tệp…',
+  'settings.media.passphrase': 'Cụm mật khẩu',
+  'settings.media.password': 'Mật khẩu',
+  'settings.media.keyKept': 'Đã lưu từ {when}. Để trống thì giữ nguyên.',
+  'settings.media.tls': 'Mã hóa',
+  'settings.media.tls.explicit': 'FTPS: yêu cầu TLS khi kết nối (khuyên dùng)',
+  'settings.media.tls.implicit': 'FTPS: TLS ngay từ đầu, cổng 990',
+  'settings.media.tls.none': 'Không mã hóa',
+  'settings.media.allowUnencrypted':
+    'Cho phép FTP không mã hóa: mật khẩu và tệp đi qua mạng ở dạng nguyên bản.',
+  'settings.media.unencrypted': 'Kết nối tới máy chủ này không được mã hóa.',
+  'settings.media.hostKey': 'Khóa máy chủ',
+  'settings.media.hostKeyConfirmed': 'Đã xác nhận',
+  'settings.media.confirmTitle': 'Khóa của máy chủ này chưa được xác nhận',
+  'settings.media.confirmChangedTitle': 'Khóa của máy chủ đã thay đổi',
+  'settings.media.confirmExplain':
+    'Hãy hỏi quản trị viên máy chủ để chắc chắn đây là khóa của máy chủ, chẳng hạn bằng lệnh này trên máy chủ. Trước khi xác nhận, không có gì được gửi tới máy chủ.',
+  'settings.media.confirmChanged':
+    'Trước đây một khóa khác đã được xác nhận. Chỉ xác nhận nếu quản trị viên máy chủ đã đổi khóa.',
+  'settings.media.confirm': 'Xác nhận và lưu',
+  'settings.media.publicUrlRemoteHint':
+    'Địa chỉ HTTPS nơi máy chủ đó phục vụ thư mục. Nếu để trống, máy chủ này phục vụ thư mục tại /media/.',
 };
 
 export default words;

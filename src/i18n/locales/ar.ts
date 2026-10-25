@@ -498,6 +498,39 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'تمت الموافقة عليه، وكُتب في المكتبة:',
   'publications.publishSkipped':
     'لم يُنشر: {count}. ما لم يعد صالحًا أُعيد إلى الانتظار، والباقي ينتظر الكتابة. افتحها لترى السبب.',
+  'settings.media.kind.sftp': 'مجلد على خادم، عبر SFTP',
+  'settings.media.kind.ftp': 'مجلد على خادم، عبر FTP',
+  'settings.media.where': 'مكان الحفظ',
+  'settings.media.host': 'الخادم',
+  'settings.media.port': 'المنفذ',
+  'settings.media.user': 'المستخدم',
+  'settings.media.root': 'المجلد على الخادم',
+  'settings.media.rootHint': 'مسار كامل على الخادم، مثل /var/www/media. لا تكتب المكتبة إلا داخله.',
+  'settings.media.auth': 'تسجيل الدخول باستخدام',
+  'settings.media.auth.key': 'مفتاح خاص',
+  'settings.media.auth.password': 'كلمة مرور',
+  'settings.media.privateKey': 'المفتاح الخاص (OpenSSH أو PEM)',
+  'settings.media.privateKeyFile': 'اختيار ملف…',
+  'settings.media.passphrase': 'عبارة المرور',
+  'settings.media.password': 'كلمة المرور',
+  'settings.media.keyKept': 'محفوظ منذ {when}. إذا تُرك فارغًا، يبقى كما هو.',
+  'settings.media.tls': 'التشفير',
+  'settings.media.tls.explicit': 'FTPS: طلب TLS عند الاتصال (موصى به)',
+  'settings.media.tls.implicit': 'FTPS: TLS من البداية، المنفذ 990',
+  'settings.media.tls.none': 'بلا تشفير',
+  'settings.media.allowUnencrypted':
+    'السماح بـ FTP غير المشفّر: تعبر كلمة المرور والملفات الشبكة كما هي.',
+  'settings.media.unencrypted': 'الاتصال بهذا الخادم غير مشفّر.',
+  'settings.media.hostKey': 'مفتاح المضيف',
+  'settings.media.hostKeyConfirmed': 'مؤكّد',
+  'settings.media.confirmTitle': 'لم يُؤكَّد مفتاح المضيف لهذا الخادم بعد',
+  'settings.media.confirmChangedTitle': 'تغيّر مفتاح المضيف للخادم',
+  'settings.media.confirmExplain':
+    'تحقّق مع مشرف الخادم من أن هذا هو مفتاحه، مثلًا بهذا الأمر على الخادم. إلى أن يُؤكَّد، لا يُرسَل إليه شيء.',
+  'settings.media.confirmChanged': 'أُكِّد مفتاح آخر من قبل. لا تؤكّد إلا إذا غيّره مشرف الخادم.',
+  'settings.media.confirm': 'تأكيد وحفظ',
+  'settings.media.publicUrlRemoteHint':
+    'عنوان HTTPS الذي يقدّم منه ذلك الخادم المجلد. من دونه، يقدّمه هذا الخادم على /media/.',
 };
 
 export default words;

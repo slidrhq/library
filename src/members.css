@@ -354,3 +354,61 @@ button.danger {
 .settings-part bdi[dir='ltr'] {
   white-space: nowrap;
 }
+
+/* A server's name, port and user, side by side where there is room. */
+.settings-server {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) minmax(6rem, 1fr) minmax(10rem, 1.5fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .settings-server {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-part textarea {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.78rem;
+}
+
+.settings-check,
+.settings-file {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.settings-check input,
+.settings-file input {
+  width: auto;
+}
+
+.settings-hostkey {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+/* A host key shown by a server, to be confirmed by an admin who checked it. */
+.settings-confirm {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+  padding: 0.8rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.settings-confirm.changed {
+  border-color: color-mix(in srgb, var(--bad) 55%, var(--line));
+  background: color-mix(in srgb, var(--bad) 6%, var(--surface));
+}
+
+.settings-confirm code {
+  max-width: 100%;
+}

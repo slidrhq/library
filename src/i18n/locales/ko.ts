@@ -510,6 +510,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': '승인되어 라이브러리에 기록됨:',
   'publications.publishSkipped':
     '게시되지 않음: {count}. 더 이상 유효하지 않은 항목은 대기 상태로 돌아갔고, 나머지는 기록을 기다립니다. 열어서 이유를 확인하세요.',
+  'settings.media.kind.sftp': 'SFTP로 접속하는 서버의 폴더',
+  'settings.media.kind.ftp': 'FTP로 접속하는 서버의 폴더',
+  'settings.media.where': '저장 위치',
+  'settings.media.host': '서버',
+  'settings.media.port': '포트',
+  'settings.media.user': '사용자',
+  'settings.media.root': '서버의 폴더',
+  'settings.media.rootHint':
+    '서버의 전체 경로입니다(예: /var/www/media). 라이브러리는 이 안에만 씁니다.',
+  'settings.media.auth': '로그인 방법',
+  'settings.media.auth.key': '개인 키',
+  'settings.media.auth.password': '비밀번호',
+  'settings.media.privateKey': '개인 키(OpenSSH 또는 PEM)',
+  'settings.media.privateKeyFile': '파일 선택…',
+  'settings.media.passphrase': '패스프레이즈',
+  'settings.media.password': '비밀번호',
+  'settings.media.keyKept': '{when}부터 저장되어 있습니다. 비워 두면 그대로 유지됩니다.',
+  'settings.media.tls': '암호화',
+  'settings.media.tls.explicit': 'FTPS: 연결할 때 TLS로 전환(권장)',
+  'settings.media.tls.implicit': 'FTPS: 처음부터 TLS, 포트 990',
+  'settings.media.tls.none': '없음',
+  'settings.media.allowUnencrypted':
+    '암호화되지 않은 FTP 허용: 비밀번호와 파일이 그대로 네트워크를 거칩니다.',
+  'settings.media.unencrypted': '이 서버와의 연결은 암호화되지 않습니다.',
+  'settings.media.hostKey': '호스트 키',
+  'settings.media.hostKeyConfirmed': '승인됨',
+  'settings.media.confirmTitle': '이 서버의 호스트 키가 아직 승인되지 않았습니다',
+  'settings.media.confirmChangedTitle': '서버의 호스트 키가 바뀌었습니다',
+  'settings.media.confirmExplain':
+    '이 키가 서버의 키가 맞는지 서버 관리자에게 확인하세요. 예를 들어 서버에서 이 명령을 실행합니다. 승인하기 전에는 서버로 아무것도 보내지 않습니다.',
+  'settings.media.confirmChanged':
+    '이전에 다른 키가 승인되었습니다. 서버 관리자가 키를 바꾼 경우에만 승인하세요.',
+  'settings.media.confirm': '승인 후 저장',
+  'settings.media.publicUrlRemoteHint':
+    '그 서버가 폴더를 제공하는 HTTPS 주소입니다. 없으면 이 서버가 /media/에서 제공합니다.',
 };
 
 export default words;

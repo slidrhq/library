@@ -521,6 +521,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Disetujui, dan ditulis ke pustaka:',
   'publications.publishSkipped':
     'Tidak diterbitkan: {count}. Yang tidak lagi valid kembali ke status menunggu, dan sisanya menunggu ditulis. Buka untuk melihat alasannya.',
+  'settings.media.kind.sftp': 'Folder di server, lewat SFTP',
+  'settings.media.kind.ftp': 'Folder di server, lewat FTP',
+  'settings.media.where': 'Lokasi',
+  'settings.media.host': 'Server',
+  'settings.media.port': 'Port',
+  'settings.media.user': 'Pengguna',
+  'settings.media.root': 'Folder di server',
+  'settings.media.rootHint':
+    'Jalur lengkap di server, misalnya /var/www/media. Pustaka hanya menulis di dalamnya.',
+  'settings.media.auth': 'Login dengan',
+  'settings.media.auth.key': 'Kunci privat',
+  'settings.media.auth.password': 'Kata sandi',
+  'settings.media.privateKey': 'Kunci privat (OpenSSH atau PEM)',
+  'settings.media.privateKeyFile': 'Pilih file…',
+  'settings.media.passphrase': 'Passphrase',
+  'settings.media.password': 'Kata sandi',
+  'settings.media.keyKept': 'Tersimpan sejak {when}. Jika dikosongkan, tetap dipakai.',
+  'settings.media.tls': 'Enkripsi',
+  'settings.media.tls.explicit': 'FTPS: TLS diminta saat terhubung (disarankan)',
+  'settings.media.tls.implicit': 'FTPS: TLS sejak awal, port 990',
+  'settings.media.tls.none': 'Tanpa enkripsi',
+  'settings.media.allowUnencrypted':
+    'Izinkan FTP tanpa enkripsi: kata sandi dan file melintasi jaringan apa adanya.',
+  'settings.media.unencrypted': 'Koneksi ke server ini tidak terenkripsi.',
+  'settings.media.hostKey': 'Kunci host',
+  'settings.media.hostKeyConfirmed': 'Terkonfirmasi',
+  'settings.media.confirmTitle': 'Kunci host server ini belum dikonfirmasi',
+  'settings.media.confirmChangedTitle': 'Kunci host server telah berubah',
+  'settings.media.confirmExplain':
+    'Pastikan dengan admin server bahwa ini memang kuncinya, misalnya dengan perintah ini di server. Sebelum dikonfirmasi, tidak ada yang dikirim ke server.',
+  'settings.media.confirmChanged':
+    'Sebelumnya kunci lain sudah dikonfirmasi. Konfirmasi hanya jika admin server telah menggantinya.',
+  'settings.media.confirm': 'Konfirmasi dan simpan',
+  'settings.media.publicUrlRemoteHint':
+    'Alamat HTTPS tempat server tersebut menyajikan folder. Tanpa alamat, server ini menyajikannya di /media/.',
 };
 
 export default words;

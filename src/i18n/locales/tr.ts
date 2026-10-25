@@ -515,6 +515,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Kabul edildi ve kütüphaneye yazıldı:',
   'publications.publishSkipped':
     'Yayımlanmayan: {count}. Artık geçerli olmayanlar beklemeye döndü, kalanlar yazılmayı bekliyor. Nedenini görmek için açın.',
+  'settings.media.kind.sftp': 'Bir sunucudaki klasör, SFTP ile',
+  'settings.media.kind.ftp': 'Bir sunucudaki klasör, FTP ile',
+  'settings.media.where': 'Konum',
+  'settings.media.host': 'Sunucu',
+  'settings.media.port': 'Port',
+  'settings.media.user': 'Kullanıcı',
+  'settings.media.root': 'Sunucudaki klasör',
+  'settings.media.rootHint':
+    'Sunucudaki tam yol, örneğin /var/www/media. Kütüphane yalnızca bunun içine yazar.',
+  'settings.media.auth': 'Oturum açma yöntemi',
+  'settings.media.auth.key': 'Özel anahtar',
+  'settings.media.auth.password': 'Parola',
+  'settings.media.privateKey': 'Özel anahtar (OpenSSH veya PEM)',
+  'settings.media.privateKeyFile': 'Dosya seç…',
+  'settings.media.passphrase': 'Anahtar parolası',
+  'settings.media.password': 'Parola',
+  'settings.media.keyKept': '{when} tarihinden beri saklanıyor. Boş bırakılırsa korunur.',
+  'settings.media.tls': 'Şifreleme',
+  'settings.media.tls.explicit': 'FTPS: bağlanırken TLS istenir (önerilir)',
+  'settings.media.tls.implicit': 'FTPS: baştan TLS, port 990',
+  'settings.media.tls.none': 'Yok',
+  'settings.media.allowUnencrypted':
+    'Şifrelenmemiş FTP’ye izin ver: parola ve dosyalar ağda olduğu gibi taşınır.',
+  'settings.media.unencrypted': 'Bu sunucuya bağlantı şifrelenmiyor.',
+  'settings.media.hostKey': 'Sunucu anahtarı',
+  'settings.media.hostKeyConfirmed': 'Onaylandı',
+  'settings.media.confirmTitle': 'Bu sunucunun anahtarı henüz onaylanmadı',
+  'settings.media.confirmChangedTitle': 'Sunucunun anahtarı değişti',
+  'settings.media.confirmExplain':
+    'Bunun sunucunun anahtarı olduğunu sunucunun yöneticisiyle doğrulayın, örneğin sunucuda bu komutla. Onaylanana kadar sunucuya hiçbir şey gönderilmez.',
+  'settings.media.confirmChanged':
+    'Daha önce başka bir anahtar onaylanmıştı. Yalnızca sunucunun yöneticisi anahtarı değiştirdiyse onaylayın.',
+  'settings.media.confirm': 'Onayla ve kaydet',
+  'settings.media.publicUrlRemoteHint':
+    'O sunucunun klasörü sunduğu HTTPS adresi. Adres yoksa bu sunucu onu /media/ altında sunar.',
 };
 
 export default words;

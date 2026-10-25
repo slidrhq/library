@@ -528,6 +528,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Aprobada y escrita en la biblioteca:',
   'publications.publishSkipped':
     'No publicadas: {count}. Las que ya no son válidas volvieron a la espera, y el resto espera a escribirse. Ábrelas para ver por qué.',
+  'settings.media.kind.sftp': 'Una carpeta en un servidor, por SFTP',
+  'settings.media.kind.ftp': 'Una carpeta en un servidor, por FTP',
+  'settings.media.where': 'Ubicación',
+  'settings.media.host': 'Servidor',
+  'settings.media.port': 'Puerto',
+  'settings.media.user': 'Usuario',
+  'settings.media.root': 'Carpeta en el servidor',
+  'settings.media.rootHint':
+    'Una ruta completa en el servidor, como /var/www/media. La biblioteca solo escribe dentro de ella.',
+  'settings.media.auth': 'Inicio de sesión con',
+  'settings.media.auth.key': 'Clave privada',
+  'settings.media.auth.password': 'Contraseña',
+  'settings.media.privateKey': 'Clave privada (OpenSSH o PEM)',
+  'settings.media.privateKeyFile': 'Elegir un archivo…',
+  'settings.media.passphrase': 'Frase de contraseña',
+  'settings.media.password': 'Contraseña',
+  'settings.media.keyKept': 'Guardado desde el {when}. Si dejas el campo vacío, se conserva.',
+  'settings.media.tls': 'Cifrado',
+  'settings.media.tls.explicit': 'FTPS: TLS solicitado al conectar (recomendado)',
+  'settings.media.tls.implicit': 'FTPS: TLS desde el inicio, puerto 990',
+  'settings.media.tls.none': 'Ninguno',
+  'settings.media.allowUnencrypted':
+    'Permitir FTP sin cifrar: la contraseña y los archivos viajan por la red tal cual.',
+  'settings.media.unencrypted': 'La conexión con este servidor no está cifrada.',
+  'settings.media.hostKey': 'Clave de host',
+  'settings.media.hostKeyConfirmed': 'Confirmada',
+  'settings.media.confirmTitle': 'La clave de host de este servidor aún no está confirmada',
+  'settings.media.confirmChangedTitle': 'La clave de host del servidor ha cambiado',
+  'settings.media.confirmExplain':
+    'Comprueba con el administrador del servidor que esta es su clave, por ejemplo con este comando en el servidor. Hasta que se confirme, no se le envía nada.',
+  'settings.media.confirmChanged':
+    'Antes se confirmó otra clave. Confirma solo si el administrador del servidor la cambió.',
+  'settings.media.confirm': 'Confirmar y guardar',
+  'settings.media.publicUrlRemoteHint':
+    'La dirección HTTPS en la que ese servidor sirve la carpeta. Sin ella, este servidor la sirve en /media/.',
 };
 
 export default words;

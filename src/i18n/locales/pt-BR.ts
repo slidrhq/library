@@ -518,6 +518,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Aceito e escrito na biblioteca:',
   'publications.publishSkipped':
     'Não publicados: {count}. Os que não valem mais voltaram a aguardar, e os demais aguardam ser escritos. Abra-os para ver o motivo.',
+  'settings.media.kind.sftp': 'Uma pasta em um servidor, via SFTP',
+  'settings.media.kind.ftp': 'Uma pasta em um servidor, via FTP',
+  'settings.media.where': 'Onde',
+  'settings.media.host': 'Servidor',
+  'settings.media.port': 'Porta',
+  'settings.media.user': 'Usuário',
+  'settings.media.root': 'Pasta no servidor',
+  'settings.media.rootHint':
+    'Um caminho completo no servidor, como /var/www/media. A biblioteca grava só dentro dela.',
+  'settings.media.auth': 'Login com',
+  'settings.media.auth.key': 'Uma chave privada',
+  'settings.media.auth.password': 'Uma senha',
+  'settings.media.privateKey': 'Chave privada (OpenSSH ou PEM)',
+  'settings.media.privateKeyFile': 'Escolher um arquivo…',
+  'settings.media.passphrase': 'Frase secreta',
+  'settings.media.password': 'Senha',
+  'settings.media.keyKept': 'Guardada desde {when}. Se ficar vazia, é mantida.',
+  'settings.media.tls': 'Criptografia',
+  'settings.media.tls.explicit': 'FTPS: TLS solicitado ao conectar (recomendado)',
+  'settings.media.tls.implicit': 'FTPS: TLS desde o início, porta 990',
+  'settings.media.tls.none': 'Nenhuma',
+  'settings.media.allowUnencrypted':
+    'Permitir FTP sem criptografia: a senha e os arquivos atravessam a rede como estão.',
+  'settings.media.unencrypted': 'A conexão com este servidor não é criptografada.',
+  'settings.media.hostKey': 'Chave do host',
+  'settings.media.hostKeyConfirmed': 'Confirmada',
+  'settings.media.confirmTitle': 'A chave do host deste servidor ainda não foi confirmada',
+  'settings.media.confirmChangedTitle': 'A chave do host do servidor mudou',
+  'settings.media.confirmExplain':
+    'Verifique com o administrador do servidor se esta é a chave dele, por exemplo com este comando no servidor. Até que seja confirmada, nada é enviado ao servidor.',
+  'settings.media.confirmChanged':
+    'Outra chave foi confirmada antes. Confirme só se o administrador do servidor a trocou.',
+  'settings.media.confirm': 'Confirmar e salvar',
+  'settings.media.publicUrlRemoteHint':
+    'O endereço HTTPS em que esse servidor serve a pasta. Sem ele, este servidor a serve em /media/.',
 };
 
 export default words;

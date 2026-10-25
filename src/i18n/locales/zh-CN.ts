@@ -485,6 +485,38 @@ const words: Record<MessageKey, string> = {
   'publications.written': '已通过并写入媒体库：',
   'publications.publishSkipped':
     '未发布：{count}。已不再有效的已恢复为待审核，其余等待写入。打开即可查看原因。',
+  'settings.media.kind.sftp': '服务器上的文件夹（通过 SFTP）',
+  'settings.media.kind.ftp': '服务器上的文件夹（通过 FTP）',
+  'settings.media.where': '存放位置',
+  'settings.media.host': '服务器',
+  'settings.media.port': '端口',
+  'settings.media.user': '用户名',
+  'settings.media.root': '服务器上的文件夹',
+  'settings.media.rootHint': '服务器上的完整路径，例如 /var/www/media。媒体库只在其中写入。',
+  'settings.media.auth': '登录方式',
+  'settings.media.auth.key': '私钥',
+  'settings.media.auth.password': '密码',
+  'settings.media.privateKey': '私钥（OpenSSH 或 PEM）',
+  'settings.media.privateKeyFile': '选择文件…',
+  'settings.media.passphrase': '密码短语',
+  'settings.media.password': '密码',
+  'settings.media.keyKept': '自 {when} 起已保存。留空则保持不变。',
+  'settings.media.tls': '加密',
+  'settings.media.tls.explicit': 'FTPS：连接时切换到 TLS（推荐）',
+  'settings.media.tls.implicit': 'FTPS：从一开始就使用 TLS，端口 990',
+  'settings.media.tls.none': '无',
+  'settings.media.allowUnencrypted': '允许未加密的 FTP：密码和文件将原样在网络上传输。',
+  'settings.media.unencrypted': '与此服务器的连接未加密。',
+  'settings.media.hostKey': '主机密钥',
+  'settings.media.hostKeyConfirmed': '已确认',
+  'settings.media.confirmTitle': '此服务器的主机密钥尚未确认',
+  'settings.media.confirmChangedTitle': '服务器的主机密钥已更改',
+  'settings.media.confirmExplain':
+    '请向服务器管理员核实这确实是其密钥，例如在服务器上运行此命令。确认之前，不会向它发送任何内容。',
+  'settings.media.confirmChanged': '之前确认过另一个密钥。只有在服务器管理员更换了密钥时才确认。',
+  'settings.media.confirm': '确认并保存',
+  'settings.media.publicUrlRemoteHint':
+    '该服务器提供此文件夹所用的 HTTPS 地址。未填写时，此服务器在 /media/ 提供它。',
 };
 
 export default words;

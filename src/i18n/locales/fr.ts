@@ -530,6 +530,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Approuvé, et écrit dans la bibliothèque :',
   'publications.publishSkipped':
     'Non publiés : {count}. Ceux qui ne sont plus valides ont été remis en attente, et les autres attendent d’être écrits. Ouvrez-les pour voir pourquoi.',
+  'settings.media.kind.sftp': 'Un dossier sur un serveur, via SFTP',
+  'settings.media.kind.ftp': 'Un dossier sur un serveur, via FTP',
+  'settings.media.where': 'Emplacement',
+  'settings.media.host': 'Serveur',
+  'settings.media.port': 'Port',
+  'settings.media.user': 'Utilisateur',
+  'settings.media.root': 'Dossier sur le serveur',
+  'settings.media.rootHint':
+    'Un chemin complet sur le serveur, comme /var/www/media. La médiathèque n’écrit qu’à l’intérieur.',
+  'settings.media.auth': 'Connexion par',
+  'settings.media.auth.key': 'Clé privée',
+  'settings.media.auth.password': 'Mot de passe',
+  'settings.media.privateKey': 'Clé privée (OpenSSH ou PEM)',
+  'settings.media.privateKeyFile': 'Choisir un fichier…',
+  'settings.media.passphrase': 'Phrase secrète',
+  'settings.media.password': 'Mot de passe',
+  'settings.media.keyKept': 'Enregistré depuis le {when}. Si le champ reste vide, rien ne change.',
+  'settings.media.tls': 'Chiffrement',
+  'settings.media.tls.explicit': 'FTPS : TLS demandé à la connexion (recommandé)',
+  'settings.media.tls.implicit': 'FTPS : TLS dès le départ, port 990',
+  'settings.media.tls.none': 'Aucun',
+  'settings.media.allowUnencrypted':
+    'Autoriser le FTP non chiffré : le mot de passe et les fichiers traversent le réseau en clair.',
+  'settings.media.unencrypted': 'La connexion à ce serveur n’est pas chiffrée.',
+  'settings.media.hostKey': 'Clé d’hôte',
+  'settings.media.hostKeyConfirmed': 'Confirmée',
+  'settings.media.confirmTitle': 'La clé d’hôte de ce serveur n’est pas encore confirmée',
+  'settings.media.confirmChangedTitle': 'La clé d’hôte du serveur a changé',
+  'settings.media.confirmExplain':
+    'Vérifiez auprès de l’administrateur du serveur qu’il s’agit bien de sa clé, par exemple avec cette commande sur le serveur. Tant qu’elle n’est pas confirmée, rien ne lui est envoyé.',
+  'settings.media.confirmChanged':
+    'Une autre clé a été confirmée auparavant. Ne confirmez que si l’administrateur du serveur l’a changée.',
+  'settings.media.confirm': 'Confirmer et enregistrer',
+  'settings.media.publicUrlRemoteHint':
+    'L’adresse HTTPS à laquelle le serveur distant sert le dossier. Sans elle, ce serveur le sert à /media/.',
 };
 
 export default words;

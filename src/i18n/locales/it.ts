@@ -523,6 +523,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Approvato e scritto nella libreria:',
   'publications.publishSkipped':
     'Non pubblicati: {count}. Quelli non più validi sono stati rimessi in attesa, gli altri attendono la scrittura. Aprili per vedere perché.',
+  'settings.media.kind.sftp': 'Una cartella su un server, via SFTP',
+  'settings.media.kind.ftp': 'Una cartella su un server, via FTP',
+  'settings.media.where': 'Posizione',
+  'settings.media.host': 'Server',
+  'settings.media.port': 'Porta',
+  'settings.media.user': 'Utente',
+  'settings.media.root': 'Cartella sul server',
+  'settings.media.rootHint':
+    'Un percorso completo sul server, come /var/www/media. La libreria scrive solo al suo interno.',
+  'settings.media.auth': 'Accesso con',
+  'settings.media.auth.key': 'Chiave privata',
+  'settings.media.auth.password': 'Password',
+  'settings.media.privateKey': 'Chiave privata (OpenSSH o PEM)',
+  'settings.media.privateKeyFile': 'Scegli un file…',
+  'settings.media.passphrase': 'Passphrase',
+  'settings.media.password': 'Password',
+  'settings.media.keyKept': 'Salvato dal {when}. Se lasci vuoto il campo, resta invariato.',
+  'settings.media.tls': 'Crittografia',
+  'settings.media.tls.explicit': 'FTPS: TLS richiesto alla connessione (consigliato)',
+  'settings.media.tls.implicit': 'FTPS: TLS fin dall’inizio, porta 990',
+  'settings.media.tls.none': 'Nessuna',
+  'settings.media.allowUnencrypted':
+    'Consenti FTP non cifrato: password e file viaggiano in rete in chiaro.',
+  'settings.media.unencrypted': 'La connessione a questo server non è cifrata.',
+  'settings.media.hostKey': 'Chiave host',
+  'settings.media.hostKeyConfirmed': 'Confermata',
+  'settings.media.confirmTitle': 'La chiave host di questo server non è ancora confermata',
+  'settings.media.confirmChangedTitle': 'La chiave host del server è cambiata',
+  'settings.media.confirmExplain':
+    'Verifica con l’amministratore del server che questa sia la sua chiave, ad esempio con questo comando sul server. Finché non è confermata, non gli viene inviato nulla.',
+  'settings.media.confirmChanged':
+    'In precedenza era stata confermata un’altra chiave. Conferma solo se l’amministratore del server l’ha cambiata.',
+  'settings.media.confirm': 'Conferma e salva',
+  'settings.media.publicUrlRemoteHint':
+    'L’indirizzo HTTPS su cui quel server serve la cartella. Senza, questo server la serve su /media/.',
 };
 
 export default words;

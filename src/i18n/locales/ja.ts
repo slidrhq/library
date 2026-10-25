@@ -523,6 +523,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': '承認され、ライブラリに書き込まれました:',
   'publications.publishSkipped':
     '公開されなかったもの: {count}。有効でなくなったものは審査待ちに戻り、残りは書き込み待ちです。開くと理由を確認できます。',
+  'settings.media.kind.sftp': 'サーバーのフォルダー（SFTP 経由）',
+  'settings.media.kind.ftp': 'サーバーのフォルダー（FTP 経由）',
+  'settings.media.where': '保存先',
+  'settings.media.host': 'サーバー',
+  'settings.media.port': 'ポート',
+  'settings.media.user': 'ユーザー',
+  'settings.media.root': 'サーバー上のフォルダー',
+  'settings.media.rootHint':
+    'サーバー上のフルパス（例: /var/www/media）。ライブラリはこの中にだけ書き込みます。',
+  'settings.media.auth': 'ログイン方法',
+  'settings.media.auth.key': '秘密鍵',
+  'settings.media.auth.password': 'パスワード',
+  'settings.media.privateKey': '秘密鍵（OpenSSH または PEM）',
+  'settings.media.privateKeyFile': 'ファイルを選択…',
+  'settings.media.passphrase': 'パスフレーズ',
+  'settings.media.password': 'パスワード',
+  'settings.media.keyKept': '{when} から保存されています。空欄のままなら変更されません。',
+  'settings.media.tls': '暗号化',
+  'settings.media.tls.explicit': 'FTPS: 接続時に TLS に切り替え（推奨）',
+  'settings.media.tls.implicit': 'FTPS: 最初から TLS、ポート 990',
+  'settings.media.tls.none': 'なし',
+  'settings.media.allowUnencrypted':
+    '暗号化されていない FTP を許可: パスワードとファイルがそのままネットワークを流れます。',
+  'settings.media.unencrypted': 'このサーバーへの接続は暗号化されていません。',
+  'settings.media.hostKey': 'ホスト鍵',
+  'settings.media.hostKeyConfirmed': '承認済み',
+  'settings.media.confirmTitle': 'このサーバーのホスト鍵はまだ承認されていません',
+  'settings.media.confirmChangedTitle': 'サーバーのホスト鍵が変更されました',
+  'settings.media.confirmExplain':
+    'これがサーバーの鍵であることを、サーバーの管理者に確認してください（たとえば、サーバーで次のコマンドを使います）。承認するまで、サーバーには何も送信されません。',
+  'settings.media.confirmChanged':
+    '以前は別の鍵が承認されていました。サーバーの管理者が鍵を変更した場合にのみ承認してください。',
+  'settings.media.confirm': '承認して保存',
+  'settings.media.publicUrlRemoteHint':
+    'そのサーバーがフォルダーを配信する HTTPS アドレス。未設定の場合は、このサーバーが /media/ で配信します。',
 };
 
 export default words;

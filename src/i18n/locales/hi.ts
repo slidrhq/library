@@ -518,6 +518,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'स्वीकृत हुआ, और लाइब्रेरी में लिखा गया:',
   'publications.publishSkipped':
     'प्रकाशित नहीं हुए: {count}। जो अब मान्य नहीं, वे फिर से प्रतीक्षा में गए, और बाकी लिखे जाने की प्रतीक्षा में हैं। कारण देखने के लिए उन्हें खोलें।',
+  'settings.media.kind.sftp': 'किसी सर्वर पर एक फ़ोल्डर, SFTP के ज़रिए',
+  'settings.media.kind.ftp': 'किसी सर्वर पर एक फ़ोल्डर, FTP के ज़रिए',
+  'settings.media.where': 'स्थान',
+  'settings.media.host': 'सर्वर',
+  'settings.media.port': 'पोर्ट',
+  'settings.media.user': 'उपयोगकर्ता',
+  'settings.media.root': 'सर्वर पर फ़ोल्डर',
+  'settings.media.rootHint':
+    'सर्वर पर पूरा पाथ, जैसे /var/www/media। लाइब्रेरी केवल इसी के अंदर लिखती है।',
+  'settings.media.auth': 'साइन इन का तरीका',
+  'settings.media.auth.key': 'निजी कुंजी',
+  'settings.media.auth.password': 'पासवर्ड',
+  'settings.media.privateKey': 'निजी कुंजी (OpenSSH या PEM)',
+  'settings.media.privateKeyFile': 'फ़ाइल चुनें…',
+  'settings.media.passphrase': 'पासफ़्रेज़',
+  'settings.media.password': 'पासवर्ड',
+  'settings.media.keyKept': '{when} से सहेजा हुआ है। खाली छोड़ें, तो यही बना रहेगा।',
+  'settings.media.tls': 'एन्क्रिप्शन',
+  'settings.media.tls.explicit': 'FTPS: कनेक्ट करते समय TLS का अनुरोध (अनुशंसित)',
+  'settings.media.tls.implicit': 'FTPS: शुरू से ही TLS, पोर्ट 990',
+  'settings.media.tls.none': 'कोई नहीं',
+  'settings.media.allowUnencrypted':
+    'बिना एन्क्रिप्शन के FTP की अनुमति दें: पासवर्ड और फ़ाइलें नेटवर्क पर जैसी की तैसी जाती हैं।',
+  'settings.media.unencrypted': 'इस सर्वर से कनेक्शन एन्क्रिप्टेड नहीं है।',
+  'settings.media.hostKey': 'होस्ट कुंजी',
+  'settings.media.hostKeyConfirmed': 'पुष्टि की गई',
+  'settings.media.confirmTitle': 'इस सर्वर की होस्ट कुंजी की अभी पुष्टि नहीं हुई है',
+  'settings.media.confirmChangedTitle': 'सर्वर की होस्ट कुंजी बदल गई है',
+  'settings.media.confirmExplain':
+    'सर्वर के एडमिन से जाँच लें कि यही उसकी कुंजी है, उदाहरण के लिए सर्वर पर इस कमांड से। पुष्टि होने तक उसे कुछ भी नहीं भेजा जाता।',
+  'settings.media.confirmChanged':
+    'पहले कोई दूसरी कुंजी पुष्ट की गई थी। पुष्टि तभी करें, जब सर्वर के एडमिन ने उसे बदला हो।',
+  'settings.media.confirm': 'पुष्टि करें और सहेजें',
+  'settings.media.publicUrlRemoteHint':
+    'वह HTTPS पता जिस पर वह सर्वर फ़ोल्डर देता है। पता न हो, तो यह सर्वर उसे /media/ पर देता है।',
 };
 
 export default words;

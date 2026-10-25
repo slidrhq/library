@@ -151,6 +151,8 @@ export class ApiError extends Error {
     readonly code: string,
     message: string,
     readonly issues: Issue[] = [],
+    /** The whole answer, for what a route says beyond the problem itself. */
+    readonly body: Record<string, unknown> = {},
   ) {
     super(message);
   }
@@ -179,6 +181,7 @@ export async function call<T>(path: string, init: RequestInit = {}): Promise<T> 
       problem.error ?? 'failed',
       problem.message ?? `${response.status}`,
       problem.issues ?? [],
+      problem,
     );
   }
   return body as T;

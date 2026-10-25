@@ -529,6 +529,41 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Angenommen und in die Bibliothek geschrieben:',
   'publications.publishSkipped':
     'Nicht veröffentlicht: {count}. Was nicht mehr gültig ist, ist zurück in der Warteschlange; der Rest wartet auf das Schreiben. Öffnen Sie sie, um den Grund zu sehen.',
+  'settings.media.kind.sftp': 'Ein Ordner auf einem Server, über SFTP',
+  'settings.media.kind.ftp': 'Ein Ordner auf einem Server, über FTP',
+  'settings.media.where': 'Speicherort',
+  'settings.media.host': 'Server',
+  'settings.media.port': 'Port',
+  'settings.media.user': 'Benutzer',
+  'settings.media.root': 'Ordner auf dem Server',
+  'settings.media.rootHint':
+    'Ein vollständiger Pfad auf dem Server, etwa /var/www/media. Die Bibliothek schreibt nur darin.',
+  'settings.media.auth': 'Anmeldung am Server',
+  'settings.media.auth.key': 'Privater Schlüssel',
+  'settings.media.auth.password': 'Passwort',
+  'settings.media.privateKey': 'Privater Schlüssel (OpenSSH oder PEM)',
+  'settings.media.privateKeyFile': 'Datei auswählen…',
+  'settings.media.passphrase': 'Passphrase',
+  'settings.media.password': 'Passwort',
+  'settings.media.keyKept': 'Gespeichert seit {when}. Bleibt das Feld leer, ändert sich nichts.',
+  'settings.media.tls': 'Verschlüsselung',
+  'settings.media.tls.explicit': 'FTPS: TLS beim Verbinden anfordern (empfohlen)',
+  'settings.media.tls.implicit': 'FTPS: TLS von Anfang an, Port 990',
+  'settings.media.tls.none': 'Keine',
+  'settings.media.allowUnencrypted':
+    'Unverschlüsseltes FTP zulassen: Passwort und Dateien gehen im Klartext durchs Netz.',
+  'settings.media.unencrypted': 'Die Verbindung zu diesem Server ist unverschlüsselt.',
+  'settings.media.hostKey': 'Hostschlüssel',
+  'settings.media.hostKeyConfirmed': 'Bestätigt',
+  'settings.media.confirmTitle': 'Der Hostschlüssel dieses Servers ist noch nicht bestätigt',
+  'settings.media.confirmChangedTitle': 'Der Hostschlüssel des Servers hat sich geändert',
+  'settings.media.confirmExplain':
+    'Prüfen Sie mit dem Admin des Servers, dass dies sein Schlüssel ist, etwa mit diesem Befehl auf dem Server. Bis zur Bestätigung wird nichts an ihn gesendet.',
+  'settings.media.confirmChanged':
+    'Zuvor wurde ein anderer Schlüssel bestätigt. Bestätigen Sie nur, wenn der Admin des Servers ihn geändert hat.',
+  'settings.media.confirm': 'Bestätigen und speichern',
+  'settings.media.publicUrlRemoteHint':
+    'Die HTTPS-Adresse, unter der jener Server den Ordner bereitstellt. Ohne sie stellt dieser Server ihn unter /media/ bereit.',
 };
 
 export default words;

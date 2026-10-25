@@ -6,15 +6,26 @@
  * written, never shown again.
  */
 import { MEDIA_LIBRARY_URL as PUBLISHED } from '@slidr/media-library';
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { useRead } from './shared';
 import {
   settingsApi,
   tenantOf,
+  type HostKeyToConfirm,
   type Imported,
   type Limits,
+  type MediaKey,
+  type MediaSettings,
   type Provider,
   type Settings as Values,
   type StoreTest,
@@ -141,6 +152,8 @@ function LibraryPart({ values, onSaved }: { values: Values; onSaved: () => void 
 
 const KINDS: Record<Values['media']['kind'], MessageKey> = {
   folder: 'settings.media.kind.folder',
+  sftp: 'settings.media.kind.sftp',
+  ftp: 'settings.media.kind.ftp',
   r2: 'settings.media.kind.r2',
   none: 'settings.media.kind.none',
 };
@@ -153,11 +166,128 @@ function readable(address: string) {
   );
 }
 
+type Kind = MediaSettings['kind'];
+
+/** The fields of the store as they are being written: text, as the inputs hold it. */
+interface Draft {
+  kind: Kind;
+  path: string;
+  host: string;
+  port: string;
+  user: string;
+  root: string;
+  tls: NonNullable<MediaSettings['tls']>;
+  allowUnencrypted: boolean;
+  publicUrl: string;
+  auth: 'key' | 'password';
+  privateKey: string;
+  passphrase: string;
+  password: string;
+}
+
+const draftOf = (media: Values['media']): Draft => ({
+  kind: media.kind === 'sftp' || media.kind === 'ftp' ? media.kind : 'folder',
+  path: media.path ?? '',
+  host: media.host ?? '',
+  port: media.port ? String(media.port) : '',
+  user: media.user ?? '',
+  root: media.root ?? '',
+  tls: media.tls ?? 'explicit',
+  allowUnencrypted: media.allowUnencrypted ?? false,
+  publicUrl: media.publicUrl ?? '',
+  auth: 'key',
+  privateKey: '',
+  passphrase: '',
+  password: '',
+});
+
+/** The settings a draft names, and its key, when one was written. */
+function settingsOf(draft: Draft, hostKey?: string): { settings: MediaSettings; key?: MediaKey } {
+  const publicUrl = draft.publicUrl.trim();
+  const common = publicUrl ? { publicUrl } : {};
+  if (draft.kind === 'folder')
+    return { settings: { kind: 'folder', path: draft.path.trim(), ...common } };
+  const server = {
+    host: draft.host.trim(),
+    user: draft.user.trim(),
+    root: draft.root.trim(),
+    ...(draft.port.trim() ? { port: Number(draft.port) } : {}),
+    ...common,
+  };
+  if (draft.kind === 'ftp') {
+    return {
+      settings: {
+        kind: 'ftp',
+        ...server,
+        tls: draft.tls,
+        ...(draft.tls === 'none' ? { allowUnencrypted: draft.allowUnencrypted } : {}),
+      },
+      ...(draft.password ? { key: { password: draft.password } } : {}),
+    };
+  }
+  const key: MediaKey =
+    draft.auth === 'key'
+      ? {
+          privateKey: draft.privateKey,
+          ...(draft.passphrase ? { passphrase: draft.passphrase } : {}),
+        }
+      : { password: draft.password };
+  const written = draft.auth === 'key' ? draft.privateKey.trim() : draft.password;
+  return {
+    settings: { kind: 'sftp', ...server, ...(hostKey ? { hostKey } : {}) },
+    ...(written ? { key } : {}),
+  };
+}
+
+/** A host key the server showed, to be confirmed by an admin who checked it. */
+function ConfirmHostKey({
+  shown,
+  busy,
+  onConfirm,
+}: {
+  shown: HostKeyToConfirm;
+  busy: boolean;
+  onConfirm: () => void;
+}) {
+  const t = useT();
+  const changed = shown.code === 'host-key-changed';
+  return (
+    <div className={changed ? 'settings-confirm changed' : 'settings-confirm'} role="alert">
+      <strong>
+        {t(changed ? 'settings.media.confirmChangedTitle' : 'settings.media.confirmTitle')}
+      </strong>
+      <code className="token-value" dir="ltr">
+        {shown.fingerprint}
+      </code>
+      {changed && <p className="warn small">{t('settings.media.confirmChanged')}</p>}
+      <p className="small">{t('settings.media.confirmExplain')}</p>
+      <code className="token-example" dir="ltr">
+        ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+      </code>
+      <div className="row">
+        <button type="button" className="primary" disabled={busy} onClick={onConfirm}>
+          {t('settings.media.confirm')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void }) {
   const t = useT();
-  const [path, setPath] = useState(values.media.path ?? '');
-  const [publicUrl, setPublicUrl] = useState(values.media.publicUrl ?? '');
+  const [uiLang] = useLang();
+  const [draft, setDraft] = useState(() => draftOf(values.media));
+  const [confirm, setConfirm] = useState<HostKeyToConfirm>();
   const work = useWork();
+  const set =
+    <K extends keyof Draft>(name: K) =>
+    (value: Draft[K]) =>
+      setDraft((was) => ({ ...was, [name]: value }));
+  const text = (name: keyof Draft) => ({
+    value: draft[name] as string,
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      set(name)(event.target.value),
+  });
 
   const told = (test: StoreTest): Note => ({
     ok: test.wrote,
@@ -172,15 +302,42 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
           : t('settings.media.reachedEmpty'),
   });
 
+  // The key kept is the store's of this kind; another kind comes with its own.
+  const kept =
+    values.media.key.set && values.media.kind === draft.kind ? values.media.key : undefined;
+  const sameServer =
+    values.media.kind === 'sftp' &&
+    values.media.host === draft.host.trim() &&
+    String(values.media.port ?? '') === draft.port.trim();
+
+  const keep = (hostKey?: string) =>
+    work.run(async () => {
+      const { settings, key } = settingsOf(draft, hostKey);
+      const answer = await settingsApi.media(settings, key);
+      if ('confirm' in answer) {
+        setConfirm(answer.confirm);
+        return undefined;
+      }
+      setConfirm(undefined);
+      setDraft((was) => ({ ...was, privateKey: '', passphrase: '', password: '' }));
+      onSaved();
+      return told(answer.test);
+    });
   const save = (event: FormEvent) => {
     event.preventDefault();
-    work.run(async () => {
-      const saved = await settingsApi.media(path.trim(), publicUrl.trim());
-      onSaved();
-      return told(saved.test);
-    });
+    keep(sameServer ? values.media.hostKey : undefined);
   };
-  const test = () => work.run(async () => told(await settingsApi.test()));
+  const test = () =>
+    work.run(async () => {
+      const tried = await settingsApi.test();
+      if (tried.hostKey) setConfirm(tried.hostKey);
+      return told(tried);
+    });
+
+  const readKeyFile = (files: FileList | null) => {
+    const file = files?.[0];
+    if (file) void file.text().then(set('privateKey'));
+  };
 
   const address = values.media.address;
   const policy = [
@@ -190,36 +347,173 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
   ].join('\n');
   // The released installer, under its own name (docs/media-library.md in the app).
   const installer = `Slidr_<version>_x64-setup.exe /S /MEDIA="${address}"`;
+  const server = draft.kind !== 'folder';
+  const keyHint = kept?.at
+    ? t('settings.media.keyKept', { when: when(uiLang, kept.at) })
+    : undefined;
 
   return (
     <form className="settings-part" onSubmit={save}>
       <h3>{t('settings.media.title')}</h3>
       <p className="small">{t('settings.media.explain')}</p>
-      <p className="settings-kind">{t(KINDS[values.media.kind])}</p>
+      {!values.editable.media && <p className="settings-kind">{t(KINDS[values.media.kind])}</p>}
       {values.editable.media && (
         <>
-          <Field label={t('settings.media.path')} hint={t('settings.media.pathHint')}>
-            <input
-              required
-              dir="ltr"
-              value={path}
-              onChange={(event) => setPath(event.target.value)}
-              placeholder="D:\\Slidr\\media"
-            />
+          <Field label={t('settings.media.where')}>
+            <select
+              value={draft.kind}
+              onChange={(event) => {
+                set('kind')(event.target.value as Kind);
+                setConfirm(undefined);
+              }}
+            >
+              {(['folder', 'sftp', 'ftp'] as const).map((kind) => (
+                <option key={kind} value={kind}>
+                  {t(KINDS[kind])}
+                </option>
+              ))}
+            </select>
           </Field>
+          {draft.kind === 'folder' ? (
+            <Field label={t('settings.media.path')} hint={t('settings.media.pathHint')}>
+              <input required dir="ltr" placeholder="D:\\Slidr\\media" {...text('path')} />
+            </Field>
+          ) : (
+            <>
+              <div className="settings-server">
+                <Field label={t('settings.media.host')}>
+                  <input required dir="ltr" placeholder="files.example.org" {...text('host')} />
+                </Field>
+                <Field label={t('settings.media.port')}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={65535}
+                    dir="ltr"
+                    placeholder={
+                      draft.kind === 'sftp' ? '22' : draft.tls === 'implicit' ? '990' : '21'
+                    }
+                    {...text('port')}
+                  />
+                </Field>
+                <Field label={t('settings.media.user')}>
+                  <input required dir="ltr" autoComplete="off" {...text('user')} />
+                </Field>
+              </div>
+              <Field label={t('settings.media.root')} hint={isolate(t('settings.media.rootHint'))}>
+                <input
+                  required
+                  dir="ltr"
+                  pattern="/.*"
+                  placeholder="/var/www/media"
+                  {...text('root')}
+                />
+              </Field>
+              {draft.kind === 'ftp' && (
+                <Field label={t('settings.media.tls')}>
+                  <select
+                    value={draft.tls}
+                    onChange={(event) => set('tls')(event.target.value as Draft['tls'])}
+                  >
+                    {(['explicit', 'implicit', 'none'] as const).map((tls) => (
+                      <option key={tls} value={tls}>
+                        {t(`settings.media.tls.${tls}`)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+              {draft.kind === 'ftp' && draft.tls === 'none' && (
+                <label className="settings-check warn small">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={draft.allowUnencrypted}
+                    onChange={(event) => set('allowUnencrypted')(event.target.checked)}
+                  />
+                  {t('settings.media.allowUnencrypted')}
+                </label>
+              )}
+              {draft.kind === 'sftp' && (
+                <Field label={t('settings.media.auth')}>
+                  <select
+                    value={draft.auth}
+                    onChange={(event) => set('auth')(event.target.value as Draft['auth'])}
+                  >
+                    <option value="key">{t('settings.media.auth.key')}</option>
+                    <option value="password">{t('settings.media.auth.password')}</option>
+                  </select>
+                </Field>
+              )}
+              {draft.kind === 'sftp' && draft.auth === 'key' ? (
+                <>
+                  <Field label={t('settings.media.privateKey')} hint={keyHint}>
+                    <textarea
+                      rows={4}
+                      dir="ltr"
+                      spellCheck={false}
+                      autoComplete="off"
+                      required={!kept}
+                      placeholder={kept ? '••••••••' : '-----BEGIN OPENSSH PRIVATE KEY-----'}
+                      {...text('privateKey')}
+                    />
+                  </Field>
+                  <label className="settings-file small">
+                    <input type="file" onChange={(event) => readKeyFile(event.target.files)} />
+                    {t('settings.media.privateKeyFile')}
+                  </label>
+                  <Field label={t('settings.media.passphrase')}>
+                    <input
+                      type="password"
+                      dir="ltr"
+                      autoComplete="new-password"
+                      {...text('passphrase')}
+                    />
+                  </Field>
+                </>
+              ) : (
+                <Field label={t('settings.media.password')} hint={keyHint}>
+                  <input
+                    type="password"
+                    dir="ltr"
+                    autoComplete="new-password"
+                    required={!kept}
+                    placeholder={kept ? '••••••••' : ''}
+                    {...text('password')}
+                  />
+                </Field>
+              )}
+              {draft.kind === 'sftp' && sameServer && values.media.hostKey && (
+                <Field label={t('settings.media.hostKey')}>
+                  <span className="settings-hostkey small">
+                    <code dir="ltr">{values.media.hostKey}</code>
+                    <span className="ok">{t('settings.media.hostKeyConfirmed')}</span>
+                  </span>
+                </Field>
+              )}
+            </>
+          )}
           <Field
             label={t('settings.media.publicUrl')}
-            hint={isolate(t('settings.media.publicUrlHint'))}
+            hint={isolate(
+              t(server ? 'settings.media.publicUrlRemoteHint' : 'settings.media.publicUrlHint'),
+            )}
           >
             <input
               type="url"
               dir="ltr"
-              value={publicUrl}
-              onChange={(event) => setPublicUrl(event.target.value)}
               placeholder="https://media.example.org/slidr/"
+              {...text('publicUrl')}
             />
           </Field>
         </>
+      )}
+      {confirm && (
+        <ConfirmHostKey
+          shown={confirm}
+          busy={work.busy}
+          onConfirm={() => keep(confirm.fingerprint)}
+        />
       )}
       <div className="row">
         {values.editable.media && (
@@ -234,6 +528,9 @@ function MediaPart({ values, onSaved }: { values: Values; onSaved: () => void })
         )}
       </div>
       <Said note={work.note} />
+      {values.media.kind === 'ftp' && values.media.tls === 'none' && (
+        <p className="warn small">{t('settings.media.unencrypted')}</p>
+      )}
 
       <div className="settings-address">
         <h4>{t('settings.media.address')}</h4>
