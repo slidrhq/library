@@ -83,7 +83,7 @@ describe('the settings, on a machine', () => {
     const moved = await send('/api/settings/media', 'PUT', { kind: 'folder', path: elsewhere });
     assert.equal(moved.status, 200, await moved.clone().text());
     assert.equal((await read<{ test: { wrote: boolean } }>(moved)).test.wrote, true);
-    assert.equal((await readConfig(library.state))?.media?.path, elsewhere);
+    assert.deepEqual((await readConfig(library.state))?.media, { kind: 'folder', path: elsewhere });
     // The server reads the new folder without being started again.
     await writeFile(join(elsewhere, 'manifest.json'), '{"version":1,"published":"x","files":{}}');
     assert.equal((await call('/media/manifest.json')).status, 200);
@@ -93,7 +93,7 @@ describe('the settings, on a machine', () => {
     const refused = await send('/api/settings/media', 'PUT', { kind: 'folder', path: file });
     assert.equal(refused.status, 422);
     assert.equal((await read<{ error: string }>(refused)).error, 'store-unreachable');
-    assert.equal((await readConfig(library.state))?.media?.path, elsewhere);
+    assert.deepEqual((await readConfig(library.state))?.media, { kind: 'folder', path: elsewhere });
     const tested = await read<{ reached: boolean; wrote: boolean; library?: object }>(
       await call('/api/settings/media/test', { method: 'POST' }),
     );

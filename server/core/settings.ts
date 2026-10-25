@@ -3,7 +3,9 @@
  *
  *   GET    /api/settings                   every setting, and of each key only that it is set
  *   PUT    /api/settings/library           { "url" }: the address the library is reached at
- *   PUT    /api/settings/media             { "kind": "folder", "path", "publicUrl"? }: its media
+ *   PUT    /api/settings/media             its media: { "kind": "folder", "path", "publicUrl"? },
+ *                                          or a server's, { "kind": "sftp" | "ftp", "host", "port"?,
+ *                                          "user", "root", …, "key"? }; the key is written only
  *   POST   /api/settings/media/test        reaches the media: reads the manifest, writes a probe
  *   PUT    /api/settings/sign-in           { "provider", "clientId", "issuer"?, "tenant"?, "name"?,
  *                                            "allowedDomains"?, "secret"? }: the provider
@@ -14,6 +16,10 @@
  * the media is the Worker's bucket, and its address is the Worker's own. A key is written, never
  * read back (`vault.ts`); each change goes into the audit. Seeding an empty media is the import of
  * the library's API, a batch at a time (`POST /api/library/import`).
+ *
+ * A server reached over SSH is known by its host key. A store that shows a key not confirmed is
+ * answered `409 host-key-unconfirmed` (or `host-key-changed`) with its fingerprint; the admin
+ * confirms it by sending the settings again with that `hostKey`.
  */
 import { audit } from './audit.ts';
 import { LibraryConfig, MediaSettings, readConfig, writeConfig } from './config.ts';
@@ -123,6 +129,17 @@ export interface StoreTest {
   /** A file could be written there, and taken away. */
   wrote: boolean;
   message?: string;
+  /** The server showed a host key that is not confirmed: which. */
+  hostKey?: { code: 'host-key-unconfirmed' | 'host-key-changed'; fingerprint: string };
+}
+
+/** The host key a store was shown, when that is why it could not be reached (`sftp.ts`). */
+function hostKeyOf(error: unknown): StoreTest['hostKey'] {
+  const { code, fingerprint } = (error ?? {}) as { code?: unknown; fingerprint?: unknown };
+  return (code === 'host-key-unconfirmed' || code === 'host-key-changed') &&
+    typeof fingerprint === 'string'
+    ? { code, fingerprint }
+    : undefined;
 }
 
 /** Reaches a media store: reads its manifest, writes a probe and takes it away. */
@@ -143,13 +160,39 @@ export async function testStore(media: MediaStore): Promise<StoreTest> {
     await media.delete(PROBE);
     return { reached, ...(found ? { library: found } : {}), wrote: true };
   } catch (error) {
+    const hostKey = hostKeyOf(error);
     return {
       reached,
       ...(found ? { library: found } : {}),
       wrote: false,
       message: error instanceof Error ? error.message : String(error),
+      ...(hostKey ? { hostKey } : {}),
     };
   }
+}
+
+/** A store's key as the page sends it: what each kind takes, as text for the vault. */
+function keyText(kind: MediaSettings['kind'], given: unknown): string | undefined | Response {
+  if (given === undefined || given === null) return undefined;
+  const fields = kind === 'sftp' ? ['privateKey', 'passphrase', 'password'] : ['password'];
+  if (
+    kind === 'folder' ||
+    !isRecord(given) ||
+    Object.entries(given).some(
+      ([name, value]) =>
+        !fields.includes(name) || (value !== undefined && typeof value !== 'string'),
+    )
+  ) {
+    return problem(400, 'bad-request', `The key of this store is ${fields.join(', ')}.`);
+  }
+  const key = Object.fromEntries(
+    Object.entries(given).filter(([, value]) => typeof value === 'string' && value !== ''),
+  );
+  if (Object.keys(key).length === 0) return undefined;
+  if (kind === 'sftp' && !key.privateKey && !key.password) {
+    return problem(400, 'bad-request', 'An SSH server takes a private key, or a password.');
+  }
+  return JSON.stringify(key);
 }
 
 const media: Route = async (request, ctx) => {
@@ -160,21 +203,48 @@ const media: Route = async (request, ctx) => {
   }
   const body = await jsonBody(request);
   if (body instanceof Response) return body;
-  const settings = MediaSettings.safeParse(body);
+  const { key: givenKey, ...given } = isRecord(body) ? body : {};
+  const settings = MediaSettings.safeParse(given);
   if (!settings.success) {
-    return problem(400, 'bad-request', 'These are not the settings of a media store.');
+    return problem(
+      400,
+      'bad-request',
+      'These are not the settings of a media store.',
+      settings.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+      })),
+    );
+  }
+  const kind = settings.data.kind;
+  const newKey = keyText(kind, givenKey);
+  if (newKey instanceof Response) return newKey;
+  // A key left out keeps the one the vault has, for a store of the same kind.
+  const was = ctx.state ? (await readConfig(ctx.state))?.media : undefined;
+  const key = newKey ?? (was?.kind === kind ? await ctx.vault?.get('media') : undefined);
+  if (kind !== 'folder' && !key) {
+    return problem(400, 'bad-request', 'A server is reached with its key: name it.');
   }
   // Reached before it is kept: a store that cannot be reached is not kept.
-  const tried = await testStore(ctx.openMedia(settings.data));
+  const store = ctx.openMedia(settings.data, key);
+  const tried = await testStore(store);
+  await store.close?.().catch(() => undefined);
+  if (tried.hostKey) {
+    return json({ error: tried.hostKey.code, message: tried.message, ...tried.hostKey }, 409);
+  }
   if (!tried.reached || !tried.wrote) {
     return json({ error: 'store-unreachable', message: tried.message, test: tried }, 422);
+  }
+  if (newKey && ctx.vault) await ctx.vault.set('media', newKey, actor.id);
+  if (kind === 'folder' && ctx.vault && (await ctx.vault.about('media'))) {
+    await ctx.vault.remove('media');
   }
   const saved = await change(
     ctx,
     actor.id,
     'settings.media',
     (config) => ({ ...config, media: settings.data }),
-    { kind: settings.data.kind },
+    { kind, ...(newKey ? { key: 'set' } : {}) },
   );
   return saved.status === 204 ? json({ test: tried }) : saved;
 };

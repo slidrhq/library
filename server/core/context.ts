@@ -12,8 +12,11 @@ import type { Vault } from './vault.ts';
 /** What the library keeps for itself: the uploads and their files (`uploads/store.ts`). */
 export type StateStore = Bucket;
 
-/** The published library: its files under their paths, and its manifest (`media/live.ts`). */
-export type MediaStore = Bucket;
+/**
+ * The published library: its files under their paths, and its manifest (`media/live.ts`). A store
+ * on another server is let go (`close`) when the library names another.
+ */
+export type MediaStore = Bucket & { close?(): Promise<void> };
 
 /** Signing in, and who may do what (`auth.ts`, `uploads/access.ts`). */
 export interface AuthSettings {
@@ -60,6 +63,9 @@ export interface Context {
   local?: boolean;
   /** What of the library's settings the host lets an admin change (`settings.ts`). */
   editable?: { url?: boolean; media?: boolean };
-  /** Opens the media store of some settings, to try them before they are kept (`settings.ts`). */
-  openMedia?: (settings: MediaSettings) => MediaStore;
+  /**
+   * Opens the media store of some settings, with its key (the vault's `media`, as text), to try
+   * them before they are kept (`settings.ts`).
+   */
+  openMedia?: (settings: MediaSettings, key?: string) => MediaStore;
 }

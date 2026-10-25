@@ -19,8 +19,60 @@ const FolderMedia = z.object({
   publicUrl: address.optional(),
 });
 
+/** A server name, as a store is reached at: a host name, or an address. */
+const host = z
+  .string()
+  .min(1)
+  .max(253)
+  .regex(/^[A-Za-z0-9.:[\]-]+$/);
+/** A folder on a server, from its root: `/var/www/media`. */
+const remoteFolder = z
+  .string()
+  .regex(/^\/[^\0]*$/)
+  .refine((path) => !path.split('/').includes('..'), 'A folder does not climb out of another.');
+
+/**
+ * A folder on a server reached over SSH (docs/SPEC.md §4.5). Its key is the vault's `media`: a
+ * private key with its passphrase, or a password. The server is known by its host key, pinned by
+ * its fingerprint once an admin confirmed it.
+ */
+const SftpMedia = z.object({
+  kind: z.literal('sftp'),
+  host,
+  port: z.int().min(1).max(65535).default(22),
+  user: z.string().min(1).max(100),
+  root: remoteFolder,
+  /** `SHA256:` and the host key's hash, as `ssh-keygen -l` shows it. */
+  hostKey: z
+    .string()
+    .regex(/^SHA256:[A-Za-z0-9+/]{43}$/)
+    .optional(),
+  publicUrl: address.optional(),
+});
+
+/**
+ * A folder on an FTP server: over TLS, asked for (`explicit`) or from the start (`implicit`); in
+ * clear only when an admin allowed it, since the password then travels unencrypted. Its password
+ * is the vault's `media`.
+ */
+const FtpMedia = z
+  .object({
+    kind: z.literal('ftp'),
+    host,
+    port: z.int().min(1).max(65535).optional(),
+    user: z.string().min(1).max(100),
+    root: remoteFolder,
+    tls: z.enum(['explicit', 'implicit', 'none']).default('explicit'),
+    allowUnencrypted: z.boolean().optional(),
+    publicUrl: address.optional(),
+  })
+  .refine((ftp) => ftp.tls !== 'none' || ftp.allowUnencrypted === true, {
+    message: 'Unencrypted FTP sends the password in clear: allow it first.',
+    path: ['tls'],
+  });
+
 /** Where the published library is kept. */
-export const MediaSettings = z.discriminatedUnion('kind', [FolderMedia]);
+export const MediaSettings = z.discriminatedUnion('kind', [FolderMedia, SftpMedia, FtpMedia]);
 export type MediaSettings = z.infer<typeof MediaSettings>;
 
 /**

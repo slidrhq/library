@@ -11,6 +11,7 @@
 import { execFile } from 'node:child_process';
 import { chmod, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
+import { createHash } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import {
@@ -32,7 +33,10 @@ import {
   importLibrary,
   type Imported,
 } from '../../core/media/import.ts';
+import { FtpRemote } from './ftp.ts';
 import { FolderMedia } from './media.ts';
+import { RemoteMedia } from './remote.ts';
+import { SftpRemote, type SftpKey } from './sftp.ts';
 import { FolderBucket } from './state.ts';
 
 export interface HostFile {
@@ -217,18 +221,48 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
   return { data, host, keys: masterKeys, state, vault: new Vault(state, held), config };
 }
 
-/** What the server is given, of a library on this machine. */
-/** The media store of some settings: a folder of this machine. */
-export const openMedia = (settings: MediaSettings): MediaStore => new FolderMedia(settings.path);
+/** A store's key, as the vault keeps it: JSON of what the store takes. */
+function keyOf(text: string | undefined): SftpKey {
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as SftpKey;
+  } catch {
+    return {};
+  }
+}
 
-function contextFor(library: Library): Context {
+/**
+ * Opens the media store of some settings, with its key: a folder of this machine, or a folder of
+ * another server, whose files read are kept in a cache folder of its own in the data folder.
+ */
+export function mediaOpener(data: string) {
+  return (settings: MediaSettings, key?: string): MediaStore => {
+    if (settings.kind === 'folder') return new FolderMedia(settings.path);
+    const where = `${settings.kind}:${settings.user}@${settings.host}:${settings.port ?? ''}${settings.root}`;
+    const cache = join(
+      data,
+      'cache',
+      createHash('sha256').update(where).digest('hex').slice(0, 16),
+    );
+    const remote =
+      settings.kind === 'sftp'
+        ? new SftpRemote(settings, keyOf(key))
+        : new FtpRemote(settings, keyOf(key).password ?? '');
+    return new RemoteMedia(remote, cache, settings.publicUrl);
+  };
+}
+
+/** What the server is given, of a library on this machine. */
+async function contextFor(library: Library): Promise<Context> {
   const media = library.config.media;
+  const openMedia = mediaOpener(library.data);
+  const key = media && media.kind !== 'folder' ? await library.vault.get('media') : undefined;
   // The session key is the vault's, read as each request needs it (`sessionKeyOf`); the owner
   // signs in on this machine by a link of the CLI. On a machine, an admin changes it all.
   return {
     state: library.state,
     vault: library.vault,
-    ...(media ? { media: openMedia(media) } : {}),
+    ...(media ? { media: openMedia(media, key) } : {}),
     ...(media?.publicUrl ? { publicUrl: media.publicUrl } : {}),
     auth: {},
     local: true,
@@ -238,25 +272,34 @@ function contextFor(library: Library): Context {
 }
 
 export function contextOf(library: Library): Promise<Context> {
-  return Promise.resolve(contextFor(library));
+  return contextFor(library);
 }
 
 /**
- * The context of each request: made again once the library's settings change (an admin names
- * another media folder), so the server need not be started again for it.
+ * The context of each request: made again once the library's settings or the media's key change
+ * (an admin names another media store), so the server need not be started again for it. The store
+ * named before is let go.
  */
 export function contextSource(library: Library): () => Promise<Context> {
-  let held: { etag: string; context: Context } | undefined;
+  let held: { version: string; context: Context } | undefined;
   return async () => {
     const object = await library.state.get(CONFIG);
     if (!object) return held?.context ?? contextFor(library);
-    if (held?.etag !== object.etag) {
+    const key = await library.state.get(MEDIA_KEY);
+    const version = `${object.etag} ${key?.etag ?? ''}`;
+    if (key) await key.body.cancel();
+    if (held?.version !== version) {
       library.config = LibraryConfig.parse(JSON.parse(await object.text()));
-      held = { etag: object.etag, context: contextFor(library) };
-    }
+      const before = held?.context.media;
+      held = { version, context: await contextFor(library) };
+      await before?.close?.().catch(() => undefined);
+    } else await object.body.cancel();
     return held.context;
   };
 }
+
+/** Where the vault keeps the media's key, in the state store. */
+const MEDIA_KEY = 'vault/media.json';
 
 /**
  * Seals every key of the library under a new master key (`pnpm library vault rotate`). The new
