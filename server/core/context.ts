@@ -6,6 +6,7 @@
  */
 import type { Bucket } from './bucket.ts';
 import type { Purger } from './media/cache.ts';
+import type { Vault } from './vault.ts';
 
 /** What the library keeps for itself: the uploads and their files (`uploads/store.ts`). */
 export type StateStore = Bucket;
@@ -33,6 +34,8 @@ export interface AuthSettings {
 export interface Context {
   /** Without it, the library keeps no uploads. */
   state?: StateStore;
+  /** The library's keys, sealed in its state store (`vault.ts`); none on a host that keeps none. */
+  vault?: Vault;
   /** Without it, the library is read from its site and nothing is published. */
   media?: MediaStore;
   /**
@@ -43,4 +46,6 @@ export interface Context {
   /** Empties the cache before the published library of what a publication wrote (`media/cache.ts`). */
   purge?: Purger;
   auth: AuthSettings;
+  /** The address the request came from, where the host knows it. */
+  clientAddress?: string;
 }

@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && tsc --noEmit -p server",
     "test": "node --import ./server/node.mjs --test \"server/**/*.test.ts\"",
+    "library": "node --import ./server/node.mjs server/host/node/cli.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -21,6 +22,7 @@
     "vendor": "node scripts/vendor.mjs"
   },
   "dependencies": {
+    "@napi-rs/keyring": "2.1.0",
     "@slidr/media-library": "workspace:*",
     "@slidr/model": "workspace:*",
     "@slidr/renderer": "workspace:*",

@@ -13,6 +13,21 @@ pnpm build; pnpm preview
 
 `pnpm dev` and `pnpm preview` run the Worker inside Vite (`@cloudflare/vite-plugin`, in Cloudflare's own runtime), with the secrets of `.dev.vars`. Without that file the page works the same, and offers no signing in.
 
+## Installing on a machine
+
+The library also runs on a machine of its own, without Cloudflare: one Node process serves the built page and the library's server (`server/host/node`), the same server the Worker runs (`server/core`; [docs/SPEC.md](docs/SPEC.md), and [docs/PLAN.md](docs/PLAN.md) for what is still to come).
+
+```powershell
+pnpm install; pnpm build
+pnpm library init --owner you@example.org --media-path D:\slidr-media    # once
+pnpm library start                                                        # http://127.0.0.1:5176
+pnpm library vault rotate                                                 # a new master key
+```
+
+- **The data folder** is `%LOCALAPPDATA%\Slidr Library` (on macOS `~/Library/Application Support/Slidr Library`, elsewhere `~/.local/share/slidr-library`), or `--data <dir>`, or `SLIDR_LIBRARY_DATA`. `init` makes it its user's only (on Windows by its ACL, elsewhere mode 0700). It holds `host.json` and the library's store, `state/`: its settings (`config/library.json`), its people (the installer, its owner), its sealed keys (`vault/`) and, as they come, its uploads.
+- **The keys** the library keeps (the key its cookies are signed with, and, as they come, the key of its media and of its sign-in) are sealed with AES-256-GCM under a master key that is never in the data folder (`server/core/vault.ts`): it is in the OS keychain (Windows Credential Manager, the macOS Keychain, the Secret Service) under `Slidr Library` and the folder's path; or, given `--master-key-env` to `init`, in `LIBRARY_MASTER_KEY`, set by whoever runs the server; or, given `--master-key-file <file>`, in that file. `vault rotate` seals every key again under a new master key; start the server again afterwards.
+- **Reaching it.** `start` listens on `127.0.0.1:5176` (`--port`), and answers only requests that name it by a name of this machine. Beyond it, it takes `--host <address>` with `--tls-cert` and `--tls-key`, or behind a proxy that speaks TLS (`--behind-proxy`), and the address it is reached at (`--url https://…`, kept in its settings).
+
 The page draws the library with the app's own code: the packages it uses (`@slidr/model`, `@slidr/renderer`, `@slidr/templates`, `@slidr/media-library`) and the app's readers of the library in `desktop/src` (imported as `@desktop/…`) are copied into `vendor/` from the app's repository, so this repository stands on its own. [vendor/README.md](vendor/README.md) says how to take a newer version of them. Paths in this README such as `desktop/…` and `packages/…` are of the app's repository.
 
 ## What it shows

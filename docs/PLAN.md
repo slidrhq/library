@@ -53,7 +53,7 @@ The core is moved out of the Worker so a second host can run it.
   - `node:http`, which turns Node's requests into web `Request`s and back;
   - it serves `dist/client` (with the page's fallback for addresses it does not know), `/auth/*`, `/api/*` and `/media/*`;
   - it listens on `127.0.0.1:5176`. `--host` is accepted only with `--tls-cert`/`--tls-key` or with `--behind-proxy`, which trusts `X-Forwarded-Proto`/`-Host`. The library's own URL comes from its settings;
-  - it is built with esbuild into `dist/server/library.mjs`, so `pnpm library` starts without the hooks the tests use.
+  - it runs from its source, as the tests do: Node strips the types, and `server/node.mjs` resolves the imports of `vendor/` as a bundler would. A bundle can come later if starting it is slow.
 - `server/core/vault.ts` (§4.4): AES-256-GCM through `crypto.subtle`, the additional data `slidr-library:vault:<name>`, and `kid`. The master key comes from one of:
   - the OS keychain, through `@napi-rs/keyring` (first check that it ships prebuilt binaries for win32-x64, win32-arm64, darwin and linux-gnu);
   - `LIBRARY_MASTER_KEY`;
