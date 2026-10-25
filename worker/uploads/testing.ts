@@ -17,7 +17,7 @@ import {
 import type { Template } from '@slidr/templates';
 import worker from '../index.ts';
 import { forgetLibrary } from './library.ts';
-import type { Bucket, BucketObject } from './store.ts';
+import type { Bucket, BucketObject, HttpMetadata } from './store.ts';
 
 export const SITE = 'https://library.example';
 export const MEDIA = 'https://media.example/';
@@ -26,19 +26,19 @@ export const MEDIA = 'https://media.example/';
 export class MemoryBucket implements Bucket {
   readonly objects = new Map<
     string,
-    { data: Uint8Array; etag: string; contentType?: string; meta?: Record<string, string> }
+    { data: Uint8Array; etag: string; http: HttpMetadata; meta?: Record<string, string> }
   >();
   private written = 0;
 
   get(key: string): Promise<BucketObject | null> {
     const held = this.objects.get(key);
     if (!held) return Promise.resolve(null);
-    const { data, etag, contentType, meta } = held;
+    const { data, etag, http, meta } = held;
     return Promise.resolve({
       etag,
       size: data.length,
       body: new Blob([data as Uint8Array<ArrayBuffer>]).stream(),
-      httpMetadata: { contentType },
+      httpMetadata: { ...http },
       customMetadata: meta,
       text: () => Promise.resolve(new TextDecoder().decode(data)),
       arrayBuffer: () => Promise.resolve(data.slice().buffer),
@@ -63,7 +63,7 @@ export class MemoryBucket implements Bucket {
     this.objects.set(key, {
       data,
       etag,
-      contentType: options.httpMetadata?.contentType,
+      http: { ...options.httpMetadata },
       meta: options.customMetadata,
     });
     return Promise.resolve({ etag });
@@ -81,8 +81,16 @@ export class MemoryBucket implements Bucket {
       .filter((key) => !options.startAfter || key > options.startAfter)
       .sort();
     const page = keys.slice(0, limit);
+    const include = options.include ?? [];
     return Promise.resolve({
-      objects: page.map((key) => ({ key, customMetadata: this.objects.get(key)!.meta })),
+      objects: page.map((key) => {
+        const { http, meta } = this.objects.get(key)!;
+        return {
+          key,
+          ...(include.includes('httpMetadata') ? { httpMetadata: { ...http } } : {}),
+          ...(include.includes('customMetadata') ? { customMetadata: meta } : {}),
+        };
+      }),
       truncated: keys.length > limit,
     });
   }

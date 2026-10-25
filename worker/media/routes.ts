@@ -15,14 +15,15 @@ import { isRecord, json, jsonBody, problem } from '../http.ts';
 import { authorize, type AccessEnv } from '../uploads/access.ts';
 import { isUploadId, listUploads, type Bucket } from '../uploads/store.ts';
 import { forgetLibrary, libraryFor } from '../uploads/library.ts';
+import { purgerFor, type CacheEnv } from './cache.ts';
 import { BATCH, ImportRefused, importLibrary } from './import.ts';
 import { MOST_BYTES, Refused, publishFiles, stage } from './files.ts';
 import { readManifest, type MediaEnv } from './live.ts';
 import { MOST_UPLOADS, NotNow, publish } from './publish.ts';
 
-export interface LibraryEnv extends AccessEnv, MediaEnv {
+export interface LibraryEnv extends AccessEnv, MediaEnv, CacheEnv {
+  /** The uploads, and beside them a publication's own records (`live.ts`). */
   UPLOADS?: Bucket;
-  MEDIA_LIBRARY_URL?: string;
 }
 
 type Route = (request: Request, env: LibraryEnv) => Promise<Response>;
@@ -127,7 +128,14 @@ export const publishRoute: Route = async (request, env) => {
   }
   try {
     return json(
-      await publish(env.MEDIA, env.UPLOADS, libraryFor(env), actor, ids as string[] | undefined),
+      await publish(
+        env.MEDIA,
+        env.UPLOADS,
+        libraryFor(env),
+        actor,
+        ids as string[] | undefined,
+        purgerFor(env),
+      ),
     );
   } catch (error) {
     if (error instanceof NotNow) return problem(409, error.code, error.message);
@@ -141,13 +149,14 @@ export const stageRoute = async (request: Request, env: LibraryEnv, [sha256]: st
   const actor = await authorize(request, env, 'publish');
   if (actor instanceof Response) return actor;
   if (!env.MEDIA) return noBucket('the library (MEDIA)');
+  if (!env.UPLOADS) return noBucket('the uploads (UPLOADS)');
   const length = Number(request.headers.get('Content-Length') ?? 0);
   if (length > MOST_BYTES) {
     return problem(413, 'too-large', `A file is at most ${MOST_BYTES / 1024 / 1024} MiB.`);
   }
   const bytes = new Uint8Array(await request.arrayBuffer());
   try {
-    return json(await stage(env.MEDIA, sha256 ?? '', bytes));
+    return json(await stage(env.UPLOADS, sha256 ?? '', bytes));
   } catch (error) {
     if (error instanceof Refused) return problem(400, error.code, error.message);
     throw error;
@@ -160,10 +169,19 @@ export const filesRoute: Route = async (request, env) => {
   const actor = await authorize(request, env, 'publish');
   if (actor instanceof Response) return actor;
   if (!env.MEDIA) return noBucket('the library (MEDIA)');
+  if (!env.UPLOADS) return noBucket('the uploads (UPLOADS)');
   const body = await jsonBody(request);
   if (body instanceof Response) return body;
   try {
-    return json(await publishFiles(env.MEDIA, actor, isRecord(body) ? body.files : undefined));
+    return json(
+      await publishFiles(
+        env.MEDIA,
+        env.UPLOADS,
+        actor,
+        isRecord(body) ? body.files : undefined,
+        purgerFor(env),
+      ),
+    );
   } catch (error) {
     if (error instanceof Refused) {
       const status = error.code === 'conflict' ? 409 : error.code === 'not-staged' ? 422 : 400;

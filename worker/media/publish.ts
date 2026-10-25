@@ -7,10 +7,12 @@
  *
  * - Each upload is checked once more, against the library as it is (as accepting it did), and
  *   one that no longer holds stays accepted, saying why. So does one that cannot be written.
- * - What a publication replaces is kept under `_history/<published>/`: the manifest before it,
- *   and each file it wrote over.
- * - One publication runs at a time (`_publishing.json`); the manifest is written only over the
- *   one read at the start, so two never write over each other.
+ * - What a publication replaces is kept beside the uploads, under `media/history/<published>/`:
+ *   the manifest before it, and each file it wrote over.
+ * - One publication runs at a time (`media/lock.json`, beside the uploads too); the manifest is
+ *   written only over the one read at the start, so two never write over each other.
+ * - Once the manifest is written, the cache before the library is emptied of the files written
+ *   (`cache.ts`).
  */
 import type { Issue } from '../http.ts';
 import type { Actor } from '../uploads/access.ts';
@@ -24,12 +26,14 @@ import {
   type Bucket,
   type Upload,
 } from '../uploads/store.ts';
+import type { Purge, Purger } from './cache.ts';
 import {
   HISTORY,
   LOCK,
   MANIFEST,
   encodeManifest,
   putFile,
+  putManifest,
   readBytes,
   readManifest,
   sha256Hex,
@@ -77,6 +81,8 @@ export interface Publication {
   changed: string[];
   /** Accepted uploads left for the next publication. */
   remaining: number;
+  /** What became of the cache before the library, once something was written. */
+  cache?: Purge;
 }
 
 /** Why a publication cannot run now. */
@@ -196,7 +202,7 @@ async function apply(upload: Upload, changes: Changes, uploads: Bucket): Promise
   throw new PublishError(`The library does not publish ${type}: ${action}.`);
 }
 
-/** Holds the library for one publication, or says who holds it. */
+/** Holds the library for one publication, or says who holds it: in the bucket of the uploads. */
 export async function lock(bucket: Bucket, actor: Actor) {
   const held = await bucket.get(LOCK);
   if (held) {
@@ -240,7 +246,7 @@ async function markPublished(uploads: Bucket, id: string, at: string, actor: Act
 
 /**
  * Publishes the accepted uploads (or those named) into the library in `media`, checking each
- * against `library`, the library as it is.
+ * against `library`, the library as it is, and then empties the cache of what it wrote (`purge`).
  */
 export async function publish(
   media: Bucket,
@@ -248,6 +254,7 @@ export async function publish(
   library: Library,
   actor: Actor,
   ids?: readonly string[],
+  purge?: Purger,
 ): Promise<Publication> {
   const live = await readManifest(media);
   if (!live) {
@@ -256,7 +263,7 @@ export async function publish(
       'The library is not in its bucket yet: bring it in first (POST /api/library/import).',
     );
   }
-  await lock(media, actor);
+  await lock(uploads, actor);
   try {
     const { manifest, etag } = live;
     const changes = new Changes(media, manifest);
@@ -309,7 +316,7 @@ export async function publish(
 
     const published = new Date().toISOString();
     const history = `${HISTORY}/${published}`;
-    await media.put(`${history}/${MANIFEST}`, encodeManifest(manifest), {
+    await uploads.put(`${history}/${MANIFEST}`, encodeManifest(manifest), {
       httpMetadata: { contentType: 'application/json' },
     });
     const files = { ...manifest.files };
@@ -319,28 +326,28 @@ export async function publish(
       if (before?.sha256 === sha256) continue;
       if (before) {
         const old = await media.get(path);
-        if (old) await media.put(`${history}/${path}`, await old.arrayBuffer());
+        if (old) await uploads.put(`${history}/${path}`, await old.arrayBuffer());
         result.changed.push(path);
       } else result.added.push(path);
       await putFile(media, path, bytes, sha256);
       files[path] = { size: bytes.length, sha256 };
     }
-    const next = encodeManifest({ version: 1, published, files });
-    const written = await media.put(MANIFEST, next, {
-      httpMetadata: { contentType: 'application/json' },
-      customMetadata: { sha256: await sha256Hex(toBytes(next)) },
-      onlyIf: { etagMatches: etag },
-    });
+    const written = await putManifest(
+      media,
+      encodeManifest({ version: 1, published, files }),
+      etag,
+    );
     if (!written) {
       throw new NotNow('changed-meanwhile', 'The library was published meanwhile. Try again.');
     }
     forgetLibrary();
-    for (const one of result.uploads) await markPublished(uploads, one.id, published, actor);
-    result.published = published;
     result.added.sort();
     result.changed.sort();
+    if (purge) result.cache = await purge([...result.added, ...result.changed]);
+    for (const one of result.uploads) await markPublished(uploads, one.id, published, actor);
+    result.published = published;
     return result;
   } finally {
-    await media.delete(LOCK);
+    await uploads.delete(LOCK);
   }
 }

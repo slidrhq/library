@@ -153,7 +153,7 @@ Search-tag uploads may also include any of the other supported content languages
 
 ## Publishing the uploads
 
-The published media library lives in the Worker's own R2 bucket, `slidr-media` (`MEDIA`, `worker/media/live.ts`): every file under its path, and `manifest.json`, which names each with its size and SHA-256 as the app reads it. The Worker serves it at `/media/` (`worker/media/serve.ts`), with the headers Cloudflare Pages gave it: any site may read it, the manifest is asked for again each time, and a file answers its SHA-256 as its ETag. media.slidr.studio, where every installed app reads the library (releases before it at slidr-media.pages.dev, the same project), is a Pages project whose one Worker sends each request there through a service binding (`media-site/`). No author's copy of the library and no `pnpm media:publish` take part: what reaches the library comes through the uploads, and a publication writes the accepted ones into the bucket.
+The published media library lives in the Worker's own R2 bucket, `slidr-media` (`MEDIA`, `worker/media/live.ts`): every file under its path, and `manifest.json`, which names each with its size and SHA-256 as the app reads it. The bucket is public, and holds the library and nothing else. media.slidr.studio, where every installed app reads the library, is the bucket itself, with Cloudflare's cache before it, and no Worker runs when it is read ([Serving the library](#serving-the-library)). The Worker serves the same bucket at `/media/` (`worker/media/serve.ts`), with the headers Cloudflare Pages gave it, as a dev server does. No author's copy of the library and no `pnpm media:publish` take part: what reaches the library comes through the uploads, and a publication writes the accepted ones into the bucket.
 
 ```text
 GET  /api/library            where the library is, when it was published, how many uploads wait
@@ -161,14 +161,14 @@ POST /api/publish            every accepted upload, oldest first; or { "uploads"
 POST /api/library/import     once: the site's library into the bucket, a batch per call
 PUT  /api/library/staged/…   a file of an author's publication (pnpm media:publish of the app)
 POST /api/library/files      an author's publication: the files changed since the copy was pulled
-GET  /media/<path>           the published library, as the app reads it
+GET  /media/<path>           the library in the bucket, as a dev server serves it
 ```
 
 A publication (`worker/media/publish.ts`), by an editor or a program that may publish:
 
 - checks each upload once more against the library as it is, and leaves accepted one that no longer holds, saying why (`skipped`);
 - writes each into the files it changes (`worker/media/merge.ts`): the tags of a part merged into `tags/<part>.json`, where an item named takes the tags given in every language given and the others keep theirs; a new design into `elements/designs/managed.json` (its names, group, slides, subject, size and tags) with its picture in `images/designs/`; a design's translation into its slides; a template's sample into `templates/catalog.json`, which changes in no other byte;
-- keeps what it replaces under `_history/<published>/` (the manifest before it, and each file it wrote over), writes the manifest last, and marks each upload `published`. The app takes the new library the next time it reads the manifest.
+- keeps what it replaces beside the uploads, under `media/history/<published>/` of `slidr-library-uploads` (the manifest before it, and each file it wrote over), writes the manifest last, empties the cache of every file it wrote and of the manifest, and marks each upload `published`. The app takes the new library the next time it reads the manifest. The answer says what became of the cache (`cache`: `files`, `host`, or `none` and why).
 
 **An author's files.** What the app's generators write (the catalogs of icons, frames and authored designs, the templates and their sources' samples, the fonts) is still made in an author's copy of the library, and published from it by `pnpm media:publish` of the app, through this API too: it sends each file the author changed since the copy was pulled (`PUT /api/library/staged/<sha256>`), and then the publication of them (`POST /api/library/files`), each path with the hash it was changed from (`worker/media/files.ts`). A file the library changed meanwhile, as an upload that was published, is a conflict, and nothing is written: the author pulls (`pnpm media:pull`) and publishes again. Every file the author did not change stays as the library has it, so a publication of an author's files never takes away a published upload.
 
@@ -187,12 +187,38 @@ One publication runs at a time. Up to 50 uploads go in one, and the answer says 
    node scripts/import-library.mjs
    ```
    `https://library.slidr.workers.dev/media/manifest.json` then answers with the library.
-3. Send the Pages project `slidr-media` (media.slidr.studio and slidr-media.pages.dev) to the Worker. This deployment of it holds no files, only `media-site/public/_worker.js` and its service binding to `library` (`media-site/wrangler.toml`):
-   ```powershell
-   cd media-site; npx wrangler pages deploy
-   ```
-   Every installed app reads the bucket from then on. Its deployments before stay in the Pages project, and one is put back from Cloudflare's dashboard.
+3. Put media.slidr.studio before the bucket itself, and take the Pages project away ([Serving the library](#serving-the-library), "Setting it up"). Every installed app reads the bucket from then on.
 4. Publish the accepted uploads: **Uploads** → **Publish N accepted**, or `POST /api/publish`.
+
+## Serving the library
+
+media.slidr.studio is a custom domain of the bucket `slidr-media`. Cloudflare answers from its cache, and reads a file from the bucket only when the cache does not hold it. No Worker runs, so reading the library costs nothing by the request: Cloudflare's cache and R2's egress are free, and R2 counts only the reads that reach the bucket (10 million a month are free), which are about one a file a day and after a publication, however many apps read it.
+
+- **What a file is answered with.** The type and the caching it was written with (`worker/media/live.ts`): the manifest `no-cache`, every other file `public, max-age=0, must-revalidate`, as Pages served them. The zone's rule below adds what the Worker added: `Access-Control-Allow-Origin: *` and `X-Slidr-Library: live`, by which the app's `pnpm media:publish` knows to publish through the API. A file's ETag is R2's own, not its SHA-256; the app checks each file against the manifest, and sends no `If-None-Match`.
+- **How long the cache keeps it.** A file a day, the manifest five minutes. A publication empties the cache of every file it wrote or took away, and of the manifest, as soon as the manifest is written (`worker/media/cache.ts`): by their addresses, 100 a call, or the whole host when they are more than 300. Every other file stays in the cache.
+- **When the cache cannot be emptied** (the Worker lacks `MEDIA_ZONE_ID` and `MEDIA_PURGE_TOKEN`, or Cloudflare refuses), the publication is written all the same, says so in its answer, and the Worker logs why. The cache then holds the old files for a day at most, and the manifest for five minutes. Meanwhile an app may read the new manifest and an old file: it shows the old file and does not keep it. To empty it by hand: the zone's **Caching** → **Configuration** → **Custom Purge** → **Hostname** `media.slidr.studio`.
+
+**Setting it up**, once, after the library is in the bucket ([Publishing the uploads](#publishing-the-uploads), step 2: it is read from media.slidr.studio as Pages serves it). The address does not answer for a minute or two between steps 2 and 3; an installed app works from what it keeps meanwhile.
+
+1. The bucket's CORS policy, for a browser that asks before it reads (the zone's rule in step 4 gives every answer its CORS headers, cached or not):
+   ```powershell
+   npx wrangler r2 bucket cors set slidr-media --file media-cors.json
+   ```
+2. Take media.slidr.studio from the Pages project: **Workers & Pages** → `slidr-media` → **Custom domains** → remove it; then remove its DNS record from the zone slidr.studio (`media`, a CNAME to slidr-media.pages.dev).
+3. Give it to the bucket: **R2** → `slidr-media` → **Settings** → **Custom Domains** → **Add** → `media.slidr.studio`. R2 makes its DNS record and its certificate.
+4. In the zone slidr.studio:
+   - **Caching** → **Tiered Cache** → **Smart Tiered Caching** on: one data center reads the bucket for all the others.
+   - **Caching** → **Cache Rules**, in this order:
+     - _Media library_: hostname equals `media.slidr.studio` → **Eligible for cache**; **Edge TTL**: ignore cache-control header and use this TTL, 1 day; **Browser TTL**: respect origin.
+     - _Media manifest_: hostname equals `media.slidr.studio` and URI path equals `/manifest.json` → **Eligible for cache**; **Edge TTL**: ignore cache-control header and use this TTL, 5 minutes; **Browser TTL**: respect origin.
+   - **Rules** → **Transform Rules** → **Modify Response Header**, _Media library headers_: hostname equals `media.slidr.studio` → set static `Access-Control-Allow-Origin: *`, `Access-Control-Expose-Headers: ETag`, `X-Content-Type-Options: nosniff`, `X-Slidr-Library: live`.
+5. A token that may empty the cache: **My Profile** → **API Tokens** → **Create Token** → custom, permission Zone → **Cache Purge** → Purge, for the zone slidr.studio. Then the Worker's secrets:
+   ```powershell
+   npx wrangler secret put MEDIA_ZONE_ID       # the zone's id, on its Overview page
+   npx wrangler secret put MEDIA_PURGE_TOKEN
+   ```
+6. Check it: `curl.exe -sI https://media.slidr.studio/manifest.json` answers `X-Slidr-Library: live` and `Cache-Control: no-cache`, and asked again, `cf-cache-status: HIT`; `/fonts/catalog.json` answers `Access-Control-Allow-Origin: *`.
+7. Delete the Pages project `slidr-media` (**Workers & Pages** → `slidr-media` → **Settings** → **Delete project**). slidr-media.pages.dev stops answering: no release of the app reads it.
 
 ## Publishing
 

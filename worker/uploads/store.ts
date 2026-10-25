@@ -3,6 +3,8 @@
  *
  *   uploads/<id>.json      the upload: what it holds, its status and its history
  *   files/<id>/<name>      each of its files
+ *   media/…                the published library's own records, which its bucket does not
+ *                          publish (`../media/live.ts`)
  *
  * An upload's summary (type, status, languages…) is also kept in the metadata of its record, so
  * the uploads are listed without reading each one. Ids sort newest first.
@@ -18,7 +20,7 @@ export interface Bucket {
     key: string,
     value: string | ArrayBuffer | Uint8Array,
     options?: {
-      httpMetadata?: { contentType?: string };
+      httpMetadata?: HttpMetadata;
       customMetadata?: Record<string, string>;
       onlyIf?: { etagMatches?: string };
     },
@@ -30,16 +32,26 @@ export interface Bucket {
     limit?: number;
     include?: ('customMetadata' | 'httpMetadata')[];
   }): Promise<{
-    objects: { key: string; customMetadata?: Record<string, string> }[];
+    objects: {
+      key: string;
+      httpMetadata?: HttpMetadata;
+      customMetadata?: Record<string, string>;
+    }[];
     truncated: boolean;
   }>;
+}
+
+/** What an object is answered with, where the bucket answers the web itself (`../media/live.ts`). */
+export interface HttpMetadata {
+  contentType?: string;
+  cacheControl?: string;
 }
 
 export interface BucketObject {
   etag: string;
   size: number;
   body: ReadableStream;
-  httpMetadata?: { contentType?: string };
+  httpMetadata?: HttpMetadata;
   customMetadata?: Record<string, string>;
   text(): Promise<string>;
   arrayBuffer(): Promise<ArrayBuffer>;

@@ -42,10 +42,4 @@ export default tseslint.config(
     files: ['*.config.{js,ts}', 'scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
-
-  {
-    // The Worker of the Pages project slidr-media (media.slidr.studio), deployed as it is.
-    files: ['media-site/**/*.js'],
-    languageOptions: { globals: globals.serviceworker },
-  },
 );

@@ -1,17 +1,18 @@
 // Brings the published media library into the bucket of the library's Worker, once (README,
 // "Publishing the uploads"): calls POST /api/library/import until it says the bucket has every
-// file and the manifest. Each call copies a batch from the site as Cloudflare Pages serves it now,
-// checked against its SHA-256; nothing is copied to this machine. Run it again after a failure:
-// a file already in the bucket is not read again.
+// file and the manifest. Each call copies a batch from the site (media.slidr.studio, as Cloudflare
+// Pages serves it before it is the bucket's), checked against its SHA-256; nothing is copied to
+// this machine. Run it again after a failure: a file already in the bucket is not read again.
 //
 //   $env:LIBRARY_KEY = '<a key of LIBRARY_KEYS>'
 //   node scripts/import-library.mjs                                  https://library.slidr.workers.dev
 //   node scripts/import-library.mjs --url http://127.0.0.1:5176      the page's dev server
-//   node scripts/import-library.mjs --from https://<deployment>.slidr-media.pages.dev/
+//   node scripts/import-library.mjs --from https://<another site>/
 //   node scripts/import-library.mjs --batch 100
 //
 // --from is the site to copy from: the Worker's MEDIA_LIBRARY_URL (the published library) unless
-// named. Once the bucket has the library, the Pages project slidr-media is sent to it (media-site/).
+// named. Once the bucket has the library, media.slidr.studio is put before the bucket itself
+// (README, "Serving the library").
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
   const at = args.indexOf(name);

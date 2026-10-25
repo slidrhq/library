@@ -1,22 +1,24 @@
 /**
  * Bringing the published library into its bucket, once: every file the site's manifest names,
- * read from the site (media.slidr.studio, as Cloudflare Pages served it), checked against its
- * SHA-256 and written under its path. A call copies a batch and says how many are left, so it is
- * called until it says it is done (`scripts/import-library.mjs`); a file already there with its
- * hash is not read again. The manifest is written last, once every file is in: from then on the
- * library is the bucket's (`live.ts`), and a publication writes into it.
+ * read from the site (media.slidr.studio, as Cloudflare Pages served it before it was the bucket,
+ * or the published library into the buckets of a dev server), checked against its SHA-256 and
+ * written under its path. A call copies a batch and says how many are left, so it is called until
+ * it says it is done (`scripts/import-library.mjs`); a file already there with its hash and the
+ * caching it is served with is not read again. The manifest is written last, once every file is
+ * in: from then on the library is the bucket's (`live.ts`), and a publication writes into it.
  *
  * The site's own files (`_headers`, `404.html`, the parts of large catalogs and the Worker that
- * joins them) are not the library's, and stay behind: the Worker serves the library itself
- * (`serve.ts`).
+ * joins them) are not the library's, and stay behind: the bucket answers for itself.
  */
 import type { Bucket } from '../uploads/store.ts';
 import {
   MANIFEST,
+  cacheControl,
   encodeManifest,
   encodedPath,
   isLibraryPath,
   putFile,
+  putManifest,
   readManifest,
   sha256Hex,
   type Manifest,
@@ -52,15 +54,24 @@ export class ImportRefused extends Error {
   }
 }
 
-/** The hash of each file the bucket has, as written with it. */
+/**
+ * The hash of each file the bucket has, as written with it. A file written without the caching it
+ * is served with (before the bucket answered the web itself) is not counted, and is copied again.
+ */
 async function hashesIn(bucket: Bucket): Promise<Map<string, string>> {
   const found = new Map<string, string>();
   let startAfter: string | undefined;
   for (;;) {
-    const page = await bucket.list({ startAfter, limit: 1000, include: ['customMetadata'] });
+    const page = await bucket.list({
+      startAfter,
+      limit: 1000,
+      include: ['customMetadata', 'httpMetadata'],
+    });
     for (const object of page.objects) {
       const hash = object.customMetadata?.sha256;
-      if (hash) found.set(object.key, hash);
+      if (hash && object.httpMetadata?.cacheControl === cacheControl(object.key)) {
+        found.set(object.key, hash);
+      }
     }
     if (!page.truncated || page.objects.length === 0) return found;
     startAfter = page.objects.at(-1)!.key;
@@ -79,12 +90,6 @@ async function siteManifest(from: string): Promise<Manifest> {
   }
   if (!response.ok) {
     throw new ImportRefused('site-unreachable', `${from}${MANIFEST} answered ${response.status}.`);
-  }
-  if (response.headers.get('X-Slidr-Library') === 'live') {
-    throw new ImportRefused(
-      'live',
-      `${from} is served from the bucket already: there is nothing to bring in.`,
-    );
   }
   const manifest = (await response.json()) as Partial<Manifest>;
   if (!manifest.files || typeof manifest.files !== 'object') {
@@ -158,13 +163,7 @@ export async function importLibrary(
     );
   }
   const remaining = missing.length - copied;
-  if (remaining === 0) {
-    const text = encodeManifest(manifest);
-    await bucket.put(MANIFEST, text, {
-      httpMetadata: { contentType: 'application/json' },
-      customMetadata: { sha256: await sha256Hex(new TextEncoder().encode(text)) },
-    });
-  }
+  if (remaining === 0) await putManifest(bucket, encodeManifest(manifest));
   return {
     from: site,
     published: manifest.published,

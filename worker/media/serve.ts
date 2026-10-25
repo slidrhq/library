@@ -2,11 +2,13 @@
  * The published library, served from its bucket at `/media/<path>`, as Cloudflare Pages served
  * it before (`desktop/build/media.ts` of the app, its `_headers`): any page may read it, the
  * manifest is asked for again each time, and every file answers with its SHA-256 as its ETag, so
- * a reader that has it gets 304. media.slidr.studio sends every request here (`media-site/`).
+ * a reader that has it gets 304. This is how a dev server serves its library (`pnpm dev`, and the
+ * app's `pnpm media:publish --site`); media.slidr.studio is the bucket itself, with the same
+ * headers set by the zone's rules (README, "Serving the library").
  *
  * Nothing here needs signing in: the library is public.
  */
-import { MANIFEST, contentType, isLibraryPath, type MediaEnv } from './live.ts';
+import { cacheControl, contentType, isLibraryPath, type MediaEnv } from './live.ts';
 
 export const MEDIA_PREFIX = '/media/';
 
@@ -70,7 +72,7 @@ export async function serveMedia(request: Request, env: MediaEnv): Promise<Respo
   const headers: Record<string, string> = {
     ...SHARED,
     'Content-Type': object.httpMetadata?.contentType ?? contentType(path),
-    'Cache-Control': path === MANIFEST ? 'no-cache' : 'public, max-age=0, must-revalidate',
+    'Cache-Control': cacheControl(path),
     ETag: etag,
   };
   if (matches(request.headers.get('If-None-Match'), etag)) {

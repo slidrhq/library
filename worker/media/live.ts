@@ -2,26 +2,35 @@
  * The published library itself, kept by the Worker in a bucket of R2 (`MEDIA`, `wrangler.jsonc`):
  * every file of the library under its own path (`fonts/catalog.json`, `tags/emoji.json`), and
  * `manifest.json`, which names each with its size and SHA-256 as the app reads it
- * (docs/media-library.md of the app). The Worker serves it at `/media/` (`serve.ts`), and the
- * library's site, media.slidr.studio, answers from there (`media-site/`), as slidr-media.pages.dev
- * does, so an installed app of any release reads it at the address it has.
+ * (docs/media-library.md of the app). media.slidr.studio is the bucket itself, a custom domain of
+ * R2 with Cloudflare's cache before it (README, "Serving the library"): no Worker runs when the
+ * app reads the library, and each file is answered with the type and the caching it was written
+ * with. The Worker serves the same bucket at `/media/` (`serve.ts`), as a dev server does.
  *
  * What is published comes through the uploads: a publication writes the accepted ones into the
- * bucket (`publish.ts`). It came into the bucket once, from the site as it was (`import.ts`).
+ * bucket (`publish.ts`), and empties the cache of the files it wrote (`cache.ts`). It came into
+ * the bucket once, from the site as it was (`import.ts`).
  *
  *   manifest.json                  the library's files, their sizes and hashes
  *   <path>                         each file, with its SHA-256 in its metadata
- *   _history/<published>/…         what a publication replaced: the manifest before it, and each
- *                                  file it wrote over
- *   _publishing.json               while a publication runs
  *
- * A path that starts with `_` is the Worker's own, and never one of the library's.
+ * The bucket is public, so it holds the library and nothing else. A publication's own records are
+ * kept beside the uploads (`UPLOADS`, `../uploads/store.ts`):
+ *
+ *   media/history/<published>/…    what a publication replaced: the manifest before it, and each
+ *                                  file it wrote over
+ *   media/staged/<sha256>          a file of an author's publication, until it is published
+ *   media/lock.json                while a publication runs
+ *
+ * A path that starts with `_` is never one of the library's: the Worker kept its records there
+ * before.
  */
 import type { Bucket } from '../uploads/store.ts';
 
 export const MANIFEST = 'manifest.json';
-export const HISTORY = '_history';
-export const LOCK = '_publishing.json';
+/** In the bucket of the uploads. */
+export const HISTORY = 'media/history';
+export const LOCK = 'media/lock.json';
 
 export interface MediaEnv {
   /** The published library (`wrangler.jsonc`). Without it, the Worker reads the site. */
@@ -75,6 +84,14 @@ export function contentType(path: string): string {
 }
 
 /**
+ * How a browser keeps a file of the library, as Cloudflare Pages served it: the manifest is asked
+ * for again each time, and every other file is checked again before it is used. Cloudflare's own
+ * cache keeps them longer, until a publication empties it (`cache.ts`).
+ */
+export const cacheControl = (path: string) =>
+  path === MANIFEST ? 'no-cache' : 'public, max-age=0, must-revalidate';
+
+/**
  * Whether a path is one of a file of the library: plain parts joined by `/`, none of them `.` or
  * `..`, and not the Worker's own (`_…`).
  */
@@ -123,8 +140,20 @@ export async function readBytes(bucket: Bucket, path: string): Promise<Uint8Arra
 /** Writes a file of the library into the bucket, with what it is served as. */
 export async function putFile(bucket: Bucket, path: string, bytes: Uint8Array, sha256: string) {
   await bucket.put(path, bytes, {
-    httpMetadata: { contentType: contentType(path) },
+    httpMetadata: { contentType: contentType(path), cacheControl: cacheControl(path) },
     customMetadata: { sha256 },
+  });
+}
+
+/**
+ * Writes the manifest, last, which makes the files written before it the library. With `etag`,
+ * only over the manifest of that version: none when another was written meanwhile.
+ */
+export async function putManifest(bucket: Bucket, text: string, etag?: string) {
+  return bucket.put(MANIFEST, text, {
+    httpMetadata: { contentType: 'application/json', cacheControl: cacheControl(MANIFEST) },
+    customMetadata: { sha256: await sha256Hex(toBytes(text)) },
+    ...(etag === undefined ? {} : { onlyIf: { etagMatches: etag } }),
   });
 }
 

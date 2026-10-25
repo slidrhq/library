@@ -14,6 +14,7 @@ import {
   frenchSample,
   webp,
 } from '../uploads/testing.ts';
+import { purgerFor } from './cache.ts';
 import { MANIFEST, encodeManifest, sha256Hex, toBytes, toText, type Manifest } from './live.ts';
 import {
   emptyCatalog,
@@ -62,6 +63,31 @@ const stored = (bucket: MemoryBucket, path: string) => {
 };
 
 const manifestOf = (bucket: MemoryBucket) => JSON.parse(stored(bucket, MANIFEST)!) as Manifest;
+
+/** The bucket holds the library and nothing else: it is public. */
+const onlyTheLibrary = (bucket: MemoryBucket) =>
+  assert.deepEqual(
+    [...bucket.objects.keys()].filter((key) => key !== MANIFEST && !manifestOf(bucket).files[key]),
+    [],
+  );
+
+const ZONE = { MEDIA_ZONE_ID: 'zone-1', MEDIA_PURGE_TOKEN: 'purge-token' };
+const PURGE = 'https://api.cloudflare.com/client/v4/zones/zone-1/purge_cache';
+
+/** Cloudflare's purge, answering each call as `answer` says; and the calls it had. */
+function cloudflare(answer: (call: number) => Response = () => Response.json({ success: true })) {
+  const calls: { url: string; token: string | null; body: Record<string, string[]> }[] = [];
+  mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    const request = new Request(input, init);
+    calls.push({
+      url: request.url,
+      token: request.headers.get('Authorization'),
+      body: (await request.json()) as Record<string, string[]>,
+    });
+    return answer(calls.length);
+  });
+  return calls;
+}
 
 const HE_SAMPLE = [{ layout: 'l_harbour_hero', name: 'פתיחה', content: {} }];
 const EN_SAMPLE = [{ layout: 'l_harbour_hero', name: 'Opening', content: {} }];
@@ -221,7 +247,8 @@ describe('the library in its bucket', () => {
       (await call('/media/images/a%20b.webp', { method: 'HEAD' })).headers.get('Content-Length'),
       '30',
     );
-    // The Worker's own files, a path out of the library, and a file it does not have, are not found.
+    // A path of the Worker's records before, a path out of the library, and a file it does not
+    // have, are not found.
     await media.put('_history/x/manifest.json', '{}');
     assert.equal((await call('/media/_history/x/manifest.json')).status, 404);
     assert.equal((await call('/media/tags%2F..%2Fmanifest.json')).status, 404);
@@ -245,6 +272,10 @@ describe('the library in its bucket', () => {
     for (const [path, bytes] of Object.entries(files)) {
       manifest.files[path] = { size: bytes.length, sha256: await sha256Hex(bytes) };
     }
+    // A file brought in before without the caching it is served with is brought in again.
+    await media.put('a.json', files['a.json']!, {
+      customMetadata: { sha256: manifest.files['a.json']!.sha256 },
+    });
     let damaged = true;
     mock.method(globalThis, 'fetch', (input: string | URL | Request) => {
       const url = String(input instanceof Request ? input.url : input);
@@ -273,6 +304,13 @@ describe('the library in its bucket', () => {
     assert.deepEqual([third.copied, third.remaining, third.done], [1, 0, true]);
     assert.deepEqual(manifestOf(media), manifest);
     assert.equal(media.objects.get('b/c.json')!.meta!.sha256, manifest.files['b/c.json']!.sha256);
+    // Each file is written with what the bucket answers it with: media.slidr.studio is the bucket.
+    assert.deepEqual(media.objects.get('a.json')!.http, {
+      contentType: 'application/json',
+      cacheControl: 'public, max-age=0, must-revalidate',
+    });
+    assert.equal(media.objects.get('d.webp')!.http.contentType, 'image/webp');
+    assert.equal(media.objects.get(MANIFEST)!.http.cacheControl, 'no-cache');
     // From then on the library is the bucket's: it is not brought in again, and says so.
     const again = await send('/api/library/import', 'POST', {});
     assert.equal(again.status, 409);
@@ -318,10 +356,21 @@ describe('a publication', () => {
     skipped: { id: string; message: string }[];
     added: string[];
     changed: string[];
+    cache?: { emptied: string; files?: number; host?: string; message?: string };
   }
 
+  const cake = {
+    type: 'emoji',
+    action: 'tag',
+    id: 'emoji',
+    languages: {
+      he: { tags: { 'birthday-cake': balloon.he } },
+      en: { tags: { 'birthday-cake': balloon.en } },
+    },
+  };
+
   test('writes the accepted tags into the part’s file, and marks the upload published', async () => {
-    const { send, call, media, before, accept } = await live();
+    const { send, call, bucket, media, before, accept } = await live();
     const id = await accept({
       type: 'emoji',
       action: 'tag',
@@ -345,19 +394,30 @@ describe('a publication', () => {
       other: { he: ['אחר'], en: ['other'] },
       'birthday-cake': { he: balloon.he, en: balloon.en, fr: ['anniversaire', 'gâteau', 'fête'] },
     });
-    // The manifest names the new bytes, and is newer; what it replaced is kept.
+    // The manifest names the new bytes, and is newer; what it replaced is kept, beside the uploads.
     const manifest = manifestOf(media);
     assert.equal(manifest.published, done.published);
     assert.equal(
       manifest.files['tags/emoji.json']!.sha256,
       await sha256Hex(media.objects.get('tags/emoji.json')!.data),
     );
+    assert.deepEqual(media.objects.get('tags/emoji.json')!.http, {
+      contentType: 'application/json',
+      cacheControl: 'public, max-age=0, must-revalidate',
+    });
+    assert.equal(media.objects.get(MANIFEST)!.http.cacheControl, 'no-cache');
     assert.deepEqual(
-      JSON.parse(stored(media, `_history/${done.published}/manifest.json`)!),
+      JSON.parse(stored(bucket, `media/history/${done.published}/manifest.json`)!),
       before,
     );
-    assert.ok(stored(media, `_history/${done.published}/tags/emoji.json`)!.includes('"other"'));
-    assert.equal(media.objects.has('_publishing.json'), false);
+    assert.ok(
+      stored(bucket, `media/history/${done.published}/tags/emoji.json`)!.includes('"other"'),
+    );
+    assert.equal(bucket.objects.has('media/lock.json'), false);
+    onlyTheLibrary(media);
+    // A Worker not set up to empty the cache says so.
+    assert.equal(done.cache?.emptied, 'none');
+    assert.match(done.cache.message!, /MEDIA_ZONE_ID/);
     const upload = await read<{ status: string; history: { status: string }[] }>(
       await call(`/api/uploads/${id}`),
     );
@@ -479,32 +539,69 @@ describe('a publication', () => {
   });
 
   test('is one at a time, and an upload is no longer marked published by hand', async () => {
-    const { send, media, accept } = await live();
-    const id = await accept({
-      type: 'emoji',
-      action: 'tag',
-      id: 'emoji',
-      languages: {
-        he: { tags: { 'birthday-cake': balloon.he } },
-        en: { tags: { 'birthday-cake': balloon.en } },
-      },
-    });
+    const { send, bucket, accept } = await live();
+    const id = await accept(cake);
     const marked = await send(`/api/uploads/${id}/status`, 'POST', { status: 'published' });
     assert.equal(marked.status, 409);
     assert.equal((await read<{ error: string }>(marked)).error, 'publish-instead');
-    await media.put(
-      '_publishing.json',
+    await bucket.put(
+      'media/lock.json',
       JSON.stringify({ by: 'someone', at: new Date().toISOString() }),
     );
     const busy = await send('/api/publish', 'POST', {});
     assert.equal(busy.status, 409);
     assert.equal((await read<{ error: string }>(busy)).error, 'publishing');
     // A publication left behind long ago does not hold the library.
-    await media.put(
-      '_publishing.json',
+    await bucket.put(
+      'media/lock.json',
       JSON.stringify({ by: 'someone', at: '2026-01-01T00:00:00.000Z' }),
     );
     assert.equal((await read<Published>(await send('/api/publish', 'POST', {}))).uploads.length, 1);
+  });
+
+  test('empties the cache of the files it wrote, and of the manifest', async () => {
+    const { env, send, accept } = await live();
+    Object.assign(env, ZONE);
+    const id = await accept(cake);
+    const calls = cloudflare();
+    const done = await read<Published>(await send('/api/publish', 'POST', {}));
+    assert.deepEqual(done.cache, { emptied: 'files', files: 2 });
+    assert.deepEqual(calls, [
+      {
+        url: PURGE,
+        token: 'Bearer purge-token',
+        body: { files: [`${MEDIA}tags/emoji.json`, `${MEDIA}manifest.json`] },
+      },
+    ]);
+    assert.deepEqual(
+      done.uploads.map((one) => one.id),
+      [id],
+    );
+  });
+
+  test('is published all the same when Cloudflare refuses to empty the cache, and says so', async () => {
+    const { env, send, call, accept } = await live();
+    Object.assign(env, ZONE);
+    const id = await accept(cake);
+    const calls = cloudflare(() =>
+      Response.json(
+        { success: false, errors: [{ code: 10000, message: 'Authentication error' }] },
+        { status: 403 },
+      ),
+    );
+    mock.method(console, 'error', () => {});
+    const response = await send('/api/publish', 'POST', {});
+    assert.equal(response.status, 200);
+    const done = await read<Published>(response);
+    assert.equal(done.cache?.emptied, 'none');
+    assert.match(done.cache.message!, /Authentication error/);
+    // A token Cloudflare refuses is not tried again.
+    assert.equal(calls.length, 1);
+    mock.restoreAll();
+    assert.equal(
+      (await read<{ status: string }>(await call(`/api/uploads/${id}`))).status,
+      'published',
+    );
   });
 
   test('waits for the library to be brought in, and is only by whoever may publish', async () => {
@@ -540,7 +637,8 @@ describe('an author’s publication of files', () => {
   }
 
   test('writes the files the author changed, takes away those removed, and keeps the rest', async () => {
-    const { call, send, media, before } = await author();
+    const { env, call, send, bucket, media, before } = await author();
+    Object.assign(env, ZONE);
     const icons = toBytes('{"cake":["birthday","party"]}');
     const font = new Uint8Array([4, 5, 6, 7]);
     const [iconsSha, fontSha] = [await sha256Hex(icons), await sha256Hex(font)];
@@ -548,6 +646,10 @@ describe('an author’s publication of files', () => {
     const staged = await read<{ already: boolean }>(await put(call, font, fontSha));
     assert.equal(staged.already, false);
     assert.equal((await read<{ already: boolean }>(await put(call, font, fontSha))).already, true);
+    // Staged beside the uploads, not in the library's bucket, which is public.
+    assert.ok(bucket.objects.has(`media/staged/${fontSha}`));
+    onlyTheLibrary(media);
+    const calls = cloudflare();
     const response = await send('/api/library/files', 'POST', {
       files: {
         'icons/lucide/tags.json': {
@@ -587,23 +689,42 @@ describe('an author’s publication of files', () => {
     );
     assert.equal((await call('/media/fonts/old.woff2')).status, 404);
     assert.equal((await call('/media/fonts/new.woff2')).headers.get('Content-Type'), 'font/woff2');
-    // What it replaced is kept; the staged files are gone.
+    assert.equal(
+      media.objects.get('fonts/new.woff2')!.http.cacheControl,
+      'public, max-age=0, must-revalidate',
+    );
+    // What it replaced is kept beside the uploads; the staged files are gone.
     assert.deepEqual(
-      JSON.parse(stored(media, `_history/${done.published}/manifest.json`)!),
+      JSON.parse(stored(bucket, `media/history/${done.published}/manifest.json`)!),
       before,
     );
     assert.equal(
-      stored(media, `_history/${done.published}/icons/lucide/tags.json`),
+      stored(bucket, `media/history/${done.published}/icons/lucide/tags.json`),
       '{"cake":["birthday"]}',
     );
     assert.equal(
-      [...media.objects.keys()].some((key) => key.startsWith('_staged/')),
+      [...bucket.objects.keys()].some((key) => key.startsWith('media/staged/')),
       false,
+    );
+    onlyTheLibrary(media);
+    // The cache is emptied of every file written or taken away, and of the manifest.
+    assert.deepEqual(
+      calls.map((one) => one.body),
+      [
+        {
+          files: [
+            `${MEDIA}fonts/new.woff2`,
+            `${MEDIA}icons/lucide/tags.json`,
+            `${MEDIA}fonts/old.woff2`,
+            `${MEDIA}manifest.json`,
+          ],
+        },
+      ],
     );
   });
 
   test('changes nothing where the library changed a file since the copy was pulled', async () => {
-    const { call, send, media, before } = await author();
+    const { call, send, bucket, media, before } = await author();
     // A publication of uploads wrote the tags after the author pulled.
     const published = toBytes('{"version":1,"tags":{"cake":{"he":["עוגה"],"en":["cake"]}}}\n');
     const live = manifestOf(media);
@@ -639,7 +760,7 @@ describe('an author’s publication of files', () => {
     // All or none: the icons are not written either.
     assert.deepEqual(manifestOf(media), live);
     assert.equal(stored(media, 'icons/lucide/tags.json'), '{"cake":["birthday"]}');
-    assert.equal(media.objects.has('_publishing.json'), false);
+    assert.equal(bucket.objects.has('media/lock.json'), false);
   });
 
   test('takes only files sent first, under their own hash, by whoever may publish', async () => {
@@ -677,5 +798,45 @@ describe('an author’s publication of files', () => {
         ).status,
       ),
     );
+  });
+});
+
+describe('the cache before the library', () => {
+  const paths = (count: number) => Array.from({ length: count }, (_, at) => `icons/${at}.svg`);
+
+  test('is emptied a hundred addresses a call, and of a whole host when they are many', async () => {
+    const calls = cloudflare();
+    const purge = purgerFor({ ...ZONE, MEDIA_LIBRARY_URL: 'https://media.example' });
+    assert.deepEqual(await purge(paths(150)), { emptied: 'files', files: 151 });
+    assert.deepEqual(
+      calls.map((one) => one.body.files!.length),
+      [100, 51],
+    );
+    assert.equal(calls[1]!.body.files!.at(-1), 'https://media.example/manifest.json');
+    calls.length = 0;
+    assert.deepEqual(await purge(paths(400)), { emptied: 'host', host: 'media.example' });
+    assert.deepEqual(
+      calls.map((one) => one.body),
+      [{ hosts: ['media.example'] }],
+    );
+  });
+
+  test('is tried again when a call fails, and says why when it never went through', async () => {
+    mock.method(console, 'error', () => {});
+    const once = cloudflare((call) =>
+      call === 1 ? new Response('', { status: 500 }) : Response.json({ success: true }),
+    );
+    const purge = purgerFor(ZONE);
+    assert.deepEqual(await purge(['tags/emoji.json']), { emptied: 'files', files: 2 });
+    assert.equal(once.length, 2);
+    mock.restoreAll();
+    mock.method(console, 'error', () => {});
+    const never = cloudflare(() => new Response('', { status: 503 }));
+    const failed = await purge(['tags/emoji.json']);
+    assert.equal(failed.emptied, 'none');
+    assert.match((failed as { message: string }).message, /503/);
+    assert.equal(never.length, 3);
+    // The published library, unless the Worker names another.
+    assert.equal(once[0]!.body.files![0], 'https://media.slidr.studio/tags/emoji.json');
   });
 });

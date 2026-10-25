@@ -3,8 +3,9 @@
  * assets; the Worker itself answers only what they cannot, under `/auth/`, `/api/` and `/media/`
  * (`assets.run_worker_first`): signing in with Google (`auth.ts`), the uploads to the library,
  * which its editors make and publish (`uploads/api.ts`, `uploads/access.ts`, `media/publish.ts`),
- * and the published library itself, from its bucket (`media/serve.ts`), which
- * media.slidr.studio answers with (`media-site/`).
+ * and the published library itself, from its bucket (`media/serve.ts`), as a dev server serves
+ * it. media.slidr.studio is that bucket itself, and no Worker runs when it is read
+ * (`media/live.ts`).
  */
 import { callback, json, login, logout, me, type AuthEnv } from './auth.ts';
 import { problem } from './http.ts';
