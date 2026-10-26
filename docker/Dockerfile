@@ -37,6 +37,8 @@ COPY docker/nginx.conf docker/media.conf docker/media-methods.conf docker/media-
 COPY docker/health.mjs /app/health.mjs
 COPY --chmod=0755 docker/entry.sh /usr/local/bin/slidr-library-entry
 COPY --chmod=0755 docker/slidr-library.sh /usr/local/bin/slidr-library
+# The command of the machine, which the install script copies out (install/slidr-library).
+COPY --chmod=0755 install/slidr-library /app/host/slidr-library
 ENV NODE_ENV=production \
     SLIDR_LIBRARY_DATA=/library/data \
     LIBRARY_CLIENT=/app/dist/client/

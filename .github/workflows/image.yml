@@ -30,7 +30,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check the shell scripts
         if: matrix.runner == 'ubuntu-24.04'
-        run: shellcheck docker/entry.sh docker/slidr-library.sh
+        run: shellcheck docker/entry.sh docker/slidr-library.sh install/install.sh install/slidr-library
       - name: Build the image
         run: docker build -f docker/Dockerfile -t slidr-library:test .
       - name: Keep it small
@@ -42,6 +42,14 @@ jobs:
         run: node --import ./server/node.mjs --test docker/test/image.test.ts
         env:
           SLIDR_IMAGE: slidr-library:test
-      - name: The container's log, when it failed
+      - name: Install it, as a machine does
+        run: |
+          sudo apt-get install -y --no-install-recommends expect
+          node --import ./server/node.mjs --test --test-concurrency=1 install/test/install.test.ts
+        env:
+          SLIDR_IMAGE: slidr-library:test
+      - name: The containers' logs, when it failed
         if: failure()
-        run: docker logs slidr-library-test || true
+        run: |
+          docker logs slidr-library-test || true
+          docker logs slidr-library || true

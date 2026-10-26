@@ -10,11 +10,24 @@
 #
 # The folders of /library/ are folders of the machine, mounted there (the install script's
 # compose.yaml). LIBRARY_URL is the address the library is reached at; LIBRARY_TRUSTED_PROXY, the
-# address of the organization's proxy, when the library is behind one.
+# address of the organization's proxy, when the library is behind one (`gateway`: a proxy of the
+# machine itself, which reaches the container through Docker's bridge).
 set -euo pipefail
 
 BUNDLE=/app/dist/node/library.mjs
 NGINX=/tmp/nginx
+
+# The container's gateway, by its default route: the machine itself, as the container sees it.
+gateway() {
+  local iface destination via rest
+  while read -r iface destination via rest; do
+    if [[ $destination == 00000000 ]]; then
+      # Written backwards, in hex: 0100A8C0 is 192.168.0.1.
+      printf '%d.%d.%d.%d' "0x${via:6:2}" "0x${via:4:2}" "0x${via:2:2}" "0x${via:0:2}"
+      return
+    fi
+  done </proc/net/route
+}
 
 # What of Nginx's configuration depends on the install: its TLS, and the organization's proxy.
 nginx_conf() {
@@ -38,16 +51,19 @@ set $slidr_forwarded_host "";
 EOF
   fi
   : >"$NGINX/proxy.conf"
-  if [[ -n "${LIBRARY_TRUSTED_PROXY:-}" ]]; then
+  local trusted=${LIBRARY_TRUSTED_PROXY:-}
+  # A proxy of the machine itself reaches the container through Docker's bridge, its gateway.
+  if [[ $trusted == gateway ]]; then trusted=$(gateway); fi
+  if [[ -n $trusted ]]; then
     # An address or a range, and nothing else, goes into the configuration.
-    if [[ ! "$LIBRARY_TRUSTED_PROXY" =~ ^[0-9A-Fa-f.:/]+$ ]]; then
-      echo "LIBRARY_TRUSTED_PROXY is an address or a range: '$LIBRARY_TRUSTED_PROXY' is neither." >&2
+    if [[ ! $trusted =~ ^[0-9A-Fa-f.:/]+$ ]]; then
+      echo "LIBRARY_TRUSTED_PROXY is an address or a range: '$trusted' is neither." >&2
       exit 2
     fi
     # Behind the organization's proxy, which speaks HTTPS: who it forwards, and the name it was
     # reached by, are taken from it alone.
     cat >"$NGINX/proxy.conf" <<EOF
-set_real_ip_from $LIBRARY_TRUSTED_PROXY;
+set_real_ip_from $trusted;
 real_ip_header X-Forwarded-For;
 set \$slidr_proto https;
 set \$slidr_forwarded_host \$http_x_forwarded_host;
