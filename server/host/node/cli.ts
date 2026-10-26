@@ -41,7 +41,12 @@ import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { MasterKeyError, type MasterSource } from './master.ts';
 import { DEFAULT_HOST, DEFAULT_PORT, isLoopback, serve } from './server.ts';
 
-const CLIENT = fileURLToPath(new URL('../../../dist/client/', import.meta.url));
+/**
+ * The built page: `LIBRARY_CLIENT` in the image, whose server is one file of its own
+ * (`dist/node/library.mjs`); else beside the source.
+ */
+const CLIENT =
+  process.env.LIBRARY_CLIENT ?? fileURLToPath(new URL('../../../dist/client/', import.meta.url));
 
 const USAGE = `slidr-library <command>
 

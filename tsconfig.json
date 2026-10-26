@@ -8,5 +8,5 @@
     "types": ["vite/client", "node"],
     "paths": { "@desktop/*": ["./vendor/desktop/src/*"] }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts", "vite.node.config.ts"]
 }

@@ -1,0 +1,9 @@
+# What the image is built without (docker/Dockerfile): what is made here, and what is this
+# machine's own.
+**/node_modules
+dist
+.git
+.claude
+.wrangler
+.dev.vars
+*.log

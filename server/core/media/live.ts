@@ -59,7 +59,11 @@ export async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-const TYPES: Record<string, string> = {
+/**
+ * The type of each file of the library, by its extension. The image's Nginx answers `/media/` with
+ * the same (`docker/media-types.conf`, written from this by `pnpm nginx-types`).
+ */
+export const MEDIA_TYPES: Record<string, string> = {
   json: 'application/json',
   svg: 'image/svg+xml',
   webp: 'image/webp',
@@ -79,7 +83,7 @@ const TYPES: Record<string, string> = {
 /** The type a file of the library is served as, by its extension (as `desktop/build/media.ts`). */
 export function contentType(path: string): string {
   const extension = /\.([a-z0-9]+)$/i.exec(path)?.[1]?.toLowerCase() ?? '';
-  return TYPES[extension] ?? 'application/octet-stream';
+  return MEDIA_TYPES[extension] ?? 'application/octet-stream';
 }
 
 /**

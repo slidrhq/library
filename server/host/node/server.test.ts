@@ -252,6 +252,48 @@ describe('the library on a machine, with its media folder', () => {
   });
 });
 
+describe('the library behind a proxy of this machine', () => {
+  test('is reached by the scheme the proxy says, as Nginx speaks TLS for it in the image', async () => {
+    const proxied = await serve({
+      context,
+      client: await newFolder(),
+      port: 0,
+      behindProxy: true,
+      url: 'https://library.test/',
+    });
+    try {
+      const port = new URL(proxied.local!).port;
+      const cookieOf = async (headers: Record<string, string>) => {
+        const code = await issueLocalLink(context, 'owner@example.org');
+        const answer = await new Promise<string | undefined>((done, fail) => {
+          const sent = httpRequest(
+            { host: '127.0.0.1', port, path: `/auth/local?code=${code}`, headers },
+            (response) => {
+              response.resume();
+              done(response.headers['set-cookie']?.find((one) => one.includes('library-session')));
+            },
+          );
+          sent.on('error', fail);
+          sent.end();
+        });
+        return answer?.split('=')[0];
+      };
+      const host = { Host: `127.0.0.1:${port}` };
+      assert.equal(
+        await cookieOf({ ...host, 'X-Forwarded-Proto': 'https' }),
+        '__Host-library-session',
+      );
+      assert.equal(await cookieOf(host), 'library-session');
+      assert.equal(
+        await cookieOf({ Host: 'library.test', 'X-Forwarded-Proto': 'https' }),
+        '__Host-library-session',
+      );
+    } finally {
+      await proxied.close();
+    }
+  });
+});
+
 describe('who a request comes from', () => {
   test('is told by a proxy only when the proxy is of this machine', () => {
     const from = (remoteAddress: string, forwarded?: string) =>

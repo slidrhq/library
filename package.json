@@ -10,16 +10,17 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.node.config.ts",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p server",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p server && tsc --noEmit -p docker/test",
     "test": "node --import ./server/node.mjs --test \"server/**/*.test.ts\"",
     "library": "node --import ./server/node.mjs server/host/node/cli.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check",
-    "vendor": "node scripts/vendor.mjs"
+    "vendor": "node scripts/vendor.mjs",
+    "nginx-types": "node --import ./server/node.mjs scripts/nginx-types.mjs"
   },
   "dependencies": {
     "@slidr/media-library": "workspace:*",

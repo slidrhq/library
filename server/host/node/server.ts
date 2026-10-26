@@ -133,11 +133,23 @@ export async function pageFile(
   return new Response(request.method === 'HEAD' ? null : new Uint8Array(found.bytes), { headers });
 }
 
-/** The origin a request came to, or none when it does not name the library as it is named. */
+/** Whether a request comes straight from this very machine: a proxy of it, such as Nginx. */
+const proxyHere = (request: Pick<IncomingMessage, 'socket'>) =>
+  fromThisMachine(request.socket.remoteAddress);
+
+/**
+ * The origin a request came to, or none when it does not name the library as it is named. Behind
+ * a proxy of this machine, such as the image's Nginx, which speaks TLS for it, the scheme is the
+ * one the proxy says it was reached by (`X-Forwarded-Proto`).
+ */
 function originOf(request: IncomingMessage, options: ServeOptions): string | undefined {
   const named = request.headers.host;
   if (!named) return undefined;
-  const scheme = options.tls ? 'https' : 'http';
+  const forwarded = options.behindProxy && proxyHere(request);
+  const scheme =
+    options.tls || (forwarded && request.headers['x-forwarded-proto'] === 'https')
+      ? 'https'
+      : 'http';
   let hostname: string;
   try {
     hostname = new URL(`http://${named}`).hostname;
@@ -167,8 +179,7 @@ export function clientOf(
 ): string | undefined {
   const socket = request.socket.remoteAddress;
   // Only a proxy of this very machine says who it forwards: from anywhere else, anyone could.
-  const proxyHere = socket === '::1' || /^(::ffff:)?127(\.\d{1,3}){3}$/.test(socket ?? '');
-  if (!options.behindProxy || !proxyHere) return socket;
+  if (!options.behindProxy || !proxyHere(request)) return socket;
   const header = request.headers['x-forwarded-for'];
   const named = (Array.isArray(header) ? header.join(',') : (header ?? ''))
     .split(',')
