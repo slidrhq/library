@@ -61,9 +61,18 @@ export const mediaText = (path: string): Promise<string> =>
 
 export const manifest = () => mediaJson<Manifest>('manifest.json');
 
-/** Bytes, as people read them. */
+/**
+ * Bytes, as people read them: a run of its own from left to right (between U+2066 and U+2069), so
+ * a sentence in Hebrew or Arabic keeps the number before its unit.
+ */
 export function size(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  const shown =
+    bytes < 1024
+      ? `${bytes} B`
+      : bytes < 1024 * 1024
+        ? `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`
+        : bytes < 1024 ** 3
+          ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+          : `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  return `⁦${shown}⁩`;
 }
