@@ -1,8 +1,8 @@
 export const he = {
   'people.signInWith': 'כניסה באמצעות {name}',
-  'people.signInHere': 'כניסה במחשב הזה',
+  'people.signInHere': 'כניסה של הבעלים',
   'people.localHint':
-    'הבעלים של הספרייה נכנסים במחשב שהיא מותקנת בו: מריצים שם את הפקודה הזאת ופותחים את הקישור שהיא מדפיסה.',
+    'הבעלים של הספרייה נכנסים בקישור חד-פעמי: מריצים את הפקודה הזאת במחשב שהספרייה מותקנת בו, ופותחים את הקישור שהיא מדפיסה תוך עשר דקות, מכל מחשב.',
   'people.role.owner': 'הספרייה בבעלות החשבון הזה: הוא מוסיף לה חברים וקובע את ההגדרות שלה',
   'people.role.admin': 'החשבון הזה מנהל את הספרייה: מוסיף חברים ומאשר העלאות',
   'people.role.reviewer': 'החשבון הזה מאשר העלאות ומפרסם את אלה שאושרו',
@@ -31,7 +31,7 @@ export const he = {
   'people.members': 'חברים',
   'people.others': 'אחרים שנכנסו',
   'people.noProvider':
-    'עד שמגדירים ספק כניסה, רק הבעלים יכולים להיכנס, והחברים שנוספו לא יוכלו: pnpm library sign-in.',
+    'עד שמגדירים ספק כניסה, רק הבעלים יכולים להיכנס, והחברים שנוספו לא יוכלו: slidr-library sign-in.',
   'people.loading': 'קורא את רשימת החברים…',
   'people.closed': 'רק המנהלים של הספרייה רואים את החברים שלה.',
   'people.failed': 'זה לא הצליח: {error}',
@@ -41,9 +41,9 @@ export const he = {
 
 export const en: Record<keyof typeof he, string> = {
   'people.signInWith': 'Sign in with {name}',
-  'people.signInHere': 'Sign in on this machine',
+  'people.signInHere': 'Sign in as the owner',
   'people.localHint':
-    'The library’s owner signs in on the machine it is installed on: run this command there, and open the link it prints.',
+    'The library’s owner signs in by a one-time link: run this command on the machine it is installed on, and open the link it prints within ten minutes, from any computer.',
   'people.role.owner': 'This account owns the library: it names its members and sets it up',
   'people.role.admin': 'This account is an admin: it names the members, and reviews uploads',
   'people.role.reviewer': 'This account reviews uploads, and publishes those accepted',
@@ -73,7 +73,7 @@ export const en: Record<keyof typeof he, string> = {
   'people.members': 'Members',
   'people.others': 'Others who signed in',
   'people.noProvider':
-    'Until a provider is set, only the owner signs in, and the members you add cannot: pnpm library sign-in.',
+    'Until a provider is set, only the owner signs in, and the members you add cannot: slidr-library sign-in.',
   'people.loading': 'Reading the members…',
   'people.closed': 'Only the library’s admins see its members.',
   'people.failed': 'It did not work: {error}',

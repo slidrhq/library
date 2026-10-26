@@ -331,9 +331,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Envoi et vérification…',
   'uploads.form.cancel': 'Annuler',
   'people.signInWith': 'Se connecter avec {name}',
-  'people.signInHere': 'Se connecter sur cet ordinateur',
+  'people.signInHere': 'Se connecter en tant que propriétaire',
   'people.localHint':
-    'Le propriétaire de la médiathèque se connecte sur l’ordinateur où elle est installée : exécutez-y cette commande, puis ouvrez le lien qu’elle affiche.',
+    'Le propriétaire de la bibliothèque se connecte par un lien à usage unique : lancez cette commande sur la machine où elle est installée, puis ouvrez le lien qu’elle affiche dans les dix minutes, depuis n’importe quel ordinateur.',
   'people.role.owner': 'Ce compte possède la médiathèque : il nomme ses membres et la configure',
   'people.role.admin': 'Ce compte est administrateur : il nomme les membres et examine les envois',
   'people.role.reviewer': 'Ce compte examine les envois et publie ceux qui sont acceptés',
@@ -364,7 +364,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Membres',
   'people.others': 'Autres personnes connectées',
   'people.noProvider':
-    'Tant qu’aucun fournisseur n’est défini, seul le propriétaire peut se connecter, et les membres ajoutés ne le peuvent pas : pnpm library sign-in.',
+    'Tant qu’aucun fournisseur n’est défini, seul le propriétaire peut se connecter, et les membres ajoutés ne le peuvent pas : slidr-library sign-in.',
   'people.loading': 'Lecture des membres…',
   'people.closed': 'Seuls les administrateurs de la médiathèque voient ses membres.',
   'people.failed': 'Cela n’a pas fonctionné : {error}',
@@ -414,22 +414,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Enregistrer',
   'settings.saved': 'Enregistré.',
   'settings.library.title': 'Adresse de la médiathèque',
-  'settings.library.explain':
-    'L’adresse à laquelle on accède à la médiathèque, telle que le navigateur l’affiche : derrière un proxy, ou avec TLS. Sans elle, la médiathèque prend l’adresse de chaque requête.',
   'settings.library.host': 'Ce serveur est joignable à l’adresse que lui donne son hébergeur.',
+  'settings.library.script':
+    'Le script d’installation a fixé cette adresse. Le relancer la change, avec le port et la façon d’atteindre la bibliothèque.',
   'settings.media.title': 'Médias',
   'settings.media.explain':
     'Où la médiathèque publiée est conservée. Chaque envoi approuvé y est écrit.',
   'settings.media.kind.folder': 'Un dossier sur cet ordinateur',
   'settings.media.kind.r2': 'Le bucket R2 du Worker, sur Cloudflare',
   'settings.media.kind.none': 'Pas encore de stockage des médias',
+  'settings.media.room': '{free} libres sur {size} sur son disque.',
+  'settings.media.fixed':
+    'Le script d’installation a choisi ce dossier. Pour déplacer les médias, réinstallez sur le même dossier de données.',
   'settings.media.path': 'Dossier',
-  'settings.media.pathHint':
-    'Un chemin complet. Le serveur doit pouvoir y écrire, et le dossier ne contient que la médiathèque.',
-  'settings.media.publicUrl': 'Adresse publique',
-  'settings.media.publicUrlHint':
-    'Seulement si un autre serveur web publie le dossier. Sans elle, ce serveur le sert à /media/.',
-  'settings.media.saveTested': 'Tester et enregistrer',
   'settings.media.test': 'Tester',
   'settings.media.testing': 'Test en cours…',
   'settings.media.reachedLibrary':
@@ -461,7 +458,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Le fournisseur par lequel se connectent les membres de la médiathèque et ceux qui y téléversent.',
   'settings.signIn.local':
-    'Le propriétaire se connecte aussi par un lien de l’ordinateur où la médiathèque est installée (pnpm library login).',
+    'Le propriétaire se connecte aussi par un lien de l’ordinateur où la médiathèque est installée (slidr-library login).',
   'settings.signIn.provider': 'Fournisseur',
   'settings.signIn.none': 'Aucun : le propriétaire seul, par le lien de l’ordinateur',
   'settings.signIn.oidc': 'Un autre fournisseur OpenID Connect',
@@ -528,57 +525,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Approuvé, et écrit dans la bibliothèque :',
   'publications.publishSkipped':
     'Non publiés : {count}. Ceux qui ne sont plus valides ont été remis en attente, et les autres attendent d’être écrits. Ouvrez-les pour voir pourquoi.',
-  'settings.media.kind.sftp': 'Un dossier sur un serveur, via SFTP',
-  'settings.media.kind.ftp': 'Un dossier sur un serveur, via FTP',
-  'settings.media.where': 'Emplacement',
-  'settings.media.host': 'Serveur',
-  'settings.media.port': 'Port',
-  'settings.media.user': 'Utilisateur',
-  'settings.media.root': 'Dossier sur le serveur',
-  'settings.media.rootHint':
-    'Un chemin complet sur le serveur, comme /var/www/media. La médiathèque n’écrit qu’à l’intérieur.',
-  'settings.media.auth': 'Connexion par',
-  'settings.media.auth.key': 'Clé privée',
-  'settings.media.auth.password': 'Mot de passe',
-  'settings.media.privateKey': 'Clé privée (OpenSSH ou PEM)',
-  'settings.media.privateKeyFile': 'Choisir un fichier…',
-  'settings.media.passphrase': 'Phrase secrète',
-  'settings.media.password': 'Mot de passe',
-  'settings.media.keyKept': 'Enregistré depuis le {when}. Si le champ reste vide, rien ne change.',
-  'settings.media.tls': 'Chiffrement',
-  'settings.media.tls.explicit': 'FTPS : TLS demandé à la connexion (recommandé)',
-  'settings.media.tls.implicit': 'FTPS : TLS dès le départ, port 990',
-  'settings.media.tls.none': 'Aucun',
-  'settings.media.allowUnencrypted':
-    'Autoriser le FTP non chiffré : le mot de passe et les fichiers traversent le réseau en clair.',
-  'settings.media.unencrypted': 'La connexion à ce serveur n’est pas chiffrée.',
-  'settings.media.hostKey': 'Clé d’hôte',
-  'settings.media.hostKeyConfirmed': 'Confirmée',
-  'settings.media.confirmTitle': 'La clé d’hôte de ce serveur n’est pas encore confirmée',
-  'settings.media.confirmChangedTitle': 'La clé d’hôte du serveur a changé',
-  'settings.media.confirmExplain':
-    'Vérifiez auprès de l’administrateur du serveur qu’il s’agit bien de sa clé, par exemple avec cette commande sur le serveur. Tant qu’elle n’est pas confirmée, rien ne lui est envoyé.',
-  'settings.media.confirmChanged':
-    'Une autre clé a été confirmée auparavant. Ne confirmez que si l’administrateur du serveur l’a changée.',
-  'settings.media.confirm': 'Confirmer et enregistrer',
-  'settings.media.publicUrlRemoteHint':
-    'L’adresse HTTPS à laquelle le serveur distant sert le dossier. Sans elle, ce serveur le sert à /media/.',
-  'settings.media.kind.r2s3': 'Un bucket R2 sur Cloudflare',
-  'settings.media.accountId': 'ID de compte (Account ID)',
-  'settings.media.bucket': 'Nom du bucket',
-  'settings.media.domain': 'Domaine du bucket',
-  'settings.media.domainHint':
-    'Où Cloudflare sert le bucket, comme https://media.example.org/. Les applications installées le lisent là.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'D’un jeton d’API R2 autorisé en Object Read & Write sur ce seul bucket.',
-  'settings.media.zoneId': 'ID de zone du domaine (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Pour que chaque publication vide le cache de ce qu’elle a écrit. Sans lui, les anciens fichiers restent en cache jusqu’à expiration.',
-  'settings.media.purgeToken': 'Jeton de purge du cache',
-  'settings.media.purgeTokenHint':
-    'Un jeton d’API autorisé en Cache Purge sur cette zone. Il est vérifié avant l’enregistrement.',
   'settings.signIn.tenantHint':
     'L’ID de locataire (Tenant) de votre organisation, ou son domaine, comme contoso.onmicrosoft.com. Seuls les comptes de ce locataire se connectent.',
   'settings.signIn.ownerOnly':

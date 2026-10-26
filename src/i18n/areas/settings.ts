@@ -6,21 +6,18 @@ export const he = {
   'settings.save': 'שמירה',
   'settings.saved': 'נשמר.',
   'settings.library.title': 'כתובת הספרייה',
-  'settings.library.explain':
-    'הכתובת שבה אנשים מגיעים לספרייה, כפי שהדפדפן שלהם רואה אותה: מאחורי פרוקסי או עם TLS. בלי כתובת, הספרייה עונה בכתובת של כל בקשה.',
   'settings.library.host': 'השרת הזה מקבל את הכתובת שלו מהמארח שלו.',
+  'settings.library.script':
+    'סקריפט ההתקנה קבע את הכתובת הזו. מריצים אותו שוב כדי לשנות אותה, יחד עם הפורט והדרך שבה מגיעים לספרייה.',
   'settings.media.title': 'מדיה',
   'settings.media.explain': 'איפה שמורה הספרייה שפורסמה. כל העלאה שמאושרת נכתבת לשם.',
   'settings.media.kind.folder': 'תיקייה במחשב הזה',
   'settings.media.kind.r2': 'דלי ה-R2 של ה-Worker ב-Cloudflare',
   'settings.media.kind.none': 'עדיין אין מקום למדיה',
+  'settings.media.room': 'פנויים {free} מתוך {size} בדיסק שלה.',
+  'settings.media.fixed':
+    'סקריפט ההתקנה קבע את התיקייה הזו. כדי להעביר את המדיה, מתקינים שוב על אותה תיקיית נתונים.',
   'settings.media.path': 'תיקייה',
-  'settings.media.pathHint':
-    'נתיב מלא. לשרת צריכה להיות הרשאה לכתוב בה, והיא מכילה את הספרייה בלבד.',
-  'settings.media.publicUrl': 'כתובת ציבורית',
-  'settings.media.publicUrlHint':
-    'רק כששרת אינטרנט אחר מפרסם את התיקייה. בלי כתובת, השרת הזה מגיש אותה ב-/media/.',
-  'settings.media.saveTested': 'בדיקה ושמירה',
   'settings.media.test': 'בדיקה',
   'settings.media.testing': 'בודק…',
   'settings.media.reachedLibrary':
@@ -50,7 +47,7 @@ export const he = {
   'settings.signIn.title': 'כניסה',
   'settings.signIn.explain': 'הספק שדרכו נכנסים החברים של הספרייה ומי שמעלה אליה.',
   'settings.signIn.local':
-    'הבעלים נכנסים גם בקישור של המחשב שהספרייה מותקנת בו (pnpm library login).',
+    'הבעלים נכנסים גם בקישור של המחשב שהספרייה מותקנת בו (slidr-library login).',
   'settings.signIn.provider': 'ספק',
   'settings.signIn.none': 'אין: רק הבעלים, בקישור של המחשב',
   'settings.signIn.oidc': 'ספק OpenID Connect אחר',
@@ -86,54 +83,6 @@ export const he = {
   'settings.limits.default': 'ברירת מחדל: {value}',
   'settings.empty': 'הספרייה עדיין ריקה: עוד לא פורסם בה דבר.',
   'settings.emptySeed': 'מילוי המדיה בהגדרות',
-  'settings.media.kind.sftp': 'תיקייה בשרת, דרך SFTP',
-  'settings.media.kind.ftp': 'תיקייה בשרת, דרך FTP',
-  'settings.media.where': 'איפה',
-  'settings.media.host': 'שרת',
-  'settings.media.port': 'פורט',
-  'settings.media.user': 'משתמש',
-  'settings.media.root': 'תיקייה בשרת',
-  'settings.media.rootHint': 'נתיב מלא בשרת, כמו /var/www/media. הספרייה כותבת רק בתוכה.',
-  'settings.media.auth': 'הכניסה לשרת',
-  'settings.media.auth.key': 'מפתח פרטי',
-  'settings.media.auth.password': 'סיסמה',
-  'settings.media.privateKey': 'מפתח פרטי (OpenSSH או PEM)',
-  'settings.media.privateKeyFile': 'בחירת קובץ…',
-  'settings.media.passphrase': 'סיסמת המפתח',
-  'settings.media.password': 'סיסמה',
-  'settings.media.keyKept': 'שמור מאז {when}. אם משאירים ריק, הוא נשאר.',
-  'settings.media.tls': 'הצפנה',
-  'settings.media.tls.explicit': 'FTPS: מעבר ל-TLS בתחילת החיבור (מומלץ)',
-  'settings.media.tls.implicit': 'FTPS: TLS מההתחלה, פורט 990',
-  'settings.media.tls.none': 'בלי הצפנה',
-  'settings.media.allowUnencrypted': 'לאפשר FTP לא מוצפן: הסיסמה והקבצים עוברים ברשת כמו שהם.',
-  'settings.media.unencrypted': 'החיבור לשרת הזה לא מוצפן.',
-  'settings.media.hostKey': 'מפתח השרת',
-  'settings.media.hostKeyConfirmed': 'מאושר',
-  'settings.media.confirmTitle': 'מפתח השרת הזה עוד לא אושר',
-  'settings.media.confirmChangedTitle': 'מפתח השרת השתנה',
-  'settings.media.confirmExplain':
-    'כדאי לבדוק עם מי שמנהל את השרת שזה אכן המפתח שלו, למשל בפקודה הזאת בשרת. עד שמאשרים, שום דבר לא נשלח אליו.',
-  'settings.media.confirmChanged':
-    'מפתח אחר אושר לפני כן. כדאי לאשר רק אם מי שמנהל את השרת החליף אותו.',
-  'settings.media.confirm': 'אישור ושמירה',
-  'settings.media.publicUrlRemoteHint':
-    'כתובת ה-HTTPS שבה השרת מגיש את התיקייה. אם לא נותנים כתובת, השרת הזה מגיש אותה ב-/media/.',
-  'settings.media.kind.r2s3': 'דלי R2 של Cloudflare',
-  'settings.media.accountId': 'מזהה החשבון (Account ID)',
-  'settings.media.bucket': 'שם הדלי',
-  'settings.media.domain': 'הדומיין של הדלי',
-  'settings.media.domainHint':
-    'הכתובת שבה Cloudflare מגישה את הדלי, כמו https://media.example.org/. ממנה האפליקציות המותקנות קוראות.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint': 'של טוקן API של R2 עם הרשאת Object Read & Write לדלי הזה בלבד.',
-  'settings.media.zoneId': 'מזהה ה-Zone של הדומיין (Zone ID)',
-  'settings.media.zoneIdHint':
-    'כדי שכל פרסום ינקה מהמטמון את מה שכתב. בלעדיו, קבצים ישנים נשארים במטמון עד שתוקפם פג.',
-  'settings.media.purgeToken': 'טוקן לניקוי המטמון',
-  'settings.media.purgeTokenHint':
-    'טוקן API עם הרשאת Cache Purge ל-Zone הזה. הוא נבדק לפני השמירה.',
   'settings.signIn.ownerOnly':
     'רק הבעלים של הספרייה קובעים איך נכנסים אליה: מי שקובע את ספק הכניסה קובע מי כל אחד הוא.',
 };
@@ -146,22 +95,19 @@ export const en: Record<keyof typeof he, string> = {
   'settings.save': 'Save',
   'settings.saved': 'Saved.',
   'settings.library.title': 'The library’s address',
-  'settings.library.explain':
-    'The address people reach the library at, as their browsers name it: behind a proxy, or with TLS. Without one, the library goes by the address of each request.',
   'settings.library.host': 'This server is reached at the address its host gives it.',
+  'settings.library.script':
+    'The install script set this address. Running it again changes it, with the port and the way the library is reached.',
   'settings.media.title': 'Media',
   'settings.media.explain':
     'Where the published library is kept. Every upload that is approved is written there.',
   'settings.media.kind.folder': 'A folder on this machine',
   'settings.media.kind.r2': 'The Worker’s R2 bucket, on Cloudflare',
   'settings.media.kind.none': 'No media store yet',
+  'settings.media.room': '{free} free of {size} on its disk.',
+  'settings.media.fixed':
+    'The install script named this folder. To move the media, install again over the same data folder.',
   'settings.media.path': 'Folder',
-  'settings.media.pathHint':
-    'A full path. The server must be able to write there, and it holds the library and nothing else.',
-  'settings.media.publicUrl': 'Public address',
-  'settings.media.publicUrlHint':
-    'Only when another web server publishes the folder. Without one, this server serves it at /media/.',
-  'settings.media.saveTested': 'Test and save',
   'settings.media.test': 'Test',
   'settings.media.testing': 'Testing…',
   'settings.media.reachedLibrary':
@@ -192,7 +138,7 @@ export const en: Record<keyof typeof he, string> = {
   'settings.signIn.explain':
     'The provider the library’s members, and those who upload to it, sign in through.',
   'settings.signIn.local':
-    'The owner also signs in by a link of the machine the library is installed on (pnpm library login).',
+    'The owner also signs in by a link of the machine the library is installed on (slidr-library login).',
   'settings.signIn.provider': 'Provider',
   'settings.signIn.none': 'None: the owner alone, by the machine’s link',
   'settings.signIn.oidc': 'Another OpenID Connect provider',
@@ -229,57 +175,6 @@ export const en: Record<keyof typeof he, string> = {
   'settings.limits.default': 'Default: {value}',
   'settings.empty': 'The library is empty: nothing is published in it yet.',
   'settings.emptySeed': 'Seed the media in Settings',
-  'settings.media.kind.sftp': 'A folder on a server, over SFTP',
-  'settings.media.kind.ftp': 'A folder on a server, over FTP',
-  'settings.media.where': 'Where',
-  'settings.media.host': 'Server',
-  'settings.media.port': 'Port',
-  'settings.media.user': 'User',
-  'settings.media.root': 'Folder on the server',
-  'settings.media.rootHint':
-    'A full path on the server, as /var/www/media. The library writes only inside it.',
-  'settings.media.auth': 'Signs in with',
-  'settings.media.auth.key': 'A private key',
-  'settings.media.auth.password': 'A password',
-  'settings.media.privateKey': 'Private key (OpenSSH or PEM)',
-  'settings.media.privateKeyFile': 'Choose a file…',
-  'settings.media.passphrase': 'Passphrase',
-  'settings.media.password': 'Password',
-  'settings.media.keyKept': 'Kept since {when}. Left empty, it stays.',
-  'settings.media.tls': 'Encryption',
-  'settings.media.tls.explicit': 'FTPS: TLS asked for on connecting (recommended)',
-  'settings.media.tls.implicit': 'FTPS: TLS from the start, port 990',
-  'settings.media.tls.none': 'None',
-  'settings.media.allowUnencrypted':
-    'Allow unencrypted FTP: the password and the files cross the network as they are.',
-  'settings.media.unencrypted': 'This server is reached unencrypted.',
-  'settings.media.hostKey': 'Host key',
-  'settings.media.hostKeyConfirmed': 'Confirmed',
-  'settings.media.confirmTitle': 'This server’s host key is not confirmed yet',
-  'settings.media.confirmChangedTitle': 'The server’s host key changed',
-  'settings.media.confirmExplain':
-    'Check with the server’s admin that this is its key, for instance with this command on the server. Until it is confirmed, nothing is sent to it.',
-  'settings.media.confirmChanged':
-    'Another key was confirmed before. Confirm only if the server’s admin changed it.',
-  'settings.media.confirm': 'Confirm and save',
-  'settings.media.publicUrlRemoteHint':
-    'The HTTPS address where that server serves the folder. Without one, this server serves it at /media/.',
-  'settings.media.kind.r2s3': 'A Cloudflare R2 bucket',
-  'settings.media.accountId': 'Account ID',
-  'settings.media.bucket': 'Bucket',
-  'settings.media.domain': 'The bucket’s domain',
-  'settings.media.domainHint':
-    'Where Cloudflare serves the bucket, as https://media.example.org/. Installed apps read it there.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'Of an R2 API token allowed Object Read & Write on this one bucket only.',
-  'settings.media.zoneId': 'The domain’s Zone ID',
-  'settings.media.zoneIdHint':
-    'So that each publication empties the cache of what it wrote. Without it, old files stay cached until they expire.',
-  'settings.media.purgeToken': 'Cache purge token',
-  'settings.media.purgeTokenHint':
-    'An API token allowed Cache Purge on this zone. It is tried before it is kept.',
   'settings.signIn.ownerOnly':
     'Only the library’s owner sets how people sign in: whoever names the provider says who each person is.',
 };

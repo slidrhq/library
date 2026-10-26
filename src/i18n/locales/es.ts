@@ -329,9 +329,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Subiendo y comprobando…',
   'uploads.form.cancel': 'Cancelar',
   'people.signInWith': 'Iniciar sesión con {name}',
-  'people.signInHere': 'Iniciar sesión en este equipo',
+  'people.signInHere': 'Entrar como propietario',
   'people.localHint':
-    'El propietario de la biblioteca inicia sesión en el equipo donde está instalada: ejecuta allí este comando y abre el enlace que muestra.',
+    'El propietario de la biblioteca entra con un enlace de un solo uso: ejecute este comando en la máquina donde está instalada y abra el enlace que imprime en menos de diez minutos, desde cualquier ordenador.',
   'people.role.owner':
     'Esta cuenta es propietaria de la biblioteca: nombra a sus miembros y la configura',
   'people.role.admin': 'Esta cuenta es administradora: nombra a los miembros y revisa las subidas',
@@ -364,7 +364,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Miembros',
   'people.others': 'Otras personas que iniciaron sesión',
   'people.noProvider':
-    'Hasta que se configure un proveedor, solo el propietario puede iniciar sesión, y los miembros que añadas no: pnpm library sign-in.',
+    'Hasta que se configure un proveedor, solo el propietario puede iniciar sesión, y los miembros que añadas no: slidr-library sign-in.',
   'people.loading': 'Leyendo los miembros…',
   'people.closed': 'Solo los administradores de la biblioteca ven sus miembros.',
   'people.failed': 'No funcionó: {error}',
@@ -413,22 +413,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Guardar',
   'settings.saved': 'Guardado.',
   'settings.library.title': 'Dirección de la biblioteca',
-  'settings.library.explain':
-    'La dirección con la que se llega a la biblioteca, tal como la muestra el navegador: detrás de un proxy o con TLS. Sin ella, la biblioteca usa la dirección de cada solicitud.',
   'settings.library.host': 'Este servidor responde en la dirección que le asigna su hosting.',
+  'settings.library.script':
+    'El script de instalación fijó esta dirección. Al ejecutarlo de nuevo se cambia, junto con el puerto y la forma de llegar a la biblioteca.',
   'settings.media.title': 'Multimedia',
   'settings.media.explain':
     'Dónde se guarda la biblioteca publicada. Cada subida aprobada se escribe ahí.',
   'settings.media.kind.folder': 'Una carpeta en este equipo',
   'settings.media.kind.r2': 'El bucket R2 del Worker, en Cloudflare',
   'settings.media.kind.none': 'Aún no hay almacén multimedia',
+  'settings.media.room': '{free} libres de {size} en su disco.',
+  'settings.media.fixed':
+    'El script de instalación eligió esta carpeta. Para mover los medios, instale de nuevo sobre la misma carpeta de datos.',
   'settings.media.path': 'Carpeta',
-  'settings.media.pathHint':
-    'Una ruta completa. El servidor debe poder escribir en ella, y solo contiene la biblioteca.',
-  'settings.media.publicUrl': 'Dirección pública',
-  'settings.media.publicUrlHint':
-    'Solo si otro servidor web publica la carpeta. Sin ella, este servidor la sirve en /media/.',
-  'settings.media.saveTested': 'Probar y guardar',
   'settings.media.test': 'Probar',
   'settings.media.testing': 'Probando…',
   'settings.media.reachedLibrary':
@@ -459,7 +456,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'El proveedor con el que inician sesión los miembros de la biblioteca y quienes suben contenido a ella.',
   'settings.signIn.local':
-    'El propietario también inicia sesión con un enlace del equipo donde está instalada la biblioteca (pnpm library login).',
+    'El propietario también inicia sesión con un enlace del equipo donde está instalada la biblioteca (slidr-library login).',
   'settings.signIn.provider': 'Proveedor',
   'settings.signIn.none': 'Ninguno: solo el propietario, con el enlace del equipo',
   'settings.signIn.oidc': 'Otro proveedor de OpenID Connect',
@@ -526,57 +523,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Aprobada y escrita en la biblioteca:',
   'publications.publishSkipped':
     'No publicadas: {count}. Las que ya no son válidas volvieron a la espera, y el resto espera a escribirse. Ábrelas para ver por qué.',
-  'settings.media.kind.sftp': 'Una carpeta en un servidor, por SFTP',
-  'settings.media.kind.ftp': 'Una carpeta en un servidor, por FTP',
-  'settings.media.where': 'Ubicación',
-  'settings.media.host': 'Servidor',
-  'settings.media.port': 'Puerto',
-  'settings.media.user': 'Usuario',
-  'settings.media.root': 'Carpeta en el servidor',
-  'settings.media.rootHint':
-    'Una ruta completa en el servidor, como /var/www/media. La biblioteca solo escribe dentro de ella.',
-  'settings.media.auth': 'Inicio de sesión con',
-  'settings.media.auth.key': 'Clave privada',
-  'settings.media.auth.password': 'Contraseña',
-  'settings.media.privateKey': 'Clave privada (OpenSSH o PEM)',
-  'settings.media.privateKeyFile': 'Elegir un archivo…',
-  'settings.media.passphrase': 'Frase de contraseña',
-  'settings.media.password': 'Contraseña',
-  'settings.media.keyKept': 'Guardado desde el {when}. Si dejas el campo vacío, se conserva.',
-  'settings.media.tls': 'Cifrado',
-  'settings.media.tls.explicit': 'FTPS: TLS solicitado al conectar (recomendado)',
-  'settings.media.tls.implicit': 'FTPS: TLS desde el inicio, puerto 990',
-  'settings.media.tls.none': 'Ninguno',
-  'settings.media.allowUnencrypted':
-    'Permitir FTP sin cifrar: la contraseña y los archivos viajan por la red tal cual.',
-  'settings.media.unencrypted': 'La conexión con este servidor no está cifrada.',
-  'settings.media.hostKey': 'Clave de host',
-  'settings.media.hostKeyConfirmed': 'Confirmada',
-  'settings.media.confirmTitle': 'La clave de host de este servidor aún no está confirmada',
-  'settings.media.confirmChangedTitle': 'La clave de host del servidor ha cambiado',
-  'settings.media.confirmExplain':
-    'Comprueba con el administrador del servidor que esta es su clave, por ejemplo con este comando en el servidor. Hasta que se confirme, no se le envía nada.',
-  'settings.media.confirmChanged':
-    'Antes se confirmó otra clave. Confirma solo si el administrador del servidor la cambió.',
-  'settings.media.confirm': 'Confirmar y guardar',
-  'settings.media.publicUrlRemoteHint':
-    'La dirección HTTPS en la que ese servidor sirve la carpeta. Sin ella, este servidor la sirve en /media/.',
-  'settings.media.kind.r2s3': 'Un bucket R2 en Cloudflare',
-  'settings.media.accountId': 'ID de cuenta (Account ID)',
-  'settings.media.bucket': 'Nombre del bucket',
-  'settings.media.domain': 'Dominio del bucket',
-  'settings.media.domainHint':
-    'Donde Cloudflare sirve el bucket, como https://media.example.org/. Las apps instaladas lo leen ahí.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'De un token de API de R2 con permiso Object Read & Write solo en este bucket.',
-  'settings.media.zoneId': 'ID de zona del dominio (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Para que cada publicación vacíe de la caché lo que escribió. Sin él, los archivos antiguos siguen en caché hasta que caducan.',
-  'settings.media.purgeToken': 'Token de purga de caché',
-  'settings.media.purgeTokenHint':
-    'Un token de API con permiso Cache Purge en esta zona. Se comprueba antes de guardar.',
   'settings.signIn.tenantHint':
     'El ID de inquilino (Tenant) de tu organización, o su dominio, como contoso.onmicrosoft.com. Solo inician sesión las cuentas de ese inquilino.',
   'settings.signIn.ownerOnly':

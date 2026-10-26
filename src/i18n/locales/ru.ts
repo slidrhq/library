@@ -324,9 +324,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Загрузка и проверка…',
   'uploads.form.cancel': 'Отмена',
   'people.signInWith': 'Войти через {name}',
-  'people.signInHere': 'Войти на этом компьютере',
+  'people.signInHere': 'Войти как владелец',
   'people.localHint':
-    'Владелец медиатеки входит на компьютере, где она установлена: выполните там эту команду и откройте ссылку, которую она выведет.',
+    'Владелец библиотеки входит по одноразовой ссылке: выполните эту команду на машине, где она установлена, и откройте выведенную ссылку в течение десяти минут с любого компьютера.',
   'people.role.owner': 'Этот аккаунт владеет медиатекой: назначает её участников и настраивает её',
   'people.role.admin': 'Этот аккаунт — администратор: назначает участников и проверяет загрузки',
   'people.role.reviewer': 'Этот аккаунт проверяет загрузки и публикует принятые',
@@ -357,7 +357,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Участники',
   'people.others': 'Другие, кто входил',
   'people.noProvider':
-    'Пока не настроен поставщик входа, войти может только владелец, а добавленные участники — нет: pnpm library sign-in.',
+    'Пока не настроен поставщик входа, войти может только владелец, а добавленные участники — нет: slidr-library sign-in.',
   'people.loading': 'Читаем список участников…',
   'people.closed': 'Участников медиатеки видят только её администраторы.',
   'people.failed': 'Не получилось: {error}',
@@ -404,22 +404,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Сохранить',
   'settings.saved': 'Сохранено.',
   'settings.library.title': 'Адрес медиатеки',
-  'settings.library.explain':
-    'Адрес, по которому медиатеку открывают в браузере: за прокси или с TLS. Если он не задан, медиатека берёт адрес из каждого запроса.',
   'settings.library.host': 'Адрес этого сервера задаёт его хостинг.',
+  'settings.library.script':
+    'Этот адрес задал установочный скрипт. Повторный запуск меняет его вместе с портом и способом доступа к библиотеке.',
   'settings.media.title': 'Хранилище',
   'settings.media.explain':
     'Где хранится опубликованная медиатека. Сюда записывается каждая принятая загрузка.',
   'settings.media.kind.folder': 'Папка на этом компьютере',
   'settings.media.kind.r2': 'R2-бакет Worker в Cloudflare',
   'settings.media.kind.none': 'Хранилища пока нет',
+  'settings.media.room': 'Свободно {free} из {size} на диске.',
+  'settings.media.fixed':
+    'Эту папку задал установочный скрипт. Чтобы перенести медиа, установите библиотеку заново поверх той же папки данных.',
   'settings.media.path': 'Папка',
-  'settings.media.pathHint':
-    'Полный путь. У сервера должно быть право записи туда, и там хранится только медиатека.',
-  'settings.media.publicUrl': 'Публичный адрес',
-  'settings.media.publicUrlHint':
-    'Только если папку публикует другой веб-сервер. Без него этот сервер раздаёт её по /media/.',
-  'settings.media.saveTested': 'Проверить и сохранить',
   'settings.media.test': 'Проверить',
   'settings.media.testing': 'Проверка…',
   'settings.media.reachedLibrary':
@@ -450,7 +447,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Поставщик, через который входят участники медиатеки и те, кто в неё загружает.',
   'settings.signIn.local':
-    'Владелец также входит по ссылке с компьютера, где установлена медиатека (pnpm library login).',
+    'Владелец также входит по ссылке с компьютера, где установлена медиатека (slidr-library login).',
   'settings.signIn.provider': 'Поставщик',
   'settings.signIn.none': 'Нет: только владелец, по ссылке с компьютера',
   'settings.signIn.oidc': 'Другой поставщик OpenID Connect',
@@ -515,56 +512,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Принята и записана в библиотеку:',
   'publications.publishSkipped':
     'Не опубликовано: {count}. Те, что больше не проходят проверку, вернулись в ожидание, остальные ждут записи. Откройте их, чтобы узнать причину.',
-  'settings.media.kind.sftp': 'Папка на сервере, по SFTP',
-  'settings.media.kind.ftp': 'Папка на сервере, по FTP',
-  'settings.media.where': 'Где',
-  'settings.media.host': 'Сервер',
-  'settings.media.port': 'Порт',
-  'settings.media.user': 'Пользователь',
-  'settings.media.root': 'Папка на сервере',
-  'settings.media.rootHint':
-    'Полный путь на сервере, например /var/www/media. Медиатека пишет только внутри неё.',
-  'settings.media.auth': 'Способ входа',
-  'settings.media.auth.key': 'Закрытый ключ',
-  'settings.media.auth.password': 'Пароль',
-  'settings.media.privateKey': 'Закрытый ключ (OpenSSH или PEM)',
-  'settings.media.privateKeyFile': 'Выбрать файл…',
-  'settings.media.passphrase': 'Парольная фраза',
-  'settings.media.password': 'Пароль',
-  'settings.media.keyKept': 'Хранится с {when}. Если оставить пустым, он сохранится.',
-  'settings.media.tls': 'Шифрование',
-  'settings.media.tls.explicit': 'FTPS: переход на TLS при подключении (рекомендуется)',
-  'settings.media.tls.implicit': 'FTPS: TLS с самого начала, порт 990',
-  'settings.media.tls.none': 'Нет',
-  'settings.media.allowUnencrypted':
-    'Разрешить FTP без шифрования: пароль и файлы передаются по сети как есть.',
-  'settings.media.unencrypted': 'Подключение к этому серверу не шифруется.',
-  'settings.media.hostKey': 'Ключ хоста',
-  'settings.media.hostKeyConfirmed': 'Подтверждён',
-  'settings.media.confirmTitle': 'Ключ хоста этого сервера ещё не подтверждён',
-  'settings.media.confirmChangedTitle': 'Ключ хоста сервера изменился',
-  'settings.media.confirmExplain':
-    'Уточните у администратора сервера, что это его ключ, например с помощью этой команды на сервере. Пока ключ не подтверждён, на сервер ничего не отправляется.',
-  'settings.media.confirmChanged':
-    'Раньше был подтверждён другой ключ. Подтверждайте, только если администратор сервера его сменил.',
-  'settings.media.confirm': 'Подтвердить и сохранить',
-  'settings.media.publicUrlRemoteHint':
-    'Адрес HTTPS, по которому тот сервер раздаёт папку. Без него этот сервер раздаёт её по /media/.',
-  'settings.media.kind.r2s3': 'R2-бакет в Cloudflare',
-  'settings.media.accountId': 'ID учётной записи (Account ID)',
-  'settings.media.bucket': 'Имя бакета',
-  'settings.media.domain': 'Домен бакета',
-  'settings.media.domainHint':
-    'Где Cloudflare раздаёт бакет, например https://media.example.org/. Оттуда его читают установленные приложения.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint': 'Из API-токена R2 с правом Object Read & Write только на этот бакет.',
-  'settings.media.zoneId': 'ID зоны домена (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Чтобы каждая публикация удаляла из кэша то, что записала. Без него старые файлы остаются в кэше, пока не истечёт их срок.',
-  'settings.media.purgeToken': 'Токен очистки кэша',
-  'settings.media.purgeTokenHint':
-    'API-токен с правом Cache Purge на эту зону. Он проверяется перед сохранением.',
   'settings.signIn.tenantHint':
     'ID тенанта (Tenant) вашей организации или её домен, например contoso.onmicrosoft.com. Входят только учётные записи этого тенанта.',
   'settings.signIn.ownerOnly':

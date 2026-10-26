@@ -255,7 +255,7 @@ The media store is the bucket `MEDIA`, as today.
 
 The Settings page is for admins. It keeps its values in `config/library.json` and the vault:
 
-- **Library:** its URL. On Cloudflare it is set here. In a local library the script sets it, and the page shows it: it goes with the port, the certificate and the proxy, which the compose file holds.
+- **Library:** its URL, which the page shows and does not change. On Cloudflare it is the Worker's own, as it always was. In a local library the script sets it (`start --url`): it goes with the port, the certificate and the proxy, which the compose file holds.
 - **Media:**
   - where it is: the bucket on Cloudflare; in a local library, the folder of the machine as the script named it, and how much room is left on its disk. Neither is changed here;
   - **Test**;
@@ -454,7 +454,7 @@ What changes in the routes. Everything not named here stays as the README descri
 | `POST /api/publish`                                                                       | session reviewer, or `publish` token | Publishes what waits, or the uploads named. This is also **Try again**.                                                                       |
 | `POST /api/library/import`, `PUT /api/library/staged/{sha256}`, `POST /api/library/files` | session admin, or `publish` token    | Seeding an empty store, and an author's publication.                                                                                          |
 | `GET /api/members`, `PUT /api/members/{email}`, `DELETE /api/members/{email}`             | session, admin                       | Members: `PUT { role: 'reviewer' \| 'admin' }`. Blocking is `PUT /api/people/{email} { blocked }`, which also lists and revokes their tokens. |
-| `GET /api/settings`, `PUT /api/settings/{sign-in,uploads,library}`                        | session, admin                       | Settings without their keys (§5.3). `library` is refused in a local library, whose URL the script sets.                                       |
+| `GET /api/settings`, `PUT /api/settings/{sign-in,limits}`                                 | session, admin                       | Settings without their keys (§5.3). The address and the media are only shown.                                                                 |
 | `PUT /api/settings/sign-in/secret`                                                        | session, admin                       | Gives the client's secret. Write-only: answers `204`.                                                                                         |
 | `POST /api/settings/media/test`                                                           | session, admin                       | Tests the store (§4.5).                                                                                                                       |
 | `GET /media/{path}`                                                                       | anyone                               | The media (§4.6).                                                                                                                             |
@@ -462,7 +462,7 @@ What changes in the routes. Everything not named here stays as the README descri
 
 - **Errors** keep their shape (`{ error, message, issues? }`). Codes: `token-scope`, `blocked`, `limit`, `not-a-reviewer`, `not-an-admin`, `owner`, `store-unreachable`.
 - **OpenAPI** declares a `bearer` security scheme, with the scope each route needs, and a cookie scheme for the routes of the page.
-- **Gone** (2026-10-26): `PUT /api/settings/media`, `PUT /api/settings/media/key`, and the code `host-key-changed`. A local library's media is the install's (D13), and the central library's is its binding.
+- **Gone** (2026-10-26): `PUT /api/settings/media`, `PUT /api/settings/media/key`, `PUT /api/settings/library`, and the code `host-key-changed`. A local library's media is the install's (D13), and the central library's is its binding.
 - **Gone** (2026-10-25): `LIBRARY_KEYS` and `key:<name>` actors (records that already hold them stay readable); the `publish` permission of editors, now split between reviewers and admins; `path` in upload views; `bucket` in `GET /api/library`, which names storage (D7). `LIBRARY_EDITORS` goes once it is imported (§13).
 
 ## 11. The page

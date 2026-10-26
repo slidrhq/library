@@ -12,6 +12,8 @@ import { memoryKeys } from './master.ts';
 import { clientOf, serve, type Serving } from './server.ts';
 
 const folders: string[] = [];
+/** Where host.json says the master key is; the tests keep it in memory. */
+const KEPT = { file: join(tmpdir(), 'slidr-library-tests', 'master.key') };
 let serving: Serving;
 let context: Context;
 let base: string;
@@ -57,9 +59,9 @@ before(async () => {
   await writeFile(join(client, 'assets', 'app-0a1b.js'), 'console.log(1);');
   const data = await newFolder();
   const keys = memoryKeys();
-  await install({ data, owner: 'owner@example.org', master: 'keychain', keys });
+  await install({ data, owner: 'owner@example.org', master: KEPT, keys });
   const library = await openLibrary(data, keys);
-  context = await contextOf(library);
+  context = contextOf(library);
   serving = await serve({ context, client, port: 0 });
   base = serving.url;
 });
@@ -170,27 +172,29 @@ describe('the owner’s link', () => {
     assert.equal(sessionOf(again), undefined);
   });
 
-  test('opens nothing from another machine, once expired, or for another than the owner', async () => {
+  test('opens from another machine too, but not once expired, nor for another than the owner', async () => {
     const away = async (code: string, address: string) =>
       handle(new Request(`http://127.0.0.1/auth/local?code=${code}`), {
         ...context,
         clientAddress: address,
       });
-    const remote = await away(await issueLocalLink(context, 'owner@example.org'), '192.168.1.20');
-    assert.match(remote.headers.get('Location') ?? '', /signin=failed/);
+    // In a container, a request of this machine comes through Docker's bridge (docs/SPEC.md D17).
+    const code = await issueLocalLink(context, 'owner@example.org');
+    assert.ok(sessionOf(await away(code, '172.17.0.1')));
+    assert.equal(sessionOf(await away(code, '172.17.0.1')), undefined);
     assert.ok(
-      sessionOf(await away(await issueLocalLink(context, 'owner@example.org'), '::ffff:127.0.0.1')),
+      sessionOf(await away(await issueLocalLink(context, 'owner@example.org'), '203.0.113.9')),
     );
     const notOwner = await away(await issueLocalLink(context, 'someone@example.org'), '127.0.0.1');
     assert.equal(sessionOf(notOwner), undefined);
     // Expired: the link as the store keeps it, ten minutes and more ago.
-    const code = await issueLocalLink(context, 'owner@example.org');
+    const late = await issueLocalLink(context, 'owner@example.org');
     const listed = await context.state!.list({ prefix: 'links/' });
     for (const { key } of listed.objects) {
       const held = JSON.parse(await (await context.state!.get(key))!.text()) as object;
       await context.state!.put(key, JSON.stringify({ ...held, exp: 1 }));
     }
-    assert.equal(sessionOf(await away(code, '127.0.0.1')), undefined);
+    assert.equal(sessionOf(await away(late, '127.0.0.1')), undefined);
     const forged = await away('x'.repeat(43), '127.0.0.1');
     assert.match(forged.headers.get('Location') ?? '', /signin=failed/);
   });
@@ -219,15 +223,15 @@ describe('the library on a machine, with its media folder', () => {
     await install({
       data: join(root, 'data'),
       owner: 'owner@example.org',
-      master: 'keychain',
+      master: KEPT,
       keys,
-      media: { kind: 'folder', path: join(root, 'media') },
+      media: join(root, 'media'),
     });
     await writeFile(
       join(root, 'media', 'manifest.json'),
       '{"version":1,"published":"x","files":{}}',
     );
-    const context = await contextOf(await openLibrary(join(root, 'data'), keys));
+    const context = contextOf(await openLibrary(join(root, 'data'), keys));
     const own = await serve({ context, client, port: 0, mediaPath: '/media/' });
     try {
       const page = await (await fetch(own.url)).text();

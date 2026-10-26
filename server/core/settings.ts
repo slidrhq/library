@@ -2,31 +2,23 @@
  * The library's settings, for its admins (docs/SPEC.md §5.3, §10):
  *
  *   GET    /api/settings                   every setting, and of each key only that it is set
- *   PUT    /api/settings/library           { "url" }: the address the library is reached at
- *   PUT    /api/settings/media             its media: { "kind": "folder", "path", "publicUrl"? },
- *                                          or a server's, { "kind": "sftp" | "ftp", "host", "port"?,
- *                                          "user", "root", …, "key"? }; the key is written only
  *   POST   /api/settings/media/test        reaches the media: reads the manifest, writes a probe
  *   PUT    /api/settings/sign-in           { "provider", "clientId", "issuer"?, "tenant"?, "name"?,
  *                                            "allowedDomains"?, "secret"? }: the provider
  *   DELETE /api/settings/sign-in           no provider: on a machine, the owner's link alone
  *   PUT    /api/settings/limits            { "pending"?, "bytes"?, "tokens"?, "writesPerMinute"? }
  *
- * What the host keeps for itself is not the library's to change (`ctx.editable`): on Cloudflare,
- * the media is the Worker's bucket, and its address is the Worker's own. A key is written, never
- * read back (`vault.ts`); each change goes into the audit. Seeding an empty media is the import of
- * the library's API, a batch at a time (`POST /api/library/import`).
- *
- * A server reached over SSH is known by its host key. A store that shows a key not confirmed is
- * answered `409 host-key-unconfirmed` (or `host-key-changed`) with its fingerprint; the admin
- * confirms it by sending the settings again with that `hostKey`.
+ * Where the media is, and the address the library is reached at, are its host's, and are shown
+ * here, never changed (docs/SPEC.md D13): on Cloudflare, the Worker's bucket and its own address;
+ * in a local library, the folder and the address its install script named. A key is written,
+ * never read back (`vault.ts`); each change goes into the audit. Seeding an empty media is the
+ * import of the library's API, a batch at a time (`POST /api/library/import`).
  */
 import { audit } from './audit.ts';
-import { LibraryConfig, MediaSettings, readConfig, writeConfig } from './config.ts';
+import { LibraryConfig, readConfig, writeConfig } from './config.ts';
 import type { Context, MediaStore } from './context.ts';
 import { isRecord, json, jsonBody, problem } from './http.ts';
 import { LIMITS, limitsOf } from './limits.ts';
-import { purgerFor } from './media/cache.ts';
 import { MANIFEST, PROBE } from './media/live.ts';
 import { siteOf } from './media/routes.ts';
 import {
@@ -58,16 +50,15 @@ const read: Route = async (request, ctx) => {
   if (!ctx.state) return notSetUp();
   const config = await readConfig(ctx.state);
   const url = config?.url ?? new URL('/', request.url).href;
+  const folder = ctx.mediaFolder;
+  const room = await folder?.room().catch(() => undefined);
   return json({
-    editable: {
-      url: Boolean(ctx.editable?.url),
-      media: Boolean(ctx.editable?.media),
-      signIn: Boolean(ctx.vault),
-    },
+    editable: { signIn: Boolean(ctx.vault) },
     library: { url },
     media: {
-      ...(config?.media ?? { kind: ctx.media ? 'r2' : 'none' }),
-      key: await aboutKey(ctx, 'media'),
+      kind: folder ? 'folder' : ctx.media ? 'r2' : 'none',
+      ...(folder ? { path: folder.path } : {}),
+      ...(room ? { room } : {}),
       address: siteOf(request, ctx, url),
     },
     signIn: config?.signIn
@@ -109,27 +100,6 @@ async function change(
   return new Response(null, { status: 204 });
 }
 
-const library: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'settings');
-  if (actor instanceof Response) return actor;
-  if (!ctx.editable?.url) {
-    return problem(409, 'host', 'This server is reached at the address its host gives it.');
-  }
-  const body = await jsonBody(request);
-  if (body instanceof Response) return body;
-  const url = isRecord(body) && typeof body.url === 'string' ? body.url.trim() : '';
-  return change(
-    ctx,
-    actor.id,
-    'settings.library',
-    (config) => {
-      const { url: _was, ...rest } = config;
-      return url ? { ...rest, url } : rest;
-    },
-    { url: url || null },
-  );
-};
-
 export interface StoreTest {
   /** The manifest could be read: the library is there, or the media is empty. */
   reached: boolean;
@@ -137,17 +107,6 @@ export interface StoreTest {
   /** A file could be written there, and taken away. */
   wrote: boolean;
   message?: string;
-  /** The server showed a host key that is not confirmed: which. */
-  hostKey?: { code: 'host-key-unconfirmed' | 'host-key-changed'; fingerprint: string };
-}
-
-/** The host key a store was shown, when that is why it could not be reached (`sftp.ts`). */
-function hostKeyOf(error: unknown): StoreTest['hostKey'] {
-  const { code, fingerprint } = (error ?? {}) as { code?: unknown; fingerprint?: unknown };
-  return (code === 'host-key-unconfirmed' || code === 'host-key-changed') &&
-    typeof fingerprint === 'string'
-    ? { code, fingerprint }
-    : undefined;
 }
 
 /** Reaches a media store: reads its manifest, writes a probe and takes it away. */
@@ -168,144 +127,14 @@ export async function testStore(media: MediaStore): Promise<StoreTest> {
     await media.delete(PROBE);
     return { reached, ...(found ? { library: found } : {}), wrote: true };
   } catch (error) {
-    const hostKey = hostKeyOf(error);
     return {
       reached,
       ...(found ? { library: found } : {}),
       wrote: false,
       message: error instanceof Error ? error.message : String(error),
-      ...(hostKey ? { hostKey } : {}),
     };
   }
 }
-
-/** Whether two settings name the same store, as far as its key goes. */
-function sameStore(was: MediaSettings | undefined, now: MediaSettings) {
-  if (!was || was.kind !== now.kind) return false;
-  if (was.kind === 'sftp' && now.kind === 'sftp') {
-    return was.host === now.host && was.port === now.port && was.user === now.user;
-  }
-  if (was.kind === 'ftp' && now.kind === 'ftp') {
-    return was.host === now.host && (was.port ?? 0) === (now.port ?? 0) && was.user === now.user;
-  }
-  if (was.kind === 'r2' && now.kind === 'r2') {
-    return (
-      was.accountId === now.accountId &&
-      was.bucket === now.bucket &&
-      was.zoneId === now.zoneId &&
-      was.publicUrl === now.publicUrl
-    );
-  }
-  return was.kind === 'folder';
-}
-
-/** A store's key as the page sends it: what each kind takes, as text for the vault. */
-function keyText(kind: MediaSettings['kind'], given: unknown): string | undefined | Response {
-  if (given === undefined || given === null) return undefined;
-  const fields =
-    kind === 'sftp'
-      ? ['privateKey', 'passphrase', 'password']
-      : kind === 'r2'
-        ? ['accessKeyId', 'secretAccessKey', 'purgeToken']
-        : ['password'];
-  if (
-    kind === 'folder' ||
-    !isRecord(given) ||
-    Object.entries(given).some(
-      ([name, value]) =>
-        !fields.includes(name) || (value !== undefined && typeof value !== 'string'),
-    )
-  ) {
-    return problem(400, 'bad-request', `The key of this store is ${fields.join(', ')}.`);
-  }
-  const key = Object.fromEntries(
-    Object.entries(given).filter(([, value]) => typeof value === 'string' && value !== ''),
-  );
-  if (Object.keys(key).length === 0) return undefined;
-  if (kind === 'sftp' && !key.privateKey && !key.password) {
-    return problem(400, 'bad-request', 'An SSH server takes a private key, or a password.');
-  }
-  if (kind === 'r2' && (!key.accessKeyId || !key.secretAccessKey)) {
-    return problem(400, 'bad-request', 'An R2 bucket takes its S3 Access Key ID and Secret.');
-  }
-  return JSON.stringify(key);
-}
-
-const media: Route = async (request, ctx) => {
-  const actor = await authorize(request, ctx, 'settings');
-  if (actor instanceof Response) return actor;
-  if (!ctx.editable?.media || !ctx.openMedia) {
-    return problem(409, 'host', 'This server’s media is its host’s, and is not changed here.');
-  }
-  const body = await jsonBody(request);
-  if (body instanceof Response) return body;
-  const { key: givenKey, ...given } = isRecord(body) ? body : {};
-  const settings = MediaSettings.safeParse(given);
-  if (!settings.success) {
-    return problem(
-      400,
-      'bad-request',
-      'These are not the settings of a media store.',
-      settings.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    );
-  }
-  const kind = settings.data.kind;
-  const newKey = keyText(kind, givenKey);
-  if (newKey instanceof Response) return newKey;
-  // A key left out keeps the one the vault has, for the very store it was given for: never sent
-  // to another server, as another user, or for another bucket.
-  const was = ctx.state ? (await readConfig(ctx.state))?.media : undefined;
-  const key = newKey ?? (sameStore(was, settings.data) ? await ctx.vault?.get('media') : undefined);
-  if (kind !== 'folder' && !key) {
-    return problem(400, 'bad-request', 'A server is reached with its key: name it.');
-  }
-  // Reached before it is kept: a store that cannot be reached is not kept.
-  let store: MediaStore;
-  try {
-    store = ctx.openMedia(settings.data, key);
-  } catch (error) {
-    // Settings the host will not open: a folder where the library keeps itself.
-    const message = error instanceof Error ? error.message : String(error);
-    return json({ error: 'store-unreachable', message }, 422);
-  }
-  const tried = await testStore(store);
-  await store.close?.().catch(() => undefined);
-  if (tried.hostKey) {
-    return json({ error: tried.hostKey.code, message: tried.message, ...tried.hostKey }, 409);
-  }
-  if (!tried.reached || !tried.wrote) {
-    return json({ error: 'store-unreachable', message: tried.message, test: tried }, 422);
-  }
-  // The cache of an R2 bucket's domain: its token may empty it.
-  if (settings.data.kind === 'r2' && settings.data.zoneId) {
-    const { purgeToken } = JSON.parse(key ?? '{}') as { purgeToken?: string };
-    const purged = purgeToken
-      ? await purgerFor({
-          MEDIA_ZONE_ID: settings.data.zoneId,
-          MEDIA_PURGE_TOKEN: purgeToken,
-          MEDIA_LIBRARY_URL: settings.data.publicUrl,
-        })([PROBE])
-      : { emptied: 'none' as const, message: 'No token was given to empty the cache.' };
-    if (purged.emptied === 'none') {
-      return json({ error: 'purge-refused', message: purged.message, test: tried }, 422);
-    }
-  }
-  if (newKey && ctx.vault) await ctx.vault.set('media', newKey, actor.id);
-  if (kind === 'folder' && ctx.vault && (await ctx.vault.about('media'))) {
-    await ctx.vault.remove('media');
-  }
-  const saved = await change(
-    ctx,
-    actor.id,
-    'settings.media',
-    (config) => ({ ...config, media: settings.data }),
-    { kind, ...(newKey ? { key: 'set' } : {}) },
-  );
-  return saved.status === 204 ? json({ test: tried }) : saved;
-};
 
 const test: Route = async (request, ctx) => {
   const actor = await authorize(request, ctx, 'settings');
@@ -412,8 +241,6 @@ const limits: Route = async (request, ctx) => {
 
 const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [/^\/api\/settings$/, { GET: read }],
-  [/^\/api\/settings\/library$/, { PUT: library }],
-  [/^\/api\/settings\/media$/, { PUT: media }],
   [/^\/api\/settings\/media\/test$/, { POST: test }],
   [/^\/api\/settings\/sign-in$/, { PUT: signIn, DELETE: signIn }],
   [/^\/api\/settings\/limits$/, { PUT: limits }],

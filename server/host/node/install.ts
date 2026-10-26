@@ -1,31 +1,23 @@
 /**
- * A library on a machine (docs/SPEC.md §5.1): its data folder, installed once, and opened each
- * time the server starts.
+ * A local library (docs/SPEC.md §5.1): its data folder, installed once, and opened each time the
+ * server starts.
  *
- *   <data>/host.json      where its master key is (`master.ts`); nothing secret
+ *   <data>/host.json      where its master key is (`master.ts`), and its media folder; nothing
+ *                         secret
  *   <data>/state/         its state store (`state.ts`): settings, people, sealed keys, uploads
  *
- * The folder is its owner's only: on Windows its ACL grants the installing user alone, elsewhere
- * its mode is 0700.
+ * The media folder is the host's, named once at install (docs/SPEC.md D13): `/library/media` in
+ * the image, a folder of the machine's own disks mounted there. The data folder is its owner's
+ * only (mode 0700).
  */
-import { execFile } from 'node:child_process';
-import { chmod, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, realpath, rm, statfs, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { createHash } from 'node:crypto';
 import { realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { promisify } from 'node:util';
-import {
-  CONFIG,
-  LibraryConfig,
-  readConfig,
-  writeConfig,
-  type MediaSettings,
-} from '../../core/config.ts';
-import type { Context, MediaStore } from '../../core/context.ts';
-import { purgerFor } from '../../core/media/cache.ts';
+import { audit } from '../../core/audit.ts';
+import { readConfig, writeConfig, type LibraryConfig } from '../../core/config.ts';
+import type { Context, Room } from '../../core/context.ts';
 import { openLease } from '../../core/media/lease.ts';
-import { R2S3Media, type R2Credentials } from '../../core/media/r2s3.ts';
 import { sweep } from '../../core/media/sweep.ts';
 import { emailOf, isEmail, writePerson } from '../../core/people.ts';
 import { Vault, masterKeyText, newMasterKey, randomKey } from '../../core/vault.ts';
@@ -36,15 +28,14 @@ import {
   importLibrary,
   type Imported,
 } from '../../core/media/import.ts';
-import { FtpRemote } from './ftp.ts';
 import { FolderMedia } from './media.ts';
-import { RemoteMedia } from './remote.ts';
-import { SftpRemote, type SftpKey } from './sftp.ts';
 import { FolderBucket } from './state.ts';
 
 export interface HostFile {
   version: 1;
   master: MasterSource;
+  /** The media folder, by its absolute path; none, and the library has no media yet. */
+  media?: string;
 }
 
 const HOST = 'host.json';
@@ -52,26 +43,14 @@ const HOST = 'host.json';
 /** A library that is not where it was looked for, or cannot be opened. */
 export class LibraryError extends Error {}
 
-/** The data folder of a library on this machine, unless `SLIDR_LIBRARY_DATA` names another. */
-export function defaultDataDir(
-  env: NodeJS.ProcessEnv = process.env,
-  platform: NodeJS.Platform = process.platform,
-): string {
+/**
+ * The data folder of a local library: `SLIDR_LIBRARY_DATA` (`/library/data` in the image), or a
+ * folder of the user's, for a run from the source.
+ */
+export function defaultDataDir(env: NodeJS.ProcessEnv = process.env): string {
   if (env.SLIDR_LIBRARY_DATA) return resolve(env.SLIDR_LIBRARY_DATA);
-  if (platform === 'win32') {
-    return join(env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'Slidr Library');
-  }
-  if (platform === 'darwin') {
-    return join(homedir(), 'Library', 'Application Support', 'Slidr Library');
-  }
   return join(env.XDG_DATA_HOME ?? join(homedir(), '.local', 'share'), 'slidr-library');
 }
-
-const run = promisify(execFile);
-
-/** A program of Windows, by its own path: not whatever else of that name the PATH finds first. */
-const windowsTool = (name: string) =>
-  join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', `${name}.exe`);
 
 /**
  * Makes a folder its owner's only. What could not be done is answered in words, and the install
@@ -79,18 +58,7 @@ const windowsTool = (name: string) =>
  */
 export async function restrictFolder(dir: string): Promise<string | undefined> {
   try {
-    if (process.platform !== 'win32') {
-      await chmod(dir, 0o700);
-      return undefined;
-    }
-    const { stdout } = await run(windowsTool('whoami'), ['/user', '/fo', 'csv', '/nh'], {
-      windowsHide: true,
-    });
-    const sid = /"(S-[0-9-]+)"/.exec(stdout)?.[1];
-    if (!sid) return `The current user's SID could not be read; ${dir} keeps the access it had.`;
-    await run(windowsTool('icacls'), [dir, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`], {
-      windowsHide: true,
-    });
+    await chmod(dir, 0o700);
     return undefined;
   } catch (error) {
     return `${dir} keeps the access it had: ${error instanceof Error ? error.message : String(error)}`;
@@ -102,8 +70,8 @@ export interface InstallOptions {
   data: string;
   /** The installer, who becomes the library's owner. */
   owner: string;
-  /** Where the published library is kept. */
-  media?: MediaSettings;
+  /** The media folder, where the published library is kept. */
+  media?: string;
   /** The address the library is reached at, when not only on this machine. */
   url?: string;
   /** Where the master key is kept. */
@@ -121,10 +89,7 @@ export interface Installed {
   warnings: string[];
 }
 
-/**
- * A folder by its one true name: Windows takes a path by its short name (`MOSHEW~1`), and in any
- * case of its letters, and the keychain keeps the master key under the folder's name.
- */
+/** A folder by its one true name, through links, and in Windows in its own case of letters. */
 const realFolder = (path: string) => realpath(resolve(path));
 
 const exists = (path: string) =>
@@ -149,18 +114,17 @@ export async function install(options: InstallOptions): Promise<Installed> {
   if (await exists(join(data, HOST))) {
     throw new LibraryError(`A library is installed at ${data} already.`);
   }
+  const media = options.media ? resolve(options.media) : undefined;
+  if (media) apartFromData(data, media);
+  if (typeof options.master === 'object') {
+    keyApart(options.master.file, [data, ...(media ? [media] : [])]);
+  }
   const warnings: string[] = [];
   const restricted = await restrictFolder(data);
   if (restricted) warnings.push(restricted);
+  if (media) await mkdir(media, { recursive: true });
 
-  let media = options.media;
-  if (media?.kind === 'folder') {
-    media = { ...media, path: resolve(media.path) };
-    apartFromData(data, media.path);
-    await mkdir(media.path, { recursive: true });
-  }
-
-  const keys = options.keys ?? masterKeysOf(options.master, data);
+  const keys = options.keys ?? masterKeysOf(options.master);
   let master;
   if (options.master === 'env') {
     master = (await keys.read())[0];
@@ -183,11 +147,10 @@ export async function install(options: InstallOptions): Promise<Installed> {
     version: 1,
     installed: now,
     ...(options.url ? { url: options.url } : {}),
-    ...(media ? { media } : {}),
   });
   await writePerson(state, { email: owner, role: 'owner', added: now, by: 'install' });
   await openLease(state);
-  const host: HostFile = { version: 1, master: options.master };
+  const host: HostFile = { version: 1, master: options.master, ...(media ? { media } : {}) };
   await writeFile(join(data, HOST), `${JSON.stringify(host, null, 2)}\n`);
   return { data, owner, master: keys.where, warnings };
 }
@@ -201,7 +164,10 @@ export interface Library {
   config: LibraryConfig;
 }
 
-/** Opens the library installed in a data folder. */
+/**
+ * Opens the library installed in a data folder. A key of a media store that a version of before
+ * kept (`media`, 2026-10-25) is taken away: a local library's media has none.
+ */
 export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<Library> {
   let data = resolve(dataDir);
   let host: HostFile;
@@ -210,11 +176,11 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
     host = JSON.parse(await readFile(join(data, HOST), 'utf8')) as HostFile;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new LibraryError(`No library is installed at ${data}. Install one: pnpm library init`);
+      throw new LibraryError(`No library is installed at ${data}. Install one: slidr-library init`);
     }
     throw error;
   }
-  const masterKeys = keys ?? masterKeysOf(host.master, data);
+  const masterKeys = keys ?? masterKeysOf(host.master);
   const held = await masterKeys.read();
   if (held.length === 0) {
     throw new LibraryError(`The library's master key is not in ${masterKeys.where}.`);
@@ -222,19 +188,12 @@ export async function openLibrary(dataDir: string, keys?: MasterKeys): Promise<L
   const state = new FolderBucket(join(data, 'state'));
   const config = await readConfig(state);
   if (!config) throw new LibraryError(`The library at ${data} has no settings: install it again.`);
-  return { data, host, keys: masterKeys, state, vault: new Vault(state, held), config };
-}
-
-/** A store's key, as the vault keeps it: JSON of what the store takes. */
-type StoreKey = SftpKey & Partial<R2Credentials> & { purgeToken?: string };
-
-function keyOf(text: string | undefined): StoreKey {
-  if (!text) return {};
-  try {
-    return JSON.parse(text) as StoreKey;
-  } catch {
-    return {};
+  const vault = new Vault(state, held);
+  if (await vault.about('media')) {
+    await vault.remove('media');
+    await audit(state, { by: 'cli', action: 'vault.removed', target: 'media' });
   }
+  return { data, host, keys: masterKeys, state, vault, config };
 }
 
 /** A folder as the system names it, through the part of it that is there. */
@@ -274,96 +233,52 @@ export function apartFromData(data: string, folder: string) {
 }
 
 /**
- * Opens the media store of some settings, with its key: a folder of this machine; an R2 bucket,
- * through its S3 API; or a folder of another server, whose files read are kept in a cache folder
- * of its own in the data folder.
+ * Throws for a master key file inside the data folder or the media folder: a copy of either, or
+ * the media that every app reads, would then hold the key that opens every other.
  */
-export function mediaOpener(data: string) {
-  return (settings: MediaSettings, key?: string): MediaStore => {
-    if (settings.kind === 'folder') {
-      apartFromData(data, settings.path);
-      return new FolderMedia(settings.path);
+function keyApart(file: string, folders: string[]) {
+  const key = realFolderSync(file);
+  for (const folder of folders) {
+    if (within(key, realFolderSync(folder))) {
+      throw new LibraryError(
+        `The master key is kept apart from the library's data and its media: ${key} is in ${folder}.`,
+      );
     }
-    if (settings.kind === 'r2') {
-      const { accessKeyId = '', secretAccessKey = '' } = keyOf(key);
-      return new R2S3Media(settings, { accessKeyId, secretAccessKey });
-    }
-    const where = `${settings.kind}:${settings.user}@${settings.host}:${settings.port ?? ''}${settings.root}`;
-    const cache = join(
-      data,
-      'cache',
-      createHash('sha256').update(where).digest('hex').slice(0, 16),
-    );
-    const remote =
-      settings.kind === 'sftp'
-        ? new SftpRemote(settings, keyOf(key))
-        : new FtpRemote(settings, keyOf(key).password ?? '');
-    return new RemoteMedia(remote, cache, settings.publicUrl);
-  };
+  }
 }
 
-/** What the server is given, of a library on this machine. */
-async function contextFor(library: Library): Promise<Context> {
-  const media = library.config.media;
-  const openMedia = mediaOpener(library.data);
-  const key = media && media.kind !== 'folder' ? await library.vault.get('media') : undefined;
-  // An R2 bucket's domain has Cloudflare's cache before it, emptied of what a publication wrote.
-  const purgeToken = keyOf(key).purgeToken;
-  const purge =
-    media?.kind === 'r2' && media.zoneId && purgeToken
-      ? purgerFor({
-          MEDIA_ZONE_ID: media.zoneId,
-          MEDIA_PURGE_TOKEN: purgeToken,
-          MEDIA_LIBRARY_URL: media.publicUrl,
-        })
-      : undefined;
+/** The disk a folder is on: its size, and what is free of it. */
+async function roomOf(folder: string): Promise<Room> {
+  const disk = await statfs(folder);
+  return { size: disk.blocks * disk.bsize, free: disk.bavail * disk.bsize };
+}
+
+/**
+ * What the server is given, of a local library. Its admins are shown the media folder by the
+ * name the install gave it on the machine (`LIBRARY_MEDIA_SHOWN`), since the container sees it
+ * only as `/library/media`.
+ */
+export function contextOf(library: Library, env: NodeJS.ProcessEnv = process.env): Context {
+  const folder = library.host.media;
+  if (folder) apartFromData(library.data, folder);
   // The session key is the vault's, read as each request needs it (`sessionKeyOf`); the owner
-  // signs in on this machine by a link of the CLI. On a machine, an admin changes it all.
+  // signs in by a link of the CLI.
   return {
     state: library.state,
     vault: library.vault,
-    ...(media ? { media: openMedia(media, key) } : {}),
-    ...(media?.publicUrl ? { publicUrl: media.publicUrl } : {}),
-    ...(purge ? { purge } : {}),
+    ...(folder
+      ? {
+          media: new FolderMedia(folder),
+          mediaFolder: { path: env.LIBRARY_MEDIA_SHOWN || folder, room: () => roomOf(folder) },
+        }
+      : {}),
     auth: {},
     local: true,
-    editable: { url: true, media: true },
-    openMedia,
   };
 }
 
-export function contextOf(library: Library): Promise<Context> {
-  return contextFor(library);
-}
-
 /**
- * The context of each request: made again once the library's settings or the media's key change
- * (an admin names another media store), so the server need not be started again for it. The store
- * named before is let go.
- */
-export function contextSource(library: Library): () => Promise<Context> {
-  let held: { version: string; context: Context } | undefined;
-  return async () => {
-    const object = await library.state.get(CONFIG);
-    if (!object) return held?.context ?? contextFor(library);
-    const key = await library.state.get(MEDIA_KEY);
-    const version = `${object.etag} ${key?.etag ?? ''}`;
-    if (key) await key.body.cancel();
-    if (held?.version !== version) {
-      library.config = LibraryConfig.parse(JSON.parse(await object.text()));
-      const before = held?.context.media;
-      held = { version, context: await contextFor(library) };
-      await before?.close?.().catch(() => undefined);
-    } else await object.body.cancel();
-    return held.context;
-  };
-}
-
-/** Where the vault keeps the media's key, in the state store. */
-const MEDIA_KEY = 'vault/media.json';
-
-/**
- * Seals every key of the library under a new master key (`pnpm library vault rotate`). The new
+ * Seals every key of the library under a new master key (`slidr-library vault rotate`). The new
  * key is kept apart until every key is sealed under it, then becomes the current one.
  */
 export async function rotate(library: Library): Promise<string[]> {
@@ -404,8 +319,8 @@ export async function running(data: string): Promise<Running | undefined> {
 }
 
 /**
- * Copies a published library into the library's media store, while it holds none
- * (`pnpm library seed`; docs/SPEC.md §4.5): every file, checked against the site's manifest, a
+ * Copies a published library into the library's media folder, while it holds none
+ * (`slidr-library seed`; docs/SPEC.md §4.5): every file, checked against the site's manifest, a
  * batch at a time, and the manifest last. A file already there with its bytes is not copied
  * again, so a seed that stopped goes on where it was.
  */
@@ -414,7 +329,9 @@ export async function seed(
   from: string,
   progress: (step: Imported) => void = () => undefined,
 ): Promise<Imported> {
-  if (!ctx.media) throw new LibraryError('The library has no media store to seed: name one first.');
+  if (!ctx.media) {
+    throw new LibraryError('The library has no media folder to seed: install it with one.');
+  }
   let idle = 0;
   for (;;) {
     let step: Imported;
@@ -440,7 +357,8 @@ export async function seed(
 
 /**
  * Runs the library's jobs (`sweep.ts`) every `every` milliseconds, one round at a time, until
- * stopped: on a machine, the process's own timer does what a Cron Trigger does on Cloudflare.
+ * stopped: in a local library, the process's own timer does what a Cron Trigger does on
+ * Cloudflare.
  */
 export function sweeping(source: () => Promise<Context>, every = 60_000) {
   let running: Promise<void> | undefined;

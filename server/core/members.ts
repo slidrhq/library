@@ -12,6 +12,7 @@
  * nor removes or blocks the owner. Each change goes into the audit (`audit.ts`).
  */
 import { audit } from './audit.ts';
+import type { Bucket } from './bucket.ts';
 import type { Context } from './context.ts';
 import { isRecord, json, jsonBody, problem } from './http.ts';
 import {
@@ -166,20 +167,30 @@ const handOver: Route = async (request, ctx) => {
   if (body instanceof Response) return body;
   const to = addressOf(isRecord(body) && typeof body.email === 'string' ? body.email : '');
   if (to instanceof Response) return to;
-  const next = await readPerson(ctx.state, to);
-  if (!next?.role || next.role === 'owner' || next.blocked) {
+  if (!(await handOwnership(ctx.state, to, actor.id))) {
     return problem(
       409,
       'not-a-member',
       `${to} is not a member: name them a reviewer or an admin first.`,
     );
   }
-  const owner = await readPerson(ctx.state, actor.id);
-  await writePerson(ctx.state, { ...next, role: 'owner' });
-  if (owner) await writePerson(ctx.state, { ...owner, role: 'admin' });
-  await audit(ctx.state, { by: actor.id, action: 'owner.handed', target: to });
   return json({ owner: to });
 };
+
+/**
+ * Hands the library to a member, who becomes its owner, and the owner of before an admin: by the
+ * owner (`POST /api/owner`), or from the machine of a local library, for an owner who lost their
+ * way in (`slidr-library owner`). False, and nothing changed, for one who is not a member.
+ */
+export async function handOwnership(state: Bucket, to: string, by: string): Promise<boolean> {
+  const next = await readPerson(state, to);
+  if (!next?.role || next.role === 'owner' || next.blocked) return false;
+  const owners = (await listPeople(state)).filter((person) => person.role === 'owner');
+  await writePerson(state, { ...next, role: 'owner' });
+  for (const owner of owners) await writePerson(state, { ...owner, role: 'admin' });
+  await audit(state, { by, action: 'owner.handed', target: to });
+  return true;
+}
 
 const EMAIL = '([^/]+)';
 const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [

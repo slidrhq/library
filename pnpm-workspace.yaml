@@ -3,12 +3,6 @@ packages:
   - vendor/packages/*
 
 # The Worker's runtime (workerd) and its bundler (esbuild) set up their binaries when installed.
-# ssh2 (the SFTP store) would build an optional native binding for its ciphers, with cpu-features;
-# it works without them, in JavaScript. dtrace-provider is an optional part of ftp-srv's logger, an
-# FTP server for the tests only. None of them is built.
 allowBuilds:
   esbuild: true
   workerd: true
-  ssh2: false
-  cpu-features: false
-  dtrace-provider: false

@@ -322,9 +322,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Đang tải lên và kiểm tra…',
   'uploads.form.cancel': 'Hủy',
   'people.signInWith': 'Đăng nhập bằng {name}',
-  'people.signInHere': 'Đăng nhập trên máy này',
+  'people.signInHere': 'Đăng nhập với tư cách chủ sở hữu',
   'people.localHint':
-    'Chủ sở hữu thư viện đăng nhập trên máy đã cài thư viện: hãy chạy lệnh này trên máy đó, rồi mở liên kết mà lệnh in ra.',
+    'Chủ sở hữu thư viện đăng nhập bằng liên kết dùng một lần: chạy lệnh này trên máy đã cài thư viện, rồi mở liên kết mà lệnh in ra trong vòng mười phút, từ bất kỳ máy tính nào.',
   'people.role.owner': 'Tài khoản này sở hữu thư viện: chỉ định thành viên và thiết lập thư viện',
   'people.role.admin':
     'Tài khoản này là quản trị viên: chỉ định thành viên và duyệt nội dung tải lên',
@@ -357,7 +357,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Thành viên',
   'people.others': 'Những người khác đã đăng nhập',
   'people.noProvider':
-    'Cho đến khi thiết lập nhà cung cấp đăng nhập, chỉ chủ sở hữu đăng nhập được, các thành viên bạn thêm thì chưa: pnpm library sign-in.',
+    'Cho đến khi thiết lập nhà cung cấp đăng nhập, chỉ chủ sở hữu đăng nhập được, các thành viên bạn thêm thì chưa: slidr-library sign-in.',
   'people.loading': 'Đang đọc danh sách thành viên…',
   'people.closed': 'Chỉ quản trị viên của thư viện mới thấy các thành viên.',
   'people.failed': 'Không thành công: {error}',
@@ -406,22 +406,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Lưu',
   'settings.saved': 'Đã lưu.',
   'settings.library.title': 'Địa chỉ của thư viện',
-  'settings.library.explain':
-    'Địa chỉ mọi người dùng để vào thư viện, đúng như trình duyệt thấy: sau proxy, hoặc dùng TLS. Nếu để trống, thư viện dùng địa chỉ của từng yêu cầu.',
   'settings.library.host': 'Máy chủ này dùng địa chỉ do dịch vụ lưu trữ cấp.',
+  'settings.library.script':
+    'Tập lệnh cài đặt đã đặt địa chỉ này. Chạy lại tập lệnh sẽ đổi nó, cùng với cổng và cách truy cập thư viện.',
   'settings.media.title': 'Phương tiện',
   'settings.media.explain':
     'Nơi lưu thư viện đã xuất bản. Mọi bản tải lên được chấp nhận đều được ghi vào đó.',
   'settings.media.kind.folder': 'Một thư mục trên máy này',
   'settings.media.kind.r2': 'Bucket R2 của Worker, trên Cloudflare',
   'settings.media.kind.none': 'Chưa có nơi lưu phương tiện',
+  'settings.media.room': 'Còn trống {free} trên {size} của ổ đĩa.',
+  'settings.media.fixed':
+    'Tập lệnh cài đặt đã chọn thư mục này. Để chuyển phương tiện, hãy cài lại trên cùng thư mục dữ liệu.',
   'settings.media.path': 'Thư mục',
-  'settings.media.pathHint':
-    'Đường dẫn đầy đủ. Máy chủ phải ghi được vào đó, và thư mục chỉ chứa thư viện.',
-  'settings.media.publicUrl': 'Địa chỉ công khai',
-  'settings.media.publicUrlHint':
-    'Chỉ khi một máy chủ web khác xuất bản thư mục. Nếu để trống, máy chủ này phục vụ thư mục tại /media/.',
-  'settings.media.saveTested': 'Kiểm tra và lưu',
   'settings.media.test': 'Kiểm tra',
   'settings.media.testing': 'Đang kiểm tra…',
   'settings.media.reachedLibrary':
@@ -453,7 +450,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Nhà cung cấp mà thành viên của thư viện và những người tải lên dùng để đăng nhập.',
   'settings.signIn.local':
-    'Chủ sở hữu cũng đăng nhập bằng liên kết của máy đã cài thư viện (pnpm library login).',
+    'Chủ sở hữu cũng đăng nhập bằng liên kết của máy đã cài thư viện (slidr-library login).',
   'settings.signIn.provider': 'Nhà cung cấp',
   'settings.signIn.none': 'Không có: chỉ chủ sở hữu, bằng liên kết của máy',
   'settings.signIn.oidc': 'Nhà cung cấp OpenID Connect khác',
@@ -517,57 +514,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Đã chấp nhận và ghi vào thư viện:',
   'publications.publishSkipped':
     'Chưa xuất bản: {count}. Những bản không còn hợp lệ đã trở lại trạng thái chờ, số còn lại đang chờ ghi. Mở chúng để xem lý do.',
-  'settings.media.kind.sftp': 'Một thư mục trên máy chủ, qua SFTP',
-  'settings.media.kind.ftp': 'Một thư mục trên máy chủ, qua FTP',
-  'settings.media.where': 'Nơi lưu',
-  'settings.media.host': 'Máy chủ',
-  'settings.media.port': 'Cổng',
-  'settings.media.user': 'Người dùng',
-  'settings.media.root': 'Thư mục trên máy chủ',
-  'settings.media.rootHint':
-    'Đường dẫn đầy đủ trên máy chủ, như /var/www/media. Thư viện chỉ ghi vào bên trong thư mục này.',
-  'settings.media.auth': 'Đăng nhập bằng',
-  'settings.media.auth.key': 'Khóa riêng tư',
-  'settings.media.auth.password': 'Mật khẩu',
-  'settings.media.privateKey': 'Khóa riêng tư (OpenSSH hoặc PEM)',
-  'settings.media.privateKeyFile': 'Chọn tệp…',
-  'settings.media.passphrase': 'Cụm mật khẩu',
-  'settings.media.password': 'Mật khẩu',
-  'settings.media.keyKept': 'Đã lưu từ {when}. Để trống thì giữ nguyên.',
-  'settings.media.tls': 'Mã hóa',
-  'settings.media.tls.explicit': 'FTPS: yêu cầu TLS khi kết nối (khuyên dùng)',
-  'settings.media.tls.implicit': 'FTPS: TLS ngay từ đầu, cổng 990',
-  'settings.media.tls.none': 'Không mã hóa',
-  'settings.media.allowUnencrypted':
-    'Cho phép FTP không mã hóa: mật khẩu và tệp đi qua mạng ở dạng nguyên bản.',
-  'settings.media.unencrypted': 'Kết nối tới máy chủ này không được mã hóa.',
-  'settings.media.hostKey': 'Khóa máy chủ',
-  'settings.media.hostKeyConfirmed': 'Đã xác nhận',
-  'settings.media.confirmTitle': 'Khóa của máy chủ này chưa được xác nhận',
-  'settings.media.confirmChangedTitle': 'Khóa của máy chủ đã thay đổi',
-  'settings.media.confirmExplain':
-    'Hãy hỏi quản trị viên máy chủ để chắc chắn đây là khóa của máy chủ, chẳng hạn bằng lệnh này trên máy chủ. Trước khi xác nhận, không có gì được gửi tới máy chủ.',
-  'settings.media.confirmChanged':
-    'Trước đây một khóa khác đã được xác nhận. Chỉ xác nhận nếu quản trị viên máy chủ đã đổi khóa.',
-  'settings.media.confirm': 'Xác nhận và lưu',
-  'settings.media.publicUrlRemoteHint':
-    'Địa chỉ HTTPS nơi máy chủ đó phục vụ thư mục. Nếu để trống, máy chủ này phục vụ thư mục tại /media/.',
-  'settings.media.kind.r2s3': 'Một bucket R2 trên Cloudflare',
-  'settings.media.accountId': 'ID tài khoản (Account ID)',
-  'settings.media.bucket': 'Tên bucket',
-  'settings.media.domain': 'Tên miền của bucket',
-  'settings.media.domainHint':
-    'Nơi Cloudflare phục vụ bucket, như https://media.example.org/. Ứng dụng đã cài đặt đọc bucket từ đó.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'Lấy từ một token API R2 chỉ có quyền Object Read & Write trên bucket này.',
-  'settings.media.zoneId': 'ID vùng của tên miền (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Để mỗi lần xuất bản xóa khỏi bộ nhớ đệm những gì nó đã ghi. Nếu thiếu, tệp cũ vẫn nằm trong bộ nhớ đệm đến khi hết hạn.',
-  'settings.media.purgeToken': 'Token xóa bộ nhớ đệm',
-  'settings.media.purgeTokenHint':
-    'Token API có quyền Cache Purge trên vùng này. Token được kiểm tra trước khi lưu.',
   'settings.signIn.tenantHint':
     'ID đối tượng thuê (Tenant) của tổ chức bạn, hoặc tên miền, ví dụ contoso.onmicrosoft.com. Chỉ tài khoản của đối tượng thuê đó mới đăng nhập được.',
   'settings.signIn.ownerOnly':
