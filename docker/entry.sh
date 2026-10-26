@@ -31,8 +31,11 @@ set $slidr_proto https;
 set $slidr_forwarded_host "";
 EOF
   else
-    printf '%s\n' 'listen 8080;' 'set $slidr_proto http;' 'set $slidr_forwarded_host "";' \
-      >"$NGINX/listen.conf"
+    cat >"$NGINX/listen.conf" <<'EOF'
+listen 8080;
+set $slidr_proto http;
+set $slidr_forwarded_host "";
+EOF
   fi
   : >"$NGINX/proxy.conf"
   if [[ -n "${LIBRARY_TRUSTED_PROXY:-}" ]]; then
