@@ -202,7 +202,9 @@ export function openApi() {
           summary: 'Uploads content',
           description:
             'As JSON when the upload brings no files, else as a form: the upload as JSON in the part ' +
-            '`upload`, and each file in a part of its name.',
+            '`upload`, and each file in a part of its name. From a `publish` token, an upload written in ' +
+            'every language it needs is accepted as it comes and, once the library is in its bucket, ' +
+            'published at once: the answer then carries `publishing`, as an approval does.',
           requestBody: {
             required: true,
             content: {
