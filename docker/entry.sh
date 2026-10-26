@@ -19,8 +19,8 @@ NGINX=/tmp/nginx
 
 # The container's gateway, by its default route: the machine itself, as the container sees it.
 gateway() {
-  local iface destination via rest
-  while read -r iface destination via rest; do
+  local destination via
+  while read -r _ destination via _; do
     if [[ $destination == 00000000 ]]; then
       # Written backwards, in hex: 0100A8C0 is 192.168.0.1.
       printf '%d.%d.%d.%d' "0x${via:6:2}" "0x${via:4:2}" "0x${via:2:2}" "0x${via:0:2}"

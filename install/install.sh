@@ -196,9 +196,10 @@ check_media() {
       again MEDIA "$MEDIA is a file, not a folder."
       continue
     fi
-    if [[ -d $MEDIA && ! -f $MEDIA/manifest.json ]] && [[ -n $(ls -A "$MEDIA") ]]; then
+    if [[ -d $MEDIA && ! -f $MEDIA/manifest.json ]] &&
+      [[ -n $(find "$MEDIA" -mindepth 1 -maxdepth 1 -print -quit) ]]; then
       local held
-      held=$(ls -A "$MEDIA" | head -5 | tr '\n' ' ')
+      held=$(find "$MEDIA" -mindepth 1 -maxdepth 1 -printf '%f ' | head -c 120 || true)
       if [[ -d $MEDIA/lost+found ]]; then
         again MEDIA "$MEDIA is a disk's own folder (it holds lost+found): use a folder inside it, such as $MEDIA/slidr-media."
       else
@@ -330,7 +331,7 @@ check_seed() {
   local size free
   size=$(library_size "$SEED_FROM")
   [[ -n $size ]] || fail "$SEED_FROM does not answer with a library (manifest.json)."
-  free=$(df -PB1 --output=avail "$(existing "$MEDIA")" | tail -1 | tr -d ' ')
+  free=$(df -B1 --output=avail "$(existing "$MEDIA")" | tail -1 | tr -d ' ')
   ((free > size + size / 10)) ||
     fail "The library is $((size / 1024 / 1024)) MiB, and the disk of $MEDIA has $((free / 1024 / 1024)) MiB free."
   SEED_SIZE=$size
