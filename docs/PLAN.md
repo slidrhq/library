@@ -1,8 +1,6 @@
 # Slidr Library — implementation plan
 
-Status: **approved 2026-10-25**, then rebased onto `main` at 4e2bef5, which serves the media straight from R2 and keeps the publication's bookkeeping beside the uploads. It implements the [specification](SPEC.md). Section numbers such as §9.4 are the specification's.
-
-`main` already has the publication (`worker/media/`). This plan moves it onto ports, adds a second host, people, tokens and stores, and makes approval publish.
+Status: **approved 2026-10-25**; P1–P8 are done and on `main`, and P9 waits on the user. **Revised 2026-10-26, awaiting approval:** P10–P13 make a local library a Docker image with Nginx inside, installed by a script on Linux, with its media in a folder of that machine, and take away what P7 and P8 added for other stores ([specification](SPEC.md), R1, R5, R6, D12–D17). They come before what is left of P9. Section numbers such as §9.4 are the specification's.
 
 ## Order
 
@@ -10,21 +8,24 @@ Status: **approved 2026-10-25**, then rebased onto `main` at 4e2bef5, which serv
 P1 core and ports ──► P2 Node host, vault, CLI ──┬──► P3 people and sign-in ──► P4 tokens ──┐
                                                  └──► P5 media stores: folder ──────────────┴──► P6 approval publishes ──┬──► P7 SFTP, FTP
                                                                                                                          └──► P8 Cloudflare from a machine
-                                                                                                           P9 moving over and docs (last)
+                                                                                                         (P1–P8 done, on main)
+
+P10 the local host narrowed ──► P11 the image ──► P12 the install script ──► P13 releasing ──► P9 moving over and docs (last)
 ```
 
-A local install that works end to end is **P1 to P6**: a local folder as its media, people and tokens, approval written into the media. P7 and P8 add the other stores. P9 moves the deployment on Cloudflare over and cleans up.
+The central library (the Cloudflare host) changes in none of P10–P13. A local library that installs and works end to end is **P10 to P12**, from an image built on the branch. P13 publishes it.
 
 ## How the work is done
 
-- The work is on the branch `standalone`, in the worktree `.claude/worktrees/standalone`. Other sessions work in this repository's `main` at the same time (a re-vendoring was under way on 2026-10-25). The branch is rebased onto `main` at the start of each phase and before each merge. Nothing is stashed or reset in the main checkout.
-- **A push to `main` deploys to production** (`.github/workflows/deploy.yml`, https://library.slidr.workers.dev). A phase is merged only when the Cloudflare host behaves as it did, or better, with the secrets it has. Until P9, the Cloudflare host keeps accepting `LIBRARY_EDITORS` and its Google secrets; `LIBRARY_KEYS` was taken away on 2026-10-25. Merging and pushing are done only when the user asks.
+- P10–P13 are on the branch `local-docker`, in the worktree `.claude/worktrees/local-docker`. Other sessions work in this repository's `main` at the same time. The branch is rebased onto `main` at the start of each phase and before each merge. Nothing is stashed or reset in the main checkout.
+- **A push to `main` deploys the central library** (`.github/workflows/deploy.yml`, https://library.slidr.workers.dev). A phase is merged only when the Worker behaves as it did, with the secrets it has: its tests pass unchanged, and `pnpm dev` runs as before. Merging and pushing are done only when the user asks.
+- **This machine has no Docker** (Windows, with no WSL). The image and the script are built and tested on GitHub's Ubuntu runners, `ubuntu-24.04` (x86-64) and `ubuntu-24.04-arm` (ARM64), by a workflow that runs on the branch (`image.yml`) and builds no release. The last check of P12 is an install by hand on a Linux machine of the user's.
 - A phase is done when:
-  - `pnpm check` and `pnpm test` pass;
+  - `pnpm check` and `pnpm test` pass, and from P11 on, `image.yml` passes on both runners;
   - its acceptance holds;
   - its pages have been looked at in Hebrew and in English, and what that showed has been fixed.
 
-## P1. Core and ports, with no change in behaviour
+## P1. Core and ports, with no change in behaviour — done
 
 The core is moved out of the Worker so a second host can run it.
 
@@ -46,7 +47,7 @@ The core is moved out of the Worker so a second host can run it.
   - the core imports nothing of Node (`no-restricted-imports` in `eslint.config.js`).
 - **Acceptance:** `pnpm dev` and a deployment on Cloudflare behave exactly as before.
 
-## P2. The Node host, the vault and the CLI
+## P2. The Node host, the vault and the CLI — done
 
 - `server/host/node/main.ts`:
   - `node:http`, which turns Node's requests into web `Request`s and back;
@@ -69,7 +70,9 @@ The core is moved out of the Worker so a second host can run it.
   - the master key is in Credential Manager;
   - no file of the data folder holds a key in clear (search it for the keys used in the test).
 
-## P3. People, roles and signing in
+P10 takes the keychain, the Windows ACL and the defaults of Windows and macOS away again.
+
+## P3. People, roles and signing in — done
 
 - `server/core/people.ts`: `people/<email>.json`, the roles of §6.1 and the owner's rules (exactly one, cannot be removed, ownership handed over). Also blocking (§6.3), and roles read from the store on every request.
 - `authorize(request, ctx, permission)` is written again around the table of §6.1:
@@ -95,7 +98,9 @@ The core is moved out of the Worker so a second host can run it.
   - the local link: once only, after 10 minutes, and from an address that is not loopback;
   - OIDC from a stand-in discovery document, and today's tests of the ID token kept.
 
-## P4. Tokens and open uploading
+P10 lets the owner's link in from any address (D17).
+
+## P4. Tokens and open uploading — done
 
 - `server/core/tokens.ts` (§7): make a token (`slk_` + 32 bytes base64url), keep its SHA-256 (`tokens/<hash>.json`, `people/<email>/tokens/<id>`), find it by its hash, the scope, expiry, last use (written at most once an hour), revoke, at most 10 a person.
 - `authorize`:
@@ -118,7 +123,7 @@ The core is moved out of the Worker so a second host can run it.
   - one uploader cannot see another's upload;
   - the app's `media:publish` flow (`staged`, then `files`) passes with a `publish` token.
 
-## P5. Media stores: the folder, the bookkeeping, `/media/`
+## P5. Media stores: the folder, the bookkeeping, `/media/` — done
 
 - `server/host/node/media.ts`, `FolderMedia`, the `MediaStore` of a local folder (§4.5):
   - writes go to a hidden name in the same folder, then a rename;
@@ -140,7 +145,7 @@ The core is moved out of the Worker so a second host can run it.
   - the folder holds no `_…` file after a publication.
 - **Acceptance:** `pnpm library start`, over a folder seeded from media.slidr.studio, shows every part as media.slidr.studio shows it.
 
-## P6. Approval publishes
+## P6. Approval publishes — done
 
 - The lease (`media/lock.json`) is taken with put-if-match: two reviewers who approve at once never both write. It stays in the store once made, and is let go by writing it as free, again with put-if-match, so taking it never depends on a file being absent.
 - Approving (`setStatus` to `accepted`) checks the upload, saves it, then calls `publish(…, [id])`, and answers the upload together with the publication.
@@ -168,41 +173,109 @@ The core is moved out of the Worker so a second host can run it.
   5. the picture and `managed.json` are in the folder, the manifest is consistent, `/media/` serves them, and the page shows the design under Designs;
   6. the app, pointed at `http://127.0.0.1:5176/media/` (`media-library.json`, docs/media-library.md), shows it in Ready slides.
 
-## P7. SFTP and FTP (Node only)
+## P7. SFTP and FTP (Node only) — done, then taken away by P10
 
-- `server/host/node/media/sftp.ts` with `ssh2`:
-  - the host key is checked by its SHA-256 fingerprint (`hostVerifier`);
-  - the first **Test** answers the fingerprint, and Settings asks an admin to confirm it;
-  - a changed host key answers `host-key-changed` and stops every write;
-  - a private key (OpenSSH or PEM) with its passphrase, or a password;
-  - replace by `posix-rename@openssh.com` where the server has it, else remove then rename (with a window that is documented);
-  - before the manifest, it reads the manifest again and compares its hash (§4.5).
-- `server/host/node/media/ftp.ts` with `basic-ftp`:
-  - explicit FTPS by default, or implicit;
-  - plain FTP only with "allow unencrypted FTP";
-  - `RNFR`/`RNTO` to replace, falling back to remove then rename;
-  - the same check of the manifest before it is written.
-- Reads keep a cache by SHA-256 in the data folder, filled from the store, or from its public URL when one is set.
-- Settings: the fields and keys of each, with the key pasted or chosen as a file.
-- **Tests:** a SFTP server (`ssh2`'s `Server`) and an FTP server (`ftp-srv`) inside the tests:
-  - publishing and putting back, through the tests of `media.test.ts` over each;
-  - a wrong key, answered `store-unreachable` with why;
-  - a changed host key, refused;
-  - plain FTP refused unless allowed;
-  - a manifest changed outside the library, refused.
+- `server/host/node/media/sftp.ts` with `ssh2`: the host key pinned by its fingerprint, confirmed by an admin; a private key or a password; `posix-rename@openssh.com` where the server has it; the manifest's hash compared before it is written.
+- `server/host/node/media/ftp.ts` with `basic-ftp`: explicit FTPS by default, or implicit; plain FTP only when allowed; `RNFR`/`RNTO`, falling back to remove then rename.
+- Reads kept in a cache by SHA-256 in the data folder (`remote.ts`).
+- **Tests:** a SFTP server (`ssh2`'s `Server`) and an FTP server (`ftp-srv`) inside the tests.
 
-## P8. Cloudflare from a machine (R2)
+## P8. Cloudflare from a machine (R2) — done, then taken away by P10
 
-- `server/core/media/r2s3.ts`: the `MediaStore` of an R2 bucket through its S3 API, signed with SigV4 by `aws4fetch`, so it runs on both hosts. It uses `GetObject`, `PutObject` (the SHA-256 in `x-amz-meta-sha256`), `DeleteObject` and `ListObjectsV2`. The manifest is written with `If-Match` where R2 honours it on `PutObject`; check that first, else read again and compare its hash as for SFTP.
-- The cache before the bucket's domain is emptied as on Cloudflare (`media/cache.ts`), with the zone's id and its purge token from the library's settings and vault.
-- Settings on Node, for R2: the account ID, the bucket, its domain, the zone's id, the S3 credentials and the purge token. **Test** checks that they read and write that one bucket, and that the token may purge the zone.
-- The steps to put an organization's own bucket under its own domain, with the zone's rules (README, "Serving the library").
+- `server/core/media/r2s3.ts`: an R2 bucket through its S3 API, signed with SigV4 by `aws4fetch`, the manifest compared before it is written, and the cache before the bucket's domain emptied with the zone's purge token.
+- Settings on Node, for R2: the account ID, the bucket, its domain, the zone's id, the S3 credentials and the purge token.
+- **Tests:** the S3 API stood in for, and the tests of `media.test.ts` over it.
+
+## P10. The local host narrowed: Linux, one folder (SPEC D12, D13, D17)
+
+Nothing of the Cloudflare host changes. What goes, goes in commits of its own, so each can be read alone.
+
+- **The stores taken away:**
+  - `server/host/node/sftp.ts`, `ftp.ts`, `remote.ts` and their tests, `servers.testing.ts`, and `server/core/media/r2s3.ts` with its test;
+  - in `config.ts`, the kinds `sftp`, `ftp` and `r2`, and the media's `kind` itself on Node: the folder is the host's, not a setting (below);
+  - in `settings.ts`, choosing a store, the media's key, the host key and its confirmation; `PUT /api/settings/media` and `PUT /api/settings/media/key` go, and `host-key-changed` with them;
+  - the vault's `media` key: a sealed `media` key found at start is removed, and the audit says so;
+  - in `src/Settings.tsx` and `src/settingsApi.ts`, the choice of store, the fields of each, the key fields and the host key; their words in `src/i18n/areas/settings.ts` and every `src/i18n/locales/*`;
+  - the packages `ssh2`, `@types/ssh2`, `basic-ftp`, `ftp-srv` and `aws4fetch`, the entries of `allowBuilds` in `pnpm-workspace.yaml` that only they needed (`ssh2`, `cpu-features`, `dtrace-provider`), and the lockfile;
+  - in the README, the stores of a machine, and "An organization's own bucket, from a library on a machine".
+- **The master key** (`master.ts`): the keychain goes, with `@napi-rs/keyring`. What stays is a file (the default; `init` writes it 0600, into a folder it makes 0700 when it does not exist) and `LIBRARY_MASTER_KEY` (the tests). `vault rotate` writes `master.key.next` beside the key, seals every key again, then renames it over the old one. `host.json` names the file.
+- **The data folder:** the defaults of Windows and macOS, and the Windows ACL (`icacls`), go. The folder is `--data` or `SLIDR_LIBRARY_DATA`, and is made 0700.
+- **The media folder is the host's:** `start` and `init` take `--media <dir>` (`LIBRARY_MEDIA` in the image), and `config/library.json` no longer names it. `--media` is refused when it is the data folder or the keys folder, inside either, or holds either (as today's check in `settings.ts`). `GET /api/settings` answers where it is (the path the script named, given to the container as `LIBRARY_MEDIA_SHOWN`, since the container sees only `/library/media`) and the room left on its disk (`statfs`).
+- **The URL is the host's on Node:** `--url` (`LIBRARY_URL` in the image), shown and not changed in Settings; `PUT /api/settings/library` answers `403` there. On Cloudflare it stays a setting.
+- **The owner's link from any address** on the Node host (D17): `/auth/local` no longer asks `fromThisMachine`. `fromThisMachine` stays for trusting `X-Forwarded-*`.
+- **The CLI** (`cli.ts`): `init`, `start`, `login`, `seed`, `sign-in`, `owner`, `vault rotate`, `status`. `owner <email>` hands ownership over from the machine (§6.1), and `status` prints the store's **Test** and the room left, for `slidr-library status`. Its usage and the README say it is what the image runs, and that a run from the source is for working on the code.
+- **The page:** Settings → Media shows where the media is (the bucket, or the folder and its room), **Test**, **Seed** and the public URL, and nothing to choose. The first-run message names `slidr-library login`.
 - **Tests:**
-  - the S3 API stood in for: the requests signed, the metadata, the conditional write of the manifest;
-  - the tests of `media.test.ts` over it;
-  - by hand, before merging: a bucket made for the test, written by a library on this machine, read at its domain by the app's reader.
+  - every test of a removed store goes; the folder's stay, and `media.test.ts` runs over the R2 stand-in and the folder as before;
+  - `settings.test.ts`: no media can be put; the folder and its room are answered; the URL cannot be put on Node and can on Cloudflare;
+  - the vault: a rotation over a file, and one stopped half way (the `.next` file left) that opens under either key;
+  - the owner's link from an address that is not loopback signs in, once, and not after 10 minutes;
+  - a sealed `media` key is removed at start;
+  - `pnpm install --frozen-lockfile` in CI with no build scripts left to allow.
+- **Acceptance:** the Worker's tests pass unchanged, and `pnpm dev` behaves as before. On this machine, a run from the source (`pnpm library init`, then `start`, with `LIBRARY_MASTER_KEY` and folders of a temporary folder) shows Settings in Hebrew and English with the folder only.
 
-## P9. Moving over, cleaning up, documentation
+## P11. The image (SPEC D14, §4.6, §5.4)
+
+- **The Node host in one file:** `vite.node.config.ts` builds `server/host/node/cli.ts` with Vite's SSR build into `dist/node/library.mjs`, resolving `@desktop/…` and the vendored packages as the page does, with no package left outside it but `node:*`. A test starts the bundle (`init` and `start` into a temporary folder) as `server.test.ts` starts the source. `pnpm build` builds both.
+- **`docker/Dockerfile`**, in two stages:
+  - build: Node with pnpm (Corepack, the `packageManager` of `package.json`), `pnpm install --frozen-lockfile`, `pnpm build`;
+  - run: `node:<the version CI tests>-trixie-slim`, pinned by digest; `nginx` and `tini` from Debian; the user and group 10001 (`slidr`); `/app/dist/client`, `/app/dist/node/library.mjs`, `/etc/nginx/`, `/usr/local/bin/slidr-library-entry`; the folders `/library/{data,media,keys,tls}`; `EXPOSE 8080`; `HEALTHCHECK` with `node -e` fetching `http://127.0.0.1:8080/api/me`; `ENTRYPOINT ["tini", "--", "slidr-library-entry"]`, `CMD ["serve"]`; the OCI labels.
+- **`docker/nginx.conf`**:
+  - `listen 8080`, with `ssl` when `/library/tls/cert.pem` and `key.pem` are there (the entry chooses the file it includes), `http2`, TLS 1.2 and 1.3 only;
+  - `/media/` as §4.6: `alias /library/media/`; a `location` that answers 404 for what `isLibraryPath` refuses (a part that begins with `.`, a first `_`, `\`, `:`); `autoindex off`; `disable_symlinks on`; the headers and `Cache-Control` of `live.ts`; `Content-Security-Policy: sandbox`; `OPTIONS` 204; other methods 405; `serve.ts`'s 404 page; `etag on`;
+  - `docker/media-types.conf`, written from `live.ts` by `scripts/nginx-types.mjs` when the image is built; a test fails when they part;
+  - `/assets/` from `dist/client`, `Cache-Control: public, max-age=31536000, immutable`;
+  - everything else to `http://127.0.0.1:5176`, with `Host`, `X-Forwarded-For`, `X-Forwarded-Proto` and `X-Forwarded-Host`; in the proxy way, `set_real_ip_from <the proxy>` and `real_ip_header X-Forwarded-For`, and the proxy's `X-Forwarded-Proto` kept;
+  - `client_max_body_size` the largest request the core takes (from `uploads/handler.ts` and `limits.ts`), and `proxy_request_buffering off`, so an upload is not first written to `/tmp`; `proxy_read_timeout 600s`, since approving and seeding answer when they are done;
+  - `server_tokens off`; temporary folders and the pid under `/tmp`; the access log with `$uri`, never `$request` or `$args`, to standard output, and the error log to standard error.
+- **`docker/entry.sh`** (POSIX sh, `shellcheck`): `serve` starts Node (`start --data /library/data --media /library/media --master-key-file /library/keys/master.key --behind-proxy --port 5176`), waits up to 30 seconds for `/api/me`, starts `nginx -g 'daemon off;'`, and ends with the first of the two to end, stopping the other; `init` and every other command go to the CLI.
+- **`docker/compose.yaml`**, the template that the script fills (P12): the image by digest; `ports: ["<bind>:<port>:8080"]`; the four folders; `environment: LIBRARY_URL, LIBRARY_MEDIA_SHOWN, LIBRARY_TRUSTED_PROXY`; `user: "10001:10001"`; `read_only: true`; `tmpfs: [/tmp]`; `cap_drop: [ALL]`; `security_opt: [no-new-privileges:true]`; `restart: unless-stopped`; `logging` json-file, 5 × 10 MB.
+- **`.github/workflows/image.yml`**, on the branch and on pull requests, on `ubuntu-24.04` and `ubuntu-24.04-arm`: build the image, then `docker/test/run.mjs` (Node, no packages) over a container with temporary folders, the media seeded from the fixtures of `media.test.ts`:
+  - **parity:** for every fixture file, the manifest, a missing file, a hidden path (`.slidr-library-probe`, `a/.git/x`), `_x`, `%2e%2e/`, `a\b`, a link out of the folder, `OPTIONS`, `POST`, a `Range`, and `If-None-Match`, Nginx's answer has the status, `Content-Type`, `Cache-Control`, CORS headers, `nosniff` and `X-Slidr-Library` that `serveMedia` answers over the same folder (run from the source beside it); and `Content-Security-Policy: sandbox`;
+  - **the page:** its HTML sets `__slidrMediaPath` to `/media/`, and `/assets/` are immutable;
+  - **end to end:** the owner's link (`docker exec … login`) followed with a cookie jar; a token made; a design uploaded with the token alone; approved with the session; the picture and `managed.json` in the folder on the runner, served by Nginx, and every file read by `@slidr/media-library`'s reader against the manifest;
+  - **the container:** it runs as 10001 with a read-only root; `docker stop` ends it within 10 seconds; Node killed ends the container, and `restart` brings it back; Nginx's log holds no `code=`; TLS with a certificate made for the test, and the cookie `__Host-` over it.
+- **Acceptance:** `image.yml` passes on both runners, and the image is under 300 MB.
+
+## P12. The install script and the command (SPEC D15, D16, §5.1, §5.5)
+
+- **`install/install.sh`** (bash 4 or later, `shellcheck` clean), as §5.5:
+  - checks: Linux, x86-64 or ARM64, root, Docker 24 or later (rootful: `docker info` names no `rootless`), `docker compose` v2, `ss`, `findmnt`, `curl`;
+  - questions and their options, `--yes`, and the list of what is missing when no one is at the keyboard. It reads answers from `/dev/tty`, so `curl … | sudo bash -s -- …` works as well as a downloaded file;
+  - the checks of the answers: a local file system for the media (`findmnt -no FSTYPE -T`; refused: `nfs*`, `cifs`, `smb3`, `fuse.*`, `9p`, `ceph`, `glusterfs`), empty or a library, apart from the data and keys folders, room enough when seeded (the sizes in the source's manifest, and 10% more); the port free (`ss -Hltn "sport = :<port>"`, and `docker ps --format '{{.Ports}}'`); a certificate and its key that match (`openssl`, when present; else Nginx's own check in a one-off container);
+  - the summary, then: the folders (`install -d -o 10001 -g 10001`, modes 0700 and 0755), `compose.yaml` from the template, `library.env`; `:Z` under SELinux in enforcing mode (`getenforce`); the note about `ufw` and `firewalld` in the HTTPS and proxy ways;
+  - `docker compose pull`, `docker compose run --rm library init …`, the seed with its progress, `docker compose up -d`, a wait for `healthy` (2 minutes at most, then the last lines of the log, and an exit that is not 0);
+  - `/usr/local/bin/slidr-library`, then the URL, the owner's link and the apps' address.
+- **Run again** (an installed `library.env` found): update to its own version (the default), change how it is reached or the port, or stop. `--update` updates with no questions. Nothing in the data, keys or media folders is written over.
+- **The image it installs** is written into the script by the release (P13), as `ghcr.io/slidrhq/library:<version>@sha256:<digest>`. On the branch, `--image <reference>` names another, for the tests.
+- **`install/slidr-library`** (bash, `shellcheck`), the command of §5.1: `login`, `status`, `logs`, `stop`, `start`, `restart`, `update [<version>]`, `sign-in`, `owner`, `vault rotate`, `uninstall [--purge]`. Each runs `docker compose -f /etc/slidr-library/compose.yaml …`. `update` downloads `install.sh` and `install.sh.sha256` of that release, checks one against the other, and runs it with `--update`. `uninstall --purge` asks for the folders' names to be typed again.
+- **Tests**, in `image.yml` on both runners, over the image built in the job:
+  - `shellcheck` of the script, the command and the entry;
+  - an install with no one at the keyboard, the way of this machine only, seeded from a server of the fixtures on the runner (`--seed http://127.0.0.1:<port>/`): healthy, the page, `/media/manifest.json`; then every command: `login`, `status`, `logs`, `stop`, `start`, `update --image` to the same image, `vault rotate` (the library works after it); `uninstall` keeps the folders, and a new install over them finds the same owner and uploads;
+  - an install by questions, its answers given through `expect`;
+  - the HTTPS way, with a certificate made for the test: `curl --cacert` reaches it, and the cookie is `__Host-`;
+  - refused: a taken port (asked again, or an exit that names it), a media folder on a network file system (a `findmnt` stood in for on the `PATH`), a folder holding other files, a media folder inside the data folder, no Docker, not Linux, an architecture not offered, a rootless Docker.
+- **Acceptance**, by the user on a Linux machine (Ubuntu 24.04 or Debian 13, a VM is enough), with the image of the branch (`--image`):
+  1. `sudo bash install.sh`, answering the questions, seeded from media.slidr.studio;
+  2. the owner's link it printed, then a token from the profile;
+  3. `curl` uploads a design with only `Authorization`;
+  4. approval in the page;
+  5. the picture and `managed.json` are in the media folder, `<url>/media/` serves them, and the page shows the design under Designs;
+  6. the app, pointed at `<url>/media/` (`media-library.json`, docs/media-library.md), shows it in Ready slides.
+
+## P13. Releasing (SPEC §5.4)
+
+- **`.github/workflows/release.yml`**, on a tag `v<version>` (it must match `package.json`), and by hand:
+  - `pnpm check` and `pnpm test`;
+  - the image built on both runners, natively, and joined into one manifest list; pushed to `ghcr.io/slidrhq/library` as `<version>`, `<major>.<minor>` and `latest`, with an SBOM and provenance (`docker/build-push-action`), and attested (`actions/attest-build-provenance`);
+  - the digest written into `install.sh`, and `install.sh.sha256` made;
+  - the tests of P12 run again, over the pushed digest, pulled with no login;
+  - a GitHub release of the tag, with `install.sh`, `install.sh.sha256`, and notes on what changed.
+- The workflow's permissions: `packages: write`, `contents: write`, `id-token: write`, `attestations: write`, and nothing else. `deploy.yml` is not touched: a tag deploys nothing to Cloudflare.
+- **Once, by the user:** the package `library` on ghcr.io made public (**Package settings** → **Change visibility**), since a package starts private even from a public repository.
+- **Acceptance:** the tag `v0.2.0` makes a public image for both architectures; `docker pull` with no login works; `gh attestation verify oci://ghcr.io/slidrhq/library:0.2.0 --repo slidrhq/library` passes; and the release's `install.sh`, downloaded as §5.1 shows, installs it on the user's Linux machine.
+
+## P9. Moving over, cleaning up, documentation (last; waits on the user)
 
 - On Cloudflare:
   - the bootstrap of P3, checked against the real deployment: `LIBRARY_OWNER` set, then the editors imported;
@@ -212,9 +285,9 @@ The core is moved out of the Worker so a second host can run it.
 - Removed:
   - `LIBRARY_KEYS` and `key:<name>` as a way in (old records still show it): done on 2026-10-25, with the programs moved to tokens (`LIBRARY_TOKEN` of `import-library.mjs` and the app's `tag-elements.mjs`; `SLIDR_LIBRARY_TOKEN` of the studio);
   - `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key).
-- The README written again: installing, settings, people, tokens, publishing, the stores. Also the OpenAPI (`openapi.ts`: the `bearer` and cookie schemes, the scopes, the new routes, no `path`).
+- The README written again: the central library; a local library (installing it with the script, the command, updating, backing up, the ways of reaching it); settings, people, tokens and publishing. Also the OpenAPI (`openapi.ts`: the `bearer` and cookie schemes, the scopes, the routes, no `path`, no media settings).
 - Other repositories, each in a commit of its own and only after asking:
-  - the app: `docs/media-library.md` (approval publishes; a library of one's own), and the help of `media-publish.mjs` and `tag-elements.mjs` (`LIBRARY_KEY` is a person's token);
+  - the app: `docs/media-library.md` (approval publishes; a local library, in Docker on Linux, read at `<url>/media/`), and the help of `tag-elements.mjs` (`LIBRARY_TOKEN` is a person's token);
   - the studio: its README, "Publishing", and the text of the key in its panel.
 - A security review of the whole branch (`/security-review`), and the audit of §12 checked entry by entry.
 - A visual review of every new page (Profile, Members, Settings, Publications, the changes to Uploads):
@@ -223,13 +296,16 @@ The core is moved out of the Worker so a second host can run it.
 
 ## Risks
 
-| Risk                                                                                                  | What is done                                                                                                                                                                                   |
-| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Merging into `main` deploys to production, which the studio and the app's `media:publish` use now.    | The Cloudflare host keeps today's secrets and keys working until P9. Each phase is tested with `pnpm dev`, the Worker in its runtime, before it is merged, and merged only when the user asks. |
-| Other sessions change `main` (vendor/, the page) while this branch is open.                           | Rebase at the start of each phase and before each merge. P1 moves `worker/` only, which those changes do not touch.                                                                            |
-| An app reads a changed file before the new manifest (folder, SFTP, FTP).                              | The manifest goes last, the window is seconds, and the app refuses a file that does not match and reads it again later.                                                                        |
-| SFTP and FTP servers replace files in different ways, and have no etag.                               | `posix-rename` where the server has it, otherwise remove then rename, documented. The lease, and the hash of the manifest compared before it is written.                                       |
-| R2's S3 API may not honour `If-Match` on `PutObject`.                                                 | Checked at the start of P8. The lease, and the hash compared before writing, cover it.                                                                                                         |
-| The keychain module has no binary for a platform, or there is no keychain (a server with no desktop). | `LIBRARY_MASTER_KEY`, or `--master-key-file` with a warning.                                                                                                                                   |
-| Open uploading is abused.                                                                             | Limits, blocking, allowed domains, and every byte checked before anything is kept.                                                                                                             |
-| The vendored code falls behind the app (the form of `managed.json`, the readers of the page).         | The fixtures of `media.test.ts` fail on a difference. Re-vendor (`pnpm vendor`) when the app changes them.                                                                                     |
+| Risk                                                                                                                     | What is done                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merging into `main` deploys the central library to production, which the studio and the app use now.                     | P10–P13 change nothing the Worker runs. The Worker's tests and `pnpm dev` are checked before each merge, which is done only when the user asks.            |
+| Other sessions change `main` (vendor/, the page, `server/core`) while this branch is open.                               | Rebase at the start of each phase and before each merge. P10's removals are commits of their own, easy to carry over a conflict.                           |
+| This machine has no Docker, so the image cannot be tried here.                                                           | `image.yml` builds and tests it on GitHub's runners, on both architectures, on every push of the branch. The user's Linux machine is the last check (P12). |
+| Nginx answers `/media/` otherwise than `serveMedia` does, and apps meet a difference.                                    | Nginx's types are written from `live.ts`, and the parity test compares the two answers over one folder, file by file.                                      |
+| The bundle of the Node host misses an import of `vendor/` that the source resolves through `server/node.mjs`.            | A test starts the bundle, and every test of `image.yml` runs on it.                                                                                        |
+| A port Docker publishes passes by `ufw` and `firewalld`, so a library meant for one machine is reached from the network. | The port is bound to `127.0.0.1` unless the installer chooses another way, and the script says so in the other ways.                                       |
+| The owners of existing folders, or SELinux, keep the container (10001) from its folders.                                 | The script sets the folders' owner and mode, mounts them with `:Z` under SELinux, and `status` names a folder the container cannot write.                  |
+| An app reads a changed file before the new manifest.                                                                     | The manifest goes last, the window is seconds, and the app refuses a file that does not match and reads it again later.                                    |
+| A package on ghcr.io starts private.                                                                                     | The user makes it public once (P13), and the release pulls it with no login before it publishes the release.                                               |
+| Open uploading is abused.                                                                                                | Limits, blocking, allowed domains, and every byte checked before anything is kept.                                                                         |
+| The vendored code falls behind the app (the form of `managed.json`, the readers of the page).                            | The fixtures of `media.test.ts` fail on a difference. Re-vendor (`pnpm vendor`) when the app changes them.                                                 |
