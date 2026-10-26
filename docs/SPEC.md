@@ -1,6 +1,6 @@
 # Slidr Library — specification
 
-Status: **approved 2026-10-25**, and P1–P8 of the [implementation plan](PLAN.md) are on `main`. **Revised 2026-10-26, awaiting approval:** the central library stays on Cloudflare exactly as it is, and a local library is installed only on a Linux machine, in Docker, with Nginx inside, and its media on a disk of that machine (R1, R5 and R6; D12–D17). The media stores of SFTP, FTP and R2 from a machine go, and so does the OS keychain. This document describes where the library is going; the [README](../README.md) describes what it does today. Paths such as `desktop/…` and `packages/…` are of the app's repository, copied into `vendor/`.
+Status: **approved 2026-10-25**, and P1–P8 of the [implementation plan](PLAN.md) are on `main`. **Revised and approved 2026-10-26**, and built on the branch `local-docker` (P10–P12): the central library stays on Cloudflare exactly as it is, and a local library is installed only on a Linux machine, in Docker, with Nginx inside, and its media on a disk of that machine (R1, R5 and R6; D12–D17). The media stores of SFTP, FTP and R2 from a machine go, and so does the OS keychain. This document describes where the library is going; the [README](../README.md) describes what it does today. Paths such as `desktop/…` and `packages/…` are of the app's repository, copied into `vendor/`.
 
 ## 1. Purpose
 
@@ -234,6 +234,7 @@ sudo bash install.sh
   | `logs [-f]`                | Nginx's and Node's log.                                                                                                                                  |
   | `stop`, `start`, `restart` | The service.                                                                                                                                             |
   | `update [<version>]`       | Downloads that release's script (the newest by default), checks its SHA-256, and runs it as an update (§5.5).                                            |
+  | `change`                   | Runs the machine's copy of the script again, to change how the library is reached, or its port.                                                          |
   | `sign-in …`                | Names the provider everyone else signs in through, as `pnpm library sign-in` does; the secret is asked for.                                              |
   | `owner <email>`            | Hands ownership to another member, for an owner who has lost their way in (§6.1).                                                                        |
   | `vault rotate`             | A new master key (§4.4), then a restart.                                                                                                                 |
