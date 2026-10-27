@@ -62,6 +62,16 @@ update() {
     fail "$from/install.sh.sha256 could not be read."
   (cd "$folder" && sha256sum --check --quiet install.sh.sha256) ||
     fail "install.sh is not the one its release names: nothing was changed."
+  # The SHA-256 comes from the same release, so it only finds a download that went wrong; who
+  # built the script is GitHub's attestation of the release, checked where GitHub's CLI is.
+  if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+    gh attestation verify "$folder/install.sh" --repo slidrhq/library >/dev/null ||
+      fail "install.sh is not attested as slidrhq/library's release built it: nothing was changed."
+    echo "install.sh is attested as slidrhq/library's release built it."
+  else
+    echo "! Only install.sh's SHA-256 was checked. Who built it is checked with GitHub's CLI,"
+    echo "  signed in: gh attestation verify install.sh --repo slidrhq/library"
+  fi
   bash "$folder/install.sh" --update
 }
 
@@ -84,7 +94,9 @@ uninstall() {
   rm -f "$ETC/compose.yaml" "$ETC/library.env" "$ETC/install.sh"
   if ((purge)); then
     rm -rf "$data" "$media" "$ETC"
-    echo "The library is gone, with its data, media and keys."
+    # The account install.sh made for the library, with its group.
+    userdel slidr-library 2>/dev/null || true
+    echo "The library is gone, with its data, media, keys and account."
   else
     echo "The library is taken away. What stays, to install it again over them:"
     echo "  data:  $data"

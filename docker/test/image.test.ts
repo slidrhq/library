@@ -41,6 +41,8 @@ const PORT = 17543;
 const TLS_PORT = 17544;
 const NAME = 'slidr-library-test';
 const TLS_NAME = 'slidr-library-test-tls';
+const PROXY_PORT = 17545;
+const PROXY_NAME = 'slidr-library-test-proxy';
 const OWNER = 'owner@example.org';
 
 let root: string;
@@ -172,7 +174,7 @@ before(async () => {
 });
 
 after(async () => {
-  await docker('rm', '-f', NAME, TLS_NAME).catch(() => undefined);
+  await docker('rm', '-f', NAME, TLS_NAME, PROXY_NAME).catch(() => undefined);
   await run('sudo', ['rm', '-rf', root]).catch(() => undefined);
 });
 
@@ -362,6 +364,23 @@ describe('the container', () => {
     assert.ok(Date.now() - started < 10_000, `${Date.now() - started} ms`);
     await docker('start', NAME);
     await healthy(NAME);
+  });
+});
+
+describe('a local library behind the organization’s proxy', () => {
+  test('answers the proxy alone, and the container itself', async () => {
+    const made = await folders(join(root, 'proxied'));
+    const url = 'https://library.test';
+    await init(made, url);
+    // The proxy is another machine's: this one, reaching the port straight, is not it.
+    await start(PROXY_NAME, PROXY_PORT, url, [
+      ...mounts(made),
+      ...['-e', 'LIBRARY_TRUSTED_PROXY=192.0.2.1'],
+    ]);
+    for (const path of ['/api/me', '/media/manifest.json', '/']) {
+      const answer = await raw(path, 'GET', { 'X-Forwarded-Host': 'library.test' }, PROXY_PORT);
+      assert.equal(answer.status, 403, path);
+    }
   });
 });
 

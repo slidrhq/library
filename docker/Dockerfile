@@ -33,7 +33,7 @@ RUN apt-get update \
  && chown -R 10001:10001 /library
 COPY --from=build /src/dist/client /app/dist/client
 COPY --from=build /src/dist/node/library.mjs /src/dist/node/library.mjs.map /app/dist/node/
-COPY docker/nginx.conf docker/media.conf docker/media-methods.conf docker/media-headers.conf docker/media-types.conf /etc/nginx/slidr/
+COPY docker/nginx.conf docker/library.conf docker/media.conf docker/media-methods.conf docker/media-headers.conf docker/media-types.conf /etc/nginx/slidr/
 COPY docker/health.mjs /app/health.mjs
 COPY --chmod=0755 docker/entry.sh /usr/local/bin/slidr-library-entry
 COPY --chmod=0755 docker/slidr-library.sh /usr/local/bin/slidr-library

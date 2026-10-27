@@ -169,6 +169,27 @@ describe('the install script', () => {
     await writeFile(join(media, 'notes.txt'), 'mine');
     const held = await install(given);
     assert.match(held.out, /holds other things than a library \(notes\.txt/);
+    // A web root, whose manifest.json is a page's, not a library's.
+    const site = await place('site');
+    await mkdir(site.media, { recursive: true });
+    await writeFile(join(site.media, 'manifest.json'), '{"name":"A site","start_url":"/"}');
+    const web = await install(['--media', site.media, ...given.slice(2)]);
+    assert.match(web.out, /is not a library's manifest/);
+    // A data folder that holds other things.
+    const other = await place('other-data');
+    await mkdir(other.data, { recursive: true });
+    await writeFile(join(other.data, 'notes.txt'), 'mine');
+    const busyData = await install([
+      ...['--media', other.media, '--owner', OWNER, '--data', other.data, '--no-seed'],
+    ]);
+    assert.match(busyData.out, /holds other things than a library's data/);
+    // Plain HTTP is this machine's alone; and an address is an address.
+    const plain = await place('plain');
+    const fresh = ['--media', plain.media, '--owner', OWNER, '--data', plain.data, '--no-seed'];
+    const wide = await install([...fresh, '--bind', '0.0.0.0']);
+    assert.match(wide.out, /Over plain HTTP the library is this machine's alone/);
+    const odd = await install([...fresh, '--bind', '0.0.0.0; rm -rf /']);
+    assert.match(odd.out, /--bind is an IPv4 address/);
     // A port that something listens on.
     const taken = createTcpServer();
     await new Promise<void>((done) => taken.listen(PORT, '127.0.0.1', done));
@@ -199,9 +220,14 @@ describe('the install script', () => {
     const compose = (await sh('sudo', ['cat', '/etc/slidr-library/compose.yaml'])).out;
     assert.match(compose, new RegExp(`"127\\.0\\.0\\.1:${PORT}:8080"`));
     assert.match(compose, /read_only: true/);
-    // Its folders are the container's user's.
-    assert.equal((await run('stat', ['-c', '%u %a', data])).stdout.trim(), '10001 700');
-    assert.equal((await run('stat', ['-c', '%u', media])).stdout.trim(), '10001');
+    // Its folders are an account's of its own, which the container runs as.
+    const account = (await run('id', ['-u', 'slidr-library'])).stdout.trim();
+    assert.notEqual(account, '10001');
+    assert.equal((await run('stat', ['-c', '%u %a', data])).stdout.trim(), `${account} 700`);
+    assert.equal((await run('stat', ['-c', '%u', media])).stdout.trim(), account);
+    assert.match(compose, new RegExp(`user: "${account}:\\d+"`));
+    const inside = await sh('sudo', ['docker', 'exec', 'slidr-library', 'id', '-u']);
+    assert.equal(inside.out.trim(), account);
   });
 
   test('leaves a command that runs the library', async () => {

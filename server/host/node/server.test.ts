@@ -133,6 +133,25 @@ describe('the library on a machine', () => {
     assert.equal(sent.status, 401);
   });
 
+  test('takes no target that would name another host, nor sends anyone there', async () => {
+    const port = new URL(base).port;
+    const host = { Host: `127.0.0.1:${port}` };
+    // Read against the server's origin, `//evil.example/…` is evil.example's: its pages would
+    // pass the same-origin check of a change, and a redirect would lead there.
+    const posted = await raw(
+      '//evil.example/auth/logout',
+      { ...host, Origin: 'https://evil.example' },
+      'POST',
+    );
+    assert.equal(posted.status, 400);
+    const link = await raw('//evil.example/auth/local?code=x', host);
+    assert.equal(link.status, 400);
+    assert.equal(link.headers.location, undefined);
+    assert.equal((await raw('http://evil.example/api/me', host)).status, 400);
+    // A path of this server with `//` inside it is its own (this one has no media: 503).
+    assert.equal((await raw('/media//x.json', host)).status, 503);
+  });
+
   test('answers only a request that names it as this machine', async () => {
     const port = new URL(base).port;
     assert.equal((await raw('/api/me', { Host: `localhost:${port}` })).status, 200);

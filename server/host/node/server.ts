@@ -197,7 +197,7 @@ function toRequest(request: IncomingMessage, origin: string): Request {
   }
   const method = request.method ?? 'GET';
   const body = method === 'GET' || method === 'HEAD' ? undefined : Readable.toWeb(request);
-  return new Request(new URL(request.url ?? '/', origin), {
+  return new Request(new URL(origin + (request.url ?? '/')), {
     method,
     headers,
     body,
@@ -227,6 +227,17 @@ export async function serve(options: ServeOptions): Promise<Serving> {
   const answer = async (request: IncomingMessage, response: ServerResponse) => {
     const method = request.method ?? 'GET';
     try {
+      // A target is a path of this server. Read against its origin, `//host/…` would name another
+      // host, which the same-origin check of a change would then take for this one.
+      const target = request.url ?? '/';
+      if (!target.startsWith('/') || target.startsWith('//')) {
+        await send(
+          response,
+          new Response('The request names no path of this server.', { status: 400 }),
+          method,
+        );
+        return;
+      }
       const origin = originOf(request, options);
       if (!origin) {
         await send(

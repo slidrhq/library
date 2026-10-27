@@ -25,10 +25,11 @@ On Linux (x86-64 or ARM64), with Docker Engine 24 or later and its compose plugi
 curl -fsSLO https://github.com/slidrhq/library/releases/latest/download/install.sh
 curl -fsSLO https://github.com/slidrhq/library/releases/latest/download/install.sh.sha256
 sha256sum -c install.sh.sha256
+gh attestation verify install.sh --repo slidrhq/library   # who built it (GitHub's CLI, signed in)
 sudo bash install.sh
 ```
 
-It asks, and takes each answer as an option too (`--help`; with `--yes` it asks nothing):
+The SHA-256 finds a download that went wrong; the attestation says that the repository's release built the script. It asks, and takes each answer as an option too (`--help`; with `--yes` it asks nothing):
 
 - **the media folder** (`--media`): a folder of this machine's own disks, empty or holding a library already. A network file system (NFS, SMB, SSHFS…) is refused, and so is a folder that holds other things;
 - **the owner** (`--owner`), who signs in first, by a one-time link the script prints;
@@ -37,7 +38,7 @@ It asks, and takes each answer as an option too (`--help`; with `--yes` it asks 
 - **the data folder** (`--data`), `/var/lib/slidr-library` by default;
 - **whether to fill the media** from the central library (`--seed`, `--seed=<address>`, `--no-seed`).
 
-It checks them, shows a summary, and writes nothing until it is accepted. Then: the folders, the container's user's (10001); `/etc/slidr-library/compose.yaml` and `library.env` (the answers, nothing secret); the master key, made in `/etc/slidr-library/keys/`, apart from the data folder; the library, installed and seeded in a container of its own; the service, started; and `/usr/local/bin/slidr-library`. A port Docker publishes passes by `ufw`'s and `firewalld`'s rules: the script binds it to `127.0.0.1` unless the library is to be reached from elsewhere.
+It checks them, shows a summary, and writes nothing until it is accepted. Then: the account `slidr-library` of this machine, made for the library, which the container runs as; the folders, its own; `/etc/slidr-library/compose.yaml` and `library.env` (the answers, nothing secret); the master key, made in `/etc/slidr-library/keys/`, apart from the data folder; the library, installed and seeded in a container of its own; the service, started; and `/usr/local/bin/slidr-library`. A port Docker publishes passes by `ufw`'s and `firewalld`'s rules: the script binds it to `127.0.0.1` unless the library is to be reached from elsewhere.
 
 Installed apps read the media at `<the library's address>/media/` (docs/media-library.md of the app, "A library of your own").
 
@@ -58,7 +59,7 @@ sudo slidr-library uninstall     # its data, keys and media stay; --purge takes 
 
 - **Updating** runs the newer release's script, checked against its SHA-256, which pins its image by digest. The data, keys and media stay as they are.
 - **Backing up**: the data folder, `/etc/slidr-library/keys` (kept apart from the data folder's backup), and the media folder. To restore them, put them back and run the script with the same folders: it finds the library there and keeps it.
-- **The container** runs as the user 10001, on a read-only root, with no capabilities. Its health is `/api/me` through Nginx; it starts again when it ends.
+- **The container** runs as the account `slidr-library` of the machine, on a read-only root, with no capabilities. Its health is `/api/me` through Nginx; it starts again when it ends.
 
 ### What is inside
 

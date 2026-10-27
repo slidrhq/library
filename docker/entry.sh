@@ -51,6 +51,7 @@ set $slidr_forwarded_host "";
 EOF
   fi
   : >"$NGINX/proxy.conf"
+  : >"$NGINX/http.conf"
   local trusted=${LIBRARY_TRUSTED_PROXY:-}
   # A proxy of the machine itself reaches the container through Docker's bridge, its gateway.
   if [[ $trusted == gateway ]]; then trusted=$(gateway); fi
@@ -60,11 +61,22 @@ EOF
       echo "LIBRARY_TRUSTED_PROXY is an address or a range: '$trusted' is neither." >&2
       exit 2
     fi
-    # Behind the organization's proxy, which speaks HTTPS: who it forwards, and the name it was
-    # reached by, are taken from it alone.
+    # Behind the organization's proxy, which speaks HTTPS, the library answers the proxy alone,
+    # and the container itself (its health): who it forwards, and the scheme and the name it was
+    # reached by, are taken from it. The connection's own address decides, not the forwarded one.
+    cat >"$NGINX/http.conf" <<EOF
+geo \$realip_remote_addr \$slidr_from_proxy {
+    default 0;
+    127.0.0.1 1;
+    $trusted 1;
+}
+EOF
     cat >"$NGINX/proxy.conf" <<EOF
 set_real_ip_from $trusted;
 real_ip_header X-Forwarded-For;
+if (\$slidr_from_proxy = 0) {
+    return 403;
+}
 set \$slidr_proto https;
 set \$slidr_forwarded_host \$http_x_forwarded_host;
 EOF

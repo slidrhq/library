@@ -17,7 +17,10 @@ IMAGE=""
 ETC=/etc/slidr-library
 COMMAND=/usr/local/bin/slidr-library
 CONTAINER=slidr-library
-USER_ID=10001
+# The account of this machine the library runs as, made for it: its own, so that no other account
+# shares the user id the library's folders and keys belong to.
+ACCOUNT=slidr-library
+USER_ID="" GROUP_ID=""
 CENTRAL=https://media.slidr.studio/
 DEFAULT_PORT=7543
 DEFAULT_DATA=/var/lib/slidr-library
@@ -128,7 +131,7 @@ check_machine() {
   esac
   ((EUID == 0)) || fail "Run it as root: sudo bash $0"
   local tool
-  for tool in docker ss findmnt curl df realpath; do
+  for tool in docker ss findmnt curl df realpath getent useradd; do
     command -v "$tool" >/dev/null || fail "This machine has no $tool: install it, then run this again."
   done
   local server
@@ -194,6 +197,11 @@ check_media() {
     esac
     if [[ -e $MEDIA && ! -d $MEDIA ]]; then
       again MEDIA "$MEDIA is a file, not a folder."
+      continue
+    fi
+    if [[ -f $MEDIA/manifest.json ]] &&
+      ! { grep -q '"published"' "$MEDIA/manifest.json" && grep -q '"files"' "$MEDIA/manifest.json"; }; then
+      again MEDIA "$MEDIA/manifest.json is not a library's manifest: the media folder is the library's alone."
       continue
     fi
     if [[ -d $MEDIA && ! -f $MEDIA/manifest.json ]] &&
@@ -299,6 +307,11 @@ check_data() {
       continue
     fi
     DATA=$(realpath -m "$DATA")
+    if [[ -d $DATA && ! -f $DATA/host.json ]] &&
+      [[ -n $(find "$DATA" -mindepth 1 -maxdepth 1 -print -quit) ]]; then
+      again DATA "$DATA holds other things than a library's data: name an empty folder, or a library's."
+      continue
+    fi
     local folder
     for folder in "$DATA" "$ETC"; do
       if within "$MEDIA" "$folder" || within "$folder" "$MEDIA"; then
@@ -373,7 +386,7 @@ services:
     pull_policy: missing
     container_name: $CONTAINER
     restart: unless-stopped
-    user: "$USER_ID:$USER_ID"
+    user: "$USER_ID:$GROUP_ID"
     read_only: true
     tmpfs:
       - /tmp
@@ -398,15 +411,30 @@ services:
 EOF
 }
 
+# The library's account: made, a system account with no login, when it is not there yet.
+account() {
+  if ! getent passwd "$ACCOUNT" >/dev/null; then
+    useradd --system --user-group --no-create-home --home-dir /nonexistent       --shell /usr/sbin/nologin "$ACCOUNT"
+  fi
+  USER_ID=$(id -u "$ACCOUNT")
+  GROUP_ID=$(id -g "$ACCOUNT")
+}
+
+# The library's folders, its account's.
+own_folders() {
+  chown -R "$USER_ID:$GROUP_ID" "$DATA" "$MEDIA" "$ETC/keys" "$ETC/tls"
+}
+
 write_folders() {
+  account
   install -d -m 0755 "$ETC"
-  install -d -m 0700 -o "$USER_ID" -g "$USER_ID" "$ETC/keys" "$ETC/tls" "$DATA"
-  install -d -m 0755 -o "$USER_ID" -g "$USER_ID" "$MEDIA"
-  chown -R "$USER_ID:$USER_ID" "$DATA" "$MEDIA" "$ETC/keys"
+  install -d -m 0700 -o "$USER_ID" -g "$GROUP_ID" "$ETC/keys" "$ETC/tls" "$DATA"
+  install -d -m 0755 -o "$USER_ID" -g "$GROUP_ID" "$MEDIA"
+  chown -R "$USER_ID:$GROUP_ID" "$DATA" "$MEDIA" "$ETC/keys"
   rm -f "$ETC/tls/cert.pem" "$ETC/tls/key.pem"
   if [[ $REACH == https ]]; then
-    install -m 0644 -o "$USER_ID" -g "$USER_ID" "$TLS_CERT" "$ETC/tls/cert.pem"
-    install -m 0600 -o "$USER_ID" -g "$USER_ID" "$TLS_KEY" "$ETC/tls/key.pem"
+    install -m 0644 -o "$USER_ID" -g "$GROUP_ID" "$TLS_CERT" "$ETC/tls/cert.pem"
+    install -m 0600 -o "$USER_ID" -g "$GROUP_ID" "$TLS_KEY" "$ETC/tls/key.pem"
   fi
 }
 
@@ -454,7 +482,11 @@ summary() {
   say "  media:     $MEDIA$([[ $SEED == yes ]] && echo "  (filled from $SEED_FROM, $((SEED_SIZE / 1024 / 1024)) MiB)")"
   say "  data:      $DATA"
   say "  keys:      $ETC/keys"
-  say "The folders will belong to the container's user ($USER_ID)."
+  if getent passwd "$ACCOUNT" >/dev/null; then
+    say "The folders will belong to $ACCOUNT, the library's account of this machine."
+  else
+    say "The folders will belong to $ACCOUNT, an account of this machine made for the library."
+  fi
   if [[ $REACH != local && $BIND != 127.0.0.1 ]]; then
     say "A port Docker publishes passes by ufw's and firewalld's rules: port $PORT is open on $BIND"
     say "whatever they say. Bind it where it should be reached (--bind), or close it outside Docker."
@@ -481,6 +513,14 @@ settle_reach() {
   esac
 }
 
+# The address the port is published on: an IPv4 address, and this machine's own over plain HTTP.
+check_bind() {
+  [[ $BIND =~ ^([0-9]{1,3}.){3}[0-9]{1,3}$ ]] || fail "--bind is an IPv4 address, not $BIND."
+  if [[ $REACH == local && $BIND != 127.* ]]; then
+    fail "Over plain HTTP the library is this machine's alone: reach it by https or a proxy to bind $BIND."
+  fi
+}
+
 finish() {
   say ""
   say "Slidr Library is running at $URL"
@@ -497,6 +537,7 @@ fresh() {
   check_reach
   check_port
   settle_reach
+  check_bind
   check_data
   SEED_SIZE=0
   check_seed
@@ -552,7 +593,10 @@ again_here() {
     check_reach
     check_port "$own"
     settle_reach
+    check_bind
   fi
+  account
+  own_folders
   write_answers
   selinux
   write_compose
