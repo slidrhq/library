@@ -15,7 +15,14 @@ The protocol starts a native executable, so the registration names `pwsh.exe` an
       {
         "id": "open-webui",
         "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-        "args": ["-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\you\\Documents\\slidr\\library\\custom-agent\\openwebui-agent.ps1"],
+        "args": [
+          "-NoLogo",
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "C:\\Users\\you\\Documents\\slidr\\library\\custom-agent\\openwebui-agent.ps1"
+        ],
         "env": { "POWERSHELL_UPDATECHECK": "Off", "POWERSHELL_TELEMETRY_OPTOUT": "1" }
       }
     ]
@@ -42,13 +49,13 @@ For scripts, `SLIDR_OPENWEBUI_LOGIN=stdin` reads lines from standard input inste
 
 ## What it does
 
-| Subcommand | Open WebUI |
-|---|---|
-| `describe` | Nothing: the CLI's capabilities, and whether images are offered, from what the last `status` or `models` learnt (`server.json`). |
-| `status` | `/api/v1/users/user/info` with the key; the server's settings. |
-| `models` | `/api/models`: the models the account may use, less those of an OpenAI connection that are no chat model (speech, realtime, images, video, embeddings, search) or answer through the Responses API only (`-pro`, `codex`). The default is the server's first default model (Admin Panel › Settings › Models); without one, the newest plain `gpt-N.N`, else the first by name, since Open WebUI lists its models in no fixed order. OpenAI's reasoning models get the effort levels `low`, `medium`, `high`. |
-| `turn` | `/api/chat/completions`, streamed; the app's tools over MCP. |
-| `image` | `/api/v1/images/generations` and `/api/v1/images/edit`; the file it makes is fetched and then removed from the account's files. |
+| Subcommand | Open WebUI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `describe` | Nothing: the CLI's capabilities, and whether images are offered, from what the last `status` or `models` learnt (`server.json`).                                                                                                                                                                                                                                                                                                                                                                             |
+| `status`   | `/api/v1/users/user/info` with the key; the server's settings.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `models`   | `/api/models`: the models the account may use, less those of an OpenAI connection that are no chat model (speech, realtime, images, video, embeddings, search) or answer through the Responses API only (`-pro`, `codex`). The default is the server's first default model (Admin Panel › Settings › Models); without one, the newest plain `gpt-N.N`, else the first by name, since Open WebUI lists its models in no fixed order. OpenAI's reasoning models get the effort levels `low`, `medium`, `high`. |
+| `turn`     | `/api/chat/completions`, streamed; the app's tools over MCP.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `image`    | `/api/v1/images/generations` and `/api/v1/images/edit`; the file it makes is fetched and then removed from the account's files.                                                                                                                                                                                                                                                                                                                                                                              |
 
 **A turn.** The request is Chat Completions; the reply is read as Chat Completions chunks or, for a connection Open WebUI runs on OpenAI's Responses API (its stream is passed on as it comes), as Responses events. The effort goes as `reasoning_effort`, and as `reasoning.effort` when the connection refuses that. `localhost` is reached on 127.0.0.1 when that answers: Windows tries ::1 first, and Open WebUI's desktop app listens on 127.0.0.1 only, which costs some 2 seconds a request. The app's system prompt replaces any other; the turn's context goes before the user's text in one message, with the pictures. The app's tools are listed from the tool endpoint at the start of every turn and given to the model unchanged; the calls of one step run side by side, each reported as it returns. A result's pictures follow the results in one user message, since the API's tool messages carry text only. Only the latest 12 of them are sent again in later steps, so that a long session keeps within the model's context: older ones stay in the store, and the model is told to render again to see them. The CLI has no tools of its own (no shell, files, web), so the app gives the agent its `attachment_read`.
 

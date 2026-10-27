@@ -1,379 +1,661 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="referrer" content="no-referrer">
-<title>Sign in to Open WebUI · Slidr</title>
-<style>
-  :root {
-    --bg: #f4f4f1; --card: #ffffff; --ink: #17171b; --muted: #676772; --line: #e2e2dd;
-    --field: #fafaf8; --accent: #17171b; --accent-ink: #ffffff; --ok: #1d7a4b; --bad: #b42318;
-    --focus: #2f6fed;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0d0d10; --card: #17171c; --ink: #ececf1; --muted: #9d9da9; --line: #2b2b34;
-      --field: #111115; --accent: #ececf1; --accent-ink: #111115; --ok: #4ade80; --bad: #f87171;
-      --focus: #7aa2ff;
-    }
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
-  body {
-    min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
-    background: var(--bg); color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Hebrew", Arial, sans-serif;
-  }
-  main {
-    width: 100%; max-width: 420px; padding: 28px; border-radius: 16px;
-    background: var(--card); border: 1px solid var(--line);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 16px 40px rgba(0, 0, 0, .07);
-  }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .mark {
-    flex: none; width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center;
-    background: var(--accent); color: var(--accent-ink); font-weight: 700; letter-spacing: -.03em;
-  }
-  h1 { margin: 0; font-size: 20px; line-height: 1.25; }
-  .for { color: var(--muted); font-size: 13px; }
-  .lead { margin: 16px 0 6px; color: var(--muted); }
-  label { display: block; margin: 16px 0 6px; font-size: 13px; font-weight: 600; }
-  input[type=url], input[type=email], input[type=text], input[type=password] {
-    width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
-    background: var(--field); color: inherit; font: inherit;
-  }
-  input:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible {
-    outline: 2px solid var(--focus); outline-offset: 2px;
-  }
-  button {
-    width: 100%; margin-top: 18px; padding: 11px 14px; border-radius: 10px; cursor: pointer;
-    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
-    font: inherit; font-weight: 600;
-  }
-  button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
-  button:disabled { opacity: .55; cursor: progress; }
-  .row { display: flex; gap: 8px; }
-  .row input { flex: 1; min-width: 0; }
-  .row button { width: auto; margin-top: 0; }
-  .site { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--muted); }
-  .dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
-  .dot.ok { background: var(--ok); }
-  .dot.bad { background: var(--bad); }
-  .or { display: flex; align-items: center; gap: 10px; margin: 22px 0 0; color: var(--muted); font-size: 12px; }
-  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .check { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--muted); }
-  details { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 14px; }
-  summary { cursor: pointer; color: var(--muted); font-size: 13px; }
-  .help { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
-  .help a { color: var(--ink); }
-  .error { margin: 14px 0 0; color: var(--bad); font-size: 13.5px; }
-  .detail { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; }
-  .note { margin: 20px 0 0; color: var(--muted); font-size: 12.5px; }
-  .done { text-align: center; padding: 8px 0 4px; }
-  .done .tick {
-    width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--ok); color: #fff; font-size: 28px; line-height: 1;
-  }
-  .done p { margin: 8px 0 0; color: var(--muted); }
-  [hidden] { display: none !important; }
-</style>
-</head>
-<body>
-<main id="card" aria-live="polite">
-  <div class="brand">
-    <div class="mark" aria-hidden="true">OW</div>
-    <div><h1 data-t="title"></h1><div class="for" data-t="forSlidr"></div></div>
-  </div>
-  <p class="lead" data-t="lead"></p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Sign in to Open WebUI · Slidr</title>
+    <style>
+      :root {
+        --bg: #f4f4f1;
+        --card: #ffffff;
+        --ink: #17171b;
+        --muted: #676772;
+        --line: #e2e2dd;
+        --field: #fafaf8;
+        --accent: #17171b;
+        --accent-ink: #ffffff;
+        --ok: #1d7a4b;
+        --bad: #b42318;
+        --focus: #2f6fed;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d0d10;
+          --card: #17171c;
+          --ink: #ececf1;
+          --muted: #9d9da9;
+          --line: #2b2b34;
+          --field: #111115;
+          --accent: #ececf1;
+          --accent-ink: #111115;
+          --ok: #4ade80;
+          --bad: #f87171;
+          --focus: #7aa2ff;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.5 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          'Noto Sans Hebrew',
+          Arial,
+          sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 420px;
+        padding: 28px;
+        border-radius: 16px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.04),
+          0 16px 40px rgba(0, 0, 0, 0.07);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .mark {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        background: var(--accent);
+        color: var(--accent-ink);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.25;
+      }
+      .for {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .lead {
+        margin: 16px 0 6px;
+        color: var(--muted);
+      }
+      label {
+        display: block;
+        margin: 16px 0 6px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      input[type='url'],
+      input[type='email'],
+      input[type='text'],
+      input[type='password'] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--field);
+        color: inherit;
+        font: inherit;
+      }
+      input:focus-visible,
+      button:focus-visible,
+      summary:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+      button {
+        width: 100%;
+        margin-top: 18px;
+        padding: 11px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: var(--accent-ink);
+        font: inherit;
+        font-weight: 600;
+      }
+      button.secondary {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--line);
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: progress;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+      .row input {
+        flex: 1;
+        min-width: 0;
+      }
+      .row button {
+        width: auto;
+        margin-top: 0;
+      }
+      .site {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .dot {
+        flex: none;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--line);
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.bad {
+        background: var(--bad);
+      }
+      .or {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 22px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .or::before,
+      .or::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      details {
+        margin-top: 22px;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
+      summary {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .help {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .help a {
+        color: var(--ink);
+      }
+      .error {
+        margin: 14px 0 0;
+        color: var(--bad);
+        font-size: 13.5px;
+      }
+      .detail {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .note {
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .done {
+        text-align: center;
+        padding: 8px 0 4px;
+      }
+      .done .tick {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--ok);
+        color: #fff;
+        font-size: 28px;
+        line-height: 1;
+      }
+      .done p {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="card" aria-live="polite">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">OW</div>
+        <div>
+          <h1 data-t="title"></h1>
+          <div class="for" data-t="forSlidr"></div>
+        </div>
+      </div>
+      <p class="lead" data-t="lead"></p>
 
-  <form id="site-form" novalidate>
-    <label for="url" data-t="address"></label>
-    <div class="row">
-      <input id="url" type="url" required autocomplete="url" spellcheck="false" dir="ltr">
-      <button type="submit" class="secondary" data-t="check"></button>
-    </div>
-    <div class="site"><span class="dot" id="site-dot"></span><span id="site-text"></span></div>
-  </form>
+      <form id="site-form" novalidate>
+        <label for="url" data-t="address"></label>
+        <div class="row">
+          <input id="url" type="url" required autocomplete="url" spellcheck="false" dir="ltr" />
+          <button type="submit" class="secondary" data-t="check"></button>
+        </div>
+        <div class="site"><span class="dot" id="site-dot"></span><span id="site-text"></span></div>
+      </form>
 
-  <section id="open" hidden>
-    <p class="help" data-t="openText"></p>
-    <button type="button" id="open-go" data-t="continue"></button>
-  </section>
+      <section id="open" hidden>
+        <p class="help" data-t="openText"></p>
+        <button type="button" id="open-go" data-t="continue"></button>
+      </section>
 
-  <form id="password" hidden>
-    <label for="email" data-t="email"></label>
-    <input id="email" type="email" required autocomplete="username" spellcheck="false" dir="ltr">
-    <label for="pw" data-t="password"></label>
-    <input id="pw" type="password" required autocomplete="current-password" dir="ltr">
-    <button type="submit" data-t="signIn"></button>
-  </form>
+      <form id="password" hidden>
+        <label for="email" data-t="email"></label>
+        <input
+          id="email"
+          type="email"
+          required
+          autocomplete="username"
+          spellcheck="false"
+          dir="ltr"
+        />
+        <label for="pw" data-t="password"></label>
+        <input id="pw" type="password" required autocomplete="current-password" dir="ltr" />
+        <button type="submit" data-t="signIn"></button>
+      </form>
 
-  <form id="ldap" hidden>
-    <div class="or" data-t="or"></div>
-    <label for="ldap-user" data-t="ldapUser"></label>
-    <input id="ldap-user" type="text" required autocomplete="username" spellcheck="false" dir="ltr">
-    <label for="ldap-pw" data-t="password"></label>
-    <input id="ldap-pw" type="password" required autocomplete="current-password" dir="ltr">
-    <button type="submit" class="secondary" data-t="ldapSignIn"></button>
-  </form>
+      <form id="ldap" hidden>
+        <div class="or" data-t="or"></div>
+        <label for="ldap-user" data-t="ldapUser"></label>
+        <input
+          id="ldap-user"
+          type="text"
+          required
+          autocomplete="username"
+          spellcheck="false"
+          dir="ltr"
+        />
+        <label for="ldap-pw" data-t="password"></label>
+        <input id="ldap-pw" type="password" required autocomplete="current-password" dir="ltr" />
+        <button type="submit" class="secondary" data-t="ldapSignIn"></button>
+      </form>
 
-  <section id="sso" hidden>
-    <div class="or" data-t="or"></div>
-    <div id="sso-buttons"></div>
-  </section>
+      <section id="sso" hidden>
+        <div class="or" data-t="or"></div>
+        <div id="sso-buttons"></div>
+      </section>
 
-  <form id="mfa" hidden>
-    <label for="code" data-t="mfaCode"></label>
-    <input id="code" type="text" required autocomplete="one-time-code" inputmode="numeric" spellcheck="false" dir="ltr">
-    <label class="check"><input id="recovery" type="checkbox"> <span data-t="recoveryCode"></span></label>
-    <button type="submit" data-t="verify"></button>
-  </form>
+      <form id="mfa" hidden>
+        <label for="code" data-t="mfaCode"></label>
+        <input
+          id="code"
+          type="text"
+          required
+          autocomplete="one-time-code"
+          inputmode="numeric"
+          spellcheck="false"
+          dir="ltr"
+        />
+        <label class="check"
+          ><input id="recovery" type="checkbox" /> <span data-t="recoveryCode"></span
+        ></label>
+        <button type="submit" data-t="verify"></button>
+      </form>
 
-  <details id="key-box" hidden>
-    <summary data-t="useKey"></summary>
-    <p class="help" id="sso-next" hidden data-t="ssoNext"></p>
-    <p class="help"><span data-t="keyHelp"></span> <a id="key-link" target="_blank" rel="noopener noreferrer" data-t="showKey"></a></p>
-    <form id="key-form">
-      <label for="key" data-t="apiKey"></label>
-      <input id="key" type="password" required autocomplete="off" spellcheck="false" dir="ltr">
-      <button type="submit" data-t="saveKey"></button>
-    </form>
-  </details>
+      <details id="key-box" hidden>
+        <summary data-t="useKey"></summary>
+        <p class="help" id="sso-next" hidden data-t="ssoNext"></p>
+        <p class="help">
+          <span data-t="keyHelp"></span>
+          <a id="key-link" target="_blank" rel="noopener noreferrer" data-t="showKey"></a>
+        </p>
+        <form id="key-form">
+          <label for="key" data-t="apiKey"></label>
+          <input
+            id="key"
+            type="password"
+            required
+            autocomplete="off"
+            spellcheck="false"
+            dir="ltr"
+          />
+          <button type="submit" data-t="saveKey"></button>
+        </form>
+      </details>
 
-  <p class="error" id="error" role="alert" hidden><span id="error-text"></span><span class="detail" id="error-detail" dir="auto"></span></p>
-  <p class="note" data-t="privacy"></p>
-</main>
+      <p class="error" id="error" role="alert" hidden>
+        <span id="error-text"></span><span class="detail" id="error-detail" dir="auto"></span>
+      </p>
+      <p class="note" data-t="privacy"></p>
+    </main>
 
-<script type="application/json" id="state">{{STATE}}</script>
-<script nonce="{{NONCE}}">
-(() => {
-  const EN = {
-    title: 'Sign in to Open WebUI',
-    forSlidr: 'for Slidr',
-    lead: 'Slidr runs its agent and makes images through your Open WebUI account. It keeps an API key of the account on this computer, encrypted for your user.',
-    address: 'Open WebUI address',
-    check: 'Check',
-    checking: 'Checking…',
-    siteOk: (name, version) => `${name} ${version} answers here`,
-    unreachable: 'Open WebUI does not answer at this address. Start it, or correct the address.',
-    not_webui: 'This address does not answer as Open WebUI.',
-    openText: 'This Open WebUI asks for no sign-in.',
-    continue: 'Continue',
-    email: 'E-mail',
-    password: 'Password',
-    signIn: 'Sign in',
-    or: 'or',
-    ldapUser: 'User name',
-    ldapSignIn: 'Sign in with LDAP',
-    ssoWith: name => `Continue with ${name}`,
-    ssoNext: 'Finish signing in on the Open WebUI tab that opened, then bring the account’s API key here.',
-    mfaCode: 'Code from your authenticator app',
-    recoveryCode: 'This is a recovery code',
-    verify: 'Verify',
-    useKey: 'Use an API key instead',
-    keyHelp: 'In Open WebUI: Settings › Account › API keys. Create a key or show it, and paste it here.',
-    showKey: 'Show the key of the account signed in in this browser',
-    apiKey: 'API key',
-    saveKey: 'Use this key',
-    refused: 'Open WebUI did not sign you in.',
-    no_keys: 'Open WebUI does not let this account use API keys. An admin turns them on in Admin Panel › Settings › General › Enable API Keys, and gives the account the API keys permission.',
-    pending: 'The account waits for an admin of Open WebUI to approve it.',
-    enroll: 'Open WebUI asks this account to set up two-step verification first. Sign in once on Open WebUI’s own page, then here.',
-    mfa_refused: 'The code was not accepted.',
-    bad_key: 'Open WebUI did not accept this API key.',
-    expired: 'This page is no longer active. Choose Sign in in Slidr again.',
-    failed: 'Something went wrong.',
-    doneTitle: 'Signed in',
-    doneText: url => `Slidr now works with Open WebUI at ${url}. You can close this tab.`,
-    privacy: 'Your password goes only to Open WebUI and is not kept.'
-  };
-  const HE = {
-    title: 'התחברות ל-\u2060Open WebUI',
-    forSlidr: 'עבור Slidr',
-    lead: 'Slidr מפעיל את הסוכן ויוצר תמונות דרך החשבון שלך ב-\u2060Open WebUI. מפתח API של החשבון נשמר במחשב הזה, מוצפן למשתמש שלך.',
-    address: 'הכתובת של Open WebUI',
-    check: 'בדיקה',
-    checking: 'בודק…',
-    siteOk: (name, version) => `${name} ${version} עונה בכתובת הזו`,
-    unreachable: 'Open WebUI לא עונה בכתובת הזו. צריך להפעיל אותו או לתקן את הכתובת.',
-    not_webui: 'הכתובת הזו לא עונה כמו Open WebUI.',
-    openText: 'ה-\u2060Open WebUI הזה לא דורש התחברות.',
-    continue: 'המשך',
-    email: 'אימייל',
-    password: 'סיסמה',
-    signIn: 'התחברות',
-    or: 'או',
-    ldapUser: 'שם משתמש',
-    ldapSignIn: 'התחברות עם LDAP',
-    ssoWith: name => `המשך עם ${name}`,
-    ssoNext: 'אחרי שההתחברות בלשונית של Open WebUI מסתיימת, מביאים לכאן את מפתח ה-\u2060API של החשבון.',
-    mfaCode: 'הקוד מאפליקציית האימות',
-    recoveryCode: 'זה קוד שחזור',
-    verify: 'אימות',
-    useKey: 'שימוש במפתח API במקום',
-    keyHelp: 'ב-\u2060Open WebUI: הגדרות › חשבון › מפתחות API. יוצרים מפתח או מציגים אותו, ומדביקים כאן.',
-    showKey: 'הצגת המפתח של החשבון שמחובר בדפדפן הזה',
-    apiKey: 'מפתח API',
-    saveKey: 'שימוש במפתח הזה',
-    refused: 'Open WebUI לא אישר את ההתחברות.',
-    no_keys: 'Open WebUI לא מאפשר לחשבון הזה מפתחות API. מנהל מפעיל אותם ב-\u2060Admin Panel › Settings › General › Enable API Keys ונותן לחשבון את ההרשאה.',
-    pending: 'החשבון ממתין לאישור של מנהל ב-\u2060Open WebUI.',
-    enroll: 'Open WebUI מבקש להגדיר קודם אימות דו-שלבי לחשבון. צריך להתחבר פעם אחת בדף של Open WebUI עצמו, ואז כאן.',
-    mfa_refused: 'הקוד לא התקבל.',
-    bad_key: 'Open WebUI לא קיבל את מפתח ה-\u2060API הזה.',
-    expired: 'הדף הזה כבר לא פעיל. בוחרים שוב "התחברות" ב-\u2060Slidr.',
-    failed: 'משהו השתבש.',
-    doneTitle: 'מחובר',
-    doneText: url => `Slidr עובד עכשיו עם Open WebUI בכתובת ${url}. אפשר לסגור את הלשונית.`,
-    privacy: 'הסיסמה נשלחת רק ל-\u2060Open WebUI ולא נשמרת.'
-  };
+    <script type="application/json" id="state">
+      {{STATE}}
+    </script>
+    <script nonce="{{NONCE}}">
+      (() => {
+        const EN = {
+          title: 'Sign in to Open WebUI',
+          forSlidr: 'for Slidr',
+          lead: 'Slidr runs its agent and makes images through your Open WebUI account. It keeps an API key of the account on this computer, encrypted for your user.',
+          address: 'Open WebUI address',
+          check: 'Check',
+          checking: 'Checking…',
+          siteOk: (name, version) => `${name} ${version} answers here`,
+          unreachable:
+            'Open WebUI does not answer at this address. Start it, or correct the address.',
+          not_webui: 'This address does not answer as Open WebUI.',
+          openText: 'This Open WebUI asks for no sign-in.',
+          continue: 'Continue',
+          email: 'E-mail',
+          password: 'Password',
+          signIn: 'Sign in',
+          or: 'or',
+          ldapUser: 'User name',
+          ldapSignIn: 'Sign in with LDAP',
+          ssoWith: (name) => `Continue with ${name}`,
+          ssoNext:
+            'Finish signing in on the Open WebUI tab that opened, then bring the account’s API key here.',
+          mfaCode: 'Code from your authenticator app',
+          recoveryCode: 'This is a recovery code',
+          verify: 'Verify',
+          useKey: 'Use an API key instead',
+          keyHelp:
+            'In Open WebUI: Settings › Account › API keys. Create a key or show it, and paste it here.',
+          showKey: 'Show the key of the account signed in in this browser',
+          apiKey: 'API key',
+          saveKey: 'Use this key',
+          refused: 'Open WebUI did not sign you in.',
+          no_keys:
+            'Open WebUI does not let this account use API keys. An admin turns them on in Admin Panel › Settings › General › Enable API Keys, and gives the account the API keys permission.',
+          pending: 'The account waits for an admin of Open WebUI to approve it.',
+          enroll:
+            'Open WebUI asks this account to set up two-step verification first. Sign in once on Open WebUI’s own page, then here.',
+          mfa_refused: 'The code was not accepted.',
+          bad_key: 'Open WebUI did not accept this API key.',
+          expired: 'This page is no longer active. Choose Sign in in Slidr again.',
+          failed: 'Something went wrong.',
+          doneTitle: 'Signed in',
+          doneText: (url) => `Slidr now works with Open WebUI at ${url}. You can close this tab.`,
+          privacy: 'Your password goes only to Open WebUI and is not kept.',
+        };
+        const HE = {
+          title: 'התחברות ל-\u2060Open WebUI',
+          forSlidr: 'עבור Slidr',
+          lead: 'Slidr מפעיל את הסוכן ויוצר תמונות דרך החשבון שלך ב-\u2060Open WebUI. מפתח API של החשבון נשמר במחשב הזה, מוצפן למשתמש שלך.',
+          address: 'הכתובת של Open WebUI',
+          check: 'בדיקה',
+          checking: 'בודק…',
+          siteOk: (name, version) => `${name} ${version} עונה בכתובת הזו`,
+          unreachable: 'Open WebUI לא עונה בכתובת הזו. צריך להפעיל אותו או לתקן את הכתובת.',
+          not_webui: 'הכתובת הזו לא עונה כמו Open WebUI.',
+          openText: 'ה-\u2060Open WebUI הזה לא דורש התחברות.',
+          continue: 'המשך',
+          email: 'אימייל',
+          password: 'סיסמה',
+          signIn: 'התחברות',
+          or: 'או',
+          ldapUser: 'שם משתמש',
+          ldapSignIn: 'התחברות עם LDAP',
+          ssoWith: (name) => `המשך עם ${name}`,
+          ssoNext:
+            'אחרי שההתחברות בלשונית של Open WebUI מסתיימת, מביאים לכאן את מפתח ה-\u2060API של החשבון.',
+          mfaCode: 'הקוד מאפליקציית האימות',
+          recoveryCode: 'זה קוד שחזור',
+          verify: 'אימות',
+          useKey: 'שימוש במפתח API במקום',
+          keyHelp:
+            'ב-\u2060Open WebUI: הגדרות › חשבון › מפתחות API. יוצרים מפתח או מציגים אותו, ומדביקים כאן.',
+          showKey: 'הצגת המפתח של החשבון שמחובר בדפדפן הזה',
+          apiKey: 'מפתח API',
+          saveKey: 'שימוש במפתח הזה',
+          refused: 'Open WebUI לא אישר את ההתחברות.',
+          no_keys:
+            'Open WebUI לא מאפשר לחשבון הזה מפתחות API. מנהל מפעיל אותם ב-\u2060Admin Panel › Settings › General › Enable API Keys ונותן לחשבון את ההרשאה.',
+          pending: 'החשבון ממתין לאישור של מנהל ב-\u2060Open WebUI.',
+          enroll:
+            'Open WebUI מבקש להגדיר קודם אימות דו-שלבי לחשבון. צריך להתחבר פעם אחת בדף של Open WebUI עצמו, ואז כאן.',
+          mfa_refused: 'הקוד לא התקבל.',
+          bad_key: 'Open WebUI לא קיבל את מפתח ה-\u2060API הזה.',
+          expired: 'הדף הזה כבר לא פעיל. בוחרים שוב "התחברות" ב-\u2060Slidr.',
+          failed: 'משהו השתבש.',
+          doneTitle: 'מחובר',
+          doneText: (url) => `Slidr עובד עכשיו עם Open WebUI בכתובת ${url}. אפשר לסגור את הלשונית.`,
+          privacy: 'הסיסמה נשלחת רק ל-\u2060Open WebUI ולא נשמרת.',
+        };
 
-  const state = JSON.parse(document.getElementById('state').textContent);
-  const languages = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
-  const hebrew = /^he(-|$)/i.test(languages[0]);
-  const T = hebrew ? HE : EN;
-  document.documentElement.lang = hebrew ? 'he' : 'en';
-  document.documentElement.dir = hebrew ? 'rtl' : 'ltr';
-  document.title = `${T.title} · Slidr`;
-  for (const element of document.querySelectorAll('[data-t]')) element.textContent = T[element.dataset.t];
+        const state = JSON.parse(document.getElementById('state').textContent);
+        const languages =
+          navigator.languages && navigator.languages.length
+            ? navigator.languages
+            : [navigator.language || 'en'];
+        const hebrew = /^he(-|$)/i.test(languages[0]);
+        const T = hebrew ? HE : EN;
+        document.documentElement.lang = hebrew ? 'he' : 'en';
+        document.documentElement.dir = hebrew ? 'rtl' : 'ltr';
+        document.title = `${T.title} · Slidr`;
+        for (const element of document.querySelectorAll('[data-t]'))
+          element.textContent = T[element.dataset.t];
 
-  const $ = id => document.getElementById(id);
-  let site = null;
-  let challenge = null;
-  $('url').value = state.url;
+        const $ = (id) => document.getElementById(id);
+        let site = null;
+        let challenge = null;
+        $('url').value = state.url;
 
-  async function call(path, body) {
-    try {
-      const response = await fetch(path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (!response.ok) return { ok: false, code: 'expired' };
-      return await response.json();
-    } catch {
-      return { ok: false, code: 'expired' };
-    }
-  }
+        async function call(path, body) {
+          try {
+            const response = await fetch(path, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            if (!response.ok) return { ok: false, code: 'expired' };
+            return await response.json();
+          } catch {
+            return { ok: false, code: 'expired' };
+          }
+        }
 
-  function clearError() { $('error').hidden = true; }
+        function clearError() {
+          $('error').hidden = true;
+        }
 
-  function showError(result) {
-    $('error-text').textContent = T[result.code] || T.failed;
-    $('error-detail').textContent = result.message || '';
-    $('error').hidden = false;
-  }
+        function showError(result) {
+          $('error-text').textContent = T[result.code] || T.failed;
+          $('error-detail').textContent = result.message || '';
+          $('error').hidden = false;
+        }
 
-  async function busy(form, work) {
-    clearError();
-    const buttons = form.querySelectorAll('button');
-    for (const button of buttons) button.disabled = true;
-    try { return await work(); } finally { for (const button of buttons) button.disabled = false; }
-  }
+        async function busy(form, work) {
+          clearError();
+          const buttons = form.querySelectorAll('button');
+          for (const button of buttons) button.disabled = true;
+          try {
+            return await work();
+          } finally {
+            for (const button of buttons) button.disabled = false;
+          }
+        }
 
-  function done(result) {
-    const view = document.createElement('div');
-    view.className = 'done';
-    const tick = document.createElement('div');
-    tick.className = 'tick';
-    tick.setAttribute('aria-hidden', 'true');
-    tick.textContent = '✓';
-    const title = document.createElement('h1');
-    title.textContent = T.doneTitle;
-    const text = document.createElement('p');
-    text.textContent = T.doneText(result.url);
-    view.append(tick, title, text);
-    $('card').replaceChildren(view);
-  }
+        function done(result) {
+          const view = document.createElement('div');
+          view.className = 'done';
+          const tick = document.createElement('div');
+          tick.className = 'tick';
+          tick.setAttribute('aria-hidden', 'true');
+          tick.textContent = '✓';
+          const title = document.createElement('h1');
+          title.textContent = T.doneTitle;
+          const text = document.createElement('p');
+          text.textContent = T.doneText(result.url);
+          view.append(tick, title, text);
+          $('card').replaceChildren(view);
+        }
 
-  function handle(result) {
-    if (result.ok) return done(result);
-    if (result.mfa) {
-      challenge = result.challenge;
-      $('password').hidden = true;
-      $('ldap').hidden = true;
-      $('sso').hidden = true;
-      $('mfa').hidden = false;
-      $('recovery').checked = !!result.recovery;
-      $('code').focus();
-      return;
-    }
-    showError(result);
-  }
+        function handle(result) {
+          if (result.ok) return done(result);
+          if (result.mfa) {
+            challenge = result.challenge;
+            $('password').hidden = true;
+            $('ldap').hidden = true;
+            $('sso').hidden = true;
+            $('mfa').hidden = false;
+            $('recovery').checked = !!result.recovery;
+            $('code').focus();
+            return;
+          }
+          showError(result);
+        }
 
-  async function check() {
-    clearError();
-    for (const id of ['open', 'password', 'ldap', 'sso', 'mfa', 'key-box']) $(id).hidden = true;
-    $('site-dot').className = 'dot';
-    $('site-text').textContent = T.checking;
-    const result = await busy($('site-form'), () => call('options', { url: $('url').value.trim() }));
-    if (!result.ok) {
-      site = null;
-      $('site-dot').className = 'dot bad';
-      $('site-text').textContent = T[result.code] || result.message || T.failed;
-      return;
-    }
-    site = result;
-    $('url').value = site.url;
-    $('site-dot').className = 'dot ok';
-    $('site-text').textContent = T.siteOk(site.name || 'Open WebUI', site.version || '');
-    $('open').hidden = site.auth;
-    $('password').hidden = !site.auth || !site.password;
-    $('ldap').hidden = !site.auth || !site.ldap;
-    $('sso').hidden = !site.auth || !site.providers.length;
-    $('key-box').hidden = !site.auth;
-    $('key-box').open = site.auth && !site.password && !site.ldap && !site.providers.length;
-    $('sso-next').hidden = true;
-    $('key-link').href = `${site.url}/api/v1/auths/api_key`;
-    const buttons = $('sso-buttons');
-    buttons.replaceChildren();
-    for (const provider of site.providers) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'secondary';
-      button.textContent = T.ssoWith(provider.name || provider.id);
-      button.addEventListener('click', () => {
-        window.open(`${site.url}/oauth/${encodeURIComponent(provider.id)}/login`, '_blank', 'noopener');
-        $('sso-next').hidden = false;
-        $('key-box').open = true;
-        $('key').focus();
-      });
-      buttons.append(button);
-    }
-    const first = !site.auth ? $('open-go') : site.password ? $('email') : site.ldap ? $('ldap-user') : null;
-    if (first) first.focus();
-  }
+        async function check() {
+          clearError();
+          for (const id of ['open', 'password', 'ldap', 'sso', 'mfa', 'key-box'])
+            $(id).hidden = true;
+          $('site-dot').className = 'dot';
+          $('site-text').textContent = T.checking;
+          const result = await busy($('site-form'), () =>
+            call('options', { url: $('url').value.trim() }),
+          );
+          if (!result.ok) {
+            site = null;
+            $('site-dot').className = 'dot bad';
+            $('site-text').textContent = T[result.code] || result.message || T.failed;
+            return;
+          }
+          site = result;
+          $('url').value = site.url;
+          $('site-dot').className = 'dot ok';
+          $('site-text').textContent = T.siteOk(site.name || 'Open WebUI', site.version || '');
+          $('open').hidden = site.auth;
+          $('password').hidden = !site.auth || !site.password;
+          $('ldap').hidden = !site.auth || !site.ldap;
+          $('sso').hidden = !site.auth || !site.providers.length;
+          $('key-box').hidden = !site.auth;
+          $('key-box').open = site.auth && !site.password && !site.ldap && !site.providers.length;
+          $('sso-next').hidden = true;
+          $('key-link').href = `${site.url}/api/v1/auths/api_key`;
+          const buttons = $('sso-buttons');
+          buttons.replaceChildren();
+          for (const provider of site.providers) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'secondary';
+            button.textContent = T.ssoWith(provider.name || provider.id);
+            button.addEventListener('click', () => {
+              window.open(
+                `${site.url}/oauth/${encodeURIComponent(provider.id)}/login`,
+                '_blank',
+                'noopener',
+              );
+              $('sso-next').hidden = false;
+              $('key-box').open = true;
+              $('key').focus();
+            });
+            buttons.append(button);
+          }
+          const first = !site.auth
+            ? $('open-go')
+            : site.password
+              ? $('email')
+              : site.ldap
+                ? $('ldap-user')
+                : null;
+          if (first) first.focus();
+        }
 
-  $('site-form').addEventListener('submit', event => { event.preventDefault(); check(); });
-  $('open-go').addEventListener('click', async () => {
-    handle(await busy($('open'), () => call('signin', { url: site.url, method: 'open' })));
-  });
-  $('password').addEventListener('submit', async event => {
-    event.preventDefault();
-    handle(await busy($('password'), () => call('signin', {
-      url: site.url, method: 'password', email: $('email').value.trim(), password: $('pw').value
-    })));
-  });
-  $('ldap').addEventListener('submit', async event => {
-    event.preventDefault();
-    handle(await busy($('ldap'), () => call('signin', {
-      url: site.url, method: 'ldap', user: $('ldap-user').value.trim(), password: $('ldap-pw').value
-    })));
-  });
-  $('mfa').addEventListener('submit', async event => {
-    event.preventDefault();
-    handle(await busy($('mfa'), () => call('signin', {
-      url: site.url, method: 'mfa', challenge, code: $('code').value.trim(), recovery: $('recovery').checked
-    })));
-  });
-  $('key-form').addEventListener('submit', async event => {
-    event.preventDefault();
-    handle(await busy($('key-form'), () => call('key', { url: site.url, key: $('key').value.trim() })));
-  });
+        $('site-form').addEventListener('submit', (event) => {
+          event.preventDefault();
+          check();
+        });
+        $('open-go').addEventListener('click', async () => {
+          handle(await busy($('open'), () => call('signin', { url: site.url, method: 'open' })));
+        });
+        $('password').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          handle(
+            await busy($('password'), () =>
+              call('signin', {
+                url: site.url,
+                method: 'password',
+                email: $('email').value.trim(),
+                password: $('pw').value,
+              }),
+            ),
+          );
+        });
+        $('ldap').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          handle(
+            await busy($('ldap'), () =>
+              call('signin', {
+                url: site.url,
+                method: 'ldap',
+                user: $('ldap-user').value.trim(),
+                password: $('ldap-pw').value,
+              }),
+            ),
+          );
+        });
+        $('mfa').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          handle(
+            await busy($('mfa'), () =>
+              call('signin', {
+                url: site.url,
+                method: 'mfa',
+                challenge,
+                code: $('code').value.trim(),
+                recovery: $('recovery').checked,
+              }),
+            ),
+          );
+        });
+        $('key-form').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          handle(
+            await busy($('key-form'), () =>
+              call('key', { url: site.url, key: $('key').value.trim() }),
+            ),
+          );
+        });
 
-  check();
-})();
-</script>
-</body>
+        check();
+      })();
+    </script>
+  </body>
 </html>
