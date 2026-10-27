@@ -13,6 +13,3 @@ LIBRARY_OWNER=
 LIBRARY_MASTER_KEY=
 # At least 32 characters, made as above; only while LIBRARY_MASTER_KEY is not set.
 SESSION_SECRET=
-# Until the library names its members: the Google accounts that review uploads, separated by
-# commas. They are imported once, as reviewers (the first is the owner, without LIBRARY_OWNER).
-LIBRARY_EDITORS=

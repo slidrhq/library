@@ -19,11 +19,12 @@
     { "binding": "UPLOADS", "bucket_name": "slidr-library-uploads" },
     { "binding": "MEDIA", "bucket_name": "slidr-media" },
   ],
-  // The library's own jobs (server/core/media/sweep.ts), which the Worker runs from a Cron Trigger,
-  // are off for now: an approved upload that waits is written by Try again. To turn them on, once
-  // a minute: "triggers": { "crons": ["* * * * *"] } (README, "Publishing the uploads").
-  // GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET and LIBRARY_EDITORS are
-  // secrets of the Worker (`wrangler secret put`), and `.dev.vars` on this machine (README,
-  // "Signing in", "Uploading"). MEDIA_ZONE_ID and MEDIA_PURGE_TOKEN, which empty the cache before
-  // the library, are secrets of the Worker only (README, "Serving the library").
+  // The library's own jobs (server/core/media/sweep.ts), once a minute: an approved upload that
+  // could not be written at once is written then, and rejected uploads are cleared after 30 days.
+  "triggers": { "crons": ["* * * * *"] },
+  // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are secrets of the Worker (`wrangler secret put`),
+  // and `.dev.vars` on this machine (README, "Signing in"). LIBRARY_MASTER_KEY is a secret of the
+  // repository too, which each deploy gives the Worker (deploy.yml). MEDIA_ZONE_ID and
+  // MEDIA_PURGE_TOKEN, which empty the cache before the library, are secrets of the Worker only
+  // (README, "Serving the library").
 }

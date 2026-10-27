@@ -178,8 +178,16 @@ export function fromThisSite(request: Request): boolean {
 
 /** The key sessions are signed with; none, and no one signs in, before the library has one. */
 export async function sessionKeyOf(ctx: Context): Promise<string | undefined> {
-  const key = (await ctx.vault?.get('session')) ?? ctx.auth.sessionSecret;
-  return key && key.length >= KEY_LEAST ? key : undefined;
+  const strong = (key: string | undefined) => (key && key.length >= KEY_LEAST ? key : undefined);
+  if (!ctx.vault) return strong(ctx.auth.sessionSecret);
+  const kept = await ctx.vault.get('session');
+  if (kept) return strong(kept);
+  // A Worker given its vault after it signed sessions with `SESSION_SECRET` keeps signing them
+  // with that key, now the vault's, so no one is signed out and the secret may go; a vault with
+  // neither makes a key of its own.
+  const key = strong(ctx.auth.sessionSecret) ?? random();
+  await ctx.vault.set('session', key, 'host');
+  return key;
 }
 
 /** The person a request comes from, when its session is good. */

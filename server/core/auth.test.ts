@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
 import worker, { type Env } from '../host/cloudflare/index.ts';
 import { MemoryBucket } from './uploads/testing.ts';
+import { masterKeyText, newMasterKey } from './vault.ts';
 
 const SITE = 'https://library.example';
 const CLIENT = 'client-1.apps.googleusercontent.com';
@@ -319,6 +320,26 @@ describe('the session', () => {
       },
     );
     assert.equal(((await other.json()) as { user: unknown }).user, null);
+  });
+
+  test('holds when the Worker is given its vault, and once SESSION_SECRET is gone', async () => {
+    const session = sessionOf(await signIn());
+    const vault = { LIBRARY_MASTER_KEY: masterKeyText(await newMasterKey()) };
+    const who = async (environment: Partial<Env>) => {
+      const answer = await call('/api/me', { headers: { Cookie: session } }, environment);
+      return ((await answer.json()) as { user: { email: string } | null }).user?.email;
+    };
+    // The key it signed sessions with becomes the vault's, the first time it is asked for.
+    assert.equal(await who({ ...env, ...vault }), 'editor@example.com');
+    assert.ok(store.objects.has('vault/session.json'));
+    assert.equal(await who({ ...env, ...vault, SESSION_SECRET: undefined }), 'editor@example.com');
+  });
+
+  test('is signed with a key the vault makes, when the Worker had none', async () => {
+    const vault = { LIBRARY_MASTER_KEY: masterKeyText(await newMasterKey()) };
+    const answer = await call('/api/me', {}, { ...env, ...vault, SESSION_SECRET: undefined });
+    assert.equal(((await answer.json()) as { signIn: boolean }).signIn, true);
+    assert.ok(store.objects.has('vault/session.json'));
   });
 
   test('is not the cookie of a sign-in', async () => {

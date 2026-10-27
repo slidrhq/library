@@ -1,6 +1,6 @@
 # Slidr Library
 
-A web page that shows the media library as it is published (docs/media-library.md of the app), as every installed app reads it. The page only reads the library: changing it goes through publishing, from [Slidr Studio](https://github.com/slidrhq/studio) or the app's `pnpm media:publish`. It reads the site directly (`@slidr/media-library`). Its own Worker signs people in with a Google account ([Signing in](#signing-in)), and takes the content the library's editors upload, keeping it until it is published ([Uploading](#uploading)).
+The way in to the media library (docs/media-library.md of the app): a web page that shows it as every installed app reads it, and the server that manages it. People sign in ([Signing in](#signing-in)), upload content by the page or by the API with a token of their own ([Uploading](#uploading)), and a reviewer's approval writes it into the media at once ([Publishing the uploads](#publishing-the-uploads)). The central library is the Worker on Cloudflare, library.slidr.workers.dev, its media at media.slidr.studio; an organization may install a library of its own on Linux, in Docker ([A local library](#a-local-library)). [docs/SPEC.md](docs/SPEC.md) is what it does and why, and [docs/PLAN.md](docs/PLAN.md) how it was built.
 
 ## Setup
 
@@ -113,7 +113,7 @@ The button at the end of the top bar signs in through the library's provider: Go
 - **How.** OpenID Connect's authorization code flow, with PKCE, a `state` and a `nonce` (`server/core/auth.ts`). `/auth/login` sends the person to the provider, which sends them back to `/auth/callback`, and the server exchanges the code for the ID token with the client's secret. It checks the token's issuer, audience, expiry and nonce, and that the provider vouches for the address, in a domain the library takes when it names some. Then it sends the person back to the page and the item they signed in from. A sign-in that fails comes back with `?signin=failed`, which the page shows and takes off the address. The provider is the library's settings (`signIn`, with its client's secret in the vault; `slidr-library sign-in` in a local library), or, on Cloudflare until it has them, the Worker's Google client.
 - **The provider** is the owner's to name: whoever names it says who each person is, the owner too. Its discovery document is read over HTTPS, and must name the very issuer the library names. Microsoft is named by one tenant, its id or its domain: through `organizations` or `common`, any tenant's admin could give an account any address. A provider's client secret, once kept, goes only to that very provider and client: naming another brings its own.
 - **The owner's link** (`/auth/local?code=`) holds for ten minutes, and is used once. It is opened from any address (docs/SPEC.md D17): in a container every request comes through Nginx, and the owner of a server opens it from their own computer; only someone who may run Docker on the machine makes one. Behind a proxy, the server takes who the proxy forwards (`X-Forwarded-For`) only from a proxy of that same machine.
-- **The session** is a cookie signed with the library's session key (HMAC-SHA-256): the vault's `session`, or `SESSION_SECRET` on a Worker without a vault. It is `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. It says who the person is, never what they may do.
+- **The session** is a cookie signed with the library's session key (HMAC-SHA-256): the vault's `session`, or `SESSION_SECRET` on a Worker without a vault (`pnpm dev`). It is `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. It says who the person is, never what they may do.
 - **Who may do what** (docs/SPEC.md §6.1; `server/core/people.ts`, `server/core/uploads/access.ts`). Anyone who signs in may upload, and sees and changes their own uploads. A **reviewer** sees every upload, accepts and rejects them, and publishes what waits. An **admin** also names the members by email (**Members**, in the page's side menu; `/api/members`), blocks a person, and publishes an author's files. The **owner**, who installed the library, is an admin no one removes, and hands the library over to another member. Roles are read on every request, so a role given or taken away counts at once, and each change goes into the audit (`audit/` of the library's store). On Cloudflare, a library that named its editors in the Worker's secrets takes them once: `LIBRARY_OWNER`, or else the first of `LIBRARY_EDITORS`, as its owner, and the other editors as reviewers.
 - **The routes** are the server's, ahead of the page's files (`assets.run_worker_first` in `wrangler.jsonc`): `GET /auth/login?return=<path>`, `GET /auth/callback`, `GET /auth/local?code=`, `POST /auth/logout`, and `GET /api/me` (how one signs in here, who is signed in, their role, and what they may do). A route that changes something, sent with a session, must come from the library's own page (its `Origin`).
 
@@ -125,13 +125,12 @@ The button at the end of the top bar signs in through the library's provider: Go
    ```powershell
    npx wrangler secret put GOOGLE_CLIENT_ID
    npx wrangler secret put GOOGLE_CLIENT_SECRET
-   npx wrangler secret put SESSION_SECRET      # node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
-   npx wrangler secret put LIBRARY_EDITORS     # taken once: you@example.com, someone@example.com
-   npx wrangler secret put LIBRARY_OWNER       # optional: the owner, if not the first editor
-   npx wrangler secret put LIBRARY_MASTER_KEY  # the vault's: made as SESSION_SECRET is
+   npx wrangler secret put LIBRARY_OWNER       # the owner, read once, while the library names no one
    ```
 
-   With `LIBRARY_MASTER_KEY`, the Worker keeps keys of its own in a vault (docs/SPEC.md §4.4): the secret of the sign-in provider an admin names in **Settings**. Its sessions stay signed with `SESSION_SECRET`. Keep a copy of the master key elsewhere: without it, what the vault holds cannot be read, and the provider is named again.
+   The master key of the Worker's vault (docs/SPEC.md §4.4) is a secret of this repository, `LIBRARY_MASTER_KEY`, which each deploy gives the Worker (`deploy.yml`): `node -e "console.log(crypto.randomBytes(32).toString('base64url'))"`, then **Settings** → **Secrets and variables** → **Actions** of the repository. The vault keeps the key the sessions are signed with, and the secret of the sign-in provider the owner names in **Settings**. Keep a copy of the master key elsewhere: without it, what the vault holds cannot be read, everyone signs in again, and the provider is named again.
+
+   Before the Worker had its vault (2026-10-27), it signed its sessions with `SESSION_SECRET` and named its people in `LIBRARY_EDITORS`: the vault took the session key over, the people were imported once, and the deploy took both secrets away.
 
 3. On this machine, copy `.dev.vars.example` to `.dev.vars` and fill it in. Git ignores it.
 
@@ -143,7 +142,7 @@ slidr-library sign-in microsoft --tenant <id> --client-id <id> --allowed-domains
 slidr-library sign-in oidc --issuer https://id.example.org/realms/staff --client-id <id> --name Staff
 ```
 
-Until the Worker has its client and a `SESSION_SECRET` of at least 32 characters, `/api/me` says signing in is not offered, and the page shows no button.
+Until the Worker has its client, and a vault (or, for `pnpm dev` without one, a `SESSION_SECRET` of at least 32 characters), `/api/me` says signing in is not offered, and the page shows no button.
 
 ## Uploading
 
@@ -247,7 +246,7 @@ POST /api/library/files      an author's publication: the files changed since th
 GET  /media/<path>           the library in the bucket, as a dev server serves it
 ```
 
-Approving an upload publishes it, in the same request, and the answer says how that went (`publishing`). The library's own jobs (`server/core/media/sweep.ts`) publish every approved upload that waits and is due, and once a day take away rejected uploads untouched for 30 days and all but the last 100 publications' history. On a machine they run once a minute, by the process's timer. On Cloudflare they run from a Cron Trigger, which is off for now (`wrangler.jsonc` says how to turn it on): until then an approved upload that waits is written by **Try again**, or by **Publish N accepted**, and nothing is cleared. A publication (`server/core/media/publish.ts`):
+Approving an upload publishes it, in the same request, and the answer says how that went (`publishing`). The library's own jobs (`server/core/media/sweep.ts`) publish every approved upload that waits and is due, and once a day take away rejected uploads untouched for 30 days and all but the last 100 publications' history. On a machine they run once a minute, by the process's timer. On Cloudflare they run from a Cron Trigger, once a minute (`wrangler.jsonc`; turned on 2026-10-27). A publication (`server/core/media/publish.ts`):
 
 - checks each upload once more against the library as it is; one that no longer holds goes back to `pending`, with a note that says why, for its uploader to put right; one that cannot be written now stays `accepted`, waiting (`publication`: why, the tries, the next), and is tried again after 1, 5 and 30 minutes, and then by hand (**Try again**, `POST /api/publish` with the upload); one that waits while another publication holds the library is tried at the next round (`server/core/media/settle.ts`);
 - writes each into the files it changes (`server/core/media/merge.ts`): the tags of a part merged into `tags/<part>.json`, where an item named takes the tags given in every language given and the others keep theirs; a new design into `elements/designs/managed.json` (its names, group, slides, subject, size and tags) with its picture in `images/designs/`; a design's translation into its slides; a template's sample into `templates/catalog.json`, which changes in no other byte;
