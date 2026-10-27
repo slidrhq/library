@@ -42,8 +42,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Veröffentlicht: {when}',
   'library.navLabel': 'Bereiche der Bibliothek',
   'library.title': 'Medienbibliothek',
-  'library.otherServer':
-    'Der Server veröffentlicht nach {url}; hier wird die Bibliothek gezeigt, die die App liest.',
   'library.overview': 'Übersicht',
   'library.reloadHint': 'Liest die Bibliothek im jetzt veröffentlichten Stand neu ein',
   'library.reload': '↻ Aktualisieren',

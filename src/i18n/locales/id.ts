@@ -42,8 +42,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Diterbitkan: {when}',
   'library.navLabel': 'Bagian pustaka',
   'library.title': 'Pustaka media',
-  'library.otherServer':
-    'Server menerbitkan ke {url}; pustaka yang dibaca aplikasi ditampilkan di sini.',
   'library.overview': 'Ikhtisar',
   'library.reloadHint': 'Membaca ulang pustaka sesuai kondisi terbitnya sekarang',
   'library.reload': '↻ Segarkan',

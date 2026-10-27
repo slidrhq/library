@@ -41,7 +41,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Xuất bản: {when}',
   'library.navLabel': 'Các mục của thư viện',
   'library.title': 'Thư viện phương tiện',
-  'library.otherServer': 'Máy chủ xuất bản lên {url}; ở đây hiển thị thư viện mà ứng dụng đọc.',
   'library.overview': 'Tổng quan',
   'library.reloadHint': 'Đọc lại thư viện ở trạng thái đã xuất bản hiện nay',
   'library.reload': '↻ Làm mới',

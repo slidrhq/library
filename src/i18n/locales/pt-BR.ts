@@ -42,7 +42,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Publicado: {when}',
   'library.navLabel': 'Seções da biblioteca',
   'library.title': 'Biblioteca de mídia',
-  'library.otherServer': 'O servidor publica em {url}; aqui aparece a biblioteca que o app lê.',
   'library.overview': 'Visão geral',
   'library.reloadHint': 'Lê a biblioteca de novo, como está publicada agora',
   'library.reload': '↻ Atualizar',

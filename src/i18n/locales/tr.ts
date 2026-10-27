@@ -41,8 +41,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Yayınlanma: {when}',
   'library.navLabel': 'Kütüphane bölümleri',
   'library.title': 'Medya kütüphanesi',
-  'library.otherServer':
-    'Sunucu {url} adresine yayınlıyor; burada uygulamanın okuduğu kütüphane gösterilir.',
   'library.overview': 'Genel bakış',
   'library.reloadHint': 'Kütüphaneyi şu an yayınlanmış haliyle yeniden okur',
   'library.reload': '↻ Yenile',

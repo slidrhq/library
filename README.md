@@ -105,7 +105,7 @@ The library is read once each time the page is loaded; "Refresh" reads it again.
 
 ## The studio
 
-When Slidr Studio runs on this machine (`VITE_SLIDR_STUDIO_URL`, `http://127.0.0.1:8765/` by default), the page reads from it which designs it made, and a design the studio made links to its request there. It also says when the studio publishes to another library than the one shown. Without the studio, the page shows the same library, without those links.
+When Slidr Studio runs on this machine (`VITE_SLIDR_STUDIO_URL`, `http://127.0.0.1:8765/` by default), the page reads from it which designs it made, and a design the studio made links to its request there. Without the studio, the page shows the same library, without those links.
 
 ## Signing in
 

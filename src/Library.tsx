@@ -199,15 +199,12 @@ export function Library({
   go,
   lang,
   variants,
-  serverUrl,
   onOpenVariant,
 }: {
   route: LibraryRoute;
   go: (route: LibraryRoute) => void;
   lang: Lang;
   variants: Record<string, Variant>;
-  /** The library the server publishes to (`SLIDR_MEDIA_URL`). */
-  serverUrl?: string;
   onOpenVariant: (variant: Variant) => void;
 }) {
   const t = useT();
@@ -244,8 +241,6 @@ export function Library({
     () => Object.values(read.value?.files ?? {}).reduce((sum, file) => sum + file.size, 0),
     [read.value],
   );
-  const other =
-    serverUrl && serverUrl.replace(/\/?$/, '/') !== MEDIA_LIBRARY_URL ? serverUrl : undefined;
 
   const props = { route, go, query, lang: shown };
   let content: ReactNode;
@@ -331,11 +326,6 @@ export function Library({
           <a className="small" href={MEDIA_LIBRARY_URL} target="_blank" rel="noreferrer" dir="ltr">
             {MEDIA_LIBRARY_URL.replace(/^https:\/\//, '')}
           </a>
-          {other && (
-            <p className="warn small">
-              {t('library.otherServer', { url: '\u2066' + other + '\u2069' })}
-            </p>
-          )}
         </div>
         <nav className="lib-sections">
           <button

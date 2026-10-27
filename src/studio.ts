@@ -1,7 +1,7 @@
 /**
  * Slidr Studio (github.com/slidrhq/studio), when it runs on this machine: the designs it made and
- * published, so a design of the library links to the request it came from, and the library the
- * studio publishes to. The library reads nothing else from it, and works the same without it.
+ * published, so a design of the library links to the request it came from. The library reads
+ * nothing else from it, and works the same without it.
  */
 import { useEffect, useState } from 'react';
 
@@ -21,8 +21,6 @@ export interface Variant {
 export interface Studio {
   /** The studio's variants, by id; none when the studio is not running. */
   variants: Record<string, Variant>;
-  /** The library the studio publishes to (its `SLIDR_MEDIA_URL`). */
-  mediaUrl?: string;
 }
 
 const NONE: Studio = { variants: {} };
@@ -34,14 +32,8 @@ async function read<T>(path: string): Promise<T> {
 }
 
 async function readStudio(): Promise<Studio> {
-  const [state, status] = await Promise.all([
-    read<{ variants: Variant[] }>('api/state'),
-    read<{ media?: { url?: string } }>('api/status'),
-  ]);
-  return {
-    variants: Object.fromEntries(state.variants.map((variant) => [variant.id, variant])),
-    mediaUrl: status.media?.url,
-  };
+  const state = await read<{ variants: Variant[] }>('api/state');
+  return { variants: Object.fromEntries(state.variants.map((variant) => [variant.id, variant])) };
 }
 
 /** The studio, read once when the page loads; nothing when it does not answer. */

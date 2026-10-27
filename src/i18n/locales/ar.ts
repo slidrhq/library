@@ -38,8 +38,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'تاريخ النشر: {when}',
   'library.navLabel': 'أقسام المكتبة',
   'library.title': 'مكتبة الوسائط',
-  'library.otherServer':
-    'يقوم الخادم بالنشر إلى {url}؛ والمعروض هنا هو المكتبة التي يقرأ منها التطبيق.',
   'library.overview': 'نظرة عامة',
   'library.reloadHint': 'يقرأ المكتبة من جديد كما هي منشورة الآن',
   'library.reload': '↻ تحديث',

@@ -42,8 +42,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'प्रकाशित: {when}',
   'library.navLabel': 'लाइब्रेरी के खंड',
   'library.title': 'मीडिया लाइब्रेरी',
-  'library.otherServer':
-    'सर्वर {url} पर प्रकाशित करता है; यहाँ वह लाइब्रेरी दिख रही है जिसे ऐप पढ़ता है।',
   'library.overview': 'अवलोकन',
   'library.reloadHint': 'लाइब्रेरी को उसके मौजूदा प्रकाशित रूप में दोबारा पढ़ता है',
   'library.reload': '↻ रीफ़्रेश',

@@ -38,7 +38,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': '게시일: {when}',
   'library.navLabel': '라이브러리 섹션',
   'library.title': '미디어 라이브러리',
-  'library.otherServer': '서버는 {url}에 게시하며, 여기에는 앱이 읽는 라이브러리가 표시됩니다.',
   'library.overview': '개요',
   'library.reloadHint': '현재 게시된 상태로 라이브러리를 다시 읽습니다',
   'library.reload': '↻ 새로고침',

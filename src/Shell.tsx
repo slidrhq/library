@@ -75,7 +75,6 @@ export function Shell() {
           go={go}
           lang={lang}
           variants={studio.variants}
-          serverUrl={studio.mediaUrl}
           onOpenVariant={openInStudio}
         />
       </main>

@@ -40,8 +40,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Опубликовано: {when}',
   'library.navLabel': 'Разделы библиотеки',
   'library.title': 'Медиатека',
-  'library.otherServer':
-    'Сервер публикует в {url}; здесь показана библиотека, которую читает приложение.',
   'library.overview': 'Обзор',
   'library.reloadHint': 'Заново читает библиотеку в том виде, в каком она опубликована сейчас',
   'library.reload': '↻ Обновить',

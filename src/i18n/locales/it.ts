@@ -42,7 +42,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': 'Pubblicato: {when}',
   'library.navLabel': 'Sezioni della libreria',
   'library.title': 'Libreria multimediale',
-  'library.otherServer': "Il server pubblica su {url}; qui è mostrata la libreria che legge l'app.",
   'library.overview': 'Panoramica',
   'library.reloadHint': 'Rilegge la libreria come è pubblicata ora',
   'library.reload': '↻ Aggiorna',

@@ -40,8 +40,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': '公開日時: {when}',
   'library.navLabel': 'ライブラリのセクション',
   'library.title': 'メディアライブラリ',
-  'library.otherServer':
-    'サーバーの公開先は {url} です。ここにはアプリが読み込むライブラリが表示されています。',
   'library.overview': '概要',
   'library.reloadHint': '現在公開されている状態でライブラリを読み込み直します',
   'library.reload': '↻ 更新',

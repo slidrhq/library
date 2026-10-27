@@ -37,7 +37,6 @@ const words: Record<MessageKey, string> = {
   'library.publishedAt': '发布时间：{when}',
   'library.navLabel': '媒体库分区',
   'library.title': '媒体库',
-  'library.otherServer': '服务器发布到 {url}；此处显示的是应用读取的媒体库。',
   'library.overview': '概览',
   'library.reloadHint': '按当前发布状态重新读取媒体库',
   'library.reload': '↻ 刷新',
