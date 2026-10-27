@@ -95,7 +95,7 @@ describe('what the library takes', () => {
       'icons',
       'fonts',
     ]);
-    assert.deepEqual(Object.keys(byType.designs!.actions), ['add', 'translate', 'tag']);
+    assert.deepEqual(Object.keys(byType.designs!.actions), ['add', 'translate', 'draw', 'tag']);
     assert.deepEqual(Object.keys(byType.templates!.actions), ['translate']);
     assert.equal(byType.fonts!.uploads, false);
     assert.match(byType.fonts!.closed!, /gen-builtin-fonts/);
@@ -127,6 +127,7 @@ describe('what the library takes', () => {
       [
         'designs: add',
         'designs: translate',
+        'designs: draw',
         'designs: tag',
         'templates: translate',
         'cards: tag',

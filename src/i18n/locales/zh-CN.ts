@@ -206,6 +206,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': '已发布',
   'uploads.kind.designs.add': '新设计',
   'uploads.kind.designs.translate': '设计的其他语言版本',
+  'uploads.kind.designs.draw': '设计的图库图片',
   'uploads.kind.templates.translate': '模板的其他语言版本',
   'uploads.kind.tag': '搜索标签',
   'uploads.tags.items': '{count} 项',

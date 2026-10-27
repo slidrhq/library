@@ -215,6 +215,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': '게시됨',
   'uploads.kind.designs.add': '새 디자인',
   'uploads.kind.designs.translate': '다른 언어로 된 디자인',
+  'uploads.kind.designs.draw': '디자인의 갤러리 이미지',
   'uploads.kind.templates.translate': '다른 언어로 된 템플릿',
   'uploads.kind.tag': '검색 태그',
   'uploads.tags.items': '항목 {count}개',

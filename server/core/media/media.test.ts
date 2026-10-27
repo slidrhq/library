@@ -727,6 +727,59 @@ describe('a publication', () => {
     );
   });
 
+  test('takes pictures drawn again of a published design while its slides are the ones drawn', async () => {
+    const { upload, media, approve } = await live();
+    await approve(design, { picture: webp(1008, 1496) });
+    const revs = json<Revs>(media, REVS);
+    const word = (lang: string) => ({ word: revs.designs[lang]![ID] });
+    const drawing = (languages: Record<string, unknown>, id = ID) => ({
+      type: 'designs',
+      action: 'draw',
+      id,
+      languages,
+    });
+    const drawn = await approve(drawing({ he: word('he'), ja: word('ja') }), {
+      'thumb-he': webp(320, 180),
+      'thumb-ja': webp(320, 180),
+    });
+    assert.equal(drawn.status, 'published');
+    assert.deepEqual(media.objects.get(thumbPath('ja', ID))!.data, webp(320, 180));
+    assert.deepEqual(json<{ designs: unknown }>(media, THUMBS).designs, {
+      he: { [ID]: revs.designs.he![ID] },
+      ja: { [ID]: revs.designs.ja![ID] },
+    });
+    // The slides are as they were.
+    assert.deepEqual(json<Revs>(media, REVS).designs, revs.designs);
+
+    // A slide changed since it was drawn is drawn again.
+    await approve({
+      type: 'designs',
+      action: 'translate',
+      id: ID,
+      languages: {
+        fr: { slide: designSlide('fr', undefined, ['Soirée', 'Sur le port', 'Venez nombreux']) },
+      },
+    });
+    const issuesOf = async (answer: Response) => {
+      assert.equal(answer.status, 422);
+      return (await read<{ issues: { path: string }[] }>(answer)).issues.map((one) => one.path);
+    };
+    const thumb = webp(320, 180);
+    assert.deepEqual(
+      await issuesOf(await upload(drawing({ fr: word('fr') }), { 'thumb-fr': thumb })),
+      ['languages.fr.word'],
+    );
+    // A picture of no language, a language without its picture, and a design the library lacks.
+    assert.deepEqual(
+      await issuesOf(await upload(drawing({ de: word('de') }), { 'thumb-it': thumb })),
+      ['files.thumb-it', 'files.thumb-de'],
+    );
+    assert.deepEqual(
+      await issuesOf(await upload(drawing({ he: word('he') }, 'm-nowhere'), { 'thumb-he': thumb })),
+      ['id'],
+    );
+  });
+
   test('Try again writes what is made of the designs where it is of another library', async () => {
     const record: DesignRecord = {
       id: 'm-old',

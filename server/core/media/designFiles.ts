@@ -63,8 +63,11 @@ interface ThumbsIndex {
   designs: Record<string, Record<string, string>>;
 }
 
-/** The pictures made ahead a publication wrote: of each design, its languages. */
-export type Drawn = Map<string, Set<string>>;
+/**
+ * The pictures made ahead a publication wrote: of each design, its languages, each with the word
+ * of the slide it was drawn of; none where it was drawn of the slide published with it.
+ */
+export type Drawn = Map<string, Map<string, string | undefined>>;
 
 /** A catalog of designs as the structure of its JSON says it, without reading it as objects. */
 interface Catalog {
@@ -268,10 +271,11 @@ async function writeThumbs(media: Bucket, writing: Writing, drawn: Drawn, revs: 
     designs: isRecord(read?.designs) ? read.designs : {},
   };
   for (const [id, languages] of drawn) {
-    for (const lang of languages) {
+    for (const [lang, of] of languages) {
+      // A picture of a slide changed since it was drawn is not of the slide: it is drawn live.
       const word = revs.designs[lang]?.[id];
       const words = (index.designs[lang] ??= {});
-      if (word) words[id] = word;
+      if (word && (of === undefined || of === word)) words[id] = word;
       else delete words[id];
     }
   }

@@ -212,6 +212,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'منشور',
   'uploads.kind.designs.add': 'تصميم جديد',
   'uploads.kind.designs.translate': 'تصميم بلغة إضافية',
+  'uploads.kind.designs.draw': 'صور المعرض لتصميم',
   'uploads.kind.templates.translate': 'قالب بلغة إضافية',
   'uploads.kind.tag': 'وسوم البحث',
   'uploads.tags.items': 'عدد العناصر: {count}',

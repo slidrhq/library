@@ -17,7 +17,7 @@ import {
   languageDir,
   type ContentLanguage,
 } from '@slidr/model';
-import { addDesign, translateDesign } from './designs.ts';
+import { addDesign, drawDesign, translateDesign } from './designs.ts';
 import type { ActionId, Handler, TypeId } from './handler.ts';
 import { tagHandler } from './tags.ts';
 import { translateTemplate } from './templates.ts';
@@ -62,7 +62,7 @@ export const PARTS: readonly Part[] = [
     type: 'designs',
     written: 'content',
     paths: ['elements/designs/managed.json', 'images/designs/'],
-    handlers: [addDesign, translateDesign],
+    handlers: [addDesign, translateDesign, drawDesign],
   }),
   {
     type: 'templates',

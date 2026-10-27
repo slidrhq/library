@@ -217,6 +217,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'Yayınlandı',
   'uploads.kind.designs.add': 'Yeni tasarım',
   'uploads.kind.designs.translate': 'Başka bir dilde tasarım',
+  'uploads.kind.designs.draw': 'Bir tasarımın galeri görselleri',
   'uploads.kind.templates.translate': 'Başka bir dilde şablon',
   'uploads.kind.tag': 'Arama etiketleri',
   'uploads.tags.items': '{count} öğe',

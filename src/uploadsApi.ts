@@ -22,7 +22,8 @@ export const TAGGED = [
 export type Tagged = (typeof TAGGED)[number];
 
 /** What an upload does, as `<type>:<action>`. */
-export type Kind = 'designs:add' | 'designs:translate' | 'templates:translate' | `${Tagged}:tag`;
+export type Kind =
+  'designs:add' | 'designs:translate' | 'designs:draw' | 'templates:translate' | `${Tagged}:tag`;
 /** The kinds a person makes on the page; tags come from programs (the app's `tag-elements.mjs`). */
 export const KINDS: readonly Kind[] = ['designs:add', 'designs:translate', 'templates:translate'];
 
@@ -95,6 +96,8 @@ export interface LanguagePart {
   name?: string;
   groupName?: string;
   tags?: string[] | Record<string, string[]>;
+  /** The word of the slide a drawing's picture is of (`designs: draw`). */
+  word?: string;
 }
 
 export const kindOf = (upload: { type: string; action: string }) =>

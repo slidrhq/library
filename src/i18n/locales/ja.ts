@@ -218,6 +218,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': '公開済み',
   'uploads.kind.designs.add': '新規デザイン',
   'uploads.kind.designs.translate': 'デザインの別言語版',
+  'uploads.kind.designs.draw': 'デザインのギャラリー画像',
   'uploads.kind.templates.translate': 'テンプレートの別言語版',
   'uploads.kind.tag': '検索タグ',
   'uploads.tags.items': '{count} 件',

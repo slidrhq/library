@@ -31,9 +31,9 @@ export type TypeId = (typeof TYPES)[number];
 /**
  * What an upload does: `add` puts a new item into the library, `translate` writes a published
  * item in more languages, `tag` gives published items the words the search finds them by
- * (`tags.ts`).
+ * (`tags.ts`), `draw` brings the pictures made ahead of a published item, which it leaves as it is.
  */
-export const ACTIONS = ['add', 'translate', 'tag'] as const;
+export const ACTIONS = ['add', 'translate', 'tag', 'draw'] as const;
 export type ActionId = (typeof ACTIONS)[number];
 
 /** A field of an upload, as `GET /api/content` describes it. */

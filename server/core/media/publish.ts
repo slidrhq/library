@@ -168,13 +168,19 @@ async function filesOf(upload: Upload, uploads: Bucket): Promise<[string, Uint8A
 
 /**
  * Notes which slides of a design the upload drew a picture of ahead (`thumb-<language>`), and
- * which it changed without one: the picture of an earlier slide is not of the new one.
+ * which it changed without one: the picture of an earlier slide is not of the new one. A drawing
+ * (`draw`) names the word of the slide each picture is of; another upload drew the slide it brings.
  */
 function noteDrawn(upload: Upload, languages: readonly string[], drawn: Drawn) {
-  const of = drawn.get(upload.target) ?? new Set<string>();
+  const of = drawn.get(upload.target) ?? new Map<string, string | undefined>();
   for (const lang of languages) {
-    if (upload.files[`thumb-${lang}`]) of.add(lang);
-    else of.delete(lang);
+    if (!upload.files[`thumb-${lang}`]) of.delete(lang);
+    else if (upload.action !== 'draw') of.set(lang, undefined);
+    else {
+      const word = (upload.languages[lang as ContentLanguage] as { word?: unknown } | undefined)
+        ?.word;
+      of.set(lang, typeof word === 'string' ? word : '');
+    }
   }
   drawn.set(upload.target, of);
 }
@@ -215,6 +221,12 @@ async function apply(
     for (const [path, bytes] of files) changes.setBytes(path, bytes);
     noteDrawn(upload, written, drawn);
     return [MANAGED, ...files.map(([path]) => path)];
+  }
+  if (type === 'designs' && action === 'draw') {
+    const files = await filesOf(upload, uploads);
+    for (const [path, bytes] of files) changes.setBytes(path, bytes);
+    noteDrawn(upload, Object.keys(upload.languages), drawn);
+    return files.map(([path]) => path);
   }
   if (type === 'templates' && action === 'translate') {
     let catalog = await changes.read(TEMPLATES);

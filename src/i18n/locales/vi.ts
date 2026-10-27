@@ -217,6 +217,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'Đã xuất bản',
   'uploads.kind.designs.add': 'Thiết kế mới',
   'uploads.kind.designs.translate': 'Thiết kế bằng ngôn ngữ khác',
+  'uploads.kind.designs.draw': 'Ảnh thư viện của một thiết kế',
   'uploads.kind.templates.translate': 'Mẫu bằng ngôn ngữ khác',
   'uploads.kind.tag': 'Thẻ tìm kiếm',
   'uploads.tags.items': '{count} mục',

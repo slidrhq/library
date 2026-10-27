@@ -24,7 +24,7 @@ import {
 } from '@slidr/model';
 import { familyIn, type FontShelf } from '../../../vendor/desktop/src/elements/designFonts.ts';
 import { isRecord } from '../http.ts';
-import { THUMB_HEIGHT, THUMB_WIDTH, thumbPath } from '../media/designFiles.ts';
+import { REVS, THUMB_HEIGHT, THUMB_WIDTH, thumbPath } from '../media/designFiles.ts';
 import {
   Issues,
   PICTURE_BYTES,
@@ -364,6 +364,91 @@ export const translateDesign: Handler = {
     if (!issues.none) return issues.all;
     const withBackdrop = await library.has(backdrop.path(id));
     await checkLanguages(draft, library, { backdrop: withBackdrop, named: false, only }, issues);
+    return issues.all;
+  },
+};
+
+/** The word of a slide, as `elements/designs/revs.json` gives it: 16 hexadecimal digits. */
+const WORD = /^[0-9a-f]{16}$/;
+
+/**
+ * `draw`: the pictures made ahead of a published design's slides, drawn again of the slides as
+ * they are published. Each language names the word of the slide its picture is of, and is taken
+ * while the slide has that word (`../media/designFiles.ts`).
+ */
+export const drawDesign: Handler = {
+  type: 'designs',
+  action: 'draw',
+  about:
+    "Pictures of a published design's slides as the galleries show them, drawn of the slides as " +
+    "they are published, which it does not change: of any design, the app's own too, in any " +
+    'language it is written in. Slidr Studio draws those the library lacks.',
+  id: "The published design's id, as `m-techmeetup`.",
+  fields: [],
+  languages: { required: [], allowed: CONTENT_LANGUAGES, complete: [] },
+  languageFields: [
+    {
+      name: 'word',
+      type: 'string',
+      about:
+        'The word of the slide the picture was drawn of, as `elements/designs/revs.json` gives it ' +
+        "(the app's `designWord.ts`). The picture is taken while the slide has that word.",
+      required: true,
+    },
+  ],
+  files: CONTENT_LANGUAGES.map(thumb),
+  async check(draft, library, only) {
+    const issues = new Issues();
+    const id = draft.target;
+    checkThumbs(draft, issues);
+    if (!(await library.has(picture.path(id)))) {
+      issues.add('id', `The library has no design ${id}.`);
+      return issues.all;
+    }
+    if (Object.keys(draft.languages).length === 0) {
+      issues.add('languages', 'A drawing brings the picture of one slide at least.');
+    }
+    for (const name of Object.keys(draft.files)) {
+      const lang = thumbLanguage(name) as ContentLanguage | undefined;
+      if (lang && !isRecord(draft.languages[lang])) {
+        issues.add(`files.${name}`, `${name} is of no language of the upload.`);
+      }
+    }
+    const checked = languagesToCheck(draft, only);
+    if (checked.length === 0) return issues.all;
+    const revs = (await library.has(REVS))
+      ? await library.json<{ designs?: Partial<Record<string, Record<string, string>>> }>(REVS)
+      : undefined;
+    for (const [lang, part] of checked) {
+      const at = `languages.${lang}`;
+      const english = LANGUAGE_NAMES[lang].english;
+      if (!isRecord(part)) {
+        issues.add(at, 'The content of a language is an object.', lang);
+        continue;
+      }
+      for (const key of unknownKeys(part, ['word'])) {
+        issues.add(`${at}.${key}`, `A drawing's content in a language has no field ${key}.`, lang);
+      }
+      if (!draft.files[`thumb-${lang}`]) {
+        issues.add(`files.thumb-${lang}`, `The picture of the slide in ${english}.`, lang);
+      }
+      const word = revs?.designs?.[lang]?.[id];
+      if (typeof part.word !== 'string' || !WORD.test(part.word)) {
+        issues.add(
+          `${at}.word`,
+          `The word of the slide drawn, 16 hexadecimal digits, as ${REVS} gives it.`,
+          lang,
+        );
+      } else if (!word) {
+        issues.add(at, `The library has no slide of ${id} in ${english}.`, lang);
+      } else if (word !== part.word) {
+        issues.add(
+          `${at}.word`,
+          `The slide in ${english} is no longer the one drawn: draw it again.`,
+          lang,
+        );
+      }
+    }
     return issues.all;
   },
 };

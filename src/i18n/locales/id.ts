@@ -221,6 +221,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'Diterbitkan',
   'uploads.kind.designs.add': 'Desain baru',
   'uploads.kind.designs.translate': 'Desain dalam bahasa lain',
+  'uploads.kind.designs.draw': 'Gambar galeri sebuah desain',
   'uploads.kind.templates.translate': 'Templat dalam bahasa lain',
   'uploads.kind.tag': 'Tag pencarian',
   'uploads.tags.items': '{count} item',

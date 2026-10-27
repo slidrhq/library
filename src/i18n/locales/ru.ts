@@ -220,6 +220,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'Опубликована',
   'uploads.kind.designs.add': 'Новый дизайн',
   'uploads.kind.designs.translate': 'Дизайн на другом языке',
+  'uploads.kind.designs.draw': 'Изображения дизайна для галереи',
   'uploads.kind.templates.translate': 'Шаблон на другом языке',
   'uploads.kind.tag': 'Теги для поиска',
   'uploads.tags.items': 'Элементов: {count}',

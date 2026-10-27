@@ -223,6 +223,7 @@ const words: Record<MessageKey, string> = {
   'uploads.status.published': 'Publicada',
   'uploads.kind.designs.add': 'Diseño nuevo',
   'uploads.kind.designs.translate': 'Diseño en otro idioma',
+  'uploads.kind.designs.draw': 'Imágenes de galería de un diseño',
   'uploads.kind.templates.translate': 'Plantilla en otro idioma',
   'uploads.kind.tag': 'Etiquetas de búsqueda',
   'uploads.tags.items': '{count} elementos',

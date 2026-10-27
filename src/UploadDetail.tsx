@@ -43,6 +43,7 @@ export const RULES: Record<
 > = {
   'designs:add': { allowed: CONTENT_LANGUAGES, required: BASE },
   'designs:translate': { allowed: OTHERS, required: [] },
+  'designs:draw': { allowed: CONTENT_LANGUAGES, required: [] },
   'templates:translate': { allowed: OTHERS, required: [] },
   ...(Object.fromEntries(
     TAGGED.map((type) => [`${type}:tag`, { allowed: BASE, required: BASE }]),
@@ -280,6 +281,41 @@ function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }
                   width={256}
                   notSlide={notSlide}
                 />
+                <figcaption lang={one} dir="auto">
+                  {nativeName(one)}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/** A drawing (`designs: draw`): the picture of each slide it brings, as the galleries show it. */
+function DrawStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
+  const t = useT();
+  const drawn = CONTENT_LANGUAGES.filter((one) => upload.files[`thumb-${one}`]);
+  const shown = upload.files[`thumb-${lang}`];
+  return (
+    <>
+      {shown && (
+        <img
+          src={shown.url}
+          alt=""
+          width={640}
+          height={360}
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
+      )}
+      {drawn.length > 1 && (
+        <>
+          <h3>{t('uploads.detail.everyLanguage')}</h3>
+          <div className="thumbs">
+            {drawn.map((one) => (
+              <figure key={one}>
+                <img src={upload.files[`thumb-${one}`]!.url} alt="" width={256} height={144} />
                 <figcaption lang={one} dir="auto">
                   {nativeName(one)}
                 </figcaption>
@@ -776,6 +812,8 @@ export function UploadDetail({
         <TagStage upload={upload} lang={shown} />
       ) : upload.type === 'templates' ? (
         <TemplateStage upload={upload} lang={shown} />
+      ) : upload.action === 'draw' ? (
+        <DrawStage upload={upload} lang={shown} />
       ) : (
         <DesignStage upload={upload} lang={shown} />
       )}
