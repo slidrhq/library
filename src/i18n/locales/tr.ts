@@ -206,7 +206,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Kapat',
   'uploads.nav': 'Yüklemeler',
   'uploads.about':
-    'Kütüphaneye girmeyi bekleyen içerik: her yükleme yayınlanmış kütüphaneye göre denetlenir, kabul edilir ve bir sonraki yayınlamayla kütüphaneye girer.',
+    'Kütüphaneye giren içerik: her yükleme kütüphaneye göre denetlenir ve onayı onu hemen kütüphaneye yazar.',
   'uploads.new': '+ Yeni yükleme',
   'uploads.searchHint': 'Kimliğe göre ara…',
   'uploads.filterLabel': 'Yükleme durumu',
@@ -238,7 +238,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Durum',
   'uploads.detail.about.pending':
     'İnceleme bekliyor. Kabul edilene kadar dilleri eklenebilir ve değiştirilebilir.',
-  'uploads.detail.about.accepted': 'Kabul edildi: bir sonraki yayınlamayla kütüphaneye girer.',
+  'uploads.detail.about.accepted':
+    'Kabul edildi ve yazılmayı bekliyor: kütüphane onu bir dakika içinde yazar, ya da yeniden denendiğinde hemen.',
   'uploads.detail.about.rejected':
     'Reddedildi. Yeniden beklemeye alınabilir veya geri çekilebilir.',
   'uploads.detail.about.published': 'Yayınlanmış kütüphanede.',
@@ -365,7 +366,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profil',
   'tokens.about': 'Hesabınız ve programların onun adına yükleme yapmasını sağlayan belirteçler.',
   'tokens.provider': '{provider} ile oturum açıldı',
-  'tokens.providerLocal': 'Kütüphanenin kurulu olduğu bilgisayarda oturum açıldı',
+  'tokens.providerLocal': 'Sahibin tek kullanımlık bağlantısıyla giriş yaptı',
   'tokens.title': 'Belirteçler',
   'tokens.explain':
     'Belirteç, bir programın bu hesap adına kütüphaneye yükleme yapmasını sağlar. İsteğin üst bilgisine eklenir, başka bir şey gerekmez:',

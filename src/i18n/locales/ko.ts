@@ -204,7 +204,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': '닫기',
   'uploads.nav': '업로드',
   'uploads.about':
-    '라이브러리에 들어가기를 기다리는 콘텐츠입니다. 각 업로드는 게시된 라이브러리와 대조해 검사되고, 승인되면 다음 게시 때 추가됩니다.',
+    '라이브러리에 들어오는 콘텐츠: 각 업로드는 라이브러리와 대조해 검사되며, 승인하면 즉시 라이브러리에 기록됩니다.',
   'uploads.new': '+ 새 업로드',
   'uploads.searchHint': 'ID로 검색…',
   'uploads.filterLabel': '업로드 상태',
@@ -236,7 +236,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': '상태',
   'uploads.detail.about.pending':
     '검토를 기다리고 있습니다. 승인될 때까지 언어를 추가하거나 교체할 수 있습니다.',
-  'uploads.detail.about.accepted': '승인되었습니다. 다음 게시 때 라이브러리에 추가됩니다.',
+  'uploads.detail.about.accepted':
+    '승인되었고 기록을 기다리는 중입니다. 라이브러리가 1분 안에 기록하며, 다시 시도하면 즉시 기록됩니다.',
   'uploads.detail.about.rejected': '거부되었습니다. 다시 대기 상태로 돌리거나 철회할 수 있습니다.',
   'uploads.detail.about.published': '게시된 라이브러리에 있습니다.',
   'uploads.detail.accept': '승인',
@@ -362,7 +363,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': '프로필',
   'tokens.about': '내 계정과, 프로그램이 이 계정으로 업로드할 수 있게 하는 토큰입니다.',
   'tokens.provider': '{provider} 계정으로 로그인함',
-  'tokens.providerLocal': '라이브러리가 설치된 컴퓨터에서 로그인함',
+  'tokens.providerLocal': '소유자의 일회용 링크로 로그인함',
   'tokens.title': '토큰',
   'tokens.explain':
     '토큰이 있으면 프로그램이 이 계정으로 라이브러리에 업로드할 수 있습니다. 요청 헤더에 넣어 보내기만 하면 되며, 다른 것은 필요 없습니다:',

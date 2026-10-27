@@ -207,7 +207,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': '閉じる',
   'uploads.nav': 'アップロード',
   'uploads.about':
-    'ライブラリへの追加を待っているコンテンツ。各アップロードは公開中のライブラリと照らし合わせて確認され、承認されると次回の公開で追加されます。',
+    'ライブラリに入るコンテンツ：各アップロードはライブラリと照合され、承認するとすぐにライブラリに書き込まれます。',
   'uploads.new': '+ 新規アップロード',
   'uploads.searchHint': 'ID で検索…',
   'uploads.filterLabel': 'アップロードの状態',
@@ -241,7 +241,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': '状態',
   'uploads.detail.about.pending':
     '審査待ちです。承認されるまでは、言語の追加や差し替えができます。',
-  'uploads.detail.about.accepted': '承認済みです。次回の公開でライブラリに追加されます。',
+  'uploads.detail.about.accepted':
+    '承認済みで、書き込み待ちです。ライブラリは1分以内に書き込みます。再試行すればすぐに書き込まれます。',
   'uploads.detail.about.rejected': '却下されました。審査待ちに戻すか、取り下げることができます。',
   'uploads.detail.about.published': '公開中のライブラリに含まれています。',
   'uploads.detail.accept': '承認',
@@ -373,7 +374,7 @@ const words: Record<MessageKey, string> = {
   'tokens.about':
     'あなたのアカウントと、プログラムがこのアカウントとしてアップロードできるようにするトークンです。',
   'tokens.provider': '{provider} でログイン中',
-  'tokens.providerLocal': 'ライブラリがインストールされているコンピューターでログイン中',
+  'tokens.providerLocal': '所有者の一度限りのリンクでサインイン',
   'tokens.title': 'トークン',
   'tokens.explain':
     'トークンを使うと、プログラムがこのアカウントとしてライブラリにアップロードできます。リクエストのヘッダーに入れて送るだけで、ほかには何も要りません:',

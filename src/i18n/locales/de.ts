@@ -210,7 +210,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Schließen',
   'uploads.nav': 'Uploads',
   'uploads.about':
-    'Inhalte, die auf die Aufnahme in die Bibliothek warten: Jeder Upload wird mit der veröffentlichten Bibliothek abgeglichen, angenommen und mit der nächsten Veröffentlichung aufgenommen.',
+    'Inhalte, die in die Bibliothek kommen: Jeder Upload wird mit der Bibliothek abgeglichen, und seine Freigabe schreibt ihn sofort hinein.',
   'uploads.new': '+ Neuer Upload',
   'uploads.searchHint': 'Nach ID suchen…',
   'uploads.filterLabel': 'Upload-Status',
@@ -243,7 +243,7 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.about.pending':
     'Wartet auf Prüfung. Bis zur Annahme können Sprachen hinzugefügt und ersetzt werden.',
   'uploads.detail.about.accepted':
-    'Angenommen: Er kommt mit der nächsten Veröffentlichung in die Bibliothek.',
+    'Angenommen und wartet darauf, geschrieben zu werden: Die Bibliothek schreibt es innerhalb einer Minute, oder sofort bei einem neuen Versuch.',
   'uploads.detail.about.rejected':
     'Abgelehnt. Er kann zurück in die Warteschlange gesetzt oder zurückgezogen werden.',
   'uploads.detail.about.published': 'In der veröffentlichten Bibliothek.',
@@ -372,7 +372,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profil',
   'tokens.about': 'Ihr Konto und die Tokens, mit denen Programme in seinem Namen hochladen.',
   'tokens.provider': 'Angemeldet über {provider}',
-  'tokens.providerLocal': 'Angemeldet auf dem Rechner, auf dem die Bibliothek installiert ist',
+  'tokens.providerLocal': 'Angemeldet über den Einmal-Link des Eigentümers',
   'tokens.title': 'Tokens',
   'tokens.explain':
     'Mit einem Token lädt ein Programm im Namen dieses Kontos in die Bibliothek hoch. Es steht im Header der Anfrage, mehr ist nicht nötig:',

@@ -65,8 +65,13 @@ function UploadCard({
         <span className={`badge status-badge ${upload.status}`}>{t(statusKey(upload.status))}</span>
       </span>
       <span className="lib-card-body">
-        <span className="lib-card-title" dir={upload.action === 'tag' ? undefined : 'ltr'}>
-          {subjectOf(t, upload)}
+        <span className="lib-card-title">
+          {upload.action === 'tag' ? (
+            subjectOf(t, upload)
+          ) : (
+            // An item's id, from left to right, at the start of the card as the other titles are.
+            <span dir="ltr">{subjectOf(t, upload)}</span>
+          )}
         </span>
         <span className="muted small">{t(kindKey(upload))}</span>
         <span className="lib-card-meta small">

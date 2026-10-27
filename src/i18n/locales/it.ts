@@ -209,7 +209,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Chiudi',
   'uploads.nav': 'Caricamenti',
   'uploads.about':
-    'Contenuti in attesa di entrare nella libreria: ogni caricamento viene verificato rispetto alla libreria pubblicata, accettato, ed entra con la prossima pubblicazione.',
+    'Contenuti che entrano nella libreria: ogni caricamento è verificato rispetto alla libreria, e la sua approvazione lo scrive subito al suo interno.',
   'uploads.new': '+ Nuovo caricamento',
   'uploads.searchHint': 'Cerca per ID…',
   'uploads.filterLabel': 'Stato del caricamento',
@@ -242,7 +242,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Stato',
   'uploads.detail.about.pending':
     'In attesa di revisione. Le lingue si possono aggiungere e sostituire finché non viene accettato.',
-  'uploads.detail.about.accepted': 'Accettato: entra nella libreria con la prossima pubblicazione.',
+  'uploads.detail.about.accepted':
+    'Accettato, e in attesa di essere scritto: la libreria lo scrive entro un minuto, o subito quando si riprova.',
   'uploads.detail.about.rejected': 'Rifiutato. Può essere rimesso in attesa o ritirato.',
   'uploads.detail.about.published': 'Nella libreria pubblicata.',
   'uploads.detail.accept': 'Accetta',
@@ -371,7 +372,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profilo',
   'tokens.about': 'Il tuo account e i token che permettono ai programmi di caricare a suo nome.',
   'tokens.provider': 'Accesso effettuato con {provider}',
-  'tokens.providerLocal': 'Accesso effettuato dal computer in cui è installata la libreria',
+  'tokens.providerLocal': 'Accesso con il link monouso del proprietario',
   'tokens.title': 'Token',
   'tokens.explain':
     'Un token permette a un programma di caricare nella libreria a nome di questo account. Va nell’intestazione della richiesta, e non serve altro:',

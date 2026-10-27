@@ -206,7 +206,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Đóng',
   'uploads.nav': 'Tải lên',
   'uploads.about':
-    'Nội dung đang chờ vào thư viện: mỗi bản tải lên được kiểm tra với thư viện đã xuất bản, được chấp nhận, rồi vào thư viện trong lần xuất bản tiếp theo.',
+    'Nội dung đi vào thư viện: mỗi lượt tải lên được kiểm tra với thư viện, và khi được phê duyệt sẽ được ghi vào ngay.',
   'uploads.new': '+ Tải lên mới',
   'uploads.searchHint': 'Tìm theo ID…',
   'uploads.filterLabel': 'Trạng thái tải lên',
@@ -238,7 +238,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Trạng thái',
   'uploads.detail.about.pending':
     'Đang chờ xem xét. Có thể thêm và thay các ngôn ngữ của nó cho đến khi được chấp nhận.',
-  'uploads.detail.about.accepted': 'Đã chấp nhận: sẽ vào thư viện trong lần xuất bản tiếp theo.',
+  'uploads.detail.about.accepted':
+    'Đã chấp nhận và đang chờ ghi: thư viện sẽ ghi trong vòng một phút, hoặc ngay lập tức khi thử lại.',
   'uploads.detail.about.rejected':
     'Bị từ chối. Có thể đưa nó trở lại trạng thái chờ, hoặc rút lại.',
   'uploads.detail.about.published': 'Đã nằm trong thư viện đã xuất bản.',
@@ -367,7 +368,7 @@ const words: Record<MessageKey, string> = {
   'tokens.about':
     'Tài khoản của bạn, và các token cho phép chương trình tải lên dưới tên tài khoản này.',
   'tokens.provider': 'Đã đăng nhập bằng {provider}',
-  'tokens.providerLocal': 'Đã đăng nhập trên máy cài thư viện',
+  'tokens.providerLocal': 'Đã đăng nhập bằng liên kết dùng một lần của chủ sở hữu',
   'tokens.title': 'Token',
   'tokens.explain':
     'Token cho phép một chương trình tải lên thư viện dưới tên tài khoản này. Token được gửi trong tiêu đề của yêu cầu, ngoài ra không cần gì khác:',

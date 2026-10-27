@@ -213,7 +213,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Fermer',
   'uploads.nav': 'Envois',
   'uploads.about':
-    'Du contenu en attente d’entrer dans la bibliothèque : chaque envoi est vérifié par rapport à la bibliothèque publiée, accepté, puis intégré à la prochaine publication.',
+    'Le contenu qui entre dans la bibliothèque : chaque envoi est vérifié par rapport à la bibliothèque, et son approbation l’y écrit aussitôt.',
   'uploads.new': '+ Nouvel envoi',
   'uploads.searchHint': 'Rechercher par ID…',
   'uploads.filterLabel': 'Statut de l’envoi',
@@ -247,7 +247,7 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.about.pending':
     'En attente d’examen. Vous pouvez ajouter et remplacer ses langues jusqu’à ce qu’il soit accepté.',
   'uploads.detail.about.accepted':
-    'Accepté : il entrera dans la bibliothèque à la prochaine publication.',
+    'Acceptée, et en attente d’écriture : la bibliothèque l’écrit dans la minute, ou aussitôt si l’on réessaie.',
   'uploads.detail.about.rejected': 'Refusé. Il peut être remis en attente, ou retiré.',
   'uploads.detail.about.published': 'Dans la bibliothèque publiée.',
   'uploads.detail.accept': 'Accepter',
@@ -375,7 +375,7 @@ const words: Record<MessageKey, string> = {
   'tokens.about':
     'Votre compte, et les jetons qui permettent à des programmes de téléverser en son nom.',
   'tokens.provider': 'Connecté avec {provider}',
-  'tokens.providerLocal': 'Connecté sur l’ordinateur où la médiathèque est installée',
+  'tokens.providerLocal': 'Connecté par le lien à usage unique du propriétaire',
   'tokens.title': 'Jetons',
   'tokens.explain':
     'Un jeton permet à un programme de téléverser dans la médiathèque au nom de ce compte. Il figure dans l’en-tête de la requête, et rien d’autre n’est nécessaire :',

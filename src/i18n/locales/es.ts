@@ -212,7 +212,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Cerrar',
   'uploads.nav': 'Subidas',
   'uploads.about':
-    'Contenido que espera entrar en la biblioteca: cada subida se comprueba con la biblioteca publicada, se acepta y entra con la próxima publicación.',
+    'Contenido que entra en la biblioteca: cada subida se comprueba con la biblioteca, y su aprobación la escribe en ella al instante.',
   'uploads.new': '+ Nueva subida',
   'uploads.searchHint': 'Buscar por ID…',
   'uploads.filterLabel': 'Estado de la subida',
@@ -244,7 +244,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Estado',
   'uploads.detail.about.pending':
     'En espera de revisión. Puedes añadir y reemplazar sus idiomas hasta que se acepte.',
-  'uploads.detail.about.accepted': 'Aceptada: entra en la biblioteca con la próxima publicación.',
+  'uploads.detail.about.accepted':
+    'Aceptada, y a la espera de escribirse: la biblioteca la escribe en un minuto, o al instante si se vuelve a intentar.',
   'uploads.detail.about.rejected': 'Rechazada. Se puede devolver a la espera o retirar.',
   'uploads.detail.about.published': 'En la biblioteca publicada.',
   'uploads.detail.accept': 'Aceptar',
@@ -374,7 +375,7 @@ const words: Record<MessageKey, string> = {
   'tokens.about':
     'Tu cuenta y los tokens que permiten a los programas subir contenido en su nombre.',
   'tokens.provider': 'Sesión iniciada con {provider}',
-  'tokens.providerLocal': 'Sesión iniciada en el equipo donde está instalada la biblioteca',
+  'tokens.providerLocal': 'Entró con el enlace de un solo uso del propietario',
   'tokens.title': 'Tokens',
   'tokens.explain':
     'Un token permite a un programa subir contenido a la biblioteca en nombre de esta cuenta. Va en la cabecera de la solicitud y no hace falta nada más:',

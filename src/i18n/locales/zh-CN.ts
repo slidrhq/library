@@ -195,8 +195,7 @@ const words: Record<MessageKey, string> = {
   'account.failed': '使用 Google 登录失败，请重试。',
   'account.dismiss': '关闭',
   'uploads.nav': '上传',
-  'uploads.about':
-    '等待进入媒体库的内容：每个上传都会对照已发布的媒体库进行检查，审核通过后在下次发布时加入。',
+  'uploads.about': '进入库的内容：每次上传都会对照库进行检查，批准后会立即写入库中。',
   'uploads.new': '+ 新建上传',
   'uploads.searchHint': '按 ID 搜索…',
   'uploads.filterLabel': '上传状态',
@@ -226,7 +225,7 @@ const words: Record<MessageKey, string> = {
   'uploads.issues.failed': '未保存：{error}',
   'uploads.detail.status': '状态',
   'uploads.detail.about.pending': '等待审核。在通过之前，可以添加或替换其语言版本。',
-  'uploads.detail.about.accepted': '已通过，将在下次发布时加入媒体库。',
+  'uploads.detail.about.accepted': '已接受，正在等待写入：库会在一分钟内写入，或在重试时立即写入。',
   'uploads.detail.about.rejected': '已驳回。可以将其恢复为待审核，或撤回。',
   'uploads.detail.about.published': '已收录于发布的媒体库中。',
   'uploads.detail.accept': '通过',
@@ -344,7 +343,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': '个人资料',
   'tokens.about': '你的账号，以及让程序以此账号上传的令牌。',
   'tokens.provider': '已通过 {provider} 登录',
-  'tokens.providerLocal': '已在安装媒体库的电脑上登录',
+  'tokens.providerLocal': '通过所有者的一次性链接登录',
   'tokens.title': '令牌',
   'tokens.explain':
     '令牌让程序以此账号向媒体库上传内容。把它放在请求头中发送即可，无需其他任何东西：',

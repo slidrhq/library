@@ -201,7 +201,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'إغلاق',
   'uploads.nav': 'عمليات الرفع',
   'uploads.about':
-    'محتوى ينتظر دخول المكتبة: يُفحص كل رفع مقابل المكتبة المنشورة، ثم يُقبل، ويدخلها مع النشر التالي.',
+    'المحتوى الذي يدخل المكتبة: يُفحص كل رفع مقابل المكتبة، والموافقة عليه تكتبه فيها فورًا.',
   'uploads.new': '+ رفع جديد',
   'uploads.searchHint': 'البحث بالمعرّف…',
   'uploads.filterLabel': 'حالة الرفع',
@@ -231,7 +231,8 @@ const words: Record<MessageKey, string> = {
   'uploads.issues.failed': 'لم يُحفظ: {error}',
   'uploads.detail.status': 'الحالة',
   'uploads.detail.about.pending': 'بانتظار المراجعة. يمكن إضافة لغاته واستبدالها حتى يُقبل.',
-  'uploads.detail.about.accepted': 'مقبول: سيدخل المكتبة مع النشر التالي.',
+  'uploads.detail.about.accepted':
+    'قُبلت، وتنتظر أن تُكتب: تكتبها المكتبة خلال دقيقة، أو فورًا عند إعادة المحاولة.',
   'uploads.detail.about.rejected': 'مرفوض. يمكن إعادته إلى الانتظار، أو سحبه.',
   'uploads.detail.about.published': 'موجود في المكتبة المنشورة.',
   'uploads.detail.accept': 'قبول',
@@ -352,7 +353,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'الملف الشخصي',
   'tokens.about': 'حسابك، والرموز التي تتيح للبرامج الرفع باسمه.',
   'tokens.provider': 'تم تسجيل الدخول باستخدام {provider}',
-  'tokens.providerLocal': 'تم تسجيل الدخول على الجهاز المثبّتة عليه المكتبة',
+  'tokens.providerLocal': 'دخل برابط المالك لمرة واحدة',
   'tokens.title': 'الرموز',
   'tokens.explain':
     'يتيح الرمز لبرنامج أن يرفع إلى المكتبة باسم هذا الحساب. يُرسَل في ترويسة الطلب، ولا يلزم شيء آخر:',

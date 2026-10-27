@@ -210,7 +210,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Tutup',
   'uploads.nav': 'Unggahan',
   'uploads.about':
-    'Konten yang menunggu masuk ke pustaka: setiap unggahan diperiksa terhadap pustaka yang diterbitkan, diterima, lalu masuk pada penerbitan berikutnya.',
+    'Konten yang masuk ke perpustakaan: setiap unggahan diperiksa terhadap perpustakaan, dan persetujuannya langsung menuliskannya ke dalamnya.',
   'uploads.new': '+ Unggahan baru',
   'uploads.searchHint': 'Cari berdasarkan ID…',
   'uploads.filterLabel': 'Status unggahan',
@@ -241,7 +241,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Status',
   'uploads.detail.about.pending':
     'Menunggu ditinjau. Bahasanya dapat ditambah dan diganti sampai unggahan diterima.',
-  'uploads.detail.about.accepted': 'Diterima: masuk ke pustaka pada penerbitan berikutnya.',
+  'uploads.detail.about.accepted':
+    'Diterima, dan menunggu ditulis: perpustakaan menuliskannya dalam satu menit, atau langsung saat dicoba lagi.',
   'uploads.detail.about.rejected':
     'Ditolak. Unggahan dapat dikembalikan ke status menunggu, atau ditarik.',
   'uploads.detail.about.published': 'Sudah ada di pustaka yang diterbitkan.',
@@ -367,7 +368,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profil',
   'tokens.about': 'Akun Anda, dan token yang memungkinkan program mengunggah atas namanya.',
   'tokens.provider': 'Login dengan {provider}',
-  'tokens.providerLocal': 'Login di komputer tempat pustaka dipasang',
+  'tokens.providerLocal': 'Masuk dengan tautan sekali pakai pemilik',
   'tokens.title': 'Token',
   'tokens.explain':
     'Token memungkinkan program mengunggah ke pustaka atas nama akun ini. Token dikirim di header permintaan, dan tidak perlu apa pun lagi:',

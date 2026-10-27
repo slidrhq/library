@@ -208,7 +208,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Fechar',
   'uploads.nav': 'Envios',
   'uploads.about':
-    'Conteúdo à espera de entrar na biblioteca: cada envio é verificado em relação à biblioteca publicada, aceito e entra na próxima publicação.',
+    'Conteúdo que entra na biblioteca: cada envio é verificado em relação à biblioteca, e sua aprovação o grava nela na hora.',
   'uploads.new': '+ Novo envio',
   'uploads.searchHint': 'Buscar por ID…',
   'uploads.filterLabel': 'Status do envio',
@@ -240,7 +240,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Status',
   'uploads.detail.about.pending':
     'Aguardando revisão. Os idiomas podem ser adicionados e substituídos até que ele seja aceito.',
-  'uploads.detail.about.accepted': 'Aceito: entra na biblioteca na próxima publicação.',
+  'uploads.detail.about.accepted':
+    'Aceito, e aguardando ser gravado: a biblioteca o grava em até um minuto, ou na hora ao tentar de novo.',
   'uploads.detail.about.rejected': 'Recusado. Pode voltar a aguardar ou ser retirado.',
   'uploads.detail.about.published': 'Na biblioteca publicada.',
   'uploads.detail.accept': 'Aceitar',
@@ -366,7 +367,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Perfil',
   'tokens.about': 'Sua conta e os tokens que permitem a programas enviar conteúdo em nome dela.',
   'tokens.provider': 'Login feito com {provider}',
-  'tokens.providerLocal': 'Login feito no computador onde a biblioteca está instalada',
+  'tokens.providerLocal': 'Entrou pelo link de uso único do proprietário',
   'tokens.title': 'Tokens',
   'tokens.explain':
     'Um token permite que um programa envie conteúdo para a biblioteca em nome desta conta. Ele vai no cabeçalho da solicitação, e nada mais é necessário:',
