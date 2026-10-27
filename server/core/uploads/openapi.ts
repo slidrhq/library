@@ -118,12 +118,13 @@ export function openApi() {
       version: '1',
       description:
         'Content uploaded to the Slidr media library: each part of the library, in the languages ' +
-        'it is written in. An upload waits to be accepted, and a publication then writes it into ' +
-        'the library (`POST /api/publish`), which the Worker serves at `/media/`. ' +
+        'it is written in. A reviewer’s approval writes an upload into the library at once, and ' +
+        'one sent with a `publish` token is published as it comes; `POST /api/publish` writes ' +
+        'what waits. The library serves itself at `/media/`. ' +
         '`GET /api/content` says what each part takes.',
     },
     servers: [{ url: '/' }],
-    // The uploads are the library's editors': signed in on its page, or a program by its key.
+    // Signed in on the library's page, or a program by a person's token.
     security: [{ session: [] }, { token: [] }],
     paths: {
       '/api/content': {
@@ -578,7 +579,6 @@ export function openApi() {
         File: {
           type: 'object',
           properties: {
-            path: { type: 'string', description: 'Its place in the library once published.' },
             type: { type: 'string' },
             bytes: { type: 'integer' },
             sha256: { type: 'string' },
@@ -631,8 +631,11 @@ export function openApi() {
       responses: Object.fromEntries(
         [
           [400, 'The request could not be read.'],
-          [401, 'Not signed in, or a key the library does not have.'],
-          [403, 'An account that is not one of the editors, or a request from another site.'],
+          [401, 'Not signed in, or a token the library does not take.'],
+          [
+            403,
+            'Not allowed: a role or a token’s scope that does not reach, someone blocked, or a request from another site.',
+          ],
           [404, 'There is no such thing.'],
           [409, 'Not now: the upload is not in a status that allows it, or was changed meanwhile.'],
           [413, 'The upload is too large.'],

@@ -245,9 +245,10 @@ sudo bash install.sh
 
 ### 5.2 On Cloudflare
 
-The central library is today's deployment, unchanged (D12), plus two things that wait on the user (PLAN P9):
+The central library is today's deployment, unchanged (D12), plus (PLAN P9, 2026-10-27):
 
-- **The secret `LIBRARY_MASTER_KEY`.**
+- **The secret `LIBRARY_MASTER_KEY`**, a secret of the repository that each deploy gives the Worker. The vault takes over the key the sessions were signed with (`SESSION_SECRET`) the first time it is asked for, so no one is signed out, and the deploy then takes `SESSION_SECRET` and `LIBRARY_EDITORS` (imported once) away.
+- **Its jobs**, from a Cron Trigger, once a minute (§4.7).
 - **A first owner.** The secret `LIBRARY_OWNER` names the owner once, at the first start, and after that the store is the truth. There is no one-time link on Cloudflare, so the owner signs in through OIDC. Until OIDC is set, the Google client of today's secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) serves as its Google preset.
 
 The media store is the bucket `MEDIA`, as today.

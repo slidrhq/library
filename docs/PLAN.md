@@ -275,16 +275,18 @@ Nothing of the Cloudflare host changes. What goes, goes in commits of its own, s
 - **Once, by the user:** the package `library` on ghcr.io made public (**Package settings** → **Change visibility**), since a package starts private even from a public repository.
 - **Acceptance:** the tag `v0.2.0` makes a public image for both architectures; `docker pull` with no login works; `gh attestation verify oci://ghcr.io/slidrhq/library:0.2.0 --repo slidrhq/library` passes; and the release's `install.sh`, downloaded as §5.1 shows, installs it on the user's Linux machine.
 
-## P9. Moving over, cleaning up, documentation (last; waits on the user)
+## P9. Moving over, cleaning up, documentation (last)
+
+Done on 2026-10-27, on the branch `p9`: what each item became is said after it. The repository's secret `LIBRARY_MASTER_KEY` and the push to `main` are the user's.
 
 - On Cloudflare:
-  - the bootstrap of P3, checked against the real deployment: `LIBRARY_OWNER` set, then the editors imported;
-  - `LIBRARY_MASTER_KEY` set, and the Cron Trigger added (`wrangler.jsonc`; held back at the first deploy, 2026-10-25, by the user's choice);
+  - the bootstrap of P3, checked against the real deployment: the editors were imported (`config/people.json`), the first of them the owner, before the owner made a `publish` token on 2026-10-25;
+  - `LIBRARY_MASTER_KEY`, a secret of the repository that `deploy.yml` gives the Worker (`wrangler-action`'s `secrets`), and the Cron Trigger added (`wrangler.jsonc`; held back at the first deploy, 2026-10-25, by the user's choice);
   - nothing for the media: media.slidr.studio has been the bucket's own domain since 2026-10-25, with no Pages project (D10), and the Worker keeps `MEDIA_ZONE_ID` and `MEDIA_PURGE_TOKEN`;
   - `deploy.yml` and `.dev.vars.example` follow.
 - Removed:
   - `LIBRARY_KEYS` and `key:<name>` as a way in (old records still show it): done on 2026-10-25, with the programs moved to tokens (`LIBRARY_TOKEN` of `import-library.mjs` and the app's `tag-elements.mjs`; `SLIDR_LIBRARY_TOKEN` of the studio);
-  - `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key).
+  - `LIBRARY_EDITORS` (once imported), and `SESSION_SECRET` (once the vault holds the session key): the vault takes the session key over the first time it is asked for (`sessionKeyOf`), and `deploy.yml` asks, then deletes both secrets when the Worker still has them. The import's code stays, for a new deployment and for the tests.
 - The README written again: the central library; a local library (installing it with the script, the command, updating, backing up, the ways of reaching it); settings, people, tokens and publishing. Also the OpenAPI (`openapi.ts`: the `bearer` and cookie schemes, the scopes, the routes, no `path`, no media settings).
 - Other repositories, each in a commit of its own and only after asking:
   - the app: `docs/media-library.md` (approval publishes; a local library, in Docker on Linux, read at `<url>/media/`), and the help of `tag-elements.mjs` (`LIBRARY_TOKEN` is a person's token);
