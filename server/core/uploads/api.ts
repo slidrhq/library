@@ -440,17 +440,30 @@ const create: Route = async (request, ctx) => {
   if (found.length > 0) return invalid(found);
 
   const at = now();
+  // A program that publishes (a `publish` token, an admin's) has its upload accepted as it comes,
+  // when it is written in every language it needs, and published at once, as an approval is.
+  const publishes =
+    actor.via === 'token' && actor.scope === 'publish' && missingOf(handler, draft).length === 0;
   const upload: Upload = {
     id: newUploadId(),
     ...draft,
-    status: 'pending',
+    status: publishes ? 'accepted' : 'pending',
     created: at,
     updated: at,
     by: recordOf(actor),
-    history: [{ status: 'pending', at, by: recordOf(actor) }],
+    history: [
+      { status: 'pending', at, by: recordOf(actor) },
+      ...(publishes ? [{ status: 'accepted' as const, at, by: recordOf(actor) }] : []),
+    ],
   };
   await createUpload(ctx.state, upload, bytes);
-  return json(view(upload), 201, { Location: `/api/uploads/${upload.id}` });
+  const location = { Location: `/api/uploads/${upload.id}` };
+  if (publishes && (await isLive(ctx))) {
+    const publishing = await publishNow(ctx, actor, [upload.id]);
+    const after = (await readUpload(ctx.state, upload.id))?.upload ?? upload;
+    return json({ ...view(after), publishing }, 201, location);
+  }
+  return json(view(upload), 201, location);
 };
 
 // ---- GET, DELETE /api/uploads/{id}

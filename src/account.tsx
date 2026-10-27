@@ -188,7 +188,7 @@ export function AccountControl() {
           <div className="account-menu" role="dialog" aria-label={t('people.signInHere')}>
             <p className="small">{t('people.localHint')}</p>
             <code className="account-command" dir="ltr">
-              pnpm library login
+              slidr-library login
             </code>
           </div>
         )}

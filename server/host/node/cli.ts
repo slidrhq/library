@@ -1,16 +1,19 @@
 /**
- * `pnpm library <command>`: the library on this machine (README, "Installing on a machine";
- * docs/SPEC.md §5.1).
+ * `slidr-library <command>`: a local library (README, "A local library"; docs/SPEC.md §5.1). The
+ * image runs it as `slidr-library`, and the command of the machine reaches it through
+ * `docker compose exec`; from the source, for working on the code, it is `pnpm library`.
  *
  *   init          installs a library into a data folder, its installer as its owner
  *   start         serves it, on http://127.0.0.1:5176 unless told otherwise
- *   login         prints a link that signs the owner in, once, on this machine
+ *   login         prints a link that signs the owner in, once
  *   seed          copies a published library into the library's empty media folder
  *   sign-in       names the provider everyone else signs in through, and its client
+ *   owner         hands the library to another member
+ *   status        where the library is, whether it runs, and a test of its media
  *   vault rotate  seals every key of it again, under a new master key
  *
- * `--data <dir>` names the data folder of each; it is `SLIDR_LIBRARY_DATA`, or a folder of the
- * user's (`defaultDataDir`), unless named.
+ * `--data <dir>` names the data folder of each; it is `SLIDR_LIBRARY_DATA` (`/library/data` in
+ * the image), or a folder of the user's (`defaultDataDir`), unless named.
  */
 import { access, readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline/promises';
@@ -18,12 +21,13 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { LINK_SECONDS, issueLocalLink } from '../../core/auth.ts';
 import { writeConfig, type SignInSettings } from '../../core/config.ts';
+import { handOwnership } from '../../core/members.ts';
 import { ProviderUnreachable, isOneTenant, microsoftIssuer, saveSignIn } from '../../core/oidc.ts';
-import { listPeople } from '../../core/people.ts';
+import { emailOf, isEmail, listPeople } from '../../core/people.ts';
+import { testStore } from '../../core/settings.ts';
 import {
   LibraryError,
   contextOf,
-  contextSource,
   defaultDataDir,
   install,
   markRunning,
@@ -37,12 +41,17 @@ import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { MasterKeyError, type MasterSource } from './master.ts';
 import { DEFAULT_HOST, DEFAULT_PORT, isLoopback, serve } from './server.ts';
 
-const CLIENT = fileURLToPath(new URL('../../../dist/client/', import.meta.url));
+/**
+ * The built page: `LIBRARY_CLIENT` in the image, whose server is one file of its own
+ * (`dist/node/library.mjs`); else beside the source.
+ */
+const CLIENT =
+  process.env.LIBRARY_CLIENT ?? fileURLToPath(new URL('../../../dist/client/', import.meta.url));
 
-const USAGE = `pnpm library <command>
+const USAGE = `slidr-library <command>
 
-  init          [--data <dir>] --owner <email> [--media-path <dir> [--seed]] [--url <address>]
-                [--master-key-file <file> | --master-key-env]
+  init          [--data <dir>] --owner <email> [--media <dir> [--seed]] [--url <address>]
+                (--master-key-file <file> | --master-key-env)
   start         [--data <dir>] [--port ${DEFAULT_PORT}] [--url <address>]
                 [--host <address> (--tls-cert <file> --tls-key <file> | --behind-proxy)]
   login         [--data <dir>]
@@ -52,6 +61,8 @@ const USAGE = `pnpm library <command>
                 oidc --issuer <address> --client-id <id> [--name <shown>] [--allowed-domains …]
                 off
                 (the client's secret is asked for, or read from standard input)
+  owner         <email> [--data <dir>]
+  status        [--data <dir>]
   vault rotate  [--data <dir>]`;
 
 /**
@@ -109,7 +120,7 @@ async function init(args: string[]) {
     options: {
       data: { type: 'string' },
       owner: { type: 'string' },
-      'media-path': { type: 'string' },
+      media: { type: 'string' },
       url: { type: 'string' },
       'master-key-file': { type: 'string' },
       'master-key-env': { type: 'boolean' },
@@ -119,35 +130,36 @@ async function init(args: string[]) {
   const data = values.data ?? defaultDataDir();
   const owner = values.owner ?? (await ask('Your email address, as the library’s owner: '));
   if (!owner) throw new LibraryError('Name the owner: --owner <email>.');
-  const mediaPath =
-    values['media-path'] ?? (await ask('The folder of the media library (empty: not yet): '));
+  const media = values.media ?? (await ask('The media folder (empty: not yet): '));
   if (values['master-key-file'] && values['master-key-env']) {
     throw new LibraryError('The master key is in a file or in LIBRARY_MASTER_KEY, not both.');
   }
+  if (!values['master-key-file'] && !values['master-key-env']) {
+    throw new LibraryError(
+      'Name where the master key is kept, apart from the data folder: --master-key-file <file>, or --master-key-env.',
+    );
+  }
   const master: MasterSource = values['master-key-file']
     ? { file: values['master-key-file'] }
-    : values['master-key-env']
-      ? 'env'
-      : 'keychain';
+    : 'env';
   const installed = await install({
     data,
     owner,
     master,
-    ...(mediaPath ? { media: { kind: 'folder' as const, path: mediaPath } } : {}),
+    ...(media ? { media } : {}),
     ...(values.url ? { url: values.url } : {}),
   });
   for (const warning of installed.warnings) console.warn(`  ! ${warning}`);
   console.log(`Installed the library in ${installed.data}.`);
   console.log(`  owner:      ${installed.owner}`);
   console.log(`  master key: ${installed.master}`);
-  if (values.seed && mediaPath) await seedFrom(installed.data, MEDIA_LIBRARY_URL);
-  console.log('Start it: pnpm library start');
+  if (values.seed && media) await seedFrom(installed.data, MEDIA_LIBRARY_URL);
 }
 
 /** Seeds the library of a data folder from a published library, saying how far it got. */
 async function seedFrom(data: string, from: string) {
   const library = await openLibrary(data);
-  const done = await seed(await contextOf(library), from, (step) => {
+  const done = await seed(contextOf(library), from, (step) => {
     const failed = step.failed.length ? `, ${step.failed.length} failed` : '';
     console.log(`  ${step.present} of ${step.files} files${failed}`);
   });
@@ -176,6 +188,7 @@ async function start(args: string[]) {
     },
   });
   const library = await openLibrary(values.data ?? defaultDataDir());
+  // The address is its host's: the install script names it, and names it again when it changes.
   if (values.url && values.url !== library.config.url) {
     library.config = { ...library.config, url: values.url };
     await writeConfig(library.state, library.config);
@@ -206,9 +219,9 @@ async function start(args: string[]) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new LibraryError(`${values.port} is not a port.`);
   }
-  const source = contextSource(library);
+  const context = contextOf(library);
   const serving = await serve({
-    context: source,
+    context,
     mediaPath: '/media/',
     client: CLIENT,
     host,
@@ -222,7 +235,7 @@ async function start(args: string[]) {
     url: serving.url,
     ...(serving.local ? { local: serving.local } : {}),
   });
-  const jobs = sweeping(source);
+  const jobs = sweeping(() => Promise.resolve(context));
   const stop = () => {
     jobs.stop();
     void serving
@@ -234,19 +247,25 @@ async function start(args: string[]) {
   process.once('SIGTERM', stop);
 }
 
+/** The address the library is reached at: its own, or where it runs on this machine. */
+async function reachedAt(library: Awaited<ReturnType<typeof openLibrary>>) {
+  const runs = await running(library.data);
+  return {
+    runs,
+    base: library.config.url ?? runs?.url ?? `http://${DEFAULT_HOST}:${DEFAULT_PORT}/`,
+  };
+}
+
 async function login(args: string[]) {
   const { values } = parseArgs({ args, options: { data: { type: 'string' } } });
   const library = await openLibrary(values.data ?? defaultDataDir());
   const owner = (await listPeople(library.state)).find((person) => person.role === 'owner');
   if (!owner) throw new LibraryError('The library names no owner.');
-  const code = await issueLocalLink(await contextOf(library), owner.email);
-  const runs = await running(library.data);
-  const base = runs?.local ?? runs?.url ?? `http://${DEFAULT_HOST}:${DEFAULT_PORT}/`;
-  console.log(
-    `Open this on this machine, within ${LINK_SECONDS / 60} minutes, to sign ${owner.email} in (once):`,
-  );
+  const code = await issueLocalLink(contextOf(library), owner.email);
+  const { runs, base } = await reachedAt(library);
+  console.log(`Open this within ${LINK_SECONDS / 60} minutes to sign ${owner.email} in (once):`);
   console.log(`  ${new URL(`auth/local?code=${code}`, base).toString()}`);
-  if (!runs) console.log('The library is not running: start it first (pnpm library start).');
+  if (!runs) console.log('The library is not running: start it first.');
 }
 
 async function signIn(args: string[]) {
@@ -263,10 +282,10 @@ async function signIn(args: string[]) {
     },
   });
   const library = await openLibrary(values.data ?? defaultDataDir());
-  const ctx = await contextOf(library);
+  const ctx = contextOf(library);
   if (kind === 'off') {
     await saveSignIn(ctx, undefined, undefined, 'cli');
-    console.log('No one signs in through a provider now; the owner, by pnpm library login.');
+    console.log('No one signs in through a provider now; the owner, by slidr-library login.');
     return;
   }
   if (kind !== 'google' && kind !== 'microsoft' && kind !== 'oidc') throw new LibraryError(USAGE);
@@ -303,14 +322,65 @@ async function signIn(args: string[]) {
     if (error instanceof ProviderUnreachable) throw new LibraryError(error.message);
     throw error;
   }
-  const base =
-    library.config.url ??
-    (await running(library.data))?.url ??
-    `http://${DEFAULT_HOST}:${DEFAULT_PORT}/`;
+  const { base } = await reachedAt(library);
   console.log(`People sign in through ${kind} now.`);
   console.log(
     `Register this redirect URI with the client: ${new URL('auth/callback', base).toString()}`,
   );
+}
+
+async function owner(args: string[]) {
+  const { values, positionals } = parseArgs({
+    args,
+    options: { data: { type: 'string' } },
+    allowPositionals: true,
+  });
+  const [to] = positionals;
+  if (!to || !isEmail(to)) throw new LibraryError('Name the new owner: owner <email>.');
+  const library = await openLibrary(values.data ?? defaultDataDir());
+  if (!(await handOwnership(library.state, emailOf(to), 'cli'))) {
+    throw new LibraryError(`${to} is not a member: name them a reviewer or an admin first.`);
+  }
+  console.log(`${emailOf(to)} owns the library now.`);
+}
+
+/** A number of bytes, as people read it. */
+const bytesShown = (bytes: number) => {
+  const units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB'];
+  let at = 0;
+  let value = bytes;
+  while (value >= 1024 && at < units.length - 1) {
+    value /= 1024;
+    at += 1;
+  }
+  return `${at === 0 ? value : value.toFixed(1)} ${units[at]}`;
+};
+
+async function status(args: string[]) {
+  const { values } = parseArgs({ args, options: { data: { type: 'string' } } });
+  const library = await openLibrary(values.data ?? defaultDataDir());
+  const ctx = contextOf(library);
+  const { runs, base } = await reachedAt(library);
+  console.log(`Slidr Library at ${base}`);
+  console.log(`  running:    ${runs ? 'yes' : 'no'}`);
+  console.log(`  data:       ${library.data}`);
+  console.log(`  master key: ${library.keys.where}`);
+  if (!ctx.media || !ctx.mediaFolder) {
+    console.log('  media:      none');
+    return;
+  }
+  const room = await ctx.mediaFolder.room().catch(() => undefined);
+  console.log(`  media:      ${ctx.mediaFolder.path}`);
+  if (room) console.log(`  room:       ${bytesShown(room.free)} free of ${bytesShown(room.size)}`);
+  const test = await testStore(ctx.media);
+  if (!test.wrote) {
+    console.log(`  test:       failed: ${test.message ?? 'it could not be written to'}`);
+    process.exitCode = 1;
+  } else if (test.library) {
+    console.log(
+      `  test:       written to; the library published ${test.library.published}, ${test.library.files} files`,
+    );
+  } else console.log('  test:       written to; it holds no library yet (seed it)');
 }
 
 async function vault(args: string[]) {
@@ -331,6 +401,8 @@ const COMMANDS: Record<string, (args: string[]) => Promise<void>> = {
   login,
   seed: seedCommand,
   'sign-in': signIn,
+  owner,
+  status,
   vault,
 };
 

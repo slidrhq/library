@@ -23,9 +23,39 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm build
+      # The master key of the Worker's vault (docs/SPEC.md §4.4) is a secret of this repository,
+      # given to the Worker with each deploy.
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '4.151.2'
           command: deploy
+          secrets: |
+            LIBRARY_MASTER_KEY
+        env:
+          LIBRARY_MASTER_KEY: ${{ secrets.LIBRARY_MASTER_KEY }}
+      # Before the Worker had its vault, it signed sessions with SESSION_SECRET, and named its
+      # people in LIBRARY_EDITORS. The vault takes the session key over the first time it is asked
+      # for (auth.ts), so no one is signed out, and the people were imported once (people.ts):
+      # both secrets then go, if the Worker still has them (docs/PLAN.md P9).
+      - name: Retire the secrets of before the vault
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          held=$(npx wrangler secret list --format json)
+          if ! grep -Eq '"name": *"(SESSION_SECRET|LIBRARY_EDITORS)"' <<<"$held"; then
+            echo "Nothing to retire."
+            exit 0
+          fi
+          # The new version answers within seconds: each answer of /api/me asks for the key.
+          for _ in 1 2 3 4 5 6; do
+            sleep 10
+            curl -fsS https://library.slidr.workers.dev/api/me >/dev/null
+          done
+          for name in SESSION_SECRET LIBRARY_EDITORS; do
+            if grep -Eq "\"name\": *\"$name\"" <<<"$held"; then
+              npx wrangler secret delete "$name"
+            fi
+          done

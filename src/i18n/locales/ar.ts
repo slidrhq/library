@@ -201,7 +201,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'إغلاق',
   'uploads.nav': 'عمليات الرفع',
   'uploads.about':
-    'محتوى ينتظر دخول المكتبة: يُفحص كل رفع مقابل المكتبة المنشورة، ثم يُقبل، ويدخلها مع النشر التالي.',
+    'المحتوى الذي يدخل المكتبة: يُفحص كل رفع مقابل المكتبة، والموافقة عليه تكتبه فيها فورًا.',
   'uploads.new': '+ رفع جديد',
   'uploads.searchHint': 'البحث بالمعرّف…',
   'uploads.filterLabel': 'حالة الرفع',
@@ -231,7 +231,8 @@ const words: Record<MessageKey, string> = {
   'uploads.issues.failed': 'لم يُحفظ: {error}',
   'uploads.detail.status': 'الحالة',
   'uploads.detail.about.pending': 'بانتظار المراجعة. يمكن إضافة لغاته واستبدالها حتى يُقبل.',
-  'uploads.detail.about.accepted': 'مقبول: سيدخل المكتبة مع النشر التالي.',
+  'uploads.detail.about.accepted':
+    'قُبلت، وتنتظر أن تُكتب: تكتبها المكتبة خلال دقيقة، أو فورًا عند إعادة المحاولة.',
   'uploads.detail.about.rejected': 'مرفوض. يمكن إعادته إلى الانتظار، أو سحبه.',
   'uploads.detail.about.published': 'موجود في المكتبة المنشورة.',
   'uploads.detail.accept': 'قبول',
@@ -312,9 +313,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'جارٍ الرفع والفحص…',
   'uploads.form.cancel': 'إلغاء',
   'people.signInWith': 'تسجيل الدخول باستخدام {name}',
-  'people.signInHere': 'تسجيل الدخول على هذا الجهاز',
+  'people.signInHere': 'دخول المالك',
   'people.localHint':
-    'يسجّل مالك المكتبة الدخول على الجهاز المثبّتة عليه: شغّل هذا الأمر هناك، ثم افتح الرابط الذي يطبعه.',
+    'يدخل مالك المكتبة برابط لمرة واحدة: شغّل هذا الأمر على الجهاز المثبتة عليه، وافتح الرابط الذي يطبعه خلال عشر دقائق، من أي حاسوب.',
   'people.role.owner': 'هذا الحساب يملك المكتبة: يعيّن أعضاءها ويضبط إعداداتها',
   'people.role.admin': 'هذا الحساب مشرف: يعيّن الأعضاء ويراجع عمليات الرفع',
   'people.role.reviewer': 'هذا الحساب يراجع عمليات الرفع وينشر المقبول منها',
@@ -343,7 +344,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'الأعضاء',
   'people.others': 'آخرون سجّلوا الدخول',
   'people.noProvider':
-    'إلى أن يُضبط موفّر لتسجيل الدخول، لا يسجّل الدخول إلا المالك، ولا يستطيع الأعضاء المضافون ذلك: pnpm library sign-in.',
+    'إلى أن يُضبط موفّر لتسجيل الدخول، لا يسجّل الدخول إلا المالك، ولا يستطيع الأعضاء المضافون ذلك: slidr-library sign-in.',
   'people.loading': 'جارٍ قراءة الأعضاء…',
   'people.closed': 'لا يرى أعضاء المكتبة إلا مشرفوها.',
   'people.failed': 'لم ينجح ذلك: {error}',
@@ -352,7 +353,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'الملف الشخصي',
   'tokens.about': 'حسابك، والرموز التي تتيح للبرامج الرفع باسمه.',
   'tokens.provider': 'تم تسجيل الدخول باستخدام {provider}',
-  'tokens.providerLocal': 'تم تسجيل الدخول على الجهاز المثبّتة عليه المكتبة',
+  'tokens.providerLocal': 'دخل برابط المالك لمرة واحدة',
   'tokens.title': 'الرموز',
   'tokens.explain':
     'يتيح الرمز لبرنامج أن يرفع إلى المكتبة باسم هذا الحساب. يُرسَل في ترويسة الطلب، ولا يلزم شيء آخر:',
@@ -389,21 +390,18 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'حفظ',
   'settings.saved': 'تم الحفظ.',
   'settings.library.title': 'عنوان المكتبة',
-  'settings.library.explain':
-    'العنوان الذي يصل به الناس إلى المكتبة، كما يراه المتصفح: خلف خادم وكيل أو مع TLS. من دونه، تستخدم المكتبة عنوان كل طلب.',
   'settings.library.host': 'يحصل هذا الخادم على عنوانه من الجهة التي تستضيفه.',
+  'settings.library.script':
+    'عيّن نص التثبيت هذا العنوان. تشغيله مرة أخرى يغيّره، مع المنفذ وطريقة الوصول إلى المكتبة.',
   'settings.media.title': 'الوسائط',
   'settings.media.explain': 'أين تُحفظ المكتبة المنشورة. يُكتب إليها كل رفع تتم الموافقة عليه.',
   'settings.media.kind.folder': 'مجلد على هذا الجهاز',
   'settings.media.kind.r2': 'حاوية R2 الخاصة بـ Worker على Cloudflare',
   'settings.media.kind.none': 'لا يوجد مخزن للوسائط بعد',
+  'settings.media.room': '{free} متاحة من {size} على قرصه.',
+  'settings.media.fixed':
+    'سمّى نص التثبيت هذا المجلد. لنقل الوسائط، ثبّت المكتبة مرة أخرى على مجلد البيانات نفسه.',
   'settings.media.path': 'المجلد',
-  'settings.media.pathHint':
-    'مسار كامل. يجب أن يتمكن الخادم من الكتابة فيه، ولا يحتوي إلا على المكتبة.',
-  'settings.media.publicUrl': 'العنوان العام',
-  'settings.media.publicUrlHint':
-    'فقط عندما ينشر خادم ويب آخر المجلد. من دونه، يقدّمه هذا الخادم على /media/.',
-  'settings.media.saveTested': 'اختبار وحفظ',
   'settings.media.test': 'اختبار',
   'settings.media.testing': 'جارٍ الاختبار…',
   'settings.media.reachedLibrary':
@@ -433,7 +431,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.title': 'تسجيل الدخول',
   'settings.signIn.explain': 'الموفّر الذي يسجّل عبره أعضاء المكتبة ومن يرفعون إليها الدخول.',
   'settings.signIn.local':
-    'يسجّل المالك الدخول أيضًا عبر رابط من الجهاز المثبّتة عليه المكتبة (pnpm library login).',
+    'يسجّل المالك الدخول أيضًا عبر رابط من الجهاز المثبّتة عليه المكتبة (slidr-library login).',
   'settings.signIn.provider': 'الموفّر',
   'settings.signIn.none': 'لا يوجد: المالك وحده، عبر رابط الجهاز',
   'settings.signIn.oidc': 'موفّر OpenID Connect آخر',
@@ -496,54 +494,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'تمت الموافقة عليه، وكُتب في المكتبة:',
   'publications.publishSkipped':
     'لم يُنشر: {count}. ما لم يعد صالحًا أُعيد إلى الانتظار، والباقي ينتظر الكتابة. افتحها لترى السبب.',
-  'settings.media.kind.sftp': 'مجلد على خادم، عبر SFTP',
-  'settings.media.kind.ftp': 'مجلد على خادم، عبر FTP',
-  'settings.media.where': 'مكان الحفظ',
-  'settings.media.host': 'الخادم',
-  'settings.media.port': 'المنفذ',
-  'settings.media.user': 'المستخدم',
-  'settings.media.root': 'المجلد على الخادم',
-  'settings.media.rootHint': 'مسار كامل على الخادم، مثل /var/www/media. لا تكتب المكتبة إلا داخله.',
-  'settings.media.auth': 'تسجيل الدخول باستخدام',
-  'settings.media.auth.key': 'مفتاح خاص',
-  'settings.media.auth.password': 'كلمة مرور',
-  'settings.media.privateKey': 'المفتاح الخاص (OpenSSH أو PEM)',
-  'settings.media.privateKeyFile': 'اختيار ملف…',
-  'settings.media.passphrase': 'عبارة المرور',
-  'settings.media.password': 'كلمة المرور',
-  'settings.media.keyKept': 'محفوظ منذ {when}. إذا تُرك فارغًا، يبقى كما هو.',
-  'settings.media.tls': 'التشفير',
-  'settings.media.tls.explicit': 'FTPS: طلب TLS عند الاتصال (موصى به)',
-  'settings.media.tls.implicit': 'FTPS: TLS من البداية، المنفذ 990',
-  'settings.media.tls.none': 'بلا تشفير',
-  'settings.media.allowUnencrypted':
-    'السماح بـ FTP غير المشفّر: تعبر كلمة المرور والملفات الشبكة كما هي.',
-  'settings.media.unencrypted': 'الاتصال بهذا الخادم غير مشفّر.',
-  'settings.media.hostKey': 'مفتاح المضيف',
-  'settings.media.hostKeyConfirmed': 'مؤكّد',
-  'settings.media.confirmTitle': 'لم يُؤكَّد مفتاح المضيف لهذا الخادم بعد',
-  'settings.media.confirmChangedTitle': 'تغيّر مفتاح المضيف للخادم',
-  'settings.media.confirmExplain':
-    'تحقّق مع مشرف الخادم من أن هذا هو مفتاحه، مثلًا بهذا الأمر على الخادم. إلى أن يُؤكَّد، لا يُرسَل إليه شيء.',
-  'settings.media.confirmChanged': 'أُكِّد مفتاح آخر من قبل. لا تؤكّد إلا إذا غيّره مشرف الخادم.',
-  'settings.media.confirm': 'تأكيد وحفظ',
-  'settings.media.publicUrlRemoteHint':
-    'عنوان HTTPS الذي يقدّم منه ذلك الخادم المجلد. من دونه، يقدّمه هذا الخادم على /media/.',
-  'settings.media.kind.r2s3': 'حاوية R2 على Cloudflare',
-  'settings.media.accountId': 'معرّف الحساب (Account ID)',
-  'settings.media.bucket': 'اسم الحاوية',
-  'settings.media.domain': 'نطاق الحاوية',
-  'settings.media.domainHint':
-    'العنوان الذي تقدّم منه Cloudflare الحاوية، مثل https://media.example.org/. منه تقرأ التطبيقات المثبّتة.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint': 'من رمز API لـ R2 بصلاحية Object Read & Write على هذه الحاوية فقط.',
-  'settings.media.zoneId': 'معرّف منطقة النطاق (Zone ID)',
-  'settings.media.zoneIdHint':
-    'لكي تُفرغ كل عملية نشر من ذاكرة التخزين المؤقت ما كتبته. من دونه، تبقى الملفات القديمة فيها حتى تنتهي صلاحيتها.',
-  'settings.media.purgeToken': 'رمز إفراغ ذاكرة التخزين المؤقت',
-  'settings.media.purgeTokenHint':
-    'رمز API بصلاحية Cache Purge على هذه المنطقة. يُتحقَّق منه قبل الحفظ.',
   'settings.signIn.tenantHint':
     'معرّف المستأجر (Tenant) لمؤسستك، أو نطاقها، مثل contoso.onmicrosoft.com. لا تسجّل الدخول إلا حسابات هذا المستأجر.',
   'settings.signIn.ownerOnly':

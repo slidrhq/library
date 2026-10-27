@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, readdir, realpath, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 import { after, describe, test } from 'node:test';
+import { readAudit } from '../../core/audit.ts';
 import { sessionKeyOf } from '../../core/auth.ts';
 import { readConfig } from '../../core/config.ts';
 import { readPerson } from '../../core/people.ts';
@@ -28,6 +27,9 @@ async function newFolder() {
   return folder;
 }
 
+/** Where host.json says the master key is, when the tests keep it in memory. */
+const KEPT = { file: join(tmpdir(), 'slidr-library-tests', 'master.key') };
+
 /** Every file under a folder, with its bytes. */
 async function filesUnder(folder: string): Promise<Map<string, Buffer>> {
   const files = new Map<string, Buffer>();
@@ -40,49 +42,46 @@ async function filesUnder(folder: string): Promise<Map<string, Buffer>> {
 }
 
 describe('installing a library', () => {
-  test('makes its data folder: its settings, its owner, its keys', async () => {
+  test('makes its data folder: its settings, its owner, its keys, and its media folder', async () => {
     const root = await newFolder();
     const data = join(root, 'data');
     const keys = memoryKeys();
     const installed = await install({
       data,
       owner: ' Owner@Example.org ',
-      master: 'keychain',
+      master: KEPT,
       keys,
-      media: { kind: 'folder', path: join(root, 'media') },
+      media: join(root, 'media'),
     });
     assert.equal(installed.owner, 'owner@example.org');
     assert.deepEqual(installed.warnings, []);
     assert.equal(keys.held.length, 1);
     assert.ok((await stat(join(root, 'media'))).isDirectory());
-    if (process.platform === 'win32') {
-      // One entry, the installer's, and none inherited from the folders above.
-      const icacls = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'icacls.exe');
-      const { stdout } = await promisify(execFile)(icacls, [data]);
-      const entries = stdout.split(/\r?\n/).filter((line) => /:\(/.test(line));
-      assert.equal(entries.length, 1, stdout);
-      assert.doesNotMatch(stdout, /\(I\)/);
-    } else {
-      assert.equal((await stat(data)).mode & 0o777, 0o700);
-    }
+    if (process.platform !== 'win32') assert.equal((await stat(data)).mode & 0o777, 0o700);
 
     const library = await openLibrary(data, keys);
-    assert.deepEqual(library.host, { version: 1, master: 'keychain' });
+    // The media folder is the host's, not a setting of the library.
+    assert.deepEqual(library.host, { version: 1, master: KEPT, media: join(root, 'media') });
     const config = await readConfig(library.state);
-    assert.equal(config?.media?.kind, 'folder');
-    assert.equal(config?.media?.path, join(root, 'media'));
+    assert.equal('media' in (config ?? {}), false);
     assert.equal((await readPerson(library.state, 'OWNER@example.org'))?.role, 'owner');
     const session = await library.vault.get('session');
     assert.ok(session && session.length >= 43);
-    const ctx = await contextOf(library);
+    const ctx = contextOf(library);
     assert.equal(ctx.local, true);
     assert.equal(await sessionKeyOf(ctx), session);
+    assert.equal(ctx.mediaFolder?.path, join(root, 'media'));
+    const room = await ctx.mediaFolder?.room();
+    assert.ok(room && room.size > 0 && room.free >= 0 && room.free <= room.size);
+    // Its admins are shown the folder by the name the machine gives it, not the container.
+    const shown = contextOf(library, { LIBRARY_MEDIA_SHOWN: '/srv/slidr-media' });
+    assert.equal(shown.mediaFolder?.path, '/srv/slidr-media');
   });
 
   test('keeps no key in clear in its folder', async () => {
     const data = await newFolder();
     const keys = memoryKeys();
-    await install({ data, owner: 'owner@example.org', master: 'keychain', keys });
+    await install({ data, owner: 'owner@example.org', master: KEPT, keys });
     const session = (await (await openLibrary(data, keys)).vault.get('session'))!;
     const master = masterKeyText(keys.held[0]!);
     for (const [path, bytes] of await filesUnder(data)) {
@@ -94,15 +93,27 @@ describe('installing a library', () => {
 
   test('is done once in a folder, for an owner by an address', async () => {
     const data = await newFolder();
-    await install({ data, owner: 'owner@example.org', master: 'keychain', keys: memoryKeys() });
+    await install({ data, owner: 'owner@example.org', master: KEPT, keys: memoryKeys() });
     await assert.rejects(
-      install({ data, owner: 'owner@example.org', master: 'keychain', keys: memoryKeys() }),
+      install({ data, owner: 'owner@example.org', master: KEPT, keys: memoryKeys() }),
       /installed at .* already/,
     );
     await assert.rejects(
-      install({ data: await newFolder(), owner: 'owner', master: 'keychain', keys: memoryKeys() }),
+      install({ data: await newFolder(), owner: 'owner', master: KEPT, keys: memoryKeys() }),
       LibraryError,
     );
+  });
+
+  test('keeps the media folder apart from its own data', async () => {
+    const root = await newFolder();
+    const data = join(root, 'data');
+    for (const media of [data, join(data, 'media'), root]) {
+      await assert.rejects(
+        install({ data, owner: 'owner@example.org', master: KEPT, keys: memoryKeys(), media }),
+        /apart from the library/,
+        media,
+      );
+    }
   });
 
   test('takes its master key from LIBRARY_MASTER_KEY, which it never writes', async () => {
@@ -120,16 +131,38 @@ describe('installing a library', () => {
     await assert.rejects(rotate(library), /set it to a new key yourself/);
   });
 
-  test('keeps its master key in a file, when it is told to', async () => {
+  test('keeps its master key in a file apart from its data and its media', async () => {
     const root = await newFolder();
-    const file = join(root, 'secret', 'master.key');
-    const keys = fileKeys(file);
-    await install({ data: join(root, 'data'), owner: 'owner@example.org', master: { file }, keys });
+    const file = join(root, 'keys', 'master.key');
+    await install({
+      data: join(root, 'data'),
+      owner: 'owner@example.org',
+      master: { file },
+      media: join(root, 'media'),
+    });
     const text = (await readFile(file, 'utf8')).trim();
     assert.match(text, /^[A-Za-z0-9_-]{43}$/);
-    if (process.platform !== 'win32') assert.equal((await stat(file)).mode & 0o777, 0o600);
+    if (process.platform !== 'win32') {
+      assert.equal((await stat(file)).mode & 0o777, 0o600);
+      assert.equal((await stat(join(root, 'keys'))).mode & 0o777, 0o700);
+    }
     const library = await openLibrary(join(root, 'data'));
     assert.ok(await library.vault.get('session'));
+    // Inside the data folder, or the media every app reads, a key would open every other.
+    for (const [data, inside] of [
+      ['data-2', join(root, 'data-2', 'master.key')],
+      ['data-3', join(root, 'media-3', 'keys', 'master.key')],
+    ] as const) {
+      await assert.rejects(
+        install({
+          data: join(root, data),
+          owner: 'owner@example.org',
+          master: { file: inside },
+          media: join(root, 'media-3'),
+        }),
+        /kept apart from the library's data and its media/,
+      );
+    }
   });
 });
 
@@ -137,14 +170,14 @@ describe('a library installed', () => {
   test('is not opened where there is none, nor without its master key', async () => {
     const data = await newFolder();
     await assert.rejects(openLibrary(data, memoryKeys()), /No library is installed at/);
-    await install({ data, owner: 'owner@example.org', master: 'keychain', keys: memoryKeys() });
+    await install({ data, owner: 'owner@example.org', master: KEPT, keys: memoryKeys() });
     await assert.rejects(openLibrary(data, memoryKeys()), /master key is not in memory/);
   });
 
   test('seals its keys again under a new master key', async () => {
     const data = await newFolder();
     const keys = memoryKeys();
-    await install({ data, owner: 'owner@example.org', master: 'keychain', keys });
+    await install({ data, owner: 'owner@example.org', master: KEPT, keys });
     const before = await openLibrary(data, keys);
     const session = await before.vault.get('session');
     const old = keys.held[0]!.id;
@@ -152,6 +185,36 @@ describe('a library installed', () => {
     assert.equal(keys.held.length, 1);
     assert.notEqual(keys.held[0]!.id, old);
     assert.equal(await (await openLibrary(data, keys)).vault.get('session'), session);
+  });
+
+  test('opens after a rotation of its key file that stopped half way', async () => {
+    const root = await newFolder();
+    const file = join(root, 'keys', 'master.key');
+    const data = join(root, 'data');
+    await install({ data, owner: 'owner@example.org', master: { file } });
+    const library = await openLibrary(data);
+    const session = await library.vault.get('session');
+    // The next key beside the old one, every key sealed under it, and then the rotation stops.
+    const next = await newMasterKey();
+    await fileKeys(file).writeNext(next);
+    await library.vault.rotate(next);
+    const stopped = await openLibrary(data);
+    assert.equal(await stopped.vault.get('session'), session);
+    // A rotation run again finishes it, and leaves one key.
+    await rotate(stopped);
+    assert.equal((await fileKeys(file).read()).length, 1);
+    assert.equal(await (await openLibrary(data)).vault.get('session'), session);
+  });
+
+  test('loses the key of a media store that a version of before kept', async () => {
+    const data = await newFolder();
+    const keys = memoryKeys();
+    await install({ data, owner: 'owner@example.org', master: KEPT, keys });
+    await (await openLibrary(data, keys)).vault.set('media', '{"password":"kept"}', 'owner');
+    const library = await openLibrary(data, keys);
+    assert.deepEqual(await library.vault.names(), ['session']);
+    const [last] = await readAudit(library.state);
+    assert.deepEqual([last?.action, last?.target], ['vault.removed', 'media']);
   });
 
   test(
@@ -163,7 +226,7 @@ describe('a library installed', () => {
       const installed = await install({
         data: data.toUpperCase(),
         owner: 'owner@example.org',
-        master: 'keychain',
+        master: KEPT,
         keys,
       });
       assert.equal(installed.data, await realpath(data));
@@ -171,16 +234,8 @@ describe('a library installed', () => {
     },
   );
 
-  test('lives in a folder of its user by default', () => {
-    assert.equal(
-      defaultDataDir({ LOCALAPPDATA: 'C:\\Users\\a\\AppData\\Local' }, 'win32'),
-      join('C:\\Users\\a\\AppData\\Local', 'Slidr Library'),
-    );
-    assert.match(
-      defaultDataDir({}, 'darwin'),
-      /Library[\\/]Application Support[\\/]Slidr Library$/,
-    );
-    assert.equal(defaultDataDir({ XDG_DATA_HOME: '/srv' }, 'linux'), join('/srv', 'slidr-library'));
-    assert.match(defaultDataDir({ SLIDR_LIBRARY_DATA: 'here' }, 'linux'), /here$/);
+  test('lives in the folder the image names, or one of its user', () => {
+    assert.equal(defaultDataDir({ XDG_DATA_HOME: '/srv' }), join('/srv', 'slidr-library'));
+    assert.match(defaultDataDir({ SLIDR_LIBRARY_DATA: 'here' }), /here$/);
   });
 });

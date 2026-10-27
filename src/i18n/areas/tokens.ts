@@ -2,7 +2,7 @@ export const he = {
   'tokens.nav': 'פרופיל',
   'tokens.about': 'החשבון שלך, והטוקנים שמאפשרים לתוכנות להעלות בשמו.',
   'tokens.provider': 'הכניסה באמצעות {provider}',
-  'tokens.providerLocal': 'הכניסה במחשב שהספרייה מותקנת בו',
+  'tokens.providerLocal': 'נכנס בקישור החד-פעמי של הבעלים',
   'tokens.title': 'טוקנים',
   'tokens.explain':
     'טוקן מאפשר לתוכנה להעלות לספרייה בשם החשבון הזה. שולחים אותו בכותרת של הבקשה, ושום דבר אחר לא נדרש:',
@@ -38,7 +38,7 @@ export const en: Record<keyof typeof he, string> = {
   'tokens.nav': 'Profile',
   'tokens.about': 'Your account, and the tokens that let programs upload as it.',
   'tokens.provider': 'Signed in with {provider}',
-  'tokens.providerLocal': 'Signed in on the machine the library is installed on',
+  'tokens.providerLocal': 'Signed in by the owner’s one-time link',
   'tokens.title': 'Tokens',
   'tokens.explain':
     'A token lets a program upload to the library as this account. It goes in the request’s header, and nothing else is needed:',

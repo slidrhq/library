@@ -499,6 +499,29 @@ describe('a publication', () => {
     assert.deepEqual([nothing.uploads, nothing.published], [[], undefined]);
   });
 
+  test('publishes at once what a program that publishes uploads, and waits for an approval otherwise', async () => {
+    const { send, bucket, env, media } = await live();
+    const tokenOf = async (scope: string) =>
+      read<{ token: string }>(await send('/api/me/tokens', 'POST', { name: scope, scope }));
+    const studio = await caller({ bearer: (await tokenOf('publish')).token }, bucket, {
+      MEDIA: env.MEDIA,
+    });
+    const made = await read<Approved>(await studio.send('/api/uploads', 'POST', cake));
+    assert.equal(made.status, 'published');
+    assert.deepEqual(
+      made.history.map((one) => one.status),
+      ['pending', 'accepted', 'published'],
+    );
+    assert.deepEqual(made.publishing?.publication?.changed, ['tags/emoji.json']);
+    assert.ok(stored(media, 'tags/emoji.json')!.includes('birthday-cake'));
+    // A token that only uploads leaves its upload to the reviewers.
+    const script = await caller({ bearer: (await tokenOf('upload')).token }, bucket, {
+      MEDIA: env.MEDIA,
+    });
+    const waits = await read<Approved>(await script.send('/api/uploads', 'POST', balloons));
+    assert.deepEqual([waits.status, waits.publishing], ['pending', undefined]);
+  });
+
   test('puts a new design into the studio’s catalog, with its picture, and a sample into its template', async () => {
     const { send, call, media, approve } = await live();
     const added = await approve(design, { picture: webp(1008, 1496) });

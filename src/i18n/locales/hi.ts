@@ -210,7 +210,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'बंद करें',
   'uploads.nav': 'अपलोड',
   'uploads.about':
-    'लाइब्रेरी में आने की प्रतीक्षा कर रही सामग्री: हर अपलोड को प्रकाशित लाइब्रेरी से जाँचा जाता है, स्वीकार किया जाता है, और अगले प्रकाशन के साथ शामिल हो जाता है।',
+    'लाइब्रेरी में आने वाली सामग्री: हर अपलोड लाइब्रेरी से जाँचा जाता है, और उसकी मंज़ूरी उसे तुरंत लाइब्रेरी में लिख देती है।',
   'uploads.new': '+ नया अपलोड',
   'uploads.searchHint': 'ID से खोजें…',
   'uploads.filterLabel': 'अपलोड की स्थिति',
@@ -241,7 +241,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'स्थिति',
   'uploads.detail.about.pending':
     'समीक्षा की प्रतीक्षा में। स्वीकार होने तक इसकी भाषाएँ जोड़ी और बदली जा सकती हैं।',
-  'uploads.detail.about.accepted': 'स्वीकृत: यह अगले प्रकाशन के साथ लाइब्रेरी में जाएगा।',
+  'uploads.detail.about.accepted':
+    'स्वीकृत, और लिखे जाने की प्रतीक्षा में: लाइब्रेरी इसे एक मिनट के भीतर लिखती है, या फिर से कोशिश करने पर तुरंत।',
   'uploads.detail.about.rejected':
     'अस्वीकृत। इसे फिर से प्रतीक्षा में भेजा जा सकता है, या वापस लिया जा सकता है।',
   'uploads.detail.about.published': 'प्रकाशित लाइब्रेरी में है।',
@@ -323,9 +324,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'अपलोड और जाँच हो रही है…',
   'uploads.form.cancel': 'रद्द करें',
   'people.signInWith': '{name} से साइन इन करें',
-  'people.signInHere': 'इस कंप्यूटर पर साइन इन करें',
+  'people.signInHere': 'मालिक के रूप में साइन इन करें',
   'people.localHint':
-    'लाइब्रेरी का मालिक उसी कंप्यूटर पर साइन इन करता है जहाँ वह इंस्टॉल है: वहाँ यह कमांड चलाएँ और उसका दिखाया लिंक खोलें।',
+    'लाइब्रेरी का मालिक एक बार के लिंक से साइन इन करता है: जिस मशीन पर यह इंस्टॉल है वहाँ यह कमांड चलाएँ, और जो लिंक यह छापे उसे दस मिनट के भीतर किसी भी कंप्यूटर से खोलें।',
   'people.role.owner':
     'यह खाता लाइब्रेरी का मालिक है: यह उसके सदस्य तय करता है और उसे सेट अप करता है',
   'people.role.admin': 'यह खाता एडमिन है: यह सदस्य तय करता है और अपलोड की समीक्षा करता है',
@@ -358,7 +359,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'सदस्य',
   'people.others': 'साइन इन करने वाले अन्य लोग',
   'people.noProvider':
-    'जब तक कोई प्रदाता सेट नहीं होता, केवल मालिक साइन इन कर सकता है, जोड़े गए सदस्य नहीं: pnpm library sign-in.',
+    'जब तक कोई प्रदाता सेट नहीं होता, केवल मालिक साइन इन कर सकता है, जोड़े गए सदस्य नहीं: slidr-library sign-in.',
   'people.loading': 'सदस्य पढ़े जा रहे हैं…',
   'people.closed': 'लाइब्रेरी के सदस्य केवल उसके एडमिन देखते हैं।',
   'people.failed': 'यह नहीं हो सका: {error}',
@@ -367,7 +368,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'प्रोफ़ाइल',
   'tokens.about': 'आपका खाता, और वे टोकन जिनसे प्रोग्राम इसके नाम से अपलोड कर सकते हैं।',
   'tokens.provider': '{provider} से साइन इन किया',
-  'tokens.providerLocal': 'उस कंप्यूटर पर साइन इन किया जहाँ लाइब्रेरी इंस्टॉल है',
+  'tokens.providerLocal': 'मालिक के एक बार के लिंक से साइन इन',
   'tokens.title': 'टोकन',
   'tokens.explain':
     'टोकन किसी प्रोग्राम को इस खाते के नाम से लाइब्रेरी में अपलोड करने देता है। यह अनुरोध के हेडर में भेजा जाता है, और कुछ और नहीं चाहिए:',
@@ -406,21 +407,18 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'सहेजें',
   'settings.saved': 'सहेजा गया।',
   'settings.library.title': 'लाइब्रेरी का पता',
-  'settings.library.explain':
-    'वह पता जिससे लोग लाइब्रेरी तक पहुँचते हैं, जैसा उनके ब्राउज़र में दिखता है: प्रॉक्सी के पीछे, या TLS के साथ। पता न हो, तो लाइब्रेरी हर अनुरोध के पते का उपयोग करती है।',
   'settings.library.host': 'इस सर्वर का पता उसका होस्ट तय करता है।',
+  'settings.library.script':
+    'यह पता इंस्टॉल स्क्रिप्ट ने तय किया है। उसे फिर से चलाने पर यह बदलता है, पोर्ट और लाइब्रेरी तक पहुँचने के तरीके के साथ।',
   'settings.media.title': 'मीडिया',
   'settings.media.explain': 'प्रकाशित लाइब्रेरी कहाँ रखी है। हर स्वीकृत अपलोड वहीं लिखा जाता है।',
   'settings.media.kind.folder': 'इस कंप्यूटर पर एक फ़ोल्डर',
   'settings.media.kind.r2': 'Cloudflare पर Worker का R2 बकेट',
   'settings.media.kind.none': 'अभी कोई मीडिया स्टोर नहीं',
+  'settings.media.room': 'डिस्क पर {size} में से {free} खाली।',
+  'settings.media.fixed':
+    'यह फ़ोल्डर इंस्टॉल स्क्रिप्ट ने चुना है। मीडिया को कहीं और ले जाने के लिए, उसी डेटा फ़ोल्डर पर फिर से इंस्टॉल करें।',
   'settings.media.path': 'फ़ोल्डर',
-  'settings.media.pathHint':
-    'पूरा पाथ। सर्वर को वहाँ लिखने की अनुमति होनी चाहिए, और उसमें केवल लाइब्रेरी रहती है।',
-  'settings.media.publicUrl': 'सार्वजनिक पता',
-  'settings.media.publicUrlHint':
-    'केवल तब, जब कोई दूसरा वेब सर्वर फ़ोल्डर प्रकाशित करता हो। पता न हो, तो यह सर्वर उसे /media/ पर देता है।',
-  'settings.media.saveTested': 'जाँचें और सहेजें',
   'settings.media.test': 'जाँचें',
   'settings.media.testing': 'जाँच हो रही है…',
   'settings.media.reachedLibrary':
@@ -451,7 +449,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'वह प्रदाता जिससे लाइब्रेरी के सदस्य, और उसमें अपलोड करने वाले, साइन इन करते हैं।',
   'settings.signIn.local':
-    'मालिक उस कंप्यूटर के लिंक से भी साइन इन करता है जिस पर लाइब्रेरी इंस्टॉल है (pnpm library login)।',
+    'मालिक उस कंप्यूटर के लिंक से भी साइन इन करता है जिस पर लाइब्रेरी इंस्टॉल है (slidr-library login)।',
   'settings.signIn.provider': 'प्रदाता',
   'settings.signIn.none': 'कोई नहीं: केवल मालिक, कंप्यूटर के लिंक से',
   'settings.signIn.oidc': 'कोई अन्य OpenID Connect प्रदाता',
@@ -516,57 +514,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'स्वीकृत हुआ, और लाइब्रेरी में लिखा गया:',
   'publications.publishSkipped':
     'प्रकाशित नहीं हुए: {count}। जो अब मान्य नहीं, वे फिर से प्रतीक्षा में गए, और बाकी लिखे जाने की प्रतीक्षा में हैं। कारण देखने के लिए उन्हें खोलें।',
-  'settings.media.kind.sftp': 'किसी सर्वर पर एक फ़ोल्डर, SFTP के ज़रिए',
-  'settings.media.kind.ftp': 'किसी सर्वर पर एक फ़ोल्डर, FTP के ज़रिए',
-  'settings.media.where': 'स्थान',
-  'settings.media.host': 'सर्वर',
-  'settings.media.port': 'पोर्ट',
-  'settings.media.user': 'उपयोगकर्ता',
-  'settings.media.root': 'सर्वर पर फ़ोल्डर',
-  'settings.media.rootHint':
-    'सर्वर पर पूरा पाथ, जैसे /var/www/media। लाइब्रेरी केवल इसी के अंदर लिखती है।',
-  'settings.media.auth': 'साइन इन का तरीका',
-  'settings.media.auth.key': 'निजी कुंजी',
-  'settings.media.auth.password': 'पासवर्ड',
-  'settings.media.privateKey': 'निजी कुंजी (OpenSSH या PEM)',
-  'settings.media.privateKeyFile': 'फ़ाइल चुनें…',
-  'settings.media.passphrase': 'पासफ़्रेज़',
-  'settings.media.password': 'पासवर्ड',
-  'settings.media.keyKept': '{when} से सहेजा हुआ है। खाली छोड़ें, तो यही बना रहेगा।',
-  'settings.media.tls': 'एन्क्रिप्शन',
-  'settings.media.tls.explicit': 'FTPS: कनेक्ट करते समय TLS का अनुरोध (अनुशंसित)',
-  'settings.media.tls.implicit': 'FTPS: शुरू से ही TLS, पोर्ट 990',
-  'settings.media.tls.none': 'कोई नहीं',
-  'settings.media.allowUnencrypted':
-    'बिना एन्क्रिप्शन के FTP की अनुमति दें: पासवर्ड और फ़ाइलें नेटवर्क पर जैसी की तैसी जाती हैं।',
-  'settings.media.unencrypted': 'इस सर्वर से कनेक्शन एन्क्रिप्टेड नहीं है।',
-  'settings.media.hostKey': 'होस्ट कुंजी',
-  'settings.media.hostKeyConfirmed': 'पुष्टि की गई',
-  'settings.media.confirmTitle': 'इस सर्वर की होस्ट कुंजी की अभी पुष्टि नहीं हुई है',
-  'settings.media.confirmChangedTitle': 'सर्वर की होस्ट कुंजी बदल गई है',
-  'settings.media.confirmExplain':
-    'सर्वर के एडमिन से जाँच लें कि यही उसकी कुंजी है, उदाहरण के लिए सर्वर पर इस कमांड से। पुष्टि होने तक उसे कुछ भी नहीं भेजा जाता।',
-  'settings.media.confirmChanged':
-    'पहले कोई दूसरी कुंजी पुष्ट की गई थी। पुष्टि तभी करें, जब सर्वर के एडमिन ने उसे बदला हो।',
-  'settings.media.confirm': 'पुष्टि करें और सहेजें',
-  'settings.media.publicUrlRemoteHint':
-    'वह HTTPS पता जिस पर वह सर्वर फ़ोल्डर देता है। पता न हो, तो यह सर्वर उसे /media/ पर देता है।',
-  'settings.media.kind.r2s3': 'Cloudflare पर एक R2 बकेट',
-  'settings.media.accountId': 'खाता ID (Account ID)',
-  'settings.media.bucket': 'बकेट का नाम',
-  'settings.media.domain': 'बकेट का डोमेन',
-  'settings.media.domainHint':
-    'वह पता जिस पर Cloudflare बकेट देता है, जैसे https://media.example.org/। इंस्टॉल किए गए ऐप उसे वहीं से पढ़ते हैं।',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'उस R2 API टोकन से, जिसे केवल इस बकेट पर Object Read & Write की अनुमति है।',
-  'settings.media.zoneId': 'डोमेन का ज़ोन ID (Zone ID)',
-  'settings.media.zoneIdHint':
-    'ताकि हर प्रकाशन अपनी लिखी फ़ाइलें कैश से हटा दे। इसके बिना, पुरानी फ़ाइलें समाप्त होने तक कैश में रहती हैं।',
-  'settings.media.purgeToken': 'कैश साफ़ करने का टोकन',
-  'settings.media.purgeTokenHint':
-    'इस ज़ोन पर Cache Purge की अनुमति वाला API टोकन। सहेजने से पहले इसे जाँचा जाता है।',
   'settings.signIn.tenantHint':
     'आपके संगठन की टेनेंट (Tenant) ID, या उसका डोमेन, जैसे contoso.onmicrosoft.com। केवल उसी टेनेंट के खाते साइन इन करते हैं।',
   'settings.signIn.ownerOnly':

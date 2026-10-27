@@ -207,7 +207,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': '閉じる',
   'uploads.nav': 'アップロード',
   'uploads.about':
-    'ライブラリへの追加を待っているコンテンツ。各アップロードは公開中のライブラリと照らし合わせて確認され、承認されると次回の公開で追加されます。',
+    'ライブラリに入るコンテンツ：各アップロードはライブラリと照合され、承認するとすぐにライブラリに書き込まれます。',
   'uploads.new': '+ 新規アップロード',
   'uploads.searchHint': 'ID で検索…',
   'uploads.filterLabel': 'アップロードの状態',
@@ -241,7 +241,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': '状態',
   'uploads.detail.about.pending':
     '審査待ちです。承認されるまでは、言語の追加や差し替えができます。',
-  'uploads.detail.about.accepted': '承認済みです。次回の公開でライブラリに追加されます。',
+  'uploads.detail.about.accepted':
+    '承認済みで、書き込み待ちです。ライブラリは1分以内に書き込みます。再試行すればすぐに書き込まれます。',
   'uploads.detail.about.rejected': '却下されました。審査待ちに戻すか、取り下げることができます。',
   'uploads.detail.about.published': '公開中のライブラリに含まれています。',
   'uploads.detail.accept': '承認',
@@ -327,9 +328,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'アップロードして確認中…',
   'uploads.form.cancel': 'キャンセル',
   'people.signInWith': '{name} でログイン',
-  'people.signInHere': 'このコンピューターでログイン',
+  'people.signInHere': '所有者としてサインイン',
   'people.localHint':
-    'ライブラリの所有者は、ライブラリがインストールされているコンピューターでログインします。そこでこのコマンドを実行し、表示されたリンクを開いてください。',
+    'ライブラリの所有者は一度だけ使えるリンクでサインインします。インストールされたマシンでこのコマンドを実行し、表示されたリンクを10分以内に任意のコンピューターで開いてください。',
   'people.role.owner':
     'このアカウントはライブラリの所有者です。メンバーを指名し、ライブラリを設定します',
   'people.role.admin': 'このアカウントは管理者です。メンバーを指名し、アップロードを審査します',
@@ -362,7 +363,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'メンバー',
   'people.others': 'ログインしたその他の人',
   'people.noProvider':
-    'ログインのプロバイダーを設定するまでは所有者しかログインできず、追加したメンバーはログインできません: pnpm library sign-in',
+    'ログインのプロバイダーを設定するまでは所有者しかログインできず、追加したメンバーはログインできません: slidr-library sign-in',
   'people.loading': 'メンバーを読み込んでいます…',
   'people.closed': 'ライブラリのメンバーは管理者だけが見られます。',
   'people.failed': 'うまくいきませんでした: {error}',
@@ -373,7 +374,7 @@ const words: Record<MessageKey, string> = {
   'tokens.about':
     'あなたのアカウントと、プログラムがこのアカウントとしてアップロードできるようにするトークンです。',
   'tokens.provider': '{provider} でログイン中',
-  'tokens.providerLocal': 'ライブラリがインストールされているコンピューターでログイン中',
+  'tokens.providerLocal': '所有者の一度限りのリンクでサインイン',
   'tokens.title': 'トークン',
   'tokens.explain':
     'トークンを使うと、プログラムがこのアカウントとしてライブラリにアップロードできます。リクエストのヘッダーに入れて送るだけで、ほかには何も要りません:',
@@ -411,22 +412,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': '保存',
   'settings.saved': '保存しました。',
   'settings.library.title': 'ライブラリのアドレス',
-  'settings.library.explain':
-    '利用者がブラウザーでライブラリにアクセスするアドレス（プロキシの背後や TLS を使う場合）。未設定の場合は、各リクエストのアドレスを使います。',
   'settings.library.host': 'このサーバーのアドレスはホストによって決まります。',
+  'settings.library.script':
+    'このアドレスはインストールスクリプトが設定しました。もう一度実行すると、ポートやライブラリへの接続方法とあわせて変更できます。',
   'settings.media.title': 'メディア',
   'settings.media.explain':
     '公開済みライブラリの保存先です。承認されたアップロードはすべてここに書き込まれます。',
   'settings.media.kind.folder': 'このコンピューターのフォルダー',
   'settings.media.kind.r2': 'Cloudflare 上の Worker の R2 バケット',
   'settings.media.kind.none': 'メディアの保存先はまだありません',
+  'settings.media.room': 'ディスク {size} のうち {free} が空いています。',
+  'settings.media.fixed':
+    'このフォルダーはインストールスクリプトが指定しました。メディアを移すには、同じデータフォルダーにもう一度インストールします。',
   'settings.media.path': 'フォルダー',
-  'settings.media.pathHint':
-    'フルパス。サーバーが書き込み可能で、ライブラリだけを置くフォルダーです。',
-  'settings.media.publicUrl': '公開アドレス',
-  'settings.media.publicUrlHint':
-    '別の Web サーバーがフォルダーを公開する場合のみ。未設定の場合は、このサーバーが /media/ で配信します。',
-  'settings.media.saveTested': 'テストして保存',
   'settings.media.test': 'テスト',
   'settings.media.testing': 'テスト中…',
   'settings.media.reachedLibrary':
@@ -457,7 +455,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'ライブラリのメンバーとアップロードする人がログインに使うプロバイダー。',
   'settings.signIn.local':
-    '所有者は、ライブラリがインストールされているコンピューターのリンクでもログインできます（pnpm library login）。',
+    '所有者は、ライブラリがインストールされているコンピューターのリンクでもログインできます（slidr-library login）。',
   'settings.signIn.provider': 'プロバイダー',
   'settings.signIn.none': 'なし: 所有者のみ、コンピューターのリンクでログイン',
   'settings.signIn.oidc': 'その他の OpenID Connect プロバイダー',
@@ -521,57 +519,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': '承認され、ライブラリに書き込まれました:',
   'publications.publishSkipped':
     '公開されなかったもの: {count}。有効でなくなったものは審査待ちに戻り、残りは書き込み待ちです。開くと理由を確認できます。',
-  'settings.media.kind.sftp': 'サーバーのフォルダー（SFTP 経由）',
-  'settings.media.kind.ftp': 'サーバーのフォルダー（FTP 経由）',
-  'settings.media.where': '保存先',
-  'settings.media.host': 'サーバー',
-  'settings.media.port': 'ポート',
-  'settings.media.user': 'ユーザー',
-  'settings.media.root': 'サーバー上のフォルダー',
-  'settings.media.rootHint':
-    'サーバー上のフルパス（例: /var/www/media）。ライブラリはこの中にだけ書き込みます。',
-  'settings.media.auth': 'ログイン方法',
-  'settings.media.auth.key': '秘密鍵',
-  'settings.media.auth.password': 'パスワード',
-  'settings.media.privateKey': '秘密鍵（OpenSSH または PEM）',
-  'settings.media.privateKeyFile': 'ファイルを選択…',
-  'settings.media.passphrase': 'パスフレーズ',
-  'settings.media.password': 'パスワード',
-  'settings.media.keyKept': '{when} から保存されています。空欄のままなら変更されません。',
-  'settings.media.tls': '暗号化',
-  'settings.media.tls.explicit': 'FTPS: 接続時に TLS に切り替え（推奨）',
-  'settings.media.tls.implicit': 'FTPS: 最初から TLS、ポート 990',
-  'settings.media.tls.none': 'なし',
-  'settings.media.allowUnencrypted':
-    '暗号化されていない FTP を許可: パスワードとファイルがそのままネットワークを流れます。',
-  'settings.media.unencrypted': 'このサーバーへの接続は暗号化されていません。',
-  'settings.media.hostKey': 'ホスト鍵',
-  'settings.media.hostKeyConfirmed': '承認済み',
-  'settings.media.confirmTitle': 'このサーバーのホスト鍵はまだ承認されていません',
-  'settings.media.confirmChangedTitle': 'サーバーのホスト鍵が変更されました',
-  'settings.media.confirmExplain':
-    'これがサーバーの鍵であることを、サーバーの管理者に確認してください（たとえば、サーバーで次のコマンドを使います）。承認するまで、サーバーには何も送信されません。',
-  'settings.media.confirmChanged':
-    '以前は別の鍵が承認されていました。サーバーの管理者が鍵を変更した場合にのみ承認してください。',
-  'settings.media.confirm': '承認して保存',
-  'settings.media.publicUrlRemoteHint':
-    'そのサーバーがフォルダーを配信する HTTPS アドレス。未設定の場合は、このサーバーが /media/ で配信します。',
-  'settings.media.kind.r2s3': 'Cloudflare の R2 バケット',
-  'settings.media.accountId': 'アカウント ID（Account ID）',
-  'settings.media.bucket': 'バケット名',
-  'settings.media.domain': 'バケットのドメイン',
-  'settings.media.domainHint':
-    'Cloudflare がバケットを配信するアドレス（例: https://media.example.org/）。インストール済みアプリはここから読み込みます。',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'このバケットだけに Object Read & Write を許可した R2 API トークンの値です。',
-  'settings.media.zoneId': 'ドメインのゾーン ID（Zone ID）',
-  'settings.media.zoneIdHint':
-    '公開のたびに、書き込んだファイルをキャッシュから消去するためのものです。未設定の場合、古いファイルは期限切れまでキャッシュに残ります。',
-  'settings.media.purgeToken': 'キャッシュ消去用トークン',
-  'settings.media.purgeTokenHint':
-    'このゾーンで Cache Purge を許可した API トークン。保存前に確認します。',
   'settings.signIn.tenantHint':
     '組織のテナント ID、またはそのドメイン（contoso.onmicrosoft.com など）。そのテナントのアカウントだけがログインできます。',
   'settings.signIn.ownerOnly':

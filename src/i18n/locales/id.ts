@@ -210,7 +210,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Tutup',
   'uploads.nav': 'Unggahan',
   'uploads.about':
-    'Konten yang menunggu masuk ke pustaka: setiap unggahan diperiksa terhadap pustaka yang diterbitkan, diterima, lalu masuk pada penerbitan berikutnya.',
+    'Konten yang masuk ke perpustakaan: setiap unggahan diperiksa terhadap perpustakaan, dan persetujuannya langsung menuliskannya ke dalamnya.',
   'uploads.new': '+ Unggahan baru',
   'uploads.searchHint': 'Cari berdasarkan ID…',
   'uploads.filterLabel': 'Status unggahan',
@@ -241,7 +241,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Status',
   'uploads.detail.about.pending':
     'Menunggu ditinjau. Bahasanya dapat ditambah dan diganti sampai unggahan diterima.',
-  'uploads.detail.about.accepted': 'Diterima: masuk ke pustaka pada penerbitan berikutnya.',
+  'uploads.detail.about.accepted':
+    'Diterima, dan menunggu ditulis: perpustakaan menuliskannya dalam satu menit, atau langsung saat dicoba lagi.',
   'uploads.detail.about.rejected':
     'Ditolak. Unggahan dapat dikembalikan ke status menunggu, atau ditarik.',
   'uploads.detail.about.published': 'Sudah ada di pustaka yang diterbitkan.',
@@ -326,9 +327,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Mengunggah dan memeriksa…',
   'uploads.form.cancel': 'Batal',
   'people.signInWith': 'Login dengan {name}',
-  'people.signInHere': 'Login di komputer ini',
+  'people.signInHere': 'Masuk sebagai pemilik',
   'people.localHint':
-    'Pemilik pustaka login di komputer tempat pustaka dipasang: jalankan perintah ini di sana, lalu buka tautan yang dicetaknya.',
+    'Pemilik perpustakaan masuk lewat tautan sekali pakai: jalankan perintah ini di mesin tempat perpustakaan terpasang, lalu buka tautan yang dicetaknya dalam sepuluh menit, dari komputer mana pun.',
   'people.role.owner': 'Akun ini pemilik pustaka: menunjuk anggotanya dan mengaturnya',
   'people.role.admin': 'Akun ini admin: menunjuk anggota dan meninjau unggahan',
   'people.role.reviewer': 'Akun ini meninjau unggahan dan menerbitkan yang diterima',
@@ -358,7 +359,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Anggota',
   'people.others': 'Orang lain yang pernah login',
   'people.noProvider':
-    'Sampai penyedia login diatur, hanya pemilik yang dapat login, dan anggota yang Anda tambahkan belum bisa: pnpm library sign-in.',
+    'Sampai penyedia login diatur, hanya pemilik yang dapat login, dan anggota yang Anda tambahkan belum bisa: slidr-library sign-in.',
   'people.loading': 'Membaca daftar anggota…',
   'people.closed': 'Hanya admin pustaka yang dapat melihat anggotanya.',
   'people.failed': 'Tidak berhasil: {error}',
@@ -367,7 +368,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profil',
   'tokens.about': 'Akun Anda, dan token yang memungkinkan program mengunggah atas namanya.',
   'tokens.provider': 'Login dengan {provider}',
-  'tokens.providerLocal': 'Login di komputer tempat pustaka dipasang',
+  'tokens.providerLocal': 'Masuk dengan tautan sekali pakai pemilik',
   'tokens.title': 'Token',
   'tokens.explain':
     'Token memungkinkan program mengunggah ke pustaka atas nama akun ini. Token dikirim di header permintaan, dan tidak perlu apa pun lagi:',
@@ -406,22 +407,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Simpan',
   'settings.saved': 'Tersimpan.',
   'settings.library.title': 'Alamat pustaka',
-  'settings.library.explain':
-    'Alamat yang dipakai orang untuk membuka pustaka, sebagaimana tertulis di browser mereka: di balik proxy, atau dengan TLS. Tanpa alamat, pustaka memakai alamat dari setiap permintaan.',
   'settings.library.host': 'Server ini memakai alamat yang diberikan oleh host-nya.',
+  'settings.library.script':
+    'Skrip instalasi menetapkan alamat ini. Menjalankannya lagi akan mengubahnya, bersama port dan cara perpustakaan dijangkau.',
   'settings.media.title': 'Media',
   'settings.media.explain':
     'Tempat pustaka yang diterbitkan disimpan. Setiap unggahan yang disetujui ditulis ke sana.',
   'settings.media.kind.folder': 'Folder di komputer ini',
   'settings.media.kind.r2': 'Bucket R2 milik Worker, di Cloudflare',
   'settings.media.kind.none': 'Belum ada penyimpanan media',
+  'settings.media.room': '{free} kosong dari {size} di disknya.',
+  'settings.media.fixed':
+    'Skrip instalasi menetapkan folder ini. Untuk memindahkan media, instal lagi di atas folder data yang sama.',
   'settings.media.path': 'Folder',
-  'settings.media.pathHint':
-    'Jalur lengkap. Server harus dapat menulis di sana, dan isinya hanya pustaka.',
-  'settings.media.publicUrl': 'Alamat publik',
-  'settings.media.publicUrlHint':
-    'Hanya jika server web lain menerbitkan folder ini. Tanpa alamat, server ini menyajikannya di /media/.',
-  'settings.media.saveTested': 'Uji dan simpan',
   'settings.media.test': 'Uji',
   'settings.media.testing': 'Menguji…',
   'settings.media.reachedLibrary':
@@ -453,7 +451,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Penyedia yang dipakai anggota pustaka, dan siapa pun yang mengunggah ke sana, untuk login.',
   'settings.signIn.local':
-    'Pemilik juga login lewat tautan dari komputer tempat pustaka dipasang (pnpm library login).',
+    'Pemilik juga login lewat tautan dari komputer tempat pustaka dipasang (slidr-library login).',
   'settings.signIn.provider': 'Penyedia',
   'settings.signIn.none': 'Tidak ada: hanya pemilik, lewat tautan komputer',
   'settings.signIn.oidc': 'Penyedia OpenID Connect lain',
@@ -519,57 +517,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Disetujui, dan ditulis ke pustaka:',
   'publications.publishSkipped':
     'Tidak diterbitkan: {count}. Yang tidak lagi valid kembali ke status menunggu, dan sisanya menunggu ditulis. Buka untuk melihat alasannya.',
-  'settings.media.kind.sftp': 'Folder di server, lewat SFTP',
-  'settings.media.kind.ftp': 'Folder di server, lewat FTP',
-  'settings.media.where': 'Lokasi',
-  'settings.media.host': 'Server',
-  'settings.media.port': 'Port',
-  'settings.media.user': 'Pengguna',
-  'settings.media.root': 'Folder di server',
-  'settings.media.rootHint':
-    'Jalur lengkap di server, misalnya /var/www/media. Pustaka hanya menulis di dalamnya.',
-  'settings.media.auth': 'Login dengan',
-  'settings.media.auth.key': 'Kunci privat',
-  'settings.media.auth.password': 'Kata sandi',
-  'settings.media.privateKey': 'Kunci privat (OpenSSH atau PEM)',
-  'settings.media.privateKeyFile': 'Pilih file…',
-  'settings.media.passphrase': 'Passphrase',
-  'settings.media.password': 'Kata sandi',
-  'settings.media.keyKept': 'Tersimpan sejak {when}. Jika dikosongkan, tetap dipakai.',
-  'settings.media.tls': 'Enkripsi',
-  'settings.media.tls.explicit': 'FTPS: TLS diminta saat terhubung (disarankan)',
-  'settings.media.tls.implicit': 'FTPS: TLS sejak awal, port 990',
-  'settings.media.tls.none': 'Tanpa enkripsi',
-  'settings.media.allowUnencrypted':
-    'Izinkan FTP tanpa enkripsi: kata sandi dan file melintasi jaringan apa adanya.',
-  'settings.media.unencrypted': 'Koneksi ke server ini tidak terenkripsi.',
-  'settings.media.hostKey': 'Kunci host',
-  'settings.media.hostKeyConfirmed': 'Terkonfirmasi',
-  'settings.media.confirmTitle': 'Kunci host server ini belum dikonfirmasi',
-  'settings.media.confirmChangedTitle': 'Kunci host server telah berubah',
-  'settings.media.confirmExplain':
-    'Pastikan dengan admin server bahwa ini memang kuncinya, misalnya dengan perintah ini di server. Sebelum dikonfirmasi, tidak ada yang dikirim ke server.',
-  'settings.media.confirmChanged':
-    'Sebelumnya kunci lain sudah dikonfirmasi. Konfirmasi hanya jika admin server telah menggantinya.',
-  'settings.media.confirm': 'Konfirmasi dan simpan',
-  'settings.media.publicUrlRemoteHint':
-    'Alamat HTTPS tempat server tersebut menyajikan folder. Tanpa alamat, server ini menyajikannya di /media/.',
-  'settings.media.kind.r2s3': 'Bucket R2 di Cloudflare',
-  'settings.media.accountId': 'ID akun (Account ID)',
-  'settings.media.bucket': 'Nama bucket',
-  'settings.media.domain': 'Domain bucket',
-  'settings.media.domainHint':
-    'Tempat Cloudflare menyajikan bucket, misalnya https://media.example.org/. Aplikasi terpasang membacanya di sana.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'Dari token API R2 yang diizinkan Object Read & Write hanya pada bucket ini.',
-  'settings.media.zoneId': 'ID zona domain (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Agar setiap penerbitan menghapus dari cache apa yang ditulisnya. Tanpa ini, file lama tetap di cache sampai kedaluwarsa.',
-  'settings.media.purgeToken': 'Token pembersihan cache',
-  'settings.media.purgeTokenHint':
-    'Token API yang diizinkan Cache Purge pada zona ini. Token ini diperiksa sebelum disimpan.',
   'settings.signIn.tenantHint':
     'ID penyewa (Tenant) organisasi Anda, atau domainnya, seperti contoso.onmicrosoft.com. Hanya akun penyewa itu yang dapat login.',
   'settings.signIn.ownerOnly':

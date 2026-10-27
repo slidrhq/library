@@ -1,6 +1,6 @@
 # Slidr Library
 
-A web page that shows the media library as it is published (docs/media-library.md of the app), as every installed app reads it. The page only reads the library: changing it goes through publishing, from [Slidr Studio](https://github.com/slidrhq/studio) or the app's `pnpm media:publish`. It reads the site directly (`@slidr/media-library`). Its own Worker signs people in with a Google account ([Signing in](#signing-in)), and takes the content the library's editors upload, keeping it until it is published ([Uploading](#uploading)).
+The way in to the media library (docs/media-library.md of the app): a web page that shows it as every installed app reads it, and the server that manages it. People sign in ([Signing in](#signing-in)), upload content by the page or by the API with a token of their own ([Uploading](#uploading)), and a reviewer's approval writes it into the media at once ([Publishing the uploads](#publishing-the-uploads)). The central library is the Worker on Cloudflare, library.slidr.workers.dev, its media at media.slidr.studio; an organization may install a library of its own on Linux, in Docker ([A local library](#a-local-library)). [docs/SPEC.md](docs/SPEC.md) is what it does and why, and [docs/PLAN.md](docs/PLAN.md) how it was built.
 
 ## Setup
 
@@ -13,27 +13,74 @@ pnpm build; pnpm preview
 
 `pnpm dev` and `pnpm preview` run the Worker inside Vite (`@cloudflare/vite-plugin`, in Cloudflare's own runtime), with the secrets of `.dev.vars`. Without that file the page works the same, and offers no signing in.
 
-## Installing on a machine
+## A local library
 
-The library also runs on a machine of its own, without Cloudflare: one Node process serves the built page and the library's server (`server/host/node`), the same server the Worker runs (`server/core`; [docs/SPEC.md](docs/SPEC.md), and [docs/PLAN.md](docs/PLAN.md) for what is still to come).
+An organization may run a library of its own, without Cloudflare, on a Linux machine of its own ([docs/SPEC.md](docs/SPEC.md) §5): the same server the Worker runs (`server/core`), on Node (`server/host/node`), with its media in a folder of that machine's own disks. It is one Docker image, `ghcr.io/slidrhq/library`, with Nginx at its door (`docker/`), installed by a script that asks for the media folder and little else (`install/install.sh`). The central library, library.slidr.workers.dev, stays the Worker on Cloudflare.
+
+### Installing it
+
+On Linux (x86-64 or ARM64), with Docker Engine 24 or later and its compose plugin:
+
+```sh
+curl -fsSLO https://github.com/slidrhq/library/releases/latest/download/install.sh
+curl -fsSLO https://github.com/slidrhq/library/releases/latest/download/install.sh.sha256
+sha256sum -c install.sh.sha256
+gh attestation verify install.sh --repo slidrhq/library   # who built it (GitHub's CLI, signed in)
+sudo bash install.sh
+```
+
+The SHA-256 finds a download that went wrong; the attestation says that the repository's release built the script. It asks, and takes each answer as an option too (`--help`; with `--yes` it asks nothing):
+
+- **the media folder** (`--media`): a folder of this machine's own disks, empty or holding a library already. A network file system (NFS, SMB, SSHFS…) is refused, and so is a folder that holds other things;
+- **the owner** (`--owner`), who signs in first, by a one-time link the script prints;
+- **how it is reached** (`--reach`): `local`, from this machine only, over HTTP (the default); `https`, with a certificate and its key of this machine (`--url`, `--tls-cert`, `--tls-key`); or `proxy`, behind the organization's own HTTPS proxy (`--url`, `--proxy <its address>`, or `local` for a proxy of this machine);
+- **the port** (`--port`), 7543 unless it is taken;
+- **the data folder** (`--data`), `/var/lib/slidr-library` by default;
+- **whether to fill the media** from the central library (`--seed`, `--seed=<address>`, `--no-seed`).
+
+It checks them, shows a summary, and writes nothing until it is accepted. Then: the account `slidr-library` of this machine, made for the library, which the container runs as; the folders, its own; `/etc/slidr-library/compose.yaml` and `library.env` (the answers, nothing secret); the master key, made in `/etc/slidr-library/keys/`, apart from the data folder; the library, installed and seeded in a container of its own; the service, started; and `/usr/local/bin/slidr-library`. A port Docker publishes passes by `ufw`'s and `firewalld`'s rules: the script binds it to `127.0.0.1` unless the library is to be reached from elsewhere.
+
+Installed apps read the media at `<the library's address>/media/` (docs/media-library.md of the app, "A library of your own").
+
+### Running it
+
+```sh
+sudo slidr-library status        # whether it runs, where it is, and a test of its media
+sudo slidr-library login         # the owner's one-time link (ten minutes, once)
+sudo slidr-library logs -f
+sudo slidr-library stop | start | restart
+sudo slidr-library update        # the newest release; or update <version>
+sudo slidr-library change        # how it is reached, or its port
+sudo slidr-library sign-in google --client-id <id>   # the provider everyone else signs in through
+sudo slidr-library owner <email> # hands the library to another member
+sudo slidr-library vault rotate  # a new master key
+sudo slidr-library uninstall     # its data, keys and media stay; --purge takes them too
+```
+
+- **Updating** runs the newer release's script, checked against its SHA-256, which pins its image by digest. The data, keys and media stay as they are.
+- **Backing up**: the data folder, `/etc/slidr-library/keys` (kept apart from the data folder's backup), and the media folder. To restore them, put them back and run the script with the same folders: it finds the library there and keeps it.
+- **The container** runs as the account `slidr-library` of the machine, on a read-only root, with no capabilities. Its health is `/api/me` through Nginx; it starts again when it ends.
+
+### What is inside
+
+- **Nginx** (`docker/nginx.conf`) listens on 8080 in the container, over TLS when `/library/tls` holds a certificate. It serves `/media/` from the folder as the library's own server answers it (`media.conf`, its types written from `live.ts` by `pnpm nginx-types`), with `Content-Security-Policy: sandbox`, and the page's built files, and passes the rest to Node on `127.0.0.1:5176`. Its log keeps no query string: the owner's link carries its code in one.
+- **The library's server** is bundled into one file (`vite.node.config.ts`, `dist/node/library.mjs`), and the CLI is `slidr-library` in the container (`server/host/node/cli.ts`). `docker/entry.sh` starts both, and the container ends when either ends.
+- **The data folder** (`/library/data`) holds `host.json` (where the master key is, and the media folder) and the library's store, `state/`: its settings, its people, its sealed keys (`vault/`) and its uploads.
+- **The keys** the library keeps (the key its cookies are signed with, and the secret of its sign-in provider) are sealed with AES-256-GCM under the master key (`server/core/vault.ts`), `/library/keys/master.key`. `vault rotate` writes the new key beside the old one until every key is sealed again.
+- **The media** (`/library/media`) is the host's: **Settings** shows it, the room left on its disk, and a **Test** that writes and removes a probe, and never changes it (docs/SPEC.md D13).
+- **Its owner** signs in by a one-time link, opened from any address within ten minutes, once (docs/SPEC.md D17).
+
+`.github/workflows/image.yml` builds the image on every push and tries it on x86-64 and ARM64: `docker/test/image.test.ts` (Nginx's `/media/` against the library's own server, an upload by a token approved into the folder, the container's hardening, TLS) and `install/test/install.test.ts` (the script and the command, as root runs them). `.github/workflows/release.yml` makes a release from a tag `v<version>` ([Releasing](#releasing)).
+
+From the source, for working on the code (any system):
 
 ```powershell
 pnpm install; pnpm build
-pnpm library init --owner you@example.org --media-path D:\slidr-media    # once
-pnpm library start                                                        # http://127.0.0.1:5176
-pnpm library vault rotate                                                 # a new master key
+$env:LIBRARY_MASTER_KEY = '<43 characters: init says how to make one>'
+pnpm library init --data D:\tmp\library --owner you@example.org --media D:\tmp\media --master-key-env --seed
+pnpm library start --data D:\tmp\library                        # http://127.0.0.1:5176
+pnpm library login --data D:\tmp\library                        # the owner's one-time link
 ```
-
-- **The data folder** is `%LOCALAPPDATA%\Slidr Library` (on macOS `~/Library/Application Support/Slidr Library`, elsewhere `~/.local/share/slidr-library`), or `--data <dir>`, or `SLIDR_LIBRARY_DATA`. `init` makes it its user's only (on Windows by its ACL, elsewhere mode 0700). It holds `host.json` and the library's store, `state/`: its settings (`config/library.json`), its people (the installer, its owner), its sealed keys (`vault/`) and, as they come, its uploads.
-- **The keys** the library keeps (the key its cookies are signed with, and, as they come, the key of its media and of its sign-in) are sealed with AES-256-GCM under a master key that is never in the data folder (`server/core/vault.ts`): it is in the OS keychain (Windows Credential Manager, the macOS Keychain, the Secret Service) under `Slidr Library` and the folder's path; or, given `--master-key-env` to `init`, in `LIBRARY_MASTER_KEY`, set by whoever runs the server; or, given `--master-key-file <file>`, in that file. `vault rotate` seals every key again under a new master key; start the server again afterwards.
-- **The media** is where the published library is kept, as **Settings** names it (`server/host/node`), each store tried before it is kept:
-  - a folder of this machine (`media.ts`; `--media-path`, which `--seed` fills from the published library), served at the library's own `/media/`;
-  - a folder of another server over SFTP (`sftp.ts`), with a private key or a password. The server is known by its host key: the first **Test** shows its fingerprint, and nothing is sent to it until an admin confirms it; a server that later shows another key gets nothing written until it is confirmed again;
-  - a folder of an FTP server (`ftp.ts`), over TLS (explicit FTPS by default, or implicit), its certificate checked; in clear only when an admin allows it, since the password then crosses the network as it is.
-
-  A folder is never the library's own data folder, in it, or holding it; `/media/` serves only what the library's manifest names, and no path with a hidden part (`.ssh`, `.git`). A server's key is kept in the vault, is never shown again, and goes only to the server, user and bucket it was given for: naming another brings its own. What the library reads from a server is kept in `cache/` of the data folder by its SHA-256 (`remote.ts`), so `/media/` reads each version of a file from it once; installed apps read the server's own HTTPS address when Settings names one.
-
-- **Reaching it.** `start` listens on `127.0.0.1:5176` (`--port`), and answers only requests that name it by a name of this machine. Beyond it, it takes `--host <address>` with `--tls-cert` and `--tls-key`, or behind a proxy that speaks TLS (`--behind-proxy`), and the address it is reached at (`--url https://…`, kept in its settings).
 
 The page draws the library with the app's own code: the packages it uses (`@slidr/model`, `@slidr/renderer`, `@slidr/templates`, `@slidr/media-library`) and the app's readers of the library in `desktop/src` (imported as `@desktop/…`) are copied into `vendor/` from the app's repository, so this repository stands on its own. [vendor/README.md](vendor/README.md) says how to take a newer version of them. Paths in this README such as `desktop/…` and `packages/…` are of the app's repository.
 
@@ -62,12 +109,12 @@ When Slidr Studio runs on this machine (`VITE_SLIDR_STUDIO_URL`, `http://127.0.0
 
 ## Signing in
 
-The button at the end of the top bar signs in through the library's provider: Google, Microsoft, or any OpenID Connect issuer (`server/core/oidc.ts`). On a library installed on a machine, the owner also signs in there by a one-time link (`pnpm library login`), which needs no provider at all. Once signed in, the button shows the account and its role.
+The button at the end of the top bar signs in through the library's provider: Google, Microsoft, or any OpenID Connect issuer (`server/core/oidc.ts`). In a local library, the owner also signs in there by a one-time link (`slidr-library login`), which needs no provider at all. Once signed in, the button shows the account and its role.
 
-- **How.** OpenID Connect's authorization code flow, with PKCE, a `state` and a `nonce` (`server/core/auth.ts`). `/auth/login` sends the person to the provider, which sends them back to `/auth/callback`, and the server exchanges the code for the ID token with the client's secret. It checks the token's issuer, audience, expiry and nonce, and that the provider vouches for the address, in a domain the library takes when it names some. Then it sends the person back to the page and the item they signed in from. A sign-in that fails comes back with `?signin=failed`, which the page shows and takes off the address. The provider is the library's settings (`signIn`, with its client's secret in the vault; `pnpm library sign-in` on a machine), or, on Cloudflare until it has them, the Worker's Google client.
+- **How.** OpenID Connect's authorization code flow, with PKCE, a `state` and a `nonce` (`server/core/auth.ts`). `/auth/login` sends the person to the provider, which sends them back to `/auth/callback`, and the server exchanges the code for the ID token with the client's secret. It checks the token's issuer, audience, expiry and nonce, and that the provider vouches for the address, in a domain the library takes when it names some. Then it sends the person back to the page and the item they signed in from. A sign-in that fails comes back with `?signin=failed`, which the page shows and takes off the address. The provider is the library's settings (`signIn`, with its client's secret in the vault; `slidr-library sign-in` in a local library), or, on Cloudflare until it has them, the Worker's Google client.
 - **The provider** is the owner's to name: whoever names it says who each person is, the owner too. Its discovery document is read over HTTPS, and must name the very issuer the library names. Microsoft is named by one tenant, its id or its domain: through `organizations` or `common`, any tenant's admin could give an account any address. A provider's client secret, once kept, goes only to that very provider and client: naming another brings its own.
-- **The owner's link** (`/auth/local?code=`) holds for ten minutes, is used once, and is opened from the very machine the library runs on, which the server keeps to itself (`pnpm library start` listens on `127.0.0.1`). Behind a proxy, the server takes who the proxy forwards (`X-Forwarded-For`) only from a proxy of that same machine.
-- **The session** is a cookie signed with the library's session key (HMAC-SHA-256): the vault's `session`, or `SESSION_SECRET` on a Worker without a vault. It is `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. It says who the person is, never what they may do.
+- **The owner's link** (`/auth/local?code=`) holds for ten minutes, and is used once. It is opened from any address (docs/SPEC.md D17): in a container every request comes through Nginx, and the owner of a server opens it from their own computer; only someone who may run Docker on the machine makes one. Behind a proxy, the server takes who the proxy forwards (`X-Forwarded-For`) only from a proxy of that same machine.
+- **The session** is a cookie signed with the library's session key (HMAC-SHA-256): the vault's `session`, or `SESSION_SECRET` on a Worker without a vault (`pnpm dev`). It is `HttpOnly`, `SameSite=Lax`, `Secure` with the `__Host-` prefix over HTTPS, for 14 days. It says who the person is, never what they may do.
 - **Who may do what** (docs/SPEC.md §6.1; `server/core/people.ts`, `server/core/uploads/access.ts`). Anyone who signs in may upload, and sees and changes their own uploads. A **reviewer** sees every upload, accepts and rejects them, and publishes what waits. An **admin** also names the members by email (**Members**, in the page's side menu; `/api/members`), blocks a person, and publishes an author's files. The **owner**, who installed the library, is an admin no one removes, and hands the library over to another member. Roles are read on every request, so a role given or taken away counts at once, and each change goes into the audit (`audit/` of the library's store). On Cloudflare, a library that named its editors in the Worker's secrets takes them once: `LIBRARY_OWNER`, or else the first of `LIBRARY_EDITORS`, as its owner, and the other editors as reviewers.
 - **The routes** are the server's, ahead of the page's files (`assets.run_worker_first` in `wrangler.jsonc`): `GET /auth/login?return=<path>`, `GET /auth/callback`, `GET /auth/local?code=`, `POST /auth/logout`, and `GET /api/me` (how one signs in here, who is signed in, their role, and what they may do). A route that changes something, sent with a session, must come from the library's own page (its `Origin`).
 
@@ -79,25 +126,24 @@ The button at the end of the top bar signs in through the library's provider: Go
    ```powershell
    npx wrangler secret put GOOGLE_CLIENT_ID
    npx wrangler secret put GOOGLE_CLIENT_SECRET
-   npx wrangler secret put SESSION_SECRET      # node -e "console.log(crypto.randomBytes(32).toString('base64url'))"
-   npx wrangler secret put LIBRARY_EDITORS     # taken once: you@example.com, someone@example.com
-   npx wrangler secret put LIBRARY_OWNER       # optional: the owner, if not the first editor
-   npx wrangler secret put LIBRARY_MASTER_KEY  # the vault's: made as SESSION_SECRET is
+   npx wrangler secret put LIBRARY_OWNER       # the owner, read once, while the library names no one
    ```
 
-   With `LIBRARY_MASTER_KEY`, the Worker keeps keys of its own in a vault (docs/SPEC.md §4.4): the secret of the sign-in provider an admin names in **Settings**. Its sessions stay signed with `SESSION_SECRET`. Keep a copy of the master key elsewhere: without it, what the vault holds cannot be read, and the provider is named again.
+   The master key of the Worker's vault (docs/SPEC.md §4.4) is a secret of this repository, `LIBRARY_MASTER_KEY`, which each deploy gives the Worker (`deploy.yml`): `node -e "console.log(crypto.randomBytes(32).toString('base64url'))"`, then **Settings** → **Secrets and variables** → **Actions** of the repository. The vault keeps the key the sessions are signed with, and the secret of the sign-in provider the owner names in **Settings**. Keep a copy of the master key elsewhere: without it, what the vault holds cannot be read, everyone signs in again, and the provider is named again.
+
+   Before the Worker had its vault (2026-10-27), it signed its sessions with `SESSION_SECRET` and named its people in `LIBRARY_EDITORS`: the vault took the session key over, the people were imported once, and the deploy took both secrets away.
 
 3. On this machine, copy `.dev.vars.example` to `.dev.vars` and fill it in. Git ignores it.
 
-On a library installed on a machine, the provider is named by its CLI, with the redirect URI it prints to register with the client (the client's secret is asked for, never given as an option):
+In a local library, the provider is named by its CLI, with the redirect URI it prints to register with the client (the client's secret is asked for, never given as an option):
 
 ```powershell
-pnpm library sign-in google --client-id <id> [--allowed-domains example.org]
-pnpm library sign-in microsoft --tenant <id> --client-id <id> --allowed-domains example.org
-pnpm library sign-in oidc --issuer https://id.example.org/realms/staff --client-id <id> --name Staff
+slidr-library sign-in google --client-id <id> [--allowed-domains example.org]
+slidr-library sign-in microsoft --tenant <id> --client-id <id> --allowed-domains example.org
+slidr-library sign-in oidc --issuer https://id.example.org/realms/staff --client-id <id> --name Staff
 ```
 
-Until the Worker has its client and a `SESSION_SECRET` of at least 32 characters, `/api/me` says signing in is not offered, and the page shows no button.
+Until the Worker has its client, and a vault (or, for `pnpm dev` without one, a `SESSION_SECRET` of at least 32 characters), `/api/me` says signing in is not offered, and the page shows no button.
 
 ## Uploading
 
@@ -180,7 +226,7 @@ curl.exe -H "Content-Type: application/json" --data "@accept.json" http://127.0.
 
 The page does the same by hand, under **Uploads** in its side menu (`src/Uploads.tsx`). It lists the uploads by their status. An upload opens up close, drawn by the app's renderer in each of its languages, with the subject's point marked on its picture, beside its languages (each added, replaced or taken away from a JSON file), its status and its history. **New upload** takes the picture and a file for each language, named by it (`he.json`, `en.json`…), or a whole upload as the API takes it, and draws the slide, or the template's sample, before anything is sent. A click on the slide places the subject's point. What the server finds wrong is shown by language.
 
-An upload waits (`pending`) while it is written. It is then `accepted` or `rejected` (with a note). Once the library is in its bucket, approving an upload writes it into the library at once, and it is `published` ([Publishing the uploads](#publishing-the-uploads)); one that cannot be written now stays `accepted`, waiting, and says why. Before then, one marked published that the library does not have after all goes back to `accepted`, by whoever may publish. An upload is checked once more, against the library as it is then, when it is accepted, and it records who did each of these in its `history`. What does not hold is answered `422`, with every issue at its place: `{ "error": "invalid", "message", "issues": [{ "path": "languages.ja.slide", "message", "language": "ja" }] }`.
+An upload waits (`pending`) while it is written. It is then `accepted` or `rejected` (with a note). Once the library is in its bucket, approving an upload writes it into the library at once, and it is `published` ([Publishing the uploads](#publishing-the-uploads)); one that cannot be written now stays `accepted`, waiting, and says why. Before then, one marked published that the library does not have after all goes back to `accepted`, by whoever may publish. A program that publishes (a `publish` token, an admin's: the studio) skips the wait: its upload, written in every language it needs, is accepted as it comes and published at once, and the answer to `POST /api/uploads` says what came of it (`publishing`), as an approval's does. An upload is checked once more, against the library as it is then, when it is accepted, and it records who did each of these in its `history`. What does not hold is answered `422`, with every issue at its place: `{ "error": "invalid", "message", "issues": [{ "path": "languages.ja.slide", "message", "language": "ja" }] }`.
 
 **Who may upload, and how.** Anyone who signs in ([Signing in](#signing-in)), from the library's page, or a program by a token of a person's: `Authorization: Bearer slk_…`, and nothing else, no cookie and no `Origin`. A person makes their tokens in their **Profile** (from the account button; `/api/me/tokens`): each named, for 30, 90 (the default) or 365 days or until revoked, shown once and kept only as its hash (`server/core/tokens.ts`). A token acts as its person, within its scope: `upload` makes, reads, changes and withdraws that person's own uploads; `publish`, which only an admin makes, also publishes what waits, an author's files, and the library brought in. Approving is a person's, on the page. A `publish` token whose person is no longer an admin does nothing at all, and is taken away when their role is. A token that is unknown, revoked, expired, or of someone blocked answers 401, the same each time; an admin sees and revokes anyone's tokens, and blocking a person revokes them all. Anyone without a role keeps at most 20 uploads waiting, 200 MiB of their files, 10 tokens, and 60 changes a minute (`server/core/limits.ts`; the library's settings may name others). A program is a person's, and sends their token: the studio and `scripts/import-library.mjs` a `publish` one, an admin's, since they publish; the app's `tag-elements.mjs --upload` an `upload` one. The keys the Worker named before (`LIBRARY_KEYS`) open nothing any more. `server/core/uploads/access.ts` decides, by what each route is about to do. What describes the API (`/api/content`, `/api/openapi.json`, `/api/schemas/`) is open to anyone. An upload records who did each thing, by address and the token's name; what a program's key did before keeps the program's name (`key:<name>`).
 
@@ -201,7 +247,7 @@ POST /api/library/files      an author's publication: the files changed since th
 GET  /media/<path>           the library in the bucket, as a dev server serves it
 ```
 
-Approving an upload publishes it, in the same request, and the answer says how that went (`publishing`). The library's own jobs (`server/core/media/sweep.ts`) publish every approved upload that waits and is due, and once a day take away rejected uploads untouched for 30 days and all but the last 100 publications' history. On a machine they run once a minute, by the process's timer. On Cloudflare they run from a Cron Trigger, which is off for now (`wrangler.jsonc` says how to turn it on): until then an approved upload that waits is written by **Try again**, or by **Publish N accepted**, and nothing is cleared. A publication (`server/core/media/publish.ts`):
+Approving an upload publishes it, in the same request, and the answer says how that went (`publishing`). The library's own jobs (`server/core/media/sweep.ts`) publish every approved upload that waits and is due, and once a day take away rejected uploads untouched for 30 days and all but the last 100 publications' history. On a machine they run once a minute, by the process's timer. On Cloudflare they run from a Cron Trigger, once a minute (`wrangler.jsonc`; turned on 2026-10-27). A publication (`server/core/media/publish.ts`):
 
 - checks each upload once more against the library as it is; one that no longer holds goes back to `pending`, with a note that says why, for its uploader to put right; one that cannot be written now stays `accepted`, waiting (`publication`: why, the tries, the next), and is tried again after 1, 5 and 30 minutes, and then by hand (**Try again**, `POST /api/publish` with the upload); one that waits while another publication holds the library is tried at the next round (`server/core/media/settle.ts`);
 - writes each into the files it changes (`server/core/media/merge.ts`): the tags of a part merged into `tags/<part>.json`, where an item named takes the tags given in every language given and the others keep theirs; a new design into `elements/designs/managed.json` (its names, group, slides, subject, size and tags) with its picture in `images/designs/`; a design's translation into its slides; a template's sample into `templates/catalog.json`, which changes in no other byte;
@@ -259,14 +305,6 @@ media.slidr.studio is a custom domain of the bucket `slidr-media`. Cloudflare an
 6. Check it: `curl.exe -sI https://media.slidr.studio/manifest.json` answers `X-Slidr-Library: live` and `Cache-Control: no-cache`, and asked again, `cf-cache-status: HIT`; `/fonts/catalog.json` answers `Access-Control-Allow-Origin: *`.
 7. Delete the Pages project `slidr-media` (**Workers & Pages** → `slidr-media` → **Settings** → **Delete project**). slidr-media.pages.dev stops answering: no release of the app reads it.
 
-**An organization's own bucket, from a library on a machine.** A library installed on a machine may keep its media in an R2 bucket of the organization's own account, served at the organization's own domain, as media.slidr.studio is (`server/core/media/r2s3.ts`, through R2's S3 API):
-
-1. Make the bucket, give it the domain, and set the zone up, as steps 1, 3 and 4 above do, with the bucket's name and the domain in place of `slidr-media` and `media.slidr.studio`.
-2. An R2 API token for the library: **R2** → **Manage API tokens** → **Create API token**, permission **Object Read & Write**, for that one bucket. Keep its **Access Key ID** and **Secret Access Key**.
-3. A token that may empty the domain's cache, as step 5 above makes, for that zone.
-4. In the library's **Settings** → **Media** → **A Cloudflare R2 bucket**: the account's ID, the bucket's name, its domain (`https://media.example.org/`), the zone's ID, and the three keys. **Test and save** writes and removes a probe in the bucket, and empties the cache of one address with the token, before anything is kept. The keys are kept in the vault, and never shown again.
-5. Seed the bucket from the published library (**Settings** → **Seed the media**), and give installed apps the bucket's domain: the policy or the installer's line that Settings shows.
-
 ## Publishing
 
 The page runs on Cloudflare as the Worker `library` (https://library.slidr.workers.dev), which serves the page from `dist/client` and runs `server/host/cloudflare/index.ts` (the library's server, `server/core`): signing in, and the uploads (`wrangler.jsonc`; `pnpm build` writes both, and the Worker's own configuration to `dist/library`). `.github/workflows/deploy.yml` checks, tests, builds and publishes it on every push to `main`, and you can run it by hand from the Actions tab. The workflow needs two repository secrets: `CLOUDFLARE_API_TOKEN`, a token with the "Edit Cloudflare Workers" template, and `CLOUDFLARE_ACCOUNT_ID`.
@@ -274,6 +312,12 @@ The page runs on Cloudflare as the Worker `library` (https://library.slidr.worke
 To publish from your own machine: `pnpm build`, then `npx wrangler deploy`.
 
 The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made once, before the first publication: `npx wrangler r2 bucket create slidr-library-uploads`, and the published library in `slidr-media` ([Publishing the uploads](#publishing-the-uploads)). They are checked against the library in its bucket, and before it is there against the site, `https://media.slidr.studio/`, unless the Worker's variable `MEDIA_LIBRARY_URL` names another. Checking an upload (a design in every language, a sample seated on its template) takes more CPU time than the Free plan's 10 ms a request, so the Worker runs on Workers Paid. `pnpm dev` runs the Worker beside the page, with buckets of its own on this machine, in `.wrangler/`: `node scripts/import-library.mjs --url http://127.0.0.1:5176` brings the library into them.
+
+## Releasing
+
+A release of the local library is made from a tag `v<version>` that `package.json` names (`.github/workflows/release.yml`): it checks and tests, builds the image for x86-64 and ARM64 and pushes it to `ghcr.io/slidrhq/library` (`<version>`, `<major>.<minor>`, `latest`) with its SBOM and an attested provenance (`gh attestation verify oci://ghcr.io/slidrhq/library:<version> --repo slidrhq/library`), tries that very image as a machine pulls it, and makes a GitHub release with `install.sh`, which names the release's version and its image by digest, and `install.sh.sha256`. A tag deploys nothing to Cloudflare.
+
+Once, after the first release pushed the image: the package `library` on ghcr.io is made public (**Package settings** → **Change visibility**), since a package starts private even from a public repository; then the release's failed jobs are run again.
 
 ## Working on the page
 

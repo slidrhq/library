@@ -204,7 +204,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': '닫기',
   'uploads.nav': '업로드',
   'uploads.about':
-    '라이브러리에 들어가기를 기다리는 콘텐츠입니다. 각 업로드는 게시된 라이브러리와 대조해 검사되고, 승인되면 다음 게시 때 추가됩니다.',
+    '라이브러리에 들어오는 콘텐츠: 각 업로드는 라이브러리와 대조해 검사되며, 승인하면 즉시 라이브러리에 기록됩니다.',
   'uploads.new': '+ 새 업로드',
   'uploads.searchHint': 'ID로 검색…',
   'uploads.filterLabel': '업로드 상태',
@@ -236,7 +236,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': '상태',
   'uploads.detail.about.pending':
     '검토를 기다리고 있습니다. 승인될 때까지 언어를 추가하거나 교체할 수 있습니다.',
-  'uploads.detail.about.accepted': '승인되었습니다. 다음 게시 때 라이브러리에 추가됩니다.',
+  'uploads.detail.about.accepted':
+    '승인되었고 기록을 기다리는 중입니다. 라이브러리가 1분 안에 기록하며, 다시 시도하면 즉시 기록됩니다.',
   'uploads.detail.about.rejected': '거부되었습니다. 다시 대기 상태로 돌리거나 철회할 수 있습니다.',
   'uploads.detail.about.published': '게시된 라이브러리에 있습니다.',
   'uploads.detail.accept': '승인',
@@ -320,9 +321,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': '업로드하고 확인하는 중…',
   'uploads.form.cancel': '취소',
   'people.signInWith': '{name} 계정으로 로그인',
-  'people.signInHere': '이 컴퓨터에서 로그인',
+  'people.signInHere': '소유자로 로그인',
   'people.localHint':
-    '라이브러리 소유자는 라이브러리가 설치된 컴퓨터에서 로그인합니다. 그 컴퓨터에서 이 명령을 실행하고, 출력된 링크를 여세요.',
+    '라이브러리 소유자는 일회용 링크로 로그인합니다. 라이브러리가 설치된 컴퓨터에서 이 명령을 실행하고, 출력된 링크를 10분 안에 아무 컴퓨터에서나 여세요.',
   'people.role.owner': '이 계정이 라이브러리를 소유합니다. 멤버를 지정하고 라이브러리를 설정합니다',
   'people.role.admin': '이 계정은 관리자입니다. 멤버를 지정하고 업로드를 검토합니다',
   'people.role.reviewer': '이 계정은 업로드를 검토하고, 승인된 업로드를 게시합니다',
@@ -353,7 +354,7 @@ const words: Record<MessageKey, string> = {
   'people.members': '멤버',
   'people.others': '로그인한 다른 사람',
   'people.noProvider':
-    '로그인 공급자를 설정하기 전까지는 소유자만 로그인할 수 있고, 추가한 멤버는 로그인할 수 없습니다: pnpm library sign-in',
+    '로그인 공급자를 설정하기 전까지는 소유자만 로그인할 수 있고, 추가한 멤버는 로그인할 수 없습니다: slidr-library sign-in',
   'people.loading': '멤버를 읽는 중…',
   'people.closed': '라이브러리의 멤버는 관리자만 볼 수 있습니다.',
   'people.failed': '실패했습니다: {error}',
@@ -362,7 +363,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': '프로필',
   'tokens.about': '내 계정과, 프로그램이 이 계정으로 업로드할 수 있게 하는 토큰입니다.',
   'tokens.provider': '{provider} 계정으로 로그인함',
-  'tokens.providerLocal': '라이브러리가 설치된 컴퓨터에서 로그인함',
+  'tokens.providerLocal': '소유자의 일회용 링크로 로그인함',
   'tokens.title': '토큰',
   'tokens.explain':
     '토큰이 있으면 프로그램이 이 계정으로 라이브러리에 업로드할 수 있습니다. 요청 헤더에 넣어 보내기만 하면 되며, 다른 것은 필요 없습니다:',
@@ -400,21 +401,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': '저장',
   'settings.saved': '저장했습니다.',
   'settings.library.title': '라이브러리 주소',
-  'settings.library.explain':
-    '사람들이 브라우저에서 라이브러리에 접속하는 주소입니다(프록시 뒤에 있거나 TLS를 쓰는 경우). 없으면 라이브러리는 각 요청의 주소를 사용합니다.',
   'settings.library.host': '이 서버의 주소는 호스트가 정합니다.',
+  'settings.library.script':
+    '이 주소는 설치 스크립트가 정했습니다. 스크립트를 다시 실행하면 포트, 라이브러리에 접속하는 방식과 함께 바뀝니다.',
   'settings.media.title': '미디어',
   'settings.media.explain':
     '게시된 라이브러리를 보관하는 곳입니다. 승인된 업로드는 모두 여기에 기록됩니다.',
   'settings.media.kind.folder': '이 컴퓨터의 폴더',
   'settings.media.kind.r2': 'Cloudflare에 있는 Worker의 R2 버킷',
   'settings.media.kind.none': '아직 미디어 저장소가 없음',
+  'settings.media.room': '디스크 {size} 중 {free} 남음.',
+  'settings.media.fixed':
+    '이 폴더는 설치 스크립트가 정했습니다. 미디어를 옮기려면 같은 데이터 폴더에 다시 설치하세요.',
   'settings.media.path': '폴더',
-  'settings.media.pathHint': '전체 경로입니다. 서버가 쓸 수 있어야 하며, 라이브러리만 담습니다.',
-  'settings.media.publicUrl': '공개 주소',
-  'settings.media.publicUrlHint':
-    '다른 웹 서버가 폴더를 게시할 때만 입력합니다. 없으면 이 서버가 /media/에서 제공합니다.',
-  'settings.media.saveTested': '테스트 후 저장',
   'settings.media.test': '테스트',
   'settings.media.testing': '테스트 중…',
   'settings.media.reachedLibrary':
@@ -444,7 +443,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.title': '로그인',
   'settings.signIn.explain': '라이브러리 멤버와 업로드하는 사람이 로그인할 때 쓰는 공급자입니다.',
   'settings.signIn.local':
-    '소유자는 라이브러리가 설치된 컴퓨터의 링크로도 로그인합니다(pnpm library login).',
+    '소유자는 라이브러리가 설치된 컴퓨터의 링크로도 로그인합니다(slidr-library login).',
   'settings.signIn.provider': '공급자',
   'settings.signIn.none': '없음: 소유자만, 컴퓨터의 링크로',
   'settings.signIn.oidc': '다른 OpenID Connect 공급자',
@@ -508,56 +507,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': '승인되어 라이브러리에 기록됨:',
   'publications.publishSkipped':
     '게시되지 않음: {count}. 더 이상 유효하지 않은 항목은 대기 상태로 돌아갔고, 나머지는 기록을 기다립니다. 열어서 이유를 확인하세요.',
-  'settings.media.kind.sftp': 'SFTP로 접속하는 서버의 폴더',
-  'settings.media.kind.ftp': 'FTP로 접속하는 서버의 폴더',
-  'settings.media.where': '저장 위치',
-  'settings.media.host': '서버',
-  'settings.media.port': '포트',
-  'settings.media.user': '사용자',
-  'settings.media.root': '서버의 폴더',
-  'settings.media.rootHint':
-    '서버의 전체 경로입니다(예: /var/www/media). 라이브러리는 이 안에만 씁니다.',
-  'settings.media.auth': '로그인 방법',
-  'settings.media.auth.key': '개인 키',
-  'settings.media.auth.password': '비밀번호',
-  'settings.media.privateKey': '개인 키(OpenSSH 또는 PEM)',
-  'settings.media.privateKeyFile': '파일 선택…',
-  'settings.media.passphrase': '패스프레이즈',
-  'settings.media.password': '비밀번호',
-  'settings.media.keyKept': '{when}부터 저장되어 있습니다. 비워 두면 그대로 유지됩니다.',
-  'settings.media.tls': '암호화',
-  'settings.media.tls.explicit': 'FTPS: 연결할 때 TLS로 전환(권장)',
-  'settings.media.tls.implicit': 'FTPS: 처음부터 TLS, 포트 990',
-  'settings.media.tls.none': '없음',
-  'settings.media.allowUnencrypted':
-    '암호화되지 않은 FTP 허용: 비밀번호와 파일이 그대로 네트워크를 거칩니다.',
-  'settings.media.unencrypted': '이 서버와의 연결은 암호화되지 않습니다.',
-  'settings.media.hostKey': '호스트 키',
-  'settings.media.hostKeyConfirmed': '승인됨',
-  'settings.media.confirmTitle': '이 서버의 호스트 키가 아직 승인되지 않았습니다',
-  'settings.media.confirmChangedTitle': '서버의 호스트 키가 바뀌었습니다',
-  'settings.media.confirmExplain':
-    '이 키가 서버의 키가 맞는지 서버 관리자에게 확인하세요. 예를 들어 서버에서 이 명령을 실행합니다. 승인하기 전에는 서버로 아무것도 보내지 않습니다.',
-  'settings.media.confirmChanged':
-    '이전에 다른 키가 승인되었습니다. 서버 관리자가 키를 바꾼 경우에만 승인하세요.',
-  'settings.media.confirm': '승인 후 저장',
-  'settings.media.publicUrlRemoteHint':
-    '그 서버가 폴더를 제공하는 HTTPS 주소입니다. 없으면 이 서버가 /media/에서 제공합니다.',
-  'settings.media.kind.r2s3': 'Cloudflare의 R2 버킷',
-  'settings.media.accountId': '계정 ID(Account ID)',
-  'settings.media.bucket': '버킷 이름',
-  'settings.media.domain': '버킷의 도메인',
-  'settings.media.domainHint':
-    'Cloudflare가 버킷을 제공하는 주소입니다(예: https://media.example.org/). 설치된 앱이 여기서 읽습니다.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint': '이 버킷에만 Object Read & Write 권한이 있는 R2 API 토큰의 값입니다.',
-  'settings.media.zoneId': '도메인의 영역 ID(Zone ID)',
-  'settings.media.zoneIdHint':
-    '게시할 때마다 기록한 파일을 캐시에서 비우기 위한 것입니다. 없으면 오래된 파일이 만료될 때까지 캐시에 남습니다.',
-  'settings.media.purgeToken': '캐시 비우기 토큰',
-  'settings.media.purgeTokenHint':
-    '이 영역에 Cache Purge 권한이 있는 API 토큰입니다. 저장하기 전에 확인합니다.',
   'settings.signIn.tenantHint':
     '조직의 테넌트 ID 또는 도메인입니다(예: contoso.onmicrosoft.com). 그 테넌트의 계정만 로그인합니다.',
   'settings.signIn.ownerOnly':

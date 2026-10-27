@@ -1,7 +1,7 @@
 /**
  * Signing in (docs/SPEC.md §6.2): through the library's OpenID Connect provider (`oidc.ts`: the
  * authorization code flow, with PKCE, a `state` and a `nonce`), and, on a machine, its owner by a
- * one-time link of the CLI (`pnpm library login`), which needs no provider at all.
+ * one-time link of the CLI (`slidr-library login`), which needs no provider at all.
  *
  * The session is a cookie signed with the library's session key: the vault's `session`, or the
  * host's own (`SESSION_SECRET` on Cloudflare, before the Worker had a vault). It says who the
@@ -178,8 +178,16 @@ export function fromThisSite(request: Request): boolean {
 
 /** The key sessions are signed with; none, and no one signs in, before the library has one. */
 export async function sessionKeyOf(ctx: Context): Promise<string | undefined> {
-  const key = (await ctx.vault?.get('session')) ?? ctx.auth.sessionSecret;
-  return key && key.length >= KEY_LEAST ? key : undefined;
+  const strong = (key: string | undefined) => (key && key.length >= KEY_LEAST ? key : undefined);
+  if (!ctx.vault) return strong(ctx.auth.sessionSecret);
+  const kept = await ctx.vault.get('session');
+  if (kept) return strong(kept);
+  // A Worker given its vault after it signed sessions with `SESSION_SECRET` keeps signing them
+  // with that key, now the vault's, so no one is signed out and the secret may go; a vault with
+  // neither makes a key of its own.
+  const key = strong(ctx.auth.sessionSecret) ?? random();
+  await ctx.vault.set('session', key, 'host');
+  return key;
 }
 
 /** The person a request comes from, when its session is good. */
@@ -356,8 +364,8 @@ export async function callback(request: Request, ctx: Context): Promise<Response
 const linkKey = async (code: string) => `links/${await sha256Hex(code)}.json`;
 
 /**
- * A one-time link that signs the owner in on this machine (`pnpm library login`): the code, of
- * which the store keeps only the hash, for `LINK_SECONDS`.
+ * A one-time link that signs the owner of a local library in (`slidr-library login`): the code,
+ * of which the store keeps only the hash, for `LINK_SECONDS`.
  */
 export async function issueLocalLink(ctx: Context, email: string): Promise<string> {
   if (!ctx.state) throw new Error('The library keeps no links without its store.');
@@ -369,8 +377,12 @@ export async function issueLocalLink(ctx: Context, email: string): Promise<strin
 }
 
 /**
- * `GET /auth/local?code=`: the owner's one-time link, from this very machine only, on a host that
- * offers it. It is used once: a second use, or one after it expired, signs no one in.
+ * `GET /auth/local?code=`: the owner's one-time link, on a host that offers it. It is used once:
+ * a second use, or one after it expired, signs no one in. It is taken from any address
+ * (docs/SPEC.md D17): in a container every request comes through Nginx, and one from the machine
+ * itself through Docker's bridge, so this machine cannot be told from the network; and a server's
+ * owner opens it from their own computer. Only someone who may run Docker on the machine makes
+ * one, and it is 32 random bytes.
  */
 export async function local(request: Request, ctx: Context): Promise<Response> {
   const url = new URL(request.url);
@@ -381,10 +393,6 @@ export async function local(request: Request, ctx: Context): Promise<Response> {
     home.searchParams.set('signin', 'failed');
     return redirect(home, []);
   };
-  if (!fromThisMachine(ctx.clientAddress)) {
-    console.warn(`The owner's link was opened from ${ctx.clientAddress}, not this machine.`);
-    return failed();
-  }
   const code = url.searchParams.get('code') ?? '';
   if (!/^[A-Za-z0-9_-]{43}$/.test(code)) return failed();
   const at = await linkKey(code);

@@ -1,21 +1,21 @@
 /**
- * Where a library on a machine keeps its master key (docs/SPEC.md §4.4), the key its vault seals
- * every other key under. Never in the data folder's store; `host.json` names which of these it is:
+ * Where a local library keeps its master key (docs/SPEC.md §4.4), the key its vault seals every
+ * other key under. Never in the data folder; `host.json` names which of these it is:
  *
- * - `keychain`, the default: the OS keychain (Windows Credential Manager, the macOS Keychain, the
- *   Secret Service), as the service `Slidr Library` and the data folder's path;
- * - `env`: `LIBRARY_MASTER_KEY`, for a server with no keychain, set by whoever runs it;
- * - a file the installer named (`--master-key-file`), readable by its owner only.
+ * - a file the installer named (`--master-key-file`), readable by its owner only, in a folder
+ *   apart from the data folder: `/library/keys/master.key` in the image, a folder of the machine
+ *   mounted there;
+ * - `env`: `LIBRARY_MASTER_KEY`, set by whoever runs the server, for the tests and a run from the
+ *   source.
  *
- * While a rotation runs, the next key is kept apart beside the current one (`(next)`), so a
+ * While a rotation runs, the next key is kept apart beside the current one (`.next`), so a
  * rotation stopped half way loses no key (`Vault` opens a key under either).
  */
-import { chmod, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import type { AsyncEntry } from '@napi-rs/keyring';
-import { masterKey, masterKeyFromText, masterKeyText, type MasterKey } from '../../core/vault.ts';
+import { masterKeyFromText, masterKeyText, type MasterKey } from '../../core/vault.ts';
 
-export type MasterSource = 'keychain' | 'env' | { file: string };
+export type MasterSource = 'env' | { file: string };
 
 export interface MasterKeys {
   /** In words, for what the CLI says. */
@@ -28,48 +28,10 @@ export interface MasterKeys {
   writeNext(key: MasterKey | undefined): Promise<void>;
 }
 
-export const SERVICE = 'Slidr Library';
 export const MASTER_ENV = 'LIBRARY_MASTER_KEY';
 
-/** Thrown where a master key cannot be kept: no keychain, a key set by hand. */
+/** Thrown where a master key cannot be kept: a key set by hand. */
 export class MasterKeyError extends Error {}
-
-/** The keychain's module, loaded only when the keychain is used: it is native code. */
-async function keyring(): Promise<{ AsyncEntry: typeof AsyncEntry }> {
-  try {
-    return await import('@napi-rs/keyring');
-  } catch (cause) {
-    throw new MasterKeyError(
-      `This machine's keychain cannot be reached (${String(cause)}). Keep the master key in ` +
-        `${MASTER_ENV}, or in a file (--master-key-file).`,
-    );
-  }
-}
-
-/** The OS keychain, under the data folder's path. */
-export function keychainKeys(data: string): MasterKeys {
-  const account = resolve(data);
-  const entry = async (next: boolean) =>
-    new (await keyring()).AsyncEntry(SERVICE, next ? `${account} (next)` : account);
-  const readOne = async (next: boolean) => {
-    const bytes = await (await entry(next)).getSecret();
-    return bytes ? masterKey(new Uint8Array(bytes)) : undefined;
-  };
-  return {
-    where: `the keychain (${SERVICE}: ${account})`,
-    async read() {
-      return [await readOne(false), await readOne(true)].filter((key) => key !== undefined);
-    },
-    async write(key) {
-      await (await entry(false)).setSecret(key.bytes);
-    },
-    async writeNext(key) {
-      const next = await entry(true);
-      if (key) await next.setSecret(key.bytes);
-      else await next.deleteCredential();
-    },
-  };
-}
 
 /** `LIBRARY_MASTER_KEY`, which whoever runs the server sets, and so changes. */
 export function envKeys(env: NodeJS.ProcessEnv = process.env): MasterKeys {
@@ -101,10 +63,13 @@ export function fileKeys(file: string): MasterKeys {
       throw error;
     }
   };
+  // Written whole under another name, then renamed into place: a key is never half there.
   const writeOne = async (at: string, key: MasterKey) => {
-    await mkdir(dirname(at), { recursive: true });
-    await writeFile(at, `${masterKeyText(key)}\n`, { mode: 0o600 });
-    await chmod(at, 0o600);
+    await mkdir(dirname(at), { recursive: true, mode: 0o700 });
+    const temporary = `${at}.${process.pid}.tmp`;
+    await writeFile(temporary, `${masterKeyText(key)}\n`, { mode: 0o600 });
+    await chmod(temporary, 0o600);
+    await rename(temporary, at);
   };
   return {
     where: path,
@@ -121,11 +86,9 @@ export function fileKeys(file: string): MasterKeys {
   };
 }
 
-/** The master keys of a source, for the data folder at `data`. */
-export function masterKeysOf(source: MasterSource, data: string): MasterKeys {
-  if (source === 'keychain') return keychainKeys(data);
-  if (source === 'env') return envKeys();
-  return fileKeys(source.file);
+/** The master keys of a source. */
+export function masterKeysOf(source: MasterSource): MasterKeys {
+  return source === 'env' ? envKeys() : fileKeys(source.file);
 }
 
 /** Keys kept in memory: for the tests. */

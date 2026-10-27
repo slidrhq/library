@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# The command of the machine a local Slidr Library is installed on (docs/SPEC.md §5.1). The
+# install script copies it from the image into /usr/local/bin, beside its answers in
+# /etc/slidr-library.
+set -euo pipefail
+
+ETC=/etc/slidr-library
+CONTAINER=slidr-library
+RELEASES=https://github.com/slidrhq/library/releases
+
+usage() {
+  cat <<'EOF'
+slidr-library <command>
+
+  login                  prints the owner's one-time link (10 minutes, once)
+  status                 whether it runs, where it is, and a test of its media
+  logs [-f] [--tail n]   Nginx's and the library's log
+  stop | start | restart
+  update [<version>]     the newest release, or the one named; its install script, checked
+  update --image <ref>   another image, by this machine's own install script
+  change                 how it is reached, or its port (asks)
+  sign-in <provider> …   the provider everyone else signs in through (slidr-library sign-in)
+  owner <email>          hands the library to another member
+  vault rotate           a new master key, then a restart
+  uninstall [--purge]    takes the library away; its data, keys and media stay, unless --purge
+EOF
+}
+
+fail() {
+  printf 'X %s\n' "$*" >&2
+  exit 1
+}
+
+((EUID == 0)) || fail "Run it as root: sudo slidr-library $*"
+[[ -f $ETC/compose.yaml ]] || fail "No library is installed here ($ETC/compose.yaml)."
+
+compose() { docker compose -f "$ETC/compose.yaml" "$@"; }
+
+# A command of the library itself, in its container (server/host/node/cli.ts).
+library() {
+  [[ $(docker inspect -f '{{.State.Running}}' "$CONTAINER" 2>/dev/null) == true ]] ||
+    fail "The library is not running: slidr-library start."
+  local tty=()
+  if [[ -t 0 && -t 1 ]]; then tty=(-it); fi
+  docker exec "${tty[@]}" "$CONTAINER" slidr-library "$@"
+}
+
+# One answer of the install (library.env).
+answer() { sed -n "s/^$1='\\(.*\\)'\$/\\1/p" "$ETC/library.env"; }
+
+update() {
+  if [[ ${1:-} == --image ]]; then
+    exec bash "$ETC/install.sh" --update --image "${2:?--image names an image}"
+  fi
+  local from
+  if [[ -n ${1:-} ]]; then from="$RELEASES/download/v${1#v}"; else from="$RELEASES/latest/download"; fi
+  local folder
+  folder=$(mktemp -d)
+  trap 'rm -rf "$folder"' EXIT
+  curl -fsSL -o "$folder/install.sh" "$from/install.sh" || fail "$from/install.sh could not be read."
+  curl -fsSL -o "$folder/install.sh.sha256" "$from/install.sh.sha256" ||
+    fail "$from/install.sh.sha256 could not be read."
+  (cd "$folder" && sha256sum --check --quiet install.sh.sha256) ||
+    fail "install.sh is not the one its release names: nothing was changed."
+  # The SHA-256 comes from the same release, so it only finds a download that went wrong; who
+  # built the script is GitHub's attestation of the release, checked where GitHub's CLI is.
+  if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+    gh attestation verify "$folder/install.sh" --repo slidrhq/library >/dev/null ||
+      fail "install.sh is not attested as slidrhq/library's release built it: nothing was changed."
+    echo "install.sh is attested as slidrhq/library's release built it."
+  else
+    echo "! Only install.sh's SHA-256 was checked. Who built it is checked with GitHub's CLI,"
+    echo "  signed in: gh attestation verify install.sh --repo slidrhq/library"
+  fi
+  bash "$folder/install.sh" --update
+}
+
+uninstall() {
+  local purge=0
+  [[ ${1:-} == --purge ]] && purge=1
+  local data media
+  data=$(answer DATA)
+  media=$(answer MEDIA)
+  if ((purge)); then
+    printf 'This deletes the library for good: its data (%s), its media (%s) and its keys.\n' \
+      "$data" "$media"
+    local typed
+    read -r -p "Type the data folder's path to go on: " typed
+    [[ $typed == "$data" ]] || fail "Nothing was deleted."
+    read -r -p "Type the media folder's path: " typed
+    [[ $typed == "$media" ]] || fail "Nothing was deleted."
+  fi
+  compose down
+  rm -f "$ETC/compose.yaml" "$ETC/library.env" "$ETC/install.sh"
+  if ((purge)); then
+    rm -rf "$data" "$media" "$ETC"
+    # The account install.sh made for the library, with its group.
+    userdel slidr-library 2>/dev/null || true
+    echo "The library is gone, with its data, media, keys and account."
+  else
+    echo "The library is taken away. What stays, to install it again over them:"
+    echo "  data:  $data"
+    echo "  media: $media"
+    echo "  keys:  $ETC/keys (keep them apart from the data folder's backup)"
+  fi
+  rm -f "$0"
+}
+
+command=${1:-help}
+if (($# > 0)); then shift; fi
+case "$command" in
+  login | seed | sign-in | owner) library "$command" "$@" ;;
+  status)
+    compose ps library
+    library status
+    ;;
+  vault)
+    library vault "$@"
+    compose restart library
+    ;;
+  logs) compose logs "$@" library ;;
+  stop | start | restart) compose "$command" library ;;
+  update) update "$@" ;;
+  change) exec bash "$ETC/install.sh" ;;
+  uninstall) uninstall "$@" ;;
+  help | -h | --help) usage ;;
+  *)
+    usage >&2
+    exit 1
+    ;;
+esac

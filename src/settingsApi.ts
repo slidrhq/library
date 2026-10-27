@@ -1,9 +1,10 @@
 /**
- * The library's settings, as its admins set them (server/core/settings.ts; docs/SPEC.md §5.3): the
- * address it is reached at, its media, how people sign in, and the limits of uploading. A key is
- * written and never read back: of each, the page learns only whether it is set.
+ * The library's settings, as its admins see and set them (server/core/settings.ts; docs/SPEC.md
+ * §5.3): the address it is reached at and its media, which are its host's and only shown; how
+ * people sign in; and the limits of uploading. A key is written and never read back: of each, the
+ * page learns only whether it is set.
  */
-import { ApiError, call } from './uploadsApi';
+import { call } from './uploadsApi';
 
 /** Of a key, what may be shown: whether it is set, when, and by whom. */
 export interface KeyState {
@@ -22,12 +23,16 @@ export interface Limits {
 }
 
 export interface Settings {
-  /** What this server lets the library change; the rest is its host's. */
-  editable: { url: boolean; media: boolean; signIn: boolean };
+  /** Whether this server keeps a provider of the library's own; else it is its host's. */
+  editable: { signIn: boolean };
   library: { url: string };
-  media: Partial<Omit<MediaSettings, 'kind'>> & {
-    kind: MediaSettings['kind'] | 'r2' | 'none';
-    key: KeyState;
+  media: {
+    /** A local library's folder; the Worker's bucket; or none yet. */
+    kind: 'folder' | 'r2' | 'none';
+    /** The folder, as the install named it on the machine. */
+    path?: string;
+    /** The disk it is on: its size, and what is free of it, in bytes. */
+    room?: { size: number; free: number };
     /** Where installed apps read the library. */
     address: string;
   };
@@ -45,51 +50,12 @@ export interface Settings {
   defaults: Limits;
 }
 
-/** A media store's settings, as the library keeps them (server/core/config.ts). */
-export interface MediaSettings {
-  kind: 'folder' | 'sftp' | 'ftp' | 'r2';
-  /** A folder of this machine. */
-  path?: string;
-  /** A server's. */
-  host?: string;
-  port?: number;
-  user?: string;
-  root?: string;
-  /** An SSH server's host key, confirmed: `SHA256:…`. */
-  hostKey?: string;
-  tls?: 'explicit' | 'implicit' | 'none';
-  allowUnencrypted?: boolean;
-  /** An R2 bucket's: the account it is in, its name, and its domain's zone. */
-  accountId?: string;
-  bucket?: string;
-  zoneId?: string;
-  publicUrl?: string;
-}
-
-/** A store's key, sent with its settings, never read back. */
-export interface MediaKey {
-  privateKey?: string;
-  passphrase?: string;
-  password?: string;
-  /** An R2 bucket's: its S3 credentials, and the token that empties its domain's cache. */
-  accessKeyId?: string;
-  secretAccessKey?: string;
-  purgeToken?: string;
-}
-
-/** A server's host key that is not the one confirmed: never confirmed, or changed. */
-export interface HostKeyToConfirm {
-  code: 'host-key-unconfirmed' | 'host-key-changed';
-  fingerprint: string;
-}
-
-/** What reaching a media store found (`testStore`). */
+/** What reaching the media found (`testStore`). */
 export interface StoreTest {
   reached: boolean;
   library?: { published: string; files: number };
   wrote: boolean;
   message?: string;
-  hostKey?: HostKeyToConfirm;
 }
 
 /** What `GET /api/library` says of the media. */
@@ -130,29 +96,6 @@ const send = <T>(path: string, method: string, body: unknown) =>
 
 export const settingsApi = {
   read: () => call<Settings>('settings'),
-  library: (url: string) => send<undefined>('settings/library', 'PUT', { url }),
-  /** Tries a media store and keeps it; or answers the host key that is to be confirmed first. */
-  media: async (
-    settings: MediaSettings,
-    key?: MediaKey,
-  ): Promise<{ test: StoreTest } | { confirm: HostKeyToConfirm }> => {
-    try {
-      return await send<{ test: StoreTest }>('settings/media', 'PUT', {
-        ...settings,
-        ...(key ? { key } : {}),
-      });
-    } catch (error) {
-      const fingerprint = error instanceof ApiError ? error.body.fingerprint : undefined;
-      if (
-        error instanceof ApiError &&
-        (error.code === 'host-key-unconfirmed' || error.code === 'host-key-changed') &&
-        typeof fingerprint === 'string'
-      ) {
-        return { confirm: { code: error.code, fingerprint } };
-      }
-      throw error;
-    }
-  },
   test: () => call<StoreTest>('settings/media/test', { method: 'POST' }),
   signIn: (change: SignInChange) => send<undefined>('settings/sign-in', 'PUT', change),
   noSignIn: () => call<undefined>('settings/sign-in', { method: 'DELETE' }),

@@ -1,7 +1,7 @@
 export const he = {
   'uploads.nav': 'העלאות',
   'uploads.about':
-    'תוכן שמחכה להיכנס לספרייה: כל העלאה נבדקת מול הספרייה המפורסמת, מתקבלת, ונכנסת בפרסום הבא.',
+    'תוכן שנכנס לספרייה: כל העלאה נבדקת מול הספרייה, והאישור שלה כותב אותה לתוכה מיד.',
   'uploads.new': '+ העלאה חדשה',
   'uploads.searchHint': 'חיפוש לפי מזהה…',
   'uploads.filterLabel': 'מצב ההעלאה',
@@ -33,7 +33,8 @@ export const he = {
 
   'uploads.detail.status': 'מצב',
   'uploads.detail.about.pending': 'ממתינה לבדיקה. אפשר להוסיף לה שפות ולהחליף אותן עד שהיא מתקבלת.',
-  'uploads.detail.about.accepted': 'התקבלה, ותיכנס לספרייה בפרסום הבא.',
+  'uploads.detail.about.accepted':
+    'התקבלה, ומחכה להיכתב: הספרייה כותבת אותה תוך דקה, או מיד כשמנסים שוב.',
   'uploads.detail.about.rejected': 'נדחתה. אפשר להחזיר אותה להמתנה, או למשוך אותה.',
   'uploads.detail.about.published': 'נמצאת בספרייה המפורסמת.',
   'uploads.detail.accept': 'קבלה',
@@ -118,7 +119,7 @@ export const he = {
 export const en: Record<keyof typeof he, string> = {
   'uploads.nav': 'Uploads',
   'uploads.about':
-    'Content waiting to enter the library: each upload is checked against the published library, accepted, and goes in with the next publication.',
+    'Content that comes into the library: each upload is checked against the library, and its approval writes it in at once.',
   'uploads.new': '+ New upload',
   'uploads.searchHint': 'Search by id…',
   'uploads.filterLabel': 'Upload status',
@@ -152,7 +153,8 @@ export const en: Record<keyof typeof he, string> = {
   'uploads.detail.status': 'Status',
   'uploads.detail.about.pending':
     'Waiting to be reviewed. Its languages can be added and replaced until it is accepted.',
-  'uploads.detail.about.accepted': 'Accepted: it goes into the library with the next publication.',
+  'uploads.detail.about.accepted':
+    'Accepted, and waiting to be written: the library writes it within a minute, or at once when it is tried again.',
   'uploads.detail.about.rejected': 'Rejected. It can be sent back to wait, or withdrawn.',
   'uploads.detail.about.published': 'In the published library.',
   'uploads.detail.accept': 'Accept',

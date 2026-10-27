@@ -1,9 +1,9 @@
 /**
- * The library's keys, sealed (docs/SPEC.md §4.4): the media store's key, the OIDC client's
- * secret, the key the cookies are signed with. Each is kept in the state store as
- * `vault/<name>.json`, sealed with AES-256-GCM under a master key that the host keeps elsewhere
- * (the OS keychain on a machine, a secret of the Worker on Cloudflare) and never in the store. So a
- * copy of the store, a backup, or a bucket that leaks, opens no key.
+ * The library's keys, sealed (docs/SPEC.md §4.4): the OIDC client's secret, and the key the
+ * cookies are signed with. Each is kept in the state store as `vault/<name>.json`, sealed with
+ * AES-256-GCM under a master key that the host keeps elsewhere (a file apart from the data folder
+ * in a local library, a secret of the Worker on Cloudflare) and never in the store. So a copy of
+ * the store, a backup, or a bucket that leaks, opens no key.
  *
  * Only the server reads a key back: no route answers one, and nothing logs one. What may be shown
  * of a key is `about` it: when it was set, and by whom.

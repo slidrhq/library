@@ -12,6 +12,8 @@ import { memoryKeys } from './master.ts';
 import { clientOf, serve, type Serving } from './server.ts';
 
 const folders: string[] = [];
+/** Where host.json says the master key is; the tests keep it in memory. */
+const KEPT = { file: join(tmpdir(), 'slidr-library-tests', 'master.key') };
 let serving: Serving;
 let context: Context;
 let base: string;
@@ -57,9 +59,9 @@ before(async () => {
   await writeFile(join(client, 'assets', 'app-0a1b.js'), 'console.log(1);');
   const data = await newFolder();
   const keys = memoryKeys();
-  await install({ data, owner: 'owner@example.org', master: 'keychain', keys });
+  await install({ data, owner: 'owner@example.org', master: KEPT, keys });
   const library = await openLibrary(data, keys);
-  context = await contextOf(library);
+  context = contextOf(library);
   serving = await serve({ context, client, port: 0 });
   base = serving.url;
 });
@@ -131,6 +133,25 @@ describe('the library on a machine', () => {
     assert.equal(sent.status, 401);
   });
 
+  test('takes no target that would name another host, nor sends anyone there', async () => {
+    const port = new URL(base).port;
+    const host = { Host: `127.0.0.1:${port}` };
+    // Read against the server's origin, `//evil.example/…` is evil.example's: its pages would
+    // pass the same-origin check of a change, and a redirect would lead there.
+    const posted = await raw(
+      '//evil.example/auth/logout',
+      { ...host, Origin: 'https://evil.example' },
+      'POST',
+    );
+    assert.equal(posted.status, 400);
+    const link = await raw('//evil.example/auth/local?code=x', host);
+    assert.equal(link.status, 400);
+    assert.equal(link.headers.location, undefined);
+    assert.equal((await raw('http://evil.example/api/me', host)).status, 400);
+    // A path of this server with `//` inside it is its own (this one has no media: 503).
+    assert.equal((await raw('/media//x.json', host)).status, 503);
+  });
+
   test('answers only a request that names it as this machine', async () => {
     const port = new URL(base).port;
     assert.equal((await raw('/api/me', { Host: `localhost:${port}` })).status, 200);
@@ -170,27 +191,29 @@ describe('the owner’s link', () => {
     assert.equal(sessionOf(again), undefined);
   });
 
-  test('opens nothing from another machine, once expired, or for another than the owner', async () => {
+  test('opens from another machine too, but not once expired, nor for another than the owner', async () => {
     const away = async (code: string, address: string) =>
       handle(new Request(`http://127.0.0.1/auth/local?code=${code}`), {
         ...context,
         clientAddress: address,
       });
-    const remote = await away(await issueLocalLink(context, 'owner@example.org'), '192.168.1.20');
-    assert.match(remote.headers.get('Location') ?? '', /signin=failed/);
+    // In a container, a request of this machine comes through Docker's bridge (docs/SPEC.md D17).
+    const code = await issueLocalLink(context, 'owner@example.org');
+    assert.ok(sessionOf(await away(code, '172.17.0.1')));
+    assert.equal(sessionOf(await away(code, '172.17.0.1')), undefined);
     assert.ok(
-      sessionOf(await away(await issueLocalLink(context, 'owner@example.org'), '::ffff:127.0.0.1')),
+      sessionOf(await away(await issueLocalLink(context, 'owner@example.org'), '203.0.113.9')),
     );
     const notOwner = await away(await issueLocalLink(context, 'someone@example.org'), '127.0.0.1');
     assert.equal(sessionOf(notOwner), undefined);
     // Expired: the link as the store keeps it, ten minutes and more ago.
-    const code = await issueLocalLink(context, 'owner@example.org');
+    const late = await issueLocalLink(context, 'owner@example.org');
     const listed = await context.state!.list({ prefix: 'links/' });
     for (const { key } of listed.objects) {
       const held = JSON.parse(await (await context.state!.get(key))!.text()) as object;
       await context.state!.put(key, JSON.stringify({ ...held, exp: 1 }));
     }
-    assert.equal(sessionOf(await away(code, '127.0.0.1')), undefined);
+    assert.equal(sessionOf(await away(late, '127.0.0.1')), undefined);
     const forged = await away('x'.repeat(43), '127.0.0.1');
     assert.match(forged.headers.get('Location') ?? '', /signin=failed/);
   });
@@ -219,15 +242,15 @@ describe('the library on a machine, with its media folder', () => {
     await install({
       data: join(root, 'data'),
       owner: 'owner@example.org',
-      master: 'keychain',
+      master: KEPT,
       keys,
-      media: { kind: 'folder', path: join(root, 'media') },
+      media: join(root, 'media'),
     });
     await writeFile(
       join(root, 'media', 'manifest.json'),
       '{"version":1,"published":"x","files":{}}',
     );
-    const context = await contextOf(await openLibrary(join(root, 'data'), keys));
+    const context = contextOf(await openLibrary(join(root, 'data'), keys));
     const own = await serve({ context, client, port: 0, mediaPath: '/media/' });
     try {
       const page = await (await fetch(own.url)).text();
@@ -245,6 +268,48 @@ describe('the library on a machine, with its media folder', () => {
     }
     // Without a folder, the page reads the published library: nothing is named to it.
     assert.doesNotMatch(await (await fetch(base)).text(), /__slidrMediaPath/);
+  });
+});
+
+describe('the library behind a proxy of this machine', () => {
+  test('is reached by the scheme the proxy says, as Nginx speaks TLS for it in the image', async () => {
+    const proxied = await serve({
+      context,
+      client: await newFolder(),
+      port: 0,
+      behindProxy: true,
+      url: 'https://library.test/',
+    });
+    try {
+      const port = new URL(proxied.local!).port;
+      const cookieOf = async (headers: Record<string, string>) => {
+        const code = await issueLocalLink(context, 'owner@example.org');
+        const answer = await new Promise<string | undefined>((done, fail) => {
+          const sent = httpRequest(
+            { host: '127.0.0.1', port, path: `/auth/local?code=${code}`, headers },
+            (response) => {
+              response.resume();
+              done(response.headers['set-cookie']?.find((one) => one.includes('library-session')));
+            },
+          );
+          sent.on('error', fail);
+          sent.end();
+        });
+        return answer?.split('=')[0];
+      };
+      const host = { Host: `127.0.0.1:${port}` };
+      assert.equal(
+        await cookieOf({ ...host, 'X-Forwarded-Proto': 'https' }),
+        '__Host-library-session',
+      );
+      assert.equal(await cookieOf(host), 'library-session');
+      assert.equal(
+        await cookieOf({ Host: 'library.test', 'X-Forwarded-Proto': 'https' }),
+        '__Host-library-session',
+      );
+    } finally {
+      await proxied.close();
+    }
   });
 });
 

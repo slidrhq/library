@@ -521,3 +521,8 @@ details.danger p {
 .publication-body p {
   margin: 0;
 }
+
+/* An upload's id in its title: one word from left to right, never broken at its hyphens. */
+.upload-target {
+  white-space: nowrap;
+}

@@ -206,7 +206,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Kapat',
   'uploads.nav': 'Yüklemeler',
   'uploads.about':
-    'Kütüphaneye girmeyi bekleyen içerik: her yükleme yayınlanmış kütüphaneye göre denetlenir, kabul edilir ve bir sonraki yayınlamayla kütüphaneye girer.',
+    'Kütüphaneye giren içerik: her yükleme kütüphaneye göre denetlenir ve onayı onu hemen kütüphaneye yazar.',
   'uploads.new': '+ Yeni yükleme',
   'uploads.searchHint': 'Kimliğe göre ara…',
   'uploads.filterLabel': 'Yükleme durumu',
@@ -238,7 +238,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Durum',
   'uploads.detail.about.pending':
     'İnceleme bekliyor. Kabul edilene kadar dilleri eklenebilir ve değiştirilebilir.',
-  'uploads.detail.about.accepted': 'Kabul edildi: bir sonraki yayınlamayla kütüphaneye girer.',
+  'uploads.detail.about.accepted':
+    'Kabul edildi ve yazılmayı bekliyor: kütüphane onu bir dakika içinde yazar, ya da yeniden denendiğinde hemen.',
   'uploads.detail.about.rejected':
     'Reddedildi. Yeniden beklemeye alınabilir veya geri çekilebilir.',
   'uploads.detail.about.published': 'Yayınlanmış kütüphanede.',
@@ -323,9 +324,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Yükleniyor ve denetleniyor…',
   'uploads.form.cancel': 'İptal',
   'people.signInWith': '{name} ile oturum açın',
-  'people.signInHere': 'Bu bilgisayarda oturum açın',
+  'people.signInHere': 'Sahip olarak giriş yap',
   'people.localHint':
-    'Kütüphanenin sahibi, kütüphanenin kurulu olduğu bilgisayarda oturum açar: bu komutu orada çalıştırın ve yazdırdığı bağlantıyı açın.',
+    'Kütüphanenin sahibi tek kullanımlık bir bağlantıyla giriş yapar: bu komutu kütüphanenin kurulu olduğu makinede çalıştırın ve yazdırdığı bağlantıyı on dakika içinde herhangi bir bilgisayardan açın.',
   'people.role.owner': 'Kütüphane bu hesaba ait: üyelerini belirler ve kütüphaneyi yapılandırır',
   'people.role.admin': 'Bu hesap yönetici: üyeleri belirler ve yüklemeleri inceler',
   'people.role.reviewer': 'Bu hesap yüklemeleri inceler ve kabul edilenleri yayımlar',
@@ -356,7 +357,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Üyeler',
   'people.others': 'Oturum açan diğer kişiler',
   'people.noProvider':
-    'Bir sağlayıcı ayarlanana kadar yalnızca sahip oturum açabilir, eklediğiniz üyeler açamaz: pnpm library sign-in.',
+    'Bir sağlayıcı ayarlanana kadar yalnızca sahip oturum açabilir, eklediğiniz üyeler açamaz: slidr-library sign-in.',
   'people.loading': 'Üyeler okunuyor…',
   'people.closed': 'Kütüphanenin üyelerini yalnızca yöneticileri görür.',
   'people.failed': 'Olmadı: {error}',
@@ -365,7 +366,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profil',
   'tokens.about': 'Hesabınız ve programların onun adına yükleme yapmasını sağlayan belirteçler.',
   'tokens.provider': '{provider} ile oturum açıldı',
-  'tokens.providerLocal': 'Kütüphanenin kurulu olduğu bilgisayarda oturum açıldı',
+  'tokens.providerLocal': 'Sahibin tek kullanımlık bağlantısıyla giriş yaptı',
   'tokens.title': 'Belirteçler',
   'tokens.explain':
     'Belirteç, bir programın bu hesap adına kütüphaneye yükleme yapmasını sağlar. İsteğin üst bilgisine eklenir, başka bir şey gerekmez:',
@@ -404,22 +405,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Kaydet',
   'settings.saved': 'Kaydedildi.',
   'settings.library.title': 'Kütüphanenin adresi',
-  'settings.library.explain':
-    'Kişilerin kütüphaneye ulaştığı, tarayıcılarının gördüğü adres: bir proxy arkasında ya da TLS ile. Adres yoksa kütüphane her isteğin adresini kullanır.',
   'settings.library.host': 'Bu sunucunun adresini barındırma hizmeti belirler.',
+  'settings.library.script':
+    'Bu adresi kurulum betiği belirledi. Betiği yeniden çalıştırmak, bağlantı noktası ve kütüphaneye erişim biçimiyle birlikte onu değiştirir.',
   'settings.media.title': 'Medya',
   'settings.media.explain':
     'Yayımlanmış kütüphanenin saklandığı yer. Kabul edilen her yükleme buraya yazılır.',
   'settings.media.kind.folder': 'Bu bilgisayardaki bir klasör',
   'settings.media.kind.r2': 'Worker’ın Cloudflare’deki R2 kovası',
   'settings.media.kind.none': 'Henüz medya deposu yok',
+  'settings.media.room': 'Diskindeki {size} alanın {free} kadarı boş.',
+  'settings.media.fixed':
+    'Bu klasörü kurulum betiği belirledi. Medyayı taşımak için aynı veri klasörü üzerine yeniden kurun.',
   'settings.media.path': 'Klasör',
-  'settings.media.pathHint':
-    'Tam yol. Sunucunun oraya yazabilmesi gerekir ve orada yalnızca kütüphane bulunur.',
-  'settings.media.publicUrl': 'Herkese açık adres',
-  'settings.media.publicUrlHint':
-    'Yalnızca klasörü başka bir web sunucusu yayımlıyorsa. Yoksa bu sunucu onu /media/ altında sunar.',
-  'settings.media.saveTested': 'Test et ve kaydet',
   'settings.media.test': 'Test et',
   'settings.media.testing': 'Test ediliyor…',
   'settings.media.reachedLibrary':
@@ -449,7 +447,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Kütüphanenin üyelerinin ve ona yükleme yapanların oturum açtığı sağlayıcı.',
   'settings.signIn.local':
-    'Sahip, kütüphanenin kurulu olduğu bilgisayarın bağlantısıyla da oturum açar (pnpm library login).',
+    'Sahip, kütüphanenin kurulu olduğu bilgisayarın bağlantısıyla da oturum açar (slidr-library login).',
   'settings.signIn.provider': 'Sağlayıcı',
   'settings.signIn.none': 'Yok: yalnızca sahip, bilgisayarın bağlantısıyla',
   'settings.signIn.oidc': 'Başka bir OpenID Connect sağlayıcısı',
@@ -513,57 +511,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Kabul edildi ve kütüphaneye yazıldı:',
   'publications.publishSkipped':
     'Yayımlanmayan: {count}. Artık geçerli olmayanlar beklemeye döndü, kalanlar yazılmayı bekliyor. Nedenini görmek için açın.',
-  'settings.media.kind.sftp': 'Bir sunucudaki klasör, SFTP ile',
-  'settings.media.kind.ftp': 'Bir sunucudaki klasör, FTP ile',
-  'settings.media.where': 'Konum',
-  'settings.media.host': 'Sunucu',
-  'settings.media.port': 'Port',
-  'settings.media.user': 'Kullanıcı',
-  'settings.media.root': 'Sunucudaki klasör',
-  'settings.media.rootHint':
-    'Sunucudaki tam yol, örneğin /var/www/media. Kütüphane yalnızca bunun içine yazar.',
-  'settings.media.auth': 'Oturum açma yöntemi',
-  'settings.media.auth.key': 'Özel anahtar',
-  'settings.media.auth.password': 'Parola',
-  'settings.media.privateKey': 'Özel anahtar (OpenSSH veya PEM)',
-  'settings.media.privateKeyFile': 'Dosya seç…',
-  'settings.media.passphrase': 'Anahtar parolası',
-  'settings.media.password': 'Parola',
-  'settings.media.keyKept': '{when} tarihinden beri saklanıyor. Boş bırakılırsa korunur.',
-  'settings.media.tls': 'Şifreleme',
-  'settings.media.tls.explicit': 'FTPS: bağlanırken TLS istenir (önerilir)',
-  'settings.media.tls.implicit': 'FTPS: baştan TLS, port 990',
-  'settings.media.tls.none': 'Yok',
-  'settings.media.allowUnencrypted':
-    'Şifrelenmemiş FTP’ye izin ver: parola ve dosyalar ağda olduğu gibi taşınır.',
-  'settings.media.unencrypted': 'Bu sunucuya bağlantı şifrelenmiyor.',
-  'settings.media.hostKey': 'Sunucu anahtarı',
-  'settings.media.hostKeyConfirmed': 'Onaylandı',
-  'settings.media.confirmTitle': 'Bu sunucunun anahtarı henüz onaylanmadı',
-  'settings.media.confirmChangedTitle': 'Sunucunun anahtarı değişti',
-  'settings.media.confirmExplain':
-    'Bunun sunucunun anahtarı olduğunu sunucunun yöneticisiyle doğrulayın, örneğin sunucuda bu komutla. Onaylanana kadar sunucuya hiçbir şey gönderilmez.',
-  'settings.media.confirmChanged':
-    'Daha önce başka bir anahtar onaylanmıştı. Yalnızca sunucunun yöneticisi anahtarı değiştirdiyse onaylayın.',
-  'settings.media.confirm': 'Onayla ve kaydet',
-  'settings.media.publicUrlRemoteHint':
-    'O sunucunun klasörü sunduğu HTTPS adresi. Adres yoksa bu sunucu onu /media/ altında sunar.',
-  'settings.media.kind.r2s3': 'Cloudflare’deki bir R2 kovası',
-  'settings.media.accountId': 'Hesap kimliği (Account ID)',
-  'settings.media.bucket': 'Kova adı',
-  'settings.media.domain': 'Kovanın alan adı',
-  'settings.media.domainHint':
-    'Cloudflare’in kovayı sunduğu adres, örneğin https://media.example.org/. Kurulu uygulamalar onu oradan okur.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'Yalnızca bu kovada Object Read & Write izni olan bir R2 API belirtecinden.',
-  'settings.media.zoneId': 'Alan adının bölge kimliği (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Böylece her yayım, yazdıklarını önbellekten temizler. Kimlik olmadan eski dosyalar süreleri dolana kadar önbellekte kalır.',
-  'settings.media.purgeToken': 'Önbellek temizleme belirteci',
-  'settings.media.purgeTokenHint':
-    'Bu bölgede Cache Purge izni olan bir API belirteci. Kaydetmeden önce doğrulanır.',
   'settings.signIn.tenantHint':
     'Kuruluşunuzun kiracı (Tenant) kimliği veya alan adı, örneğin contoso.onmicrosoft.com. Yalnızca bu kiracının hesapları oturum açar.',
   'settings.signIn.ownerOnly':

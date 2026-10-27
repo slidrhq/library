@@ -1,0 +1,6 @@
+{
+  // The image's tests (image.test.ts): written as the server's are, and run in Node, which strips
+  // the types, on a machine with Docker (.github/workflows/image.yml).
+  "extends": "../../server/tsconfig.json",
+  "include": ["."]
+}

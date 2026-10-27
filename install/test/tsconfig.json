@@ -1,0 +1,6 @@
+{
+  // The install script's tests (install.test.ts): written as the server's are, and run in Node,
+  // which strips the types, as root on a Linux machine with Docker (.github/workflows/image.yml).
+  "extends": "../../server/tsconfig.json",
+  "include": ["."]
+}

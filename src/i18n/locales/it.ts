@@ -209,7 +209,7 @@ const words: Record<MessageKey, string> = {
   'account.dismiss': 'Chiudi',
   'uploads.nav': 'Caricamenti',
   'uploads.about':
-    'Contenuti in attesa di entrare nella libreria: ogni caricamento viene verificato rispetto alla libreria pubblicata, accettato, ed entra con la prossima pubblicazione.',
+    'Contenuti che entrano nella libreria: ogni caricamento è verificato rispetto alla libreria, e la sua approvazione lo scrive subito al suo interno.',
   'uploads.new': '+ Nuovo caricamento',
   'uploads.searchHint': 'Cerca per ID…',
   'uploads.filterLabel': 'Stato del caricamento',
@@ -242,7 +242,8 @@ const words: Record<MessageKey, string> = {
   'uploads.detail.status': 'Stato',
   'uploads.detail.about.pending':
     'In attesa di revisione. Le lingue si possono aggiungere e sostituire finché non viene accettato.',
-  'uploads.detail.about.accepted': 'Accettato: entra nella libreria con la prossima pubblicazione.',
+  'uploads.detail.about.accepted':
+    'Accettato, e in attesa di essere scritto: la libreria lo scrive entro un minuto, o subito quando si riprova.',
   'uploads.detail.about.rejected': 'Rifiutato. Può essere rimesso in attesa o ritirato.',
   'uploads.detail.about.published': 'Nella libreria pubblicata.',
   'uploads.detail.accept': 'Accetta',
@@ -328,9 +329,9 @@ const words: Record<MessageKey, string> = {
   'uploads.form.submitting': 'Caricamento e verifica in corso…',
   'uploads.form.cancel': 'Annulla',
   'people.signInWith': 'Accedi con {name}',
-  'people.signInHere': 'Accedi da questo computer',
+  'people.signInHere': 'Accedi come proprietario',
   'people.localHint':
-    'Il proprietario della libreria accede dal computer in cui è installata: esegui lì questo comando e apri il link che stampa.',
+    'Il proprietario della libreria accede con un link monouso: esegui questo comando sulla macchina in cui è installata e apri il link che stampa entro dieci minuti, da qualsiasi computer.',
   'people.role.owner':
     'Questo account è proprietario della libreria: ne nomina i membri e la configura',
   'people.role.admin': 'Questo account è amministratore: nomina i membri e revisiona i caricamenti',
@@ -362,7 +363,7 @@ const words: Record<MessageKey, string> = {
   'people.members': 'Membri',
   'people.others': 'Altre persone che hanno effettuato l’accesso',
   'people.noProvider':
-    'Finché non si imposta un provider, accede solo il proprietario, e i membri aggiunti no: pnpm library sign-in.',
+    'Finché non si imposta un provider, accede solo il proprietario, e i membri aggiunti no: slidr-library sign-in.',
   'people.loading': 'Lettura dei membri…',
   'people.closed': 'Solo gli amministratori della libreria ne vedono i membri.',
   'people.failed': 'Non ha funzionato: {error}',
@@ -371,7 +372,7 @@ const words: Record<MessageKey, string> = {
   'tokens.nav': 'Profilo',
   'tokens.about': 'Il tuo account e i token che permettono ai programmi di caricare a suo nome.',
   'tokens.provider': 'Accesso effettuato con {provider}',
-  'tokens.providerLocal': 'Accesso effettuato dal computer in cui è installata la libreria',
+  'tokens.providerLocal': 'Accesso con il link monouso del proprietario',
   'tokens.title': 'Token',
   'tokens.explain':
     'Un token permette a un programma di caricare nella libreria a nome di questo account. Va nell’intestazione della richiesta, e non serve altro:',
@@ -409,22 +410,19 @@ const words: Record<MessageKey, string> = {
   'settings.save': 'Salva',
   'settings.saved': 'Salvato.',
   'settings.library.title': 'Indirizzo della libreria',
-  'settings.library.explain':
-    'L’indirizzo da cui si raggiunge la libreria, come lo mostra il browser: dietro un proxy o con TLS. Senza, la libreria usa l’indirizzo di ogni richiesta.',
   'settings.library.host': 'Questo server usa l’indirizzo che gli assegna il suo host.',
+  'settings.library.script':
+    'Lo script di installazione ha impostato questo indirizzo. Eseguirlo di nuovo lo cambia, insieme alla porta e al modo in cui si raggiunge la libreria.',
   'settings.media.title': 'Media',
   'settings.media.explain':
     'Dove è conservata la libreria pubblicata. Ogni caricamento approvato viene scritto lì.',
   'settings.media.kind.folder': 'Una cartella su questo computer',
   'settings.media.kind.r2': 'Il bucket R2 del Worker, su Cloudflare',
   'settings.media.kind.none': 'Ancora nessun archivio media',
+  'settings.media.room': '{free} liberi su {size} sul suo disco.',
+  'settings.media.fixed':
+    'Lo script di installazione ha scelto questa cartella. Per spostare i media, reinstalla sulla stessa cartella dei dati.',
   'settings.media.path': 'Cartella',
-  'settings.media.pathHint':
-    'Un percorso completo. Il server deve poterci scrivere, e contiene solo la libreria.',
-  'settings.media.publicUrl': 'Indirizzo pubblico',
-  'settings.media.publicUrlHint':
-    'Solo se un altro server web pubblica la cartella. Senza, questo server la serve su /media/.',
-  'settings.media.saveTested': 'Verifica e salva',
   'settings.media.test': 'Verifica',
   'settings.media.testing': 'Verifica in corso…',
   'settings.media.reachedLibrary':
@@ -456,7 +454,7 @@ const words: Record<MessageKey, string> = {
   'settings.signIn.explain':
     'Il provider con cui accedono i membri della libreria e chi vi carica contenuti.',
   'settings.signIn.local':
-    'Il proprietario accede anche con un link del computer in cui è installata la libreria (pnpm library login).',
+    'Il proprietario accede anche con un link del computer in cui è installata la libreria (slidr-library login).',
   'settings.signIn.provider': 'Provider',
   'settings.signIn.none': 'Nessuno: solo il proprietario, con il link del computer',
   'settings.signIn.oidc': 'Un altro provider OpenID Connect',
@@ -521,57 +519,6 @@ const words: Record<MessageKey, string> = {
   'publications.written': 'Approvato e scritto nella libreria:',
   'publications.publishSkipped':
     'Non pubblicati: {count}. Quelli non più validi sono stati rimessi in attesa, gli altri attendono la scrittura. Aprili per vedere perché.',
-  'settings.media.kind.sftp': 'Una cartella su un server, via SFTP',
-  'settings.media.kind.ftp': 'Una cartella su un server, via FTP',
-  'settings.media.where': 'Posizione',
-  'settings.media.host': 'Server',
-  'settings.media.port': 'Porta',
-  'settings.media.user': 'Utente',
-  'settings.media.root': 'Cartella sul server',
-  'settings.media.rootHint':
-    'Un percorso completo sul server, come /var/www/media. La libreria scrive solo al suo interno.',
-  'settings.media.auth': 'Accesso con',
-  'settings.media.auth.key': 'Chiave privata',
-  'settings.media.auth.password': 'Password',
-  'settings.media.privateKey': 'Chiave privata (OpenSSH o PEM)',
-  'settings.media.privateKeyFile': 'Scegli un file…',
-  'settings.media.passphrase': 'Passphrase',
-  'settings.media.password': 'Password',
-  'settings.media.keyKept': 'Salvato dal {when}. Se lasci vuoto il campo, resta invariato.',
-  'settings.media.tls': 'Crittografia',
-  'settings.media.tls.explicit': 'FTPS: TLS richiesto alla connessione (consigliato)',
-  'settings.media.tls.implicit': 'FTPS: TLS fin dall’inizio, porta 990',
-  'settings.media.tls.none': 'Nessuna',
-  'settings.media.allowUnencrypted':
-    'Consenti FTP non cifrato: password e file viaggiano in rete in chiaro.',
-  'settings.media.unencrypted': 'La connessione a questo server non è cifrata.',
-  'settings.media.hostKey': 'Chiave host',
-  'settings.media.hostKeyConfirmed': 'Confermata',
-  'settings.media.confirmTitle': 'La chiave host di questo server non è ancora confermata',
-  'settings.media.confirmChangedTitle': 'La chiave host del server è cambiata',
-  'settings.media.confirmExplain':
-    'Verifica con l’amministratore del server che questa sia la sua chiave, ad esempio con questo comando sul server. Finché non è confermata, non gli viene inviato nulla.',
-  'settings.media.confirmChanged':
-    'In precedenza era stata confermata un’altra chiave. Conferma solo se l’amministratore del server l’ha cambiata.',
-  'settings.media.confirm': 'Conferma e salva',
-  'settings.media.publicUrlRemoteHint':
-    'L’indirizzo HTTPS su cui quel server serve la cartella. Senza, questo server la serve su /media/.',
-  'settings.media.kind.r2s3': 'Un bucket R2 su Cloudflare',
-  'settings.media.accountId': 'ID dell’account (Account ID)',
-  'settings.media.bucket': 'Nome del bucket',
-  'settings.media.domain': 'Dominio del bucket',
-  'settings.media.domainHint':
-    'Dove Cloudflare serve il bucket, come https://media.example.org/. Le app installate lo leggono lì.',
-  'settings.media.accessKeyId': 'Access Key ID',
-  'settings.media.secretAccessKey': 'Secret Access Key',
-  'settings.media.s3Hint':
-    'Di un token API R2 con permesso Object Read & Write solo su questo bucket.',
-  'settings.media.zoneId': 'ID zona del dominio (Zone ID)',
-  'settings.media.zoneIdHint':
-    'Così ogni pubblicazione svuota la cache di ciò che ha scritto. Senza, i vecchi file restano in cache finché non scadono.',
-  'settings.media.purgeToken': 'Token per svuotare la cache',
-  'settings.media.purgeTokenHint':
-    'Un token API con permesso Cache Purge su questa zona. Viene verificato prima del salvataggio.',
   'settings.signIn.tenantHint':
     'L’ID tenant della tua organizzazione, o il suo dominio, come contoso.onmicrosoft.com. Accedono solo gli account di quel tenant.',
   'settings.signIn.ownerOnly':

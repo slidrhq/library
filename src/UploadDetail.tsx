@@ -610,7 +610,9 @@ export function UploadDetail({
         ) : (
           <>
             {names && <>{names} · </>}
-            <span dir="ltr">{upload.target}</span>
+            <span dir="ltr" className="upload-target">
+              {upload.target}
+            </span>
           </>
         )
       }

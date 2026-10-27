@@ -1,0 +1,55 @@
+name: Image
+
+# The local library's image (docker/), built and tried on Linux, on each architecture it is made
+# for (docs/PLAN.md P11). It publishes nothing, and deploys nothing: a release does, from a tag.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check the shell scripts
+        if: matrix.runner == 'ubuntu-24.04'
+        run: shellcheck docker/entry.sh docker/slidr-library.sh install/install.sh install/slidr-library
+      - name: Build the image
+        run: docker build -f docker/Dockerfile -t slidr-library:test .
+      - name: Keep it small
+        run: |
+          size=$(docker image inspect -f '{{.Size}}' slidr-library:test)
+          echo "The image is $((size / 1024 / 1024)) MiB."
+          test "$size" -lt $((300 * 1024 * 1024))
+      - name: Try it
+        run: node --import ./server/node.mjs --test docker/test/image.test.ts
+        env:
+          SLIDR_IMAGE: slidr-library:test
+      - name: Install it, as a machine does
+        run: |
+          sudo apt-get install -y --no-install-recommends expect
+          node --import ./server/node.mjs --test --test-concurrency=1 install/test/install.test.ts
+        env:
+          SLIDR_IMAGE: slidr-library:test
+      - name: The containers' logs, when it failed
+        if: failure()
+        run: |
+          docker logs slidr-library-test || true
+          docker logs slidr-library || true

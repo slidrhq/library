@@ -5,18 +5,20 @@
  * (`../host/cloudflare/index.ts`).
  */
 import type { Bucket } from './bucket.ts';
-import type { MediaSettings } from './config.ts';
 import type { Purger } from './media/cache.ts';
 import type { Vault } from './vault.ts';
 
 /** What the library keeps for itself: the uploads and their files (`uploads/store.ts`). */
 export type StateStore = Bucket;
 
-/**
- * The published library: its files under their paths, and its manifest (`media/live.ts`). A store
- * on another server is let go (`close`) when the library names another.
- */
-export type MediaStore = Bucket & { close?(): Promise<void> };
+/** The published library: its files under their paths, and its manifest (`media/live.ts`). */
+export type MediaStore = Bucket;
+
+/** The disk a folder is on: how much it holds, and how much of it is free, in bytes. */
+export interface Room {
+  size: number;
+  free: number;
+}
 
 /** Signing in, and who may do what (`auth.ts`, `uploads/access.ts`). */
 export interface AuthSettings {
@@ -53,13 +55,12 @@ export interface Context {
   auth: AuthSettings;
   /** The address the request came from, where the host knows it. */
   clientAddress?: string;
-  /** Whether the owner signs in by a link of the CLI: a library on a machine (`auth.ts`). */
+  /** Whether the owner signs in by a link of the CLI: a local library (`auth.ts`). */
   local?: boolean;
-  /** What of the library's settings the host lets an admin change (`settings.ts`). */
-  editable?: { url?: boolean; media?: boolean };
   /**
-   * Opens the media store of some settings, with its key (the vault's `media`, as text), to try
-   * them before they are kept (`settings.ts`).
+   * The folder a local library's media is, as its admins are shown it (`settings.ts`): its path
+   * on the machine, which the install named, and the room left on its disk. It is the host's, and
+   * is not changed through the library (docs/SPEC.md D13).
    */
-  openMedia?: (settings: MediaSettings, key?: string) => MediaStore;
+  mediaFolder?: { path: string; room(): Promise<Room | undefined> };
 }
