@@ -5,14 +5,18 @@
 #   sudo bash install.sh                 asks what it needs, and installs
 #   sudo bash install.sh --yes …         asks nothing: the options answer, the rest is default
 #   sudo bash install.sh --update        on a machine where it is installed: this version
+#   sudo bash install.sh --image-file …  on a machine that does not reach ghcr.io: the image's file
 #
 # It writes nothing until its summary is accepted. Run again, it keeps the library's data, keys
 # and media as they are, and updates it or changes how it is reached. `--help` lists the options.
 set -euo pipefail
 
-# Written by the release (.github/workflows/release.yml): its version, and its image by digest.
+# Written by the release (.github/workflows/release.yml): its version, its image by digest, and
+# the SHA-256 of the image's file for each architecture (--image-file).
 VERSION=""
 IMAGE=""
+IMAGE_FILE_AMD64=""
+IMAGE_FILE_ARM64=""
 
 ETC=/etc/slidr-library
 COMMAND=/usr/local/bin/slidr-library
@@ -45,7 +49,12 @@ Installs a local Slidr Library${VERSION:+ $VERSION} on this machine, in Docker.
   --seed[=<address>]    fill an empty media folder from a published library (default $CENTRAL)
   --no-seed             leave it empty
   --update              update an installed library to this version, asking nothing
-  --image <reference>   another image than this release's (for its tests)
+  --image-file <file>   this release's image from its file, for a machine that does not reach
+                        ghcr.io (slidr-library-<version>-linux-<arch>.tar.gz of the release)
+  --ca <file>           the certificates (PEM) of the organization's own authorities, which the
+                        library trusts besides the public ones: its sign-in provider's, a seed's
+  --no-ca               the public authorities alone again
+  --image <reference>   another image than this release's: a mirror of it, or one for its tests
   --yes                 ask nothing: what is not given is the default
 EOF
 }
@@ -61,6 +70,7 @@ fail() {
 
 MEDIA="" OWNER="" REACH="" URL="" TLS_CERT="" TLS_KEY="" PROXY="" BIND="" PORT="" DATA=""
 SEED="" SEED_FROM="" YES=0 UPDATE=0
+IMAGE_GIVEN=0 IMAGE_FILE="" CA="" NO_CA=0
 while (($# > 0)); do
   case "$1" in
     --media) MEDIA=${2:?--media names a folder}; shift ;;
@@ -77,7 +87,10 @@ while (($# > 0)); do
     --seed=*) SEED=yes SEED_FROM=${1#--seed=} ;;
     --no-seed) SEED=no ;;
     --update) UPDATE=1 ;;
-    --image) IMAGE=${2:?--image names an image}; shift ;;
+    --image) IMAGE=${2:?--image names an image} IMAGE_GIVEN=1; shift ;;
+    --image-file) IMAGE_FILE=${2:?--image-file names a file}; shift ;;
+    --ca) CA=${2:?--ca names a file}; shift ;;
+    --no-ca) NO_CA=1 ;;
     --yes) YES=1 ;;
     -h | --help) usage; exit 0 ;;
     *) usage >&2; fail "What is $1?" ;;
@@ -145,10 +158,55 @@ check_machine() {
   compose=$(docker compose version --short 2>/dev/null) ||
     fail "Docker has no compose plugin: install docker-compose-plugin."
   [[ ${compose#v} == 2.* || ${compose#v} == [3-9].* ]] || fail "docker compose $compose is too old: 2 or later."
-  [[ -n $IMAGE ]] || fail "This script is not of a release: name the image, --image <reference>."
+  [[ -n $IMAGE || -n $IMAGE_FILE ]] ||
+    fail "This script is not of a release: name the image, --image <reference>."
+}
+
+# The image's file (--image-file): this release's for this machine's architecture, by the SHA-256
+# the release wrote above. A script not of a release takes any file, for its tests.
+check_image_file() {
+  [[ -n $IMAGE_FILE ]] || return 0
+  ((IMAGE_GIVEN == 0)) || fail "Name the image or its file, not both: --image or --image-file."
+  [[ -f $IMAGE_FILE && -r $IMAGE_FILE ]] || fail "$IMAGE_FILE is not a file this machine can read."
+  [[ -n $VERSION ]] || return 0
+  local arch expected
+  case "$(uname -m)" in
+    x86_64 | amd64) arch=amd64 expected=$IMAGE_FILE_AMD64 ;;
+    *) arch=arm64 expected=$IMAGE_FILE_ARM64 ;;
+  esac
+  [[ -n $expected ]] || fail "Slidr Library $VERSION has no image file for linux/$arch."
+  say "Checking $IMAGE_FILE…"
+  [[ $(sha256sum "$IMAGE_FILE" | cut -d ' ' -f 1) == "$expected" ]] ||
+    fail "$IMAGE_FILE is not the image of Slidr Library $VERSION for linux/$arch (slidr-library-$VERSION-linux-$arch.tar.gz of its release): nothing was written."
+}
+
+# The organization's own authorities (--ca): certificates in PEM, and no key.
+check_ca() {
+  [[ -n $CA ]] || return 0
+  ((NO_CA == 0)) || fail "Name the authorities or none: --ca or --no-ca."
+  [[ -f $CA && -r $CA ]] || fail "$CA is not a file this machine can read."
+  grep -q -- '-----BEGIN CERTIFICATE-----' "$CA" || fail "$CA holds no certificate in PEM."
+  if grep -q -- 'PRIVATE KEY-----' "$CA"; then
+    fail "$CA holds a private key: the authorities' certificates alone."
+  fi
+  if command -v openssl >/dev/null && ! openssl x509 -noout -in "$CA" 2>/dev/null; then
+    fail "$CA is not a certificate openssl can read."
+  fi
+}
+
+# The authorities the library is to trust besides the public ones: those given, or those it keeps.
+ca_file() {
+  if [[ -n $CA ]]; then
+    printf '%s' "$CA"
+  elif ((NO_CA == 0)) && [[ -f $ETC/ca/ca.pem ]]; then
+    printf '%s' "$ETC/ca/ca.pem"
+  fi
 }
 
 # ---- The answers of an installed library (library.env), kept as KEY='value'
+
+# The image the library was installed with.
+INSTALLED_IMAGE=""
 
 load_answers() {
   local line key value
@@ -159,6 +217,7 @@ load_answers() {
       MEDIA | OWNER | REACH | URL | PROXY | BIND | PORT | DATA)
         [[ -n ${!key} ]] || printf -v "$key" '%s' "$value"
         ;;
+      IMAGE) INSTALLED_IMAGE=$value ;;
     esac
   done <"$ETC/library.env"
 }
@@ -324,10 +383,17 @@ check_data() {
   done
 }
 
-# The size of a published library, from its manifest; nothing when it cannot be read.
+# The size of a published library, from its manifest; nothing when it cannot be read. A server of
+# the organization's may be trusted by its own authorities alone, which curl is given then.
 library_size() {
-  curl -fsSL --max-time 60 "${1%/}/manifest.json" 2>/dev/null |
-    grep -o '"size": *[0-9]*' | awk '{ total += $2 } END { if (NR) print total }'
+  local manifest="" ca
+  ca=$(ca_file)
+  manifest=$(curl -fsSL --max-time 60 "${1%/}/manifest.json" 2>/dev/null) ||
+    if [[ -n $ca ]]; then
+      manifest=$(curl -fsSL --max-time 60 --cacert "$ca" "${1%/}/manifest.json" 2>/dev/null) || true
+    fi
+  { grep -o '"size": *[0-9]*' <<<"$manifest" || true; } |
+    awk '{ total += $2 } END { if (NR) print total }'
 }
 
 check_seed() {
@@ -376,6 +442,9 @@ write_compose() {
   if [[ $REACH == proxy ]]; then
     trusted=$([[ $PROXY == local ]] && echo gateway || echo "$PROXY")
   fi
+  # Node trusts the organization's authorities besides its own list (write_ca).
+  local ca=""
+  if [[ -f $ETC/ca/ca.pem ]]; then ca=$'\n      NODE_EXTRA_CA_CERTS: "/library/ca/ca.pem"'; fi
   cat >"$ETC/compose.yaml" <<EOF
 # Slidr Library${VERSION:+ $VERSION}, as install.sh wrote it on $(date -u +%Y-%m-%d) (docs/SPEC.md §5.1).
 # Run install.sh again to change it: slidr-library update, or sudo bash $ETC/install.sh.
@@ -397,12 +466,13 @@ services:
     environment:
       LIBRARY_URL: "$URL"
       LIBRARY_MEDIA_SHOWN: "$MEDIA"
-      LIBRARY_TRUSTED_PROXY: "$trusted"
+      LIBRARY_TRUSTED_PROXY: "$trusted"$ca
     volumes:
       - "$DATA:/library/data$z"
       - "$MEDIA:/library/media$z"
       - "$ETC/keys:/library/keys$z"
       - "$ETC/tls:/library/tls:ro$tls_z"
+      - "$ETC/ca:/library/ca:ro$tls_z"
     logging:
       driver: json-file
       options:
@@ -438,10 +508,53 @@ write_folders() {
   fi
 }
 
+# The organization's authorities (--ca), which the container reads at its start; kept until
+# --no-ca. A change of them alone starts the container again (CA_CHANGED).
+CA_CHANGED=0
+write_ca() {
+  install -d -m 0755 "$ETC/ca"
+  if [[ -n $CA ]] && ! cmp -s "$CA" "$ETC/ca/ca.pem"; then
+    install -m 0644 "$CA" "$ETC/ca/ca.pem"
+    CA_CHANGED=1
+  elif ((NO_CA)) && [[ -f $ETC/ca/ca.pem ]]; then
+    rm -f "$ETC/ca/ca.pem"
+    CA_CHANGED=1
+  fi
+}
+
 compose() { docker compose -f "$ETC/compose.yaml" "$@"; }
 
 pull() {
-  docker image inspect "$IMAGE" >/dev/null 2>&1 || docker pull "$IMAGE"
+  docker image inspect "$IMAGE" >/dev/null 2>&1 && return 0
+  # This release's image, loaded from its file when the library was installed (--image-file):
+  # Docker knows it by its tag, not by the digest it is pulled by.
+  if [[ -n $INSTALLED_IMAGE && $INSTALLED_IMAGE == "${IMAGE%@*}" ]] &&
+    docker image inspect "$INSTALLED_IMAGE" >/dev/null 2>&1; then
+    IMAGE=$INSTALLED_IMAGE
+    return 0
+  fi
+  docker pull "$IMAGE" ||
+    fail "Docker could not pull $IMAGE: nothing was written. A machine that does not reach ghcr.io is given the image's file of the release, --image-file slidr-library-<version>-linux-<arch>.tar.gz."
+}
+
+# The image's file, loaded into Docker: the image it holds, by its name, is the one installed.
+load_image() {
+  local loaded
+  loaded=$(docker load --quiet --input "$IMAGE_FILE") || fail "Docker could not load $IMAGE_FILE."
+  IMAGE=$(sed -n 's/^Loaded image: //p' <<<"$loaded")
+  [[ -n $IMAGE && $IMAGE != *$'\n'* ]] || fail "$IMAGE_FILE holds no one image by its name: $loaded"
+}
+
+# The image, before anything of the install is written: from its file, or pulled when Docker
+# does not have it.
+get_image() {
+  if [[ -n $IMAGE_FILE ]]; then
+    say "Loading the image from $IMAGE_FILE…"
+    load_image
+  else
+    say "Getting the image…"
+    pull
+  fi
 }
 
 healthy() {
@@ -471,7 +584,11 @@ install_command() {
 summary() {
   say ""
   say "Slidr Library${VERSION:+ $VERSION}, as it will be installed:"
-  say "  image:     $IMAGE"
+  if [[ -n $IMAGE_FILE ]]; then
+    say "  image:     from $IMAGE_FILE$([[ -n $VERSION ]] && echo ", the release's (checked)")"
+  else
+    say "  image:     $IMAGE"
+  fi
   say "  address:   $URL  (port $PORT of this machine, on $BIND)"
   case "$REACH" in
     local) say "  reached:   from this machine only, over HTTP" ;;
@@ -482,6 +599,9 @@ summary() {
   say "  media:     $MEDIA$([[ $SEED == yes ]] && echo "  (filled from $SEED_FROM, $((SEED_SIZE / 1024 / 1024)) MiB)")"
   say "  data:      $DATA"
   say "  keys:      $ETC/keys"
+  local ca
+  ca=$(ca_file)
+  if [[ -n $ca ]]; then say "  trusts:    the authorities of $ca, besides the public ones"; fi
   if getent passwd "$ACCOUNT" >/dev/null; then
     say "The folders will belong to $ACCOUNT, the library's account of this machine."
   else
@@ -546,12 +666,12 @@ fresh() {
   fi
   summary
   yes_no "Install it?" y || fail "Nothing was written."
+  get_image
   selinux
   write_folders
+  write_ca
   write_answers
   write_compose
-  say "Getting the image…"
-  pull
   if [[ -f $DATA/host.json ]]; then
     say "The data folder holds a library: it is kept as it is."
   else
@@ -595,22 +715,35 @@ again_here() {
     settle_reach
     check_bind
   fi
+  get_image
   account
   own_folders
+  write_ca
   write_answers
   selinux
   write_compose
   if [[ $choice == reach ]]; then write_folders; fi
-  say "Getting the image…"
-  pull
-  compose up -d
+  if ((CA_CHANGED)); then
+    compose up -d --force-recreate
+  else
+    compose up -d
+  fi
   say "Waiting for it to start…"
   healthy
   install_command
   say "Slidr Library${VERSION:+ $VERSION} is running at $URL."
+  if ((CA_CHANGED)); then
+    if [[ -f $ETC/ca/ca.pem ]]; then
+      say "It trusts the authorities of $ETC/ca/ca.pem, besides the public ones."
+    else
+      say "It trusts the public authorities alone."
+    fi
+  fi
 }
 
 check_machine
+check_image_file
+check_ca
 if [[ -f $ETC/library.env && -f $ETC/compose.yaml ]]; then
   again_here
 else

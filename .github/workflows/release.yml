@@ -1,9 +1,10 @@
 name: Release
 
-# A release of the local library (docs/PLAN.md P13), from a tag v<version> that package.json names:
-# its image for x86-64 and ARM64 on ghcr.io, attested; that image tried as a machine pulls it; and
-# a GitHub release with the install script that pins it by digest. It deploys nothing to
-# Cloudflare (deploy.yml does, from main).
+# A release of the local library (docs/PLAN.md P13, P14), from a tag v<version> that package.json
+# names: its image for x86-64 and ARM64 on ghcr.io, attested, and as a file for each, for a machine
+# that does not reach ghcr.io; that image tried as a machine pulls it, and as it loads the file;
+# and a GitHub release with the install script that pins it by digest, and the files by their
+# SHA-256. It deploys nothing to Cloudflare (deploy.yml does, from main).
 on:
   push:
     tags: ['v*']
@@ -123,13 +124,52 @@ jobs:
           subject-digest: ${{ steps.list.outputs.digest }}
           push-to-registry: true
 
-  # The image as a machine pulls it, with no login: the package is public (README, "Releasing").
+  # The image as a file for each architecture, as `docker load` takes it, for a machine that does
+  # not reach ghcr.io (install.sh --image-file): copied from the very image pushed, by its digest.
+  files:
+    needs: [check, publish]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: A file of the image for each architecture
+        run: |
+          command -v skopeo >/dev/null ||
+            { sudo apt-get update && sudo apt-get install -y --no-install-recommends skopeo; }
+          echo "$TOKEN" | skopeo login ghcr.io --username "$ACTOR" --password-stdin
+          mkdir -p files
+          for arch in amd64 arm64; do
+            skopeo copy --override-os linux --override-arch "$arch" \
+              "docker://$REPOSITORY@$DIGEST" "docker-archive:files/image.tar:$REPOSITORY:$VERSION"
+            gzip -n < files/image.tar > "files/slidr-library-$VERSION-linux-$arch.tar.gz"
+            rm files/image.tar
+          done
+          ls -l files
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+          DIGEST: ${{ needs.publish.outputs.digest }}
+          ACTOR: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-files
+          path: files/*.tar.gz
+          retention-days: 1
+          compression-level: 0
+
+  # The image as a machine pulls it, with no login: the package is public (README, "Releasing");
+  # and as a machine with no way out loads its file.
   try:
-    needs: publish
+    needs: [check, publish, files]
     strategy:
       fail-fast: false
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -143,15 +183,21 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: image-files
+          path: files
       - name: Pull it with no login
         run: docker pull "$SLIDR_IMAGE"
       - run: node --import ./server/node.mjs --test docker/test/image.test.ts
       - run: |
           sudo apt-get install -y --no-install-recommends expect
           node --import ./server/node.mjs --test --test-concurrency=1 install/test/install.test.ts
+        env:
+          SLIDR_IMAGE_FILE: ${{ github.workspace }}/files/slidr-library-${{ needs.check.outputs.version }}-linux-${{ matrix.arch }}.tar.gz
 
   release:
-    needs: [check, publish, try]
+    needs: [check, publish, files, try]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -159,24 +205,37 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v4
-      - name: The install script, its image pinned
+      - uses: actions/download-artifact@v4
+        with:
+          name: image-files
+          path: release
+      - name: The install script, its image pinned, and its files
         run: |
           version=${{ needs.check.outputs.version }}
           image="$REPOSITORY:$version@${{ needs.publish.outputs.digest }}"
-          mkdir -p release
+          amd64=$(sha256sum "release/slidr-library-$version-linux-amd64.tar.gz" | cut -d ' ' -f 1)
+          arm64=$(sha256sum "release/slidr-library-$version-linux-arm64.tar.gz" | cut -d ' ' -f 1)
           sed -e "s|^VERSION=\"\"$|VERSION=\"$version\"|" -e "s|^IMAGE=\"\"$|IMAGE=\"$image\"|" \
+            -e "s|^IMAGE_FILE_AMD64=\"\"$|IMAGE_FILE_AMD64=\"$amd64\"|" \
+            -e "s|^IMAGE_FILE_ARM64=\"\"$|IMAGE_FILE_ARM64=\"$arm64\"|" \
             install/install.sh > release/install.sh
           grep -q "^IMAGE=\"$image\"$" release/install.sh
+          grep -q "^IMAGE_FILE_AMD64=\"$amd64\"$" release/install.sh
+          grep -q "^IMAGE_FILE_ARM64=\"$arm64\"$" release/install.sh
           (cd release && sha256sum install.sh > install.sh.sha256)
-      # Who built the script, checked by `gh attestation verify install.sh --repo slidrhq/library`,
-      # and by `slidr-library update` where GitHub's CLI is: its SHA-256 only finds a download
-      # that went wrong, since it comes from the same release.
+      # Who built the script and the files, checked by `gh attestation verify <file> --repo
+      # slidrhq/library`, and the script by `slidr-library update` where GitHub's CLI is: its
+      # SHA-256 only finds a download that went wrong, since it comes from the same release. The
+      # script checks each file by the SHA-256 written into it.
       - uses: actions/attest-build-provenance@v2
         with:
-          subject-path: release/install.sh
+          subject-path: |
+            release/install.sh
+            release/*.tar.gz
       - name: The release
         run: |
           gh release create "$GITHUB_REF_NAME" release/install.sh release/install.sh.sha256 \
+            release/*.tar.gz \
             --title "Slidr Library ${{ needs.check.outputs.version }}" \
             --notes "A local Slidr Library, for Linux, in Docker (README, \"A local library\").
 
@@ -186,6 +245,8 @@ jobs:
           sha256sum -c install.sh.sha256
           sudo bash install.sh
           \`\`\`
+
+          On a machine that does not reach ghcr.io, the image is the file of its architecture, \`slidr-library-${{ needs.check.outputs.version }}-linux-<amd64|arm64>.tar.gz\`, brought beside install.sh: \`sudo bash install.sh --image-file <it>\` (README, \"On a closed network\").
 
           The image: \`$REPOSITORY:${{ needs.check.outputs.version }}@${{ needs.publish.outputs.digest }}\`" \
             --generate-notes

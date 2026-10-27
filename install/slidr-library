@@ -19,6 +19,8 @@ slidr-library <command>
   update [<version>]     the newest release, or the one named; its install script, checked
   update --image <ref>   another image, by this machine's own install script
   change                 how it is reached, or its port (asks)
+  ca <file> | ca --none  the organization's own authorities (PEM), trusted besides the public
+                         ones: its sign-in provider's, a seed's; or the public ones alone
   sign-in <provider> …   the provider everyone else signs in through (slidr-library sign-in)
   owner <email>          hands the library to another member
   vault rotate           a new master key, then a restart
@@ -57,7 +59,8 @@ update() {
   local folder
   folder=$(mktemp -d)
   trap 'rm -rf "$folder"' EXIT
-  curl -fsSL -o "$folder/install.sh" "$from/install.sh" || fail "$from/install.sh could not be read."
+  curl -fsSL -o "$folder/install.sh" "$from/install.sh" ||
+    fail "$from/install.sh could not be read. A machine that does not reach GitHub is updated by the release's install.sh and its image file, brought to it: sudo bash install.sh --update --image-file slidr-library-<version>-linux-<arch>.tar.gz"
   curl -fsSL -o "$folder/install.sh.sha256" "$from/install.sh.sha256" ||
     fail "$from/install.sh.sha256 could not be read."
   (cd "$folder" && sha256sum --check --quiet install.sh.sha256) ||
@@ -122,6 +125,12 @@ case "$command" in
   stop | start | restart) compose "$command" library ;;
   update) update "$@" ;;
   change) exec bash "$ETC/install.sh" ;;
+  ca)
+    case "${1:?ca names a file of certificates, or --none}" in
+      --none) exec bash "$ETC/install.sh" --update --no-ca ;;
+      *) exec bash "$ETC/install.sh" --update --ca "$1" ;;
+    esac
+    ;;
   uninstall) uninstall "$@" ;;
   help | -h | --help) usage ;;
   *)

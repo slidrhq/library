@@ -29,7 +29,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* /etc/nginx/sites-enabled /etc/nginx/conf.d \
  && groupadd --gid 10001 slidr \
  && useradd --uid 10001 --gid slidr --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin slidr \
- && mkdir -p /library/data /library/media /library/keys /library/tls \
+ && mkdir -p /library/data /library/media /library/keys /library/tls /library/ca \
  && chown -R 10001:10001 /library
 COPY --from=build /src/dist/client /app/dist/client
 COPY --from=build /src/dist/node/library.mjs /src/dist/node/library.mjs.map /app/dist/node/

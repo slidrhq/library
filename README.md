@@ -42,6 +42,24 @@ It checks them, shows a summary, and writes nothing until it is accepted. Then: 
 
 Installed apps read the media at `<the library's address>/media/` (docs/media-library.md of the app, "A library of your own").
 
+### On a closed network
+
+A machine that does not reach the internet installs the library as well, once what it would fetch is brought to it ([docs/SPEC.md](docs/SPEC.md) §5.6).
+
+- **The image.** Each release publishes it as a file for each architecture beside `install.sh`, `slidr-library-<version>-linux-amd64.tar.gz` and `slidr-library-<version>-linux-arm64.tar.gz`, and the script names each by its SHA-256. On a machine that reaches GitHub, check the script as above and the file (`gh attestation verify <file> --repo slidrhq/library`), then bring both over:
+
+  ```sh
+  sudo bash install.sh --image-file slidr-library-<version>-linux-amd64.tar.gz --reach https …
+  ```
+
+  The script checks the file against the SHA-256 it names, and loads it into Docker before it writes anything. Run again on that machine (`slidr-library change`, `slidr-library ca`), it takes the image it loaded, and pulls nothing. An organization with a registry of its own may copy the image there instead, keeping its digest (`skopeo copy --all --preserve-digests docker://ghcr.io/slidrhq/library:<version> docker://<registry>/library:<version>`), and install it by that digest, the one on the script's line `IMAGE=`: `--image <registry>/library:<version>@sha256:<digest>`.
+
+- **The media.** `--seed` reads media.slidr.studio unless it names another address. Copy the media folder of a library seeded on a machine that reaches it, then name the copy as the media folder, which the script keeps as it is; or serve it on the network for a while and seed from it (`--seed=http://<its address>:<port>/`), which checks every file against the manifest. Otherwise `--no-seed`.
+- **The organization's own authorities.** Node, in the image, trusts the public authorities and not the machine's. A sign-in provider of the network (Keycloak, AD FS: `slidr-library sign-in oidc --issuer https://…`), or a server to seed from, often has a certificate that the organization's own authority signed: `--ca <file>`, its certificates in PEM, has the library trust them besides the public ones. They are kept in `/etc/slidr-library/ca/`; `slidr-library ca <file>` changes them, and `slidr-library ca --none` takes them away.
+- **Signing in.** Google and Microsoft are not reached from a closed network. Name a provider of the network, or none: then the owner alone signs in, by the one-time link.
+- **The apps** are given the library's address by the organization's policy (docs/media-library.md of the app, "A library of your own"). They take only an HTTPS address, so the library is reached by `https` or `proxy`.
+- **Updating.** `slidr-library update` reads GitHub. Bring the newer release's `install.sh` and file instead: `sudo bash install.sh --update --image-file <file>`.
+
 ### Running it
 
 ```sh
@@ -51,6 +69,7 @@ sudo slidr-library logs -f
 sudo slidr-library stop | start | restart
 sudo slidr-library update        # the newest release; or update <version>
 sudo slidr-library change        # how it is reached, or its port
+sudo slidr-library ca <file>     # the organization's own authorities (PEM); ca --none
 sudo slidr-library sign-in google --client-id <id>   # the provider everyone else signs in through
 sudo slidr-library owner <email> # hands the library to another member
 sudo slidr-library vault rotate  # a new master key
@@ -70,7 +89,7 @@ sudo slidr-library uninstall     # its data, keys and media stay; --purge takes 
 - **The media** (`/library/media`) is the host's: **Settings** shows it, the room left on its disk, and a **Test** that writes and removes a probe, and never changes it (docs/SPEC.md D13).
 - **Its owner** signs in by a one-time link, opened from any address within ten minutes, once (docs/SPEC.md D17).
 
-`.github/workflows/image.yml` builds the image on every push and tries it on x86-64 and ARM64: `docker/test/image.test.ts` (Nginx's `/media/` against the library's own server, an upload by a token approved into the folder, the container's hardening, TLS) and `install/test/install.test.ts` (the script and the command, as root runs them). `.github/workflows/release.yml` makes a release from a tag `v<version>` ([Releasing](#releasing)).
+`.github/workflows/image.yml` builds the image on every push and tries it on x86-64 and ARM64: `docker/test/image.test.ts` (Nginx's `/media/` against the library's own server, an upload by a token approved into the folder, the container's hardening, TLS) and `install/test/install.test.ts` (the script and the command, as root runs them; an install from the image's file, seeded from a server and signed in through a provider that only an authority made for the test vouches for). `.github/workflows/release.yml` makes a release from a tag `v<version>` ([Releasing](#releasing)).
 
 From the source, for working on the code (any system):
 
@@ -317,7 +336,7 @@ The uploads are kept in the R2 bucket `slidr-library-uploads`, which is made onc
 
 ## Releasing
 
-A release of the local library is made from a tag `v<version>` that `package.json` names (`.github/workflows/release.yml`): it checks and tests, builds the image for x86-64 and ARM64 and pushes it to `ghcr.io/slidrhq/library` (`<version>`, `<major>.<minor>`, `latest`) with its SBOM and an attested provenance (`gh attestation verify oci://ghcr.io/slidrhq/library:<version> --repo slidrhq/library`), tries that very image as a machine pulls it, and makes a GitHub release with `install.sh`, which names the release's version and its image by digest, and `install.sh.sha256`. A tag deploys nothing to Cloudflare.
+A release of the local library is made from a tag `v<version>` that `package.json` names (`.github/workflows/release.yml`): it checks and tests, builds the image for x86-64 and ARM64 and pushes it to `ghcr.io/slidrhq/library` (`<version>`, `<major>.<minor>`, `latest`) with its SBOM and an attested provenance (`gh attestation verify oci://ghcr.io/slidrhq/library:<version> --repo slidrhq/library`), copies it into a file for each architecture (`slidr-library-<version>-linux-<arch>.tar.gz`, by `skopeo`, as `docker load` takes it), tries that very image as a machine pulls it and as it loads its file, and makes a GitHub release with `install.sh`, which names the release's version, its image by digest and each file by its SHA-256, `install.sh.sha256`, and the files, attested as the script is. A tag deploys nothing to Cloudflare.
 
 Once, after the first release pushed the image: the package `library` on ghcr.io is made public (**Package settings** → **Change visibility**), since a package starts private even from a public repository; then the release's failed jobs are run again.
 
