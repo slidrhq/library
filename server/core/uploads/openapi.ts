@@ -371,7 +371,7 @@ export function openApi() {
         post: {
           summary: 'Writes the accepted uploads into the published library (Try again)',
           description:
-            'Every accepted upload, oldest first, or those named: each checked once more against the library as it is, written into its files, and marked published once the manifest names them. One that no longer holds goes back to pending, with a note; one that cannot be written stays accepted, waiting; each is in `skipped`, with its `reason`. When the media cannot be written, it is put back as it was, and the answer is 502.',
+            'Every accepted upload, oldest first, or those named: each checked once more against the library as it is, written into its files, and marked published once the manifest names them. One that no longer holds goes back to pending, with a note; one that cannot be written stays accepted, waiting; each is in `skipped`, with its `reason`. When the media cannot be written, it is put back as it was, and the answer is 502. Every publication writes again what is made of the catalogs of the designs where it is of another library (`elements/designs/revs.json`, the catalogs by language): `uploads: []` publishes no upload and writes only that, and the answer has no `published` when there was nothing to write.',
           requestBody: {
             content: {
               'application/json': {

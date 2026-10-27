@@ -789,13 +789,16 @@ describe('a publication', () => {
       subject: [10, 10],
       size: [100, 100],
     };
-    const { send, media } = await live({
+    const { send, media, bucket, waiting } = await live({
       [MANAGED]: mergeDesign(emptyCatalog(), record),
       [REVS]: { from: { [MANAGED]: 'old' }, designs: {} },
     });
-    const done = await read<Published>(await send('/api/publish', 'POST', {}));
+    // Asked to publish no upload, it leaves the accepted one that waits as it is.
+    const held = await waiting(cake);
+    const done = await read<Published>(await send('/api/publish', 'POST', { uploads: [] }));
     assert.ok(done.published);
     assert.deepEqual(done.uploads, []);
+    assert.equal((await readUpload(bucket, held))?.upload.status, 'accepted');
     assert.deepEqual(done.changed, [REVS]);
     assert.deepEqual(done.added, [
       'elements/designs/en/managed.json',
@@ -805,7 +808,7 @@ describe('a publication', () => {
     assert.equal(revs.from[MANAGED], manifestOf(media).files[MANAGED]!.sha256);
     assert.deepEqual(Object.keys(revs.designs.he!), ['m-old']);
     // Of the library now, they are left as they are.
-    const again = await read<Published>(await send('/api/publish', 'POST', {}));
+    const again = await read<Published>(await send('/api/publish', 'POST', { uploads: [] }));
     assert.equal(again.published, undefined);
   });
 

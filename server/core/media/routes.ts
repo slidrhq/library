@@ -3,7 +3,8 @@
  *
  *   GET  /api/library            where the library is, when it was published, and what waits
  *   POST /api/library/import     brings the site's library into its bucket, a batch at a time
- *   POST /api/publish            writes the accepted uploads into the library
+ *   POST /api/publish            writes the accepted uploads into the library; with none named,
+ *                                only what is made of the catalogs of the designs (`designFiles.ts`)
  *   PUT  /api/library/staged/…   a file of an author's publication, by its hash (`files.ts`)
  *   POST /api/library/files      an author's publication: the files changed since the copy was pulled
  *
@@ -126,14 +127,13 @@ export const publishRoute: Route = async (request, ctx) => {
   if (
     ids !== undefined &&
     (!Array.isArray(ids) ||
-      ids.length === 0 ||
       ids.length > MOST_UPLOADS ||
       !ids.every((id) => typeof id === 'string' && isUploadId(id)))
   ) {
     return problem(
       400,
       'bad-request',
-      `uploads names the uploads to publish, 1 to ${MOST_UPLOADS} ids; left out, every accepted one.`,
+      `uploads names the uploads to publish, up to ${MOST_UPLOADS} ids, or none; left out, every accepted one.`,
     );
   }
   if (!(await readManifest(ctx.media))) {
@@ -144,6 +144,8 @@ export const publishRoute: Route = async (request, ctx) => {
     );
   }
   // Those named (Try again), or every accepted one; each not written is settled (`settle.ts`).
+  // None named writes only what is made of the catalogs of the designs, where it is of another
+  // library (Slidr Studio asks it before it draws the pictures of the designs).
   const picked = await chosen(ctx.state, ids as string[] | undefined);
   const { publication, failed } = await publishNow(ctx, actor, picked.ids);
   if (publication) return json({ ...publication, remaining: picked.remaining });
