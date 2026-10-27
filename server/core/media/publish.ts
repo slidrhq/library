@@ -10,17 +10,23 @@
  *   becomes of it).
  * - It writes as `writing.ts` does: what it replaces kept beside the uploads first, the manifest
  *   last, and the media put back as it was when it fails before then.
+ * - It writes again what is made of the catalogs of the designs, the catalogs by language and the
+ *   words of the designs and of their pictures made ahead (`designFiles.ts`). One that takes no
+ *   upload writes them where they are of another library than the one published (**Try again**).
  * - One publication runs at a time (`lease.ts`).
  * - Once the manifest is written, the cache before the library is emptied of the files written
  *   (`cache.ts`), and what the publication did is kept, `media/publications/<published>.json`.
  */
+import type { ContentLanguage } from '@slidr/model';
 import type { Bucket } from '../bucket.ts';
-import type { Issue } from '../http.ts';
+import { isRecord, type Issue } from '../http.ts';
 import { recordOf, type Actor, type Recorded } from '../uploads/access.ts';
 import { handlerOf } from '../uploads/content.ts';
+import { thumbLanguage } from '../uploads/designs.ts';
 import { forgetLibrary, type Library } from '../uploads/library.ts';
 import { listUploads, readFile, readUpload, saveUpload, type Upload } from '../uploads/store.ts';
 import type { Purge, Purger } from './cache.ts';
+import { writeDesignFiles, type Drawn } from './designFiles.ts';
 import { Lease, NotNow } from './lease.ts';
 import {
   PUBLICATIONS,
@@ -138,10 +144,51 @@ class Changes {
 const compact = (value: unknown) => JSON.stringify(value);
 
 /**
+ * The files of an upload, each with its place in the library as its kind names it, checked
+ * against the hash it was uploaded with. The pictures made ahead of a design (`thumb-<language>`)
+ * of a language it does not write are left out.
+ */
+async function filesOf(upload: Upload, uploads: Bucket): Promise<[string, Uint8Array][]> {
+  const rules = handlerOf(upload.type, upload.action)?.files ?? [];
+  const files: [string, Uint8Array][] = [];
+  for (const [name, stored] of Object.entries(upload.files)) {
+    const wanted = rules.find((rule) => rule.name === name)?.path(upload.target);
+    if (stored.path !== wanted) throw new PublishError(`Its file ${name} is for ${stored.path}.`);
+    const lang = thumbLanguage(name);
+    if (lang && !isRecord(upload.languages[lang as ContentLanguage])) continue;
+    const object = await readFile(uploads, upload.id, name);
+    const bytes = object ? new Uint8Array(await object.arrayBuffer()) : undefined;
+    if (!bytes || (await sha256Hex(bytes)) !== stored.sha256) {
+      throw new PublishError(`Its file ${name} is not the one it was uploaded with.`);
+    }
+    files.push([stored.path, bytes]);
+  }
+  return files;
+}
+
+/**
+ * Notes which slides of a design the upload drew a picture of ahead (`thumb-<language>`), and
+ * which it changed without one: the picture of an earlier slide is not of the new one.
+ */
+function noteDrawn(upload: Upload, languages: readonly string[], drawn: Drawn) {
+  const of = drawn.get(upload.target) ?? new Set<string>();
+  for (const lang of languages) {
+    if (upload.files[`thumb-${lang}`]) of.add(lang);
+    else of.delete(lang);
+  }
+  drawn.set(upload.target, of);
+}
+
+/**
  * Writes one upload into the changes, as the kind of upload it is: the files it touches. What
  * cannot be written throws before anything of it is changed.
  */
-async function apply(upload: Upload, changes: Changes, uploads: Bucket): Promise<string[]> {
+async function apply(
+  upload: Upload,
+  changes: Changes,
+  uploads: Bucket,
+  drawn: Drawn,
+): Promise<string[]> {
   const { type, action, target } = upload;
   if (action === 'tag') {
     if (target !== type) throw new PublishError(`It tags ${target}, but is an upload of ${type}.`);
@@ -152,29 +199,22 @@ async function apply(upload: Upload, changes: Changes, uploads: Bucket): Promise
   }
   if (type === 'designs' && action === 'add') {
     const record = designOf(upload);
-    const pictures: [string, Uint8Array][] = [];
-    for (const [name, stored] of Object.entries(upload.files)) {
-      const wanted =
-        name === 'backdrop' ? `images/designs/${target}-bg.webp` : `images/designs/${target}.webp`;
-      if (stored.path !== wanted) throw new PublishError(`Its file ${name} is for ${stored.path}.`);
-      const object = await readFile(uploads, upload.id, name);
-      const bytes = object ? new Uint8Array(await object.arrayBuffer()) : undefined;
-      if (!bytes || (await sha256Hex(bytes)) !== stored.sha256) {
-        throw new PublishError(`Its file ${name} is not the one it was uploaded with.`);
-      }
-      pictures.push([stored.path, bytes]);
-    }
+    const files = await filesOf(upload, uploads);
     const catalog = (await changes.json<ManagedCatalog>(MANAGED, compact)) ?? emptyCatalog();
     mergeDesign(catalog, record);
     changes.setJson(MANAGED, catalog, compact);
-    for (const [path, bytes] of pictures) changes.setBytes(path, bytes);
-    return [MANAGED, ...pictures.map(([path]) => path)];
+    for (const [path, bytes] of files) changes.setBytes(path, bytes);
+    noteDrawn(upload, Object.keys(record.slides), drawn);
+    return [MANAGED, ...files.map(([path]) => path)];
   }
   if (type === 'designs' && action === 'translate') {
     const catalog = await changes.json<ManagedCatalog>(MANAGED, compact);
     if (!catalog) throw new PublishError(`The library has no ${MANAGED}.`);
-    mergeTranslation(catalog, target, upload.languages);
-    return [MANAGED];
+    const files = await filesOf(upload, uploads);
+    const written = mergeTranslation(catalog, target, upload.languages);
+    for (const [path, bytes] of files) changes.setBytes(path, bytes);
+    noteDrawn(upload, written, drawn);
+    return [MANAGED, ...files.map(([path]) => path)];
   }
   if (type === 'templates' && action === 'translate') {
     let catalog = await changes.read(TEMPLATES);
@@ -252,6 +292,7 @@ export async function publish(
   try {
     const { manifest } = live;
     const changes = new Changes(media, manifest);
+    const drawn: Drawn = new Map();
     const result: Publication = { uploads: [], skipped: [], added: [], changed: [], remaining: 0 };
     const picked = await chosen(uploads, ids);
     result.remaining = picked.remaining;
@@ -290,7 +331,7 @@ export async function publish(
         continue;
       }
       try {
-        const paths = await apply(upload, changes, uploads);
+        const paths = await apply(upload, changes, uploads, drawn);
         result.uploads.push({
           id,
           type: upload.type,
@@ -304,11 +345,13 @@ export async function publish(
         result.skipped.push({ id, reason: 'unwritable', message: error.message });
       }
     }
-    if (result.uploads.length === 0) return result;
-
     const writing = new Writing(media, uploads, lease, live);
     try {
       for (const [path, bytes] of changes.written()) await writing.put(path, bytes);
+      // What is made of the catalogs of the designs, as the library now is; with no upload, only
+      // where it is of another library (`designFiles.ts`).
+      await writeDesignFiles(media, writing, drawn);
+      if (result.uploads.length === 0 && !writing.written) return result;
       await writing.finish();
     } catch (error) {
       await undo(writing);

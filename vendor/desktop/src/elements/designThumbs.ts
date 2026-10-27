@@ -7,10 +7,11 @@ import { designRevs, type DesignId } from './designs';
  * picture: drawn live, the first screens of the gallery read the full pictures of eighty designs
  * (12.9 MB, 108 megapixels to decode) and laid out their text in fonts read for it. So each
  * design has a picture of the renderer's own drawing in each of its languages, 320 pixels wide
- * (`scripts/generate-design-thumbs.mjs`, ADR-111): the gallery shows that. The index names the
+ * (ADR-111): the gallery shows that. The index names the
  * widths, and where it names more, the browser takes the one the tile needs. A picture is of a
- * word of the design (`elements/designs/revs.json`, written on publishing). A design whose word
- * has changed since, or that has no picture, is drawn live as before.
+ * word of the design (`designWord.ts`): the one the gallery made of the design as it read it, else
+ * the one publishing wrote (`elements/designs/revs.json`), while that is of the library published.
+ * A design whose word has changed since, or that has no picture, is drawn live as before.
  */
 
 /** `images/designs/thumbs/index.json`: the widths, and the word each picture was drawn from. */
@@ -27,8 +28,16 @@ export interface DesignThumb {
   srcSet: string;
 }
 
-/** The picture of a design in a language, made ahead of it as it is now; undefined for none. */
-export type FindDesignThumb = (id: DesignId, lang: ContentLanguage) => DesignThumb | undefined;
+/**
+ * The picture of a design in a language, made ahead of it as it is now; undefined for none.
+ * `word` is the design's word as the gallery read it (`Designs.designWord`); without it, the one
+ * publishing wrote.
+ */
+export type FindDesignThumb = (
+  id: DesignId,
+  lang: ContentLanguage,
+  word?: string,
+) => DesignThumb | undefined;
 
 /** The place of a picture of a design in the library. */
 export const designThumbPath = (width: number, lang: string, id: DesignId) =>
@@ -46,8 +55,8 @@ export function loadDesignThumbs(): Promise<FindDesignThumb> {
     const widths = (Array.isArray(index?.widths) ? index.widths : [])
       .filter((width) => Number.isInteger(width) && width > 0)
       .sort((a, b) => a - b);
-    return (id, lang) => {
-      const word = revs?.designs[lang]?.[id];
+    return (id, lang, own) => {
+      const word = own ?? revs?.designs[lang]?.[id];
       if (!word || index?.designs?.[lang]?.[id] !== word) return undefined;
       const paths = widths.map((width) => designThumbPath(width, lang, id));
       if (paths.length === 0 || !paths.every((path) => files.has(path))) return undefined;

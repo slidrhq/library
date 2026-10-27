@@ -12,6 +12,7 @@ import {
   MemoryBucket,
   caller,
   designLanguages,
+  designSlide,
   failing,
   frenchSample,
   webp,
@@ -29,7 +30,10 @@ import {
   type Manifest,
 } from './live.ts';
 import { clear, sweep } from './sweep.ts';
+import { designDrawing, designWord } from '../../../vendor/desktop/src/elements/designWord.ts';
+import { REVS, THUMBS, thumbPath } from './designFiles.ts';
 import {
+  MANAGED,
   emptyCatalog,
   encodeTags,
   mergeDesign,
@@ -345,13 +349,16 @@ describe('the library in its bucket', () => {
 });
 
 describe('a publication', () => {
-  /** An editor, with the library live in its bucket, which goes away when `control.fails` says. */
-  async function live() {
+  /**
+   * An editor, with the library live in its bucket (and `files` in it), which goes away when
+   * `control.fails` says.
+   */
+  async function live(files: Record<string, unknown> = {}) {
     const session = await caller();
     const media = new MemoryBucket();
     const { store, control } = failing(media);
     Object.assign(session.env, { MEDIA: store });
-    const before = await liveLibrary(media, LIBRARY);
+    const before = await liveLibrary(media, { ...LIBRARY, ...files });
     /** Uploads it, and approves it: what the approval answered. */
     const approve = async (body: unknown, files?: Record<string, Uint8Array<ArrayBuffer>>) => {
       const made = await read<{ id: string }>(
@@ -525,10 +532,16 @@ describe('a publication', () => {
   test('puts a new design into the studio’s catalog, with its picture, and a sample into its template', async () => {
     const { send, call, media, approve } = await live();
     const added = await approve(design, { picture: webp(1008, 1496) });
-    assert.deepEqual(added.publishing?.publication?.added, [
-      'elements/designs/managed.json',
-      'images/designs/m-harbour-launch.webp',
-    ]);
+    // With the catalog in each language, and the words of its designs (`designFiles.ts`).
+    assert.deepEqual(
+      added.publishing?.publication?.added,
+      [
+        'elements/designs/managed.json',
+        'elements/designs/revs.json',
+        'images/designs/m-harbour-launch.webp',
+        ...ALL_LANGUAGES.map((lang) => `elements/designs/${lang}/managed.json`),
+      ].sort(),
+    );
     const sample = await approve({
       type: 'templates',
       action: 'translate',
@@ -564,6 +577,183 @@ describe('a publication', () => {
       languages: designLanguages(),
     });
     assert.equal(again.status, 422);
+  });
+
+  interface Revs {
+    from: Record<string, string>;
+    designs: Record<string, Record<string, string>>;
+    catalogs?: Record<string, string[]>;
+  }
+
+  interface InLanguage {
+    groups: string[];
+    slides: Record<string, Record<string, unknown>>;
+    languages: Record<string, string[]>;
+    from: Record<string, string>;
+  }
+
+  const ID = 'm-harbour-launch';
+  const INDEX = 'elements/designs/index.json';
+  const json = <T>(media: MemoryBucket, path: string) => JSON.parse(stored(media, path)!) as T;
+
+  test('writes the designs in each language, and the word of each as the app makes it', async () => {
+    const { media, approve } = await live();
+    await approve(design, { picture: webp(1008, 1496) });
+    const managed = json<{ groups: string[]; slides: Record<string, Record<string, unknown>> }>(
+      media,
+      MANAGED,
+    );
+    const { files } = manifestOf(media);
+    const fr = json<InLanguage>(media, 'elements/designs/fr/managed.json');
+    assert.deepEqual(Object.keys(fr.slides), [ID]);
+    assert.deepEqual(fr.slides[ID], { fr: managed.slides[ID]!.fr });
+    assert.deepEqual(fr.languages, { [ID]: [...ALL_LANGUAGES] });
+    assert.deepEqual(fr.from, { [MANAGED]: files[MANAGED]!.sha256 });
+    assert.deepEqual(fr.groups, managed.groups);
+    const revs = json<Revs>(media, REVS);
+    const picture = files[`images/designs/${ID}.webp`]!.sha256;
+    assert.deepEqual(revs.from, {
+      [MANAGED]: files[MANAGED]!.sha256,
+      [`images/designs/${ID}.webp`]: picture,
+    });
+    assert.deepEqual(revs.catalogs, { [MANAGED]: [ID] });
+    assert.deepEqual(Object.keys(revs.designs), [...ALL_LANGUAGES]);
+    assert.equal(
+      revs.designs.fr![ID],
+      await designWord(designDrawing(managed.slides[ID]!.fr, [picture, null])),
+    );
+    // No picture made ahead came with it: the galleries draw it live.
+    assert.equal(stored(media, THUMBS), undefined);
+  });
+
+  test('keeps the words of a catalog it did not change, and does not read it', async () => {
+    // The authored catalog, with the words publishing wrote before the library wrote them.
+    const index = {
+      groups: ['deck'],
+      groupIds: { deck: ['cover'] },
+      subjects: {},
+      slides: { cover: { he: designSlide('he'), en: designSlide('en') } },
+    };
+    const cover = webp(1600, 900);
+    const hashes = {
+      [INDEX]: await sha256Hex(bytesOf(index)),
+      'images/designs/cover.webp': await sha256Hex(cover),
+    };
+    const words = { he: { cover: 'he-word' }, en: { cover: 'en-word' } };
+    const { media, approve } = await live({
+      [INDEX]: index,
+      'images/designs/cover.webp': cover,
+      [REVS]: { from: hashes, designs: words },
+    });
+    const reads: string[] = [];
+    const get = media.get.bind(media);
+    mock.method(media, 'get', (key: string) => {
+      reads.push(key);
+      return get(key);
+    });
+    const added = await approve(design, { picture: webp(1008, 1496) });
+    assert.equal(added.status, 'published');
+    assert.ok(
+      reads.includes(MANAGED) && !reads.includes(INDEX),
+      'the authored catalog is not read',
+    );
+    const revs = json<Revs>(media, REVS);
+    assert.equal(revs.designs.he!.cover, 'he-word');
+    assert.equal(revs.designs.en!.cover, 'en-word');
+    assert.ok(revs.designs.he![ID]);
+    assert.deepEqual(revs.catalogs, { [INDEX]: ['cover'], [MANAGED]: [ID] });
+    assert.equal(revs.from[INDEX], hashes[INDEX]);
+    assert.equal(stored(media, 'elements/designs/he/index.json'), undefined);
+  });
+
+  test('takes the pictures made ahead of a design, and names each by the slide it is of', async () => {
+    const { upload, call, media, approve } = await live();
+    const thumbs = { 'thumb-he': webp(320, 180), 'thumb-zh-CN': webp(320, 180) };
+    const added = await approve(design, { picture: webp(1008, 1496), ...thumbs });
+    assert.equal(added.status, 'published');
+    assert.equal((await call(`/api/uploads/${added.id}/files/thumb-zh-CN`)).status, 200);
+    for (const lang of ['he', 'zh-CN']) {
+      assert.deepEqual(media.objects.get(thumbPath(lang, ID))!.data, webp(320, 180));
+    }
+    const index = json<{ widths: number[]; designs: Record<string, Record<string, string>> }>(
+      media,
+      THUMBS,
+    );
+    let revs = json<Revs>(media, REVS);
+    assert.deepEqual(index, {
+      widths: [320],
+      designs: {
+        he: { [ID]: revs.designs.he![ID] },
+        'zh-CN': { [ID]: revs.designs['zh-CN']![ID] },
+      },
+    });
+
+    // A slide drawn again without its picture is drawn live: its picture is of the slide before.
+    const redrawn = {
+      fr: {
+        slide: designSlide('fr', undefined, [
+          'Soirée',
+          'Sur le port',
+          'Venez nombreux, il y a de la place',
+        ]),
+      },
+    };
+    const before = revs.designs.fr![ID];
+    await approve({ type: 'designs', action: 'translate', id: ID, languages: redrawn });
+    revs = json<Revs>(media, REVS);
+    assert.notEqual(revs.designs.fr![ID], before);
+    assert.equal(json<{ designs: Record<string, unknown> }>(media, THUMBS).designs.fr, undefined);
+    // With its picture, the picture is of it.
+    await approve(
+      { type: 'designs', action: 'translate', id: ID, languages: redrawn },
+      {
+        'thumb-fr': webp(320, 180),
+      },
+    );
+    revs = json<Revs>(media, REVS);
+    const words = json<{ designs: Record<string, Record<string, string>> }>(media, THUMBS).designs;
+    assert.equal(words.fr![ID], revs.designs.fr![ID]);
+
+    // A picture of another size is not one the galleries show.
+    const sized = await upload(
+      { ...design, id: 'm-harbour-dawn' },
+      { picture: webp(1008, 1496), 'thumb-he': webp(384, 216) },
+    );
+    assert.equal(sized.status, 422);
+    const issues = (await read<{ issues: { path: string }[] }>(sized)).issues;
+    assert.deepEqual(
+      issues.map((issue) => issue.path),
+      ['files.thumb-he'],
+    );
+  });
+
+  test('Try again writes what is made of the designs where it is of another library', async () => {
+    const record: DesignRecord = {
+      id: 'm-old',
+      name: { he: 'ישן', en: 'Old' },
+      group: 'events',
+      slides: { he: designSlide('he'), en: designSlide('en') },
+      subject: [10, 10],
+      size: [100, 100],
+    };
+    const { send, media } = await live({
+      [MANAGED]: mergeDesign(emptyCatalog(), record),
+      [REVS]: { from: { [MANAGED]: 'old' }, designs: {} },
+    });
+    const done = await read<Published>(await send('/api/publish', 'POST', {}));
+    assert.ok(done.published);
+    assert.deepEqual(done.uploads, []);
+    assert.deepEqual(done.changed, [REVS]);
+    assert.deepEqual(done.added, [
+      'elements/designs/en/managed.json',
+      'elements/designs/he/managed.json',
+    ]);
+    const revs = json<Revs>(media, REVS);
+    assert.equal(revs.from[MANAGED], manifestOf(media).files[MANAGED]!.sha256);
+    assert.deepEqual(Object.keys(revs.designs.he!), ['m-old']);
+    // Of the library now, they are left as they are.
+    const again = await read<Published>(await send('/api/publish', 'POST', {}));
+    assert.equal(again.published, undefined);
   });
 
   test('sends back to pending what no longer holds, saying why, and writes the rest', async () => {
@@ -651,7 +841,8 @@ describe('a publication', () => {
     whole.control.writes = 0;
     await whole.send('/api/publish', 'POST', {});
     const writes = whole.control.writes;
-    assert.equal(writes, 4);
+    // The tags, the catalog, the picture, the catalog in each language, the words, the manifest.
+    assert.equal(writes, 3 + ALL_LANGUAGES.length + 2);
     for (let at = 1; at <= writes; at += 1) {
       const { send, call, bucket, media, control, waiting } = await live();
       const first = await waiting(cake);

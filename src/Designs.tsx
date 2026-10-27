@@ -439,7 +439,7 @@ export function Designs({
             <div className="lib-grid">
               {/* A design is shown as its picture alone; its name is in its tooltip and its details. */}
               {ids.map((id) => {
-                const made = thumb(id, lang);
+                const made = thumb(id, lang, designs.designWord(id, lang));
                 return (
                   <button
                     type="button"

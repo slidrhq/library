@@ -232,11 +232,13 @@ export const TEMPLATES = 'templates/catalog.json';
 
 // The catalog of templates is some 17 MB, more than a Worker can hold as objects: a sample is
 // written into its text, found by reading only the structure of the JSON around it. Every byte
-// that is not ASCII is part of a string in UTF-8, so the structure is read byte by byte.
+// that is not ASCII is part of a string in UTF-8, so the structure is read byte by byte. The
+// catalogs of the designs are read so too (`designFiles.ts`); `name` names the file read in what
+// is said of one that is not JSON.
 
 const QUOTE = 0x22;
 const BACKSLASH = 0x5c;
-const OPEN_OBJECT = 0x7b;
+export const OPEN_OBJECT = 0x7b;
 const CLOSE_OBJECT = 0x7d;
 const OPEN_ARRAY = 0x5b;
 const CLOSE_ARRAY = 0x5d;
@@ -245,36 +247,36 @@ const COLON = 0x3a;
 
 const isSpace = (byte: number) => byte === 0x20 || byte === 0x0a || byte === 0x0d || byte === 0x09;
 
-function skipSpace(bytes: Uint8Array, at: number) {
+export function skipSpace(bytes: Uint8Array, at: number) {
   while (at < bytes.length && isSpace(bytes[at]!)) at += 1;
   return at;
 }
 
 /** The end of the string that starts at `at` (its opening quote), past its closing quote. */
-function endOfString(bytes: Uint8Array, at: number) {
+function endOfString(bytes: Uint8Array, at: number, name: string) {
   for (let i = at + 1; i < bytes.length; i += 1) {
     if (bytes[i] === BACKSLASH) i += 1;
     else if (bytes[i] === QUOTE) return i + 1;
   }
-  throw new PublishError(`${TEMPLATES} ends inside a string.`);
+  throw new PublishError(`${name} ends inside a string.`);
 }
 
 /** The end of the value that starts at `at`. */
-function endOfValue(bytes: Uint8Array, at: number) {
+function endOfValue(bytes: Uint8Array, at: number, name: string) {
   const first = bytes[at];
-  if (first === QUOTE) return endOfString(bytes, at);
+  if (first === QUOTE) return endOfString(bytes, at, name);
   if (first === OPEN_OBJECT || first === OPEN_ARRAY) {
     let depth = 0;
     for (let i = at; i < bytes.length; i += 1) {
       const byte = bytes[i]!;
-      if (byte === QUOTE) i = endOfString(bytes, i) - 1;
+      if (byte === QUOTE) i = endOfString(bytes, i, name) - 1;
       else if (byte === OPEN_OBJECT || byte === OPEN_ARRAY) depth += 1;
       else if (byte === CLOSE_OBJECT || byte === CLOSE_ARRAY) {
         depth -= 1;
         if (depth === 0) return i + 1;
       }
     }
-    throw new PublishError(`${TEMPLATES} ends inside a value.`);
+    throw new PublishError(`${name} ends inside a value.`);
   }
   let i = at;
   while (
@@ -286,7 +288,7 @@ function endOfValue(bytes: Uint8Array, at: number) {
   return i;
 }
 
-interface Member {
+export interface Member {
   key: string;
   /** Where its value starts and ends. */
   start: number;
@@ -294,25 +296,30 @@ interface Member {
 }
 
 /** The members of the object that starts at `at`, and where it closes. */
-function membersOf(bytes: Uint8Array, at: number): { members: Member[]; close: number } {
-  if (bytes[at] !== OPEN_OBJECT)
-    throw new PublishError(`${TEMPLATES} is not an object where one is read.`);
+export function membersOf(
+  bytes: Uint8Array,
+  at: number,
+  name: string,
+): { members: Member[]; close: number } {
+  if (bytes[at] !== OPEN_OBJECT) {
+    throw new PublishError(`${name} is not an object where one is read.`);
+  }
   const members: Member[] = [];
   let i = skipSpace(bytes, at + 1);
   if (bytes[i] === CLOSE_OBJECT) return { members, close: i };
   for (;;) {
-    if (bytes[i] !== QUOTE) throw new PublishError(`${TEMPLATES} has a member without a name.`);
-    const keyEnd = endOfString(bytes, i);
+    if (bytes[i] !== QUOTE) throw new PublishError(`${name} has a member without a name.`);
+    const keyEnd = endOfString(bytes, i, name);
     const key = JSON.parse(toText(bytes.subarray(i, keyEnd))) as string;
     i = skipSpace(bytes, keyEnd);
-    if (bytes[i] !== COLON) throw new PublishError(`${TEMPLATES} has a member without a value.`);
+    if (bytes[i] !== COLON) throw new PublishError(`${name} has a member without a value.`);
     const start = skipSpace(bytes, i + 1);
-    const end = endOfValue(bytes, start);
+    const end = endOfValue(bytes, start, name);
     members.push({ key, start, end });
     i = skipSpace(bytes, end);
     if (bytes[i] === COMMA) i = skipSpace(bytes, i + 1);
     else if (bytes[i] === CLOSE_OBJECT) return { members, close: i };
-    else throw new PublishError(`${TEMPLATES} is not JSON.`);
+    else throw new PublishError(`${name} is not JSON.`);
   }
 }
 
@@ -347,14 +354,14 @@ export function spliceSample(
   sample: unknown,
 ): Uint8Array {
   const root = skipSpace(catalog, 0);
-  const top = membersOf(catalog, root);
+  const top = membersOf(catalog, root, TEMPLATES);
   const samples = top.members.find((member) => member.key === 'samples');
   if (!samples) {
     return insertMember(catalog, top.close, top.members.length === 0, 'samples', {
       [template]: { [lang]: sample },
     });
   }
-  const inside = membersOf(catalog, samples.start);
+  const inside = membersOf(catalog, samples.start, TEMPLATES);
   const mine = inside.members.find((member) => member.key === template);
   if (!mine) {
     return insertMember(catalog, inside.close, inside.members.length === 0, template, {

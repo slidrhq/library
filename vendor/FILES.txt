@@ -4,6 +4,7 @@ desktop/src/elements/designAssets.ts
 desktop/src/elements/designCatalog.ts
 desktop/src/elements/designFonts.ts
 desktop/src/elements/designThumbs.ts
+desktop/src/elements/designWord.ts
 desktop/src/elements/designs.ts
 desktop/src/elements/frameThumbs.ts
 desktop/src/elements/frames.ts

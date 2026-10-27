@@ -104,6 +104,16 @@ export class Writing {
     this.removed.push(path);
   }
 
+  /** The SHA-256 of a file of the library as the publication leaves it; none for one it has not. */
+  hashOf(path: string): string | undefined {
+    return this.files[path]?.sha256;
+  }
+
+  /** The paths of the library as the publication leaves it. */
+  paths(): string[] {
+    return Object.keys(this.files);
+  }
+
   /** Whether anything was written. */
   get written() {
     return this.added.length + this.changed.length + this.removed.length > 0;

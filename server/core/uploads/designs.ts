@@ -6,7 +6,9 @@
  *
  * Each language holds the whole slide, drawn for that language. A design is uploaded in Hebrew and
  * English, and is accepted when it is written in every language of the app, as the app's tests
- * hold every design to be (`designs.test.ts`).
+ * hold every design to be (`designs.test.ts`). Each slide may come with its picture made ahead, as
+ * the galleries show it (`thumb-<language>`), which publishing names by the slide it is of
+ * (`../media/designFiles.ts`).
  */
 import {
   BASE_LANGUAGES,
@@ -22,6 +24,7 @@ import {
 } from '@slidr/model';
 import { familyIn, type FontShelf } from '../../../vendor/desktop/src/elements/designFonts.ts';
 import { isRecord } from '../http.ts';
+import { THUMB_HEIGHT, THUMB_WIDTH, thumbPath } from '../media/designFiles.ts';
 import {
   Issues,
   PICTURE_BYTES,
@@ -67,6 +70,43 @@ const backdrop: FileRule = {
   maxBytes: PICTURE_BYTES,
   path: (id) => `images/designs/${id}-bg.webp`,
 };
+
+/** The most a picture made ahead of a design takes: they are some tens of kilobytes. */
+const THUMB_BYTES = 1024 * 1024;
+
+/**
+ * The picture of a design's slide in a language that the galleries show, made ahead (ADR-109 and
+ * ADR-111 of the app): a design without one is drawn live there, and one with it is shown as it
+ * at once. Publishing names it by the slide it is of, so a slide changed since is drawn live again.
+ */
+const thumb = (lang: ContentLanguage): FileRule => ({
+  name: `thumb-${lang}`,
+  about:
+    `The slide in ${LANGUAGE_NAMES[lang].english} as the galleries show it, ${THUMB_WIDTH} × ` +
+    `${THUMB_HEIGHT} pixels, drawn by the app's renderer as a thumbnail (\`ScaledSlide\`). ` +
+    'Without it the galleries draw the slide themselves.',
+  required: false,
+  types: ['image/webp'],
+  maxBytes: THUMB_BYTES,
+  path: (id) => thumbPath(lang, id),
+});
+
+/** The language of a picture made ahead of a design, by the name of its file; none for another. */
+export const thumbLanguage = (name: string) =>
+  name.startsWith('thumb-') ? name.slice('thumb-'.length) : undefined;
+
+/** The pictures made ahead an upload brings: each of their size. */
+function checkThumbs(draft: Draft, issues: Issues) {
+  for (const [name, file] of Object.entries(draft.files)) {
+    if (!thumbLanguage(name)) continue;
+    if (file.width !== THUMB_WIDTH || file.height !== THUMB_HEIGHT) {
+      issues.add(
+        `files.${name}`,
+        `${name} is ${file.width ?? '?'} × ${file.height ?? '?'} pixels: a slide as the galleries show it is ${THUMB_WIDTH} × ${THUMB_HEIGHT}.`,
+      );
+    }
+  }
+}
 
 const slideField = {
   name: 'slide',
@@ -257,10 +297,11 @@ export const addDesign: Handler = {
     },
     TAGS_FIELD,
   ],
-  files: [picture, backdrop],
+  files: [picture, backdrop, ...CONTENT_LANGUAGES.map(thumb)],
   async check(draft, library, only) {
     const issues = new Issues();
     const id = draft.target;
+    checkThumbs(draft, issues);
     if (!ID.test(id) || id.length > ID_MOST) {
       issues.add(
         'id',
@@ -307,10 +348,11 @@ export const translateDesign: Handler = {
   fields: [],
   languages: { required: [], allowed: OTHER_LANGUAGES, complete: [] },
   languageFields: [slideField],
-  files: [],
+  files: OTHER_LANGUAGES.map(thumb),
   async check(draft, library, only) {
     const issues = new Issues();
     const id = draft.target;
+    checkThumbs(draft, issues);
     const published = await library.has(picture.path(id));
     if (!published) issues.add('id', `The library has no design ${id}.`);
     else if (!ID.test(id)) {

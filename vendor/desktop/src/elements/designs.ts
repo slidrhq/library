@@ -30,6 +30,7 @@ import {
   type InLanguage,
   type ManagedDesignCatalog,
 } from './designCatalog';
+import { designDrawing, designPicturePaths, designWord } from './designWord';
 
 /**
  * The ready-made slides: the catalog of the media library (`elements/designs/index.json`), and
@@ -88,6 +89,13 @@ export interface Designs {
   previewAsset: (id: DesignId) => AssetMeta;
   /** The record of a design's backdrop, when it has one. */
   previewBackdrop: (id: DesignId) => AssetMeta | undefined;
+  /**
+   * The word of a design in the language of the reading, of its slide as read and its pictures as
+   * the manifest names them (`designWord.ts`): the picture made of it ahead is of the design as it
+   * is while it was drawn from this word. Undefined in another language, and in a reading of every
+   * language.
+   */
+  designWord: (id: DesignId, lang: ContentLanguage) => string | undefined;
   /** The gallery renders the same slide model using image URLs in media. */
   designPreview: (
     id: DesignId,
@@ -115,11 +123,21 @@ type CatalogName = (typeof CATALOGS)[number];
 /** A catalog of designs, whole or in one language, as the library has it. */
 type CatalogFile = Partial<ManagedDesignCatalog> & Partial<InLanguage>;
 
-/** The designs of the two catalogs, and the languages each is drawn in, when they are known. */
+/** The words of the designs in one language, by their ids. */
+interface Words {
+  lang: ContentLanguage;
+  of: ReadonlyMap<DesignId, string>;
+}
+
+/**
+ * The designs of the two catalogs, the languages each is drawn in when they are known, and their
+ * words in the language read.
+ */
 function designsFrom(
   authored: Partial<DesignCatalog> | undefined,
   managed: Partial<ManagedDesignCatalog> | undefined,
   drawnIn?: Readonly<Record<string, readonly string[] | undefined>>,
+  words?: Words,
 ): Designs {
   const catalog = mergeCatalogs(authored, managed);
   const slides: Readonly<Record<string, Partial<Localized<Slide>> | undefined>> = catalog.slides;
@@ -163,6 +181,7 @@ function designsFrom(
     designSlide,
     previewAsset: asset,
     previewBackdrop: backdrop,
+    designWord: (id, lang) => (words?.lang === lang ? words.of.get(id) : undefined),
     designPreview: (id, lang) => {
       const picture = asset(id);
       const behind = backdrop(id);
@@ -249,13 +268,42 @@ async function catalogIn(
   return whole && onlyIn(whole, lang);
 }
 
+/**
+ * The word of each design drawn in `lang`, of its slide as the catalogs hold it: the first catalog
+ * that has a design is its own, as publishing makes its words. None when they cannot be made.
+ */
+async function wordsIn(
+  catalogs: readonly (CatalogFile | undefined)[],
+  lang: ContentLanguage,
+  files: Readonly<Record<string, { sha256: string } | undefined>>,
+): Promise<Words> {
+  const drawings = new Map<DesignId, string>();
+  for (const catalog of catalogs) {
+    for (const [id, variants] of Object.entries(catalog?.slides ?? {})) {
+      const slide: unknown = variants?.[lang];
+      if (drawings.has(id) || slide === undefined) continue;
+      const pictures = designPicturePaths(id).map((path) => files[path]?.sha256 ?? null);
+      drawings.set(id, designDrawing(slide, pictures));
+    }
+  }
+  try {
+    const words = await Promise.all(
+      [...drawings].map(async ([id, drawing]) => [id, await designWord(drawing)] as const),
+    );
+    return { lang, of: new Map(words) };
+  } catch {
+    return { lang, of: new Map() };
+  }
+}
+
 async function readIn(lang: ContentLanguage): Promise<Designs> {
   const [{ files }, written] = await Promise.all([mediaManifest(), designRevs()]);
   const [authored, managed] = await Promise.all(
     CATALOGS.map((name) => catalogIn(name, lang, files, written !== undefined)),
   );
+  const words = await wordsIn([authored, managed], lang, files);
   // An id of both catalogs is the authored design, as `mergeCatalogs` keeps it.
-  return designsFrom(authored, managed, { ...managed?.languages, ...authored?.languages });
+  return designsFrom(authored, managed, { ...managed?.languages, ...authored?.languages }, words);
 }
 
 const readings = new Map<ContentLanguage, Promise<Designs>>();

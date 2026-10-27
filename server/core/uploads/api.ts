@@ -727,7 +727,7 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [/^\/api\/schemas\/([a-z]+)\.json$/, { GET: schema }],
   [/^\/api\/uploads$/, { GET: list, POST: create }],
   [new RegExp(`^/api/uploads/${UPLOAD}$`), { GET: read, DELETE: withdraw }],
-  [new RegExp(`^/api/uploads/${UPLOAD}/files/([a-z]+)$`), { GET: file }],
+  [new RegExp(`^/api/uploads/${UPLOAD}/files/([a-z][A-Za-z-]*)$`), { GET: file }],
   [
     new RegExp(`^/api/uploads/${UPLOAD}/languages/([A-Za-z-]+)$`),
     { PUT: putLanguage, DELETE: deleteLanguage },
