@@ -31,17 +31,19 @@ import {
 } from './live.ts';
 import { clear, sweep } from './sweep.ts';
 import { designDrawing, designWord } from '../../../vendor/desktop/src/elements/designWord.ts';
-import { REVS, THUMBS, thumbPath } from './designFiles.ts';
 import {
+  CATALOG,
+  DESIGN_TAGS,
+  DesignCatalog,
   MANAGED,
-  emptyCatalog,
-  encodeTags,
-  mergeDesign,
-  mergeTags,
-  mergeTranslation,
-  spliceSample,
-  type DesignRecord,
-} from './merge.ts';
+  SIZES,
+  appendDesigns,
+  putDesign,
+  putTranslation,
+} from './designCatalog.ts';
+import { REVS, THUMBS, thumbPath } from './designFiles.ts';
+import { encodeTags, mergeTags, spliceSample, type DesignRecord } from './merge.ts';
+import { bodyOf, joined, sha256Of } from './parts.ts';
 
 afterEach(() => {
   mock.restoreAll();
@@ -157,7 +159,7 @@ describe('what a publication writes', () => {
     assert.deepEqual(JSON.parse(text), merged);
   });
 
-  test('designs: one group each, a group keeps its first names, an empty group goes', () => {
+  test('designs: one group each, a new group takes its names, an empty group goes', () => {
     const design = (
       id: string,
       group: string,
@@ -171,38 +173,124 @@ describe('what a publication writes', () => {
       size: [3, 4],
       ...extra,
     });
-    const catalog = emptyCatalog();
-    mergeDesign(
+    const catalog = DesignCatalog.of(undefined);
+    putDesign(
       catalog,
       design('m-a', 'invites', { groupName: { he: 'הזמנות', en: 'Invitations' } }),
     );
-    mergeDesign(catalog, design('m-b', 'invites', { groupName: { he: 'אחר', en: 'Other' } }));
-    mergeDesign(catalog, design('m-c', 'sales', { tags: { he: ['מבצע'], en: ['sale'] } }));
+    putDesign(catalog, design('m-b', 'invites', { groupName: { he: 'אחר', en: 'Other' } }));
+    putDesign(catalog, design('m-c', 'sales'));
     assert.deepEqual(catalog.groupIds, { invites: ['m-a', 'm-b'], sales: ['m-c'] });
     assert.deepEqual(catalog.groupNames.invites, { he: 'הזמנות', en: 'Invitations' });
     assert.deepEqual(catalog.groupNames.sales, { he: 'sales', en: 'sales' });
-    assert.deepEqual(catalog.tags, { 'm-c': { he: ['מבצע'], en: ['sale'] } });
-    mergeDesign(catalog, design('m-c', 'invites'));
+    putDesign(catalog, design('m-c', 'invites'));
     assert.deepEqual(catalog.groups, ['invites']);
     assert.deepEqual(catalog.groupIds, { invites: ['m-a', 'm-b', 'm-c'] });
     assert.equal(catalog.groupNames.sales, undefined);
-    assert.deepEqual(catalog.tags, {});
-    // A catalog published before there were tags takes them.
-    const old: Record<string, unknown> = { ...emptyCatalog() };
-    delete old.tags;
-    assert.ok('tags' in mergeDesign(old as never, design('m-d', 'x')));
     assert.deepEqual(
-      mergeTranslation(catalog, 'm-a', {
-        ja: { slide: { id: 'ja' } },
-        ar: { slide: { id: 'ar' } },
-      }),
+      putTranslation(catalog, 'm-a', { ja: { slide: { id: 'ja' } }, ar: { slide: { id: 'ar' } } }),
       ['ar', 'ja'],
     );
-    assert.deepEqual(Object.keys(catalog.slides['m-a']!), ['he', 'en', 'ar', 'ja']);
+    assert.deepEqual(Object.keys(catalog.slides('m-a')!), ['he', 'en', 'ar', 'ja']);
     assert.throws(
-      () => mergeTranslation(catalog, 'm-none', { ja: { slide: {} } }),
+      () => putTranslation(catalog, 'm-none', { ja: { slide: {} } }),
       /no design m-none/,
     );
+    const written = JSON.parse(toText(joined(catalog.parts()))) as Record<string, unknown>;
+    assert.deepEqual(Object.keys(written), [
+      'groups',
+      'groupIds',
+      'slides',
+      'subjects',
+      'names',
+      'groupNames',
+    ]);
+    assert.deepEqual(Object.keys(written.slides as object), ['m-a', 'm-b', 'm-c']);
+    // The app's messages name a group of the first designs: a design put in it does not name it.
+    const first = DesignCatalog.of(
+      toBytes('{"groups":["deck"],"groupIds":{"deck":["cover"]},"slides":{"cover":{}}}'),
+    );
+    putDesign(first, design('m-d', 'deck'));
+    assert.deepEqual(first.groupIds, { deck: ['cover', 'm-d'] });
+    assert.deepEqual(first.groupNames, {});
+  });
+
+  test('designs: the catalog is read by its structure, and what did not change is written as read', () => {
+    const text =
+      '{"groups":["deck","party"],"groupIds":{"deck":["cover","agenda"],"party":["cake"]},' +
+      '"slides":{"cover":{"he":{"id":"כ"},"en":{"id":"c"}},"agenda":{"he":{"id":"א"}},' +
+      '"cake":{"en":{"id":"k"}}},"subjects":{"cover":[1,2]}}\n';
+    const catalog = DesignCatalog.of(toBytes(text));
+    assert.deepEqual(catalog.ids(), ['cover', 'agenda', 'cake']);
+    assert.equal(toText(joined(catalog.parts())), text);
+    // A design changed is written in its place; those around it, as they were read.
+    putTranslation(catalog, 'agenda', { fr: { slide: { id: 'é' } } });
+    const out = toText(joined(catalog.parts()));
+    assert.ok(out.startsWith(text.slice(0, text.indexOf('"agenda"'))));
+    assert.ok(out.includes('"agenda":{"he":{"id":"א"},"fr":{"id":"é"}},"cake":{"en":{"id":"k"}}}'));
+    assert.deepEqual((JSON.parse(out) as { subjects: unknown }).subjects, { cover: [1, 2] });
+    // Another catalog's designs go after: into a group it has, after its own; else after its groups.
+    const other = DesignCatalog.of(
+      toBytes(
+        JSON.stringify({
+          groups: ['party', 'tech', 'empty'],
+          groupIds: { party: ['m-balloon', 'cover'], tech: ['m-chip'], empty: ['m-none'] },
+          groupNames: { party: { he: 'מסיבה', en: 'Party' }, tech: { he: 'טק', en: 'Tech' } },
+          slides: { 'm-balloon': { en: { id: 'b' } }, cover: { en: {} }, 'm-chip': { he: {} } },
+          subjects: { 'm-balloon': [5, 6] },
+          names: { 'm-chip': { he: 'שבב', en: 'Chip' } },
+        }),
+      ),
+    );
+    assert.deepEqual(appendDesigns(catalog, other), ['m-balloon', 'm-chip']);
+    assert.deepEqual(catalog.groups, ['deck', 'party', 'tech']);
+    assert.deepEqual(catalog.groupIds.party, ['cake', 'm-balloon']);
+    assert.deepEqual(catalog.groupIds.tech, ['m-chip']);
+    assert.deepEqual(catalog.groupNames, {
+      party: { he: 'מסיבה', en: 'Party' },
+      tech: { he: 'טק', en: 'Tech' },
+    });
+    const both = JSON.parse(toText(joined(catalog.parts()))) as {
+      slides: Record<string, unknown>;
+      subjects: Record<string, unknown>;
+      names: Record<string, unknown>;
+    };
+    // The design both have is the catalog's own.
+    assert.deepEqual(both.slides.cover, { he: { id: 'כ' }, en: { id: 'c' } });
+    assert.deepEqual(both.slides['m-balloon'], { en: { id: 'b' } });
+    assert.deepEqual(both.subjects, { cover: [1, 2], 'm-balloon': [5, 6] });
+    assert.deepEqual(both.names, { 'm-chip': { he: 'שבב', en: 'Chip' } });
+    assert.throws(() => DesignCatalog.of(toBytes('{"slides":[1]}')), /not an object/);
+  });
+
+  test('a file in parts is hashed as one, and written as one', async () => {
+    const bytes = new Uint8Array(200_003).map((_, i) => (i * 7919) % 251);
+    const cuts = [0, 1, 63, 64, 65, 1000, 65_536, 199_999, 200_003];
+    const parts = cuts.slice(1).map((end, i) => bytes.subarray(cuts[i], end));
+    assert.equal(await sha256Of(parts), await sha256Hex(bytes));
+    for (const size of [0, 55, 56, 63, 64, 119, 120]) {
+      const some = bytes.subarray(0, size);
+      assert.equal(await sha256Of([some.subarray(0, 3), some.subarray(3)]), await sha256Hex(some));
+    }
+    assert.deepEqual(bodyOf(parts), bytes);
+    // In a Worker, R2 is given a stream of a known length, a little at a time, the parts unchanged.
+    class FixedLengthStream extends TransformStream<Uint8Array, Uint8Array> {
+      readonly length: number;
+      constructor(length: number) {
+        super();
+        this.length = length;
+      }
+    }
+    const global = globalThis as { FixedLengthStream?: unknown };
+    global.FixedLengthStream = FixedLengthStream;
+    try {
+      const body = bodyOf(parts);
+      assert.ok(body instanceof ReadableStream);
+      assert.deepEqual(new Uint8Array(await new Response(body).arrayBuffer()), bytes);
+      assert.equal(await sha256Of(parts), await sha256Hex(bytes));
+    } finally {
+      delete global.FixedLengthStream;
+    }
   });
 
   test('samples: written into the catalog of templates, and nothing else of it changes', () => {
@@ -529,17 +617,20 @@ describe('a publication', () => {
     assert.deepEqual([waits.status, waits.publishing], ['pending', undefined]);
   });
 
-  test('puts a new design into the studio’s catalog, with its picture, and a sample into its template', async () => {
+  test('puts a new design into the catalog, with its picture, and a sample into its template', async () => {
     const { send, call, media, approve } = await live();
     const added = await approve(design, { picture: webp(1008, 1496) });
-    // With the catalog in each language, and the words of its designs (`designFiles.ts`).
+    // With its picture's size and its tags beside the catalog, the catalog in each language, and
+    // the words of its designs (`designFiles.ts`).
     assert.deepEqual(
       added.publishing?.publication?.added,
       [
-        'elements/designs/managed.json',
+        CATALOG,
         'elements/designs/revs.json',
+        SIZES,
         'images/designs/m-harbour-launch.webp',
-        ...ALL_LANGUAGES.map((lang) => `elements/designs/${lang}/managed.json`),
+        DESIGN_TAGS,
+        ...ALL_LANGUAGES.map((lang) => `elements/designs/${lang}/index.json`),
       ].sort(),
     );
     const sample = await approve({
@@ -549,16 +640,25 @@ describe('a publication', () => {
       languages: { fr: { sample: frenchSample() } },
     });
     assert.deepEqual(sample.publishing?.publication?.changed, ['templates/catalog.json']);
-    const managed = JSON.parse(stored(media, 'elements/designs/managed.json')!) as ReturnType<
-      typeof emptyCatalog
-    >;
-    assert.deepEqual(managed.groups, ['events']);
-    assert.deepEqual(managed.groupNames.events, { he: 'אירועים', en: 'Events' });
-    assert.deepEqual(managed.names['m-harbour-launch'], { he: 'ערב השקה', en: 'Launch night' });
-    assert.deepEqual(managed.sizes['m-harbour-launch'], [1008, 1496]);
-    assert.deepEqual(managed.subjects['m-harbour-launch'], [1500, 540]);
-    assert.deepEqual(Object.keys(managed.slides['m-harbour-launch']!), [...ALL_LANGUAGES]);
-    assert.equal(managed.tags['m-harbour-launch']!.en![0], 'launch night');
+    const catalog_ = JSON.parse(stored(media, CATALOG)!) as {
+      groups: string[];
+      groupNames: Record<string, unknown>;
+      names: Record<string, unknown>;
+      subjects: Record<string, unknown>;
+      slides: Record<string, object>;
+    };
+    assert.deepEqual(catalog_.groups, ['events']);
+    assert.deepEqual(catalog_.groupNames.events, { he: 'אירועים', en: 'Events' });
+    assert.deepEqual(catalog_.names['m-harbour-launch'], { he: 'ערב השקה', en: 'Launch night' });
+    assert.deepEqual(catalog_.subjects['m-harbour-launch'], [1500, 540]);
+    assert.deepEqual(Object.keys(catalog_.slides['m-harbour-launch']!), [...ALL_LANGUAGES]);
+    assert.equal(Object.hasOwn(catalog_, 'sizes') || Object.hasOwn(catalog_, 'tags'), false);
+    assert.deepEqual(JSON.parse(stored(media, SIZES)!), { 'm-harbour-launch': [1008, 1496] });
+    const tags = JSON.parse(stored(media, DESIGN_TAGS)!) as {
+      tags: Record<string, Record<string, string[]>>;
+    };
+    assert.deepEqual(Object.keys(tags.tags['m-harbour-launch']!), ['he', 'en']);
+    assert.equal(tags.tags['m-harbour-launch']!.en![0], 'launch night');
     assert.deepEqual(
       media.objects.get('images/designs/m-harbour-launch.webp')!.data,
       webp(1008, 1496),
@@ -593,41 +693,41 @@ describe('a publication', () => {
   }
 
   const ID = 'm-harbour-launch';
-  const INDEX = 'elements/designs/index.json';
+  const INDEX = CATALOG;
   const json = <T>(media: MemoryBucket, path: string) => JSON.parse(stored(media, path)!) as T;
 
   test('writes the designs in each language, and the word of each as the app makes it', async () => {
     const { media, approve } = await live();
     await approve(design, { picture: webp(1008, 1496) });
-    const managed = json<{ groups: string[]; slides: Record<string, Record<string, unknown>> }>(
+    const catalog = json<{ groups: string[]; slides: Record<string, Record<string, unknown>> }>(
       media,
-      MANAGED,
+      INDEX,
     );
     const { files } = manifestOf(media);
-    const fr = json<InLanguage>(media, 'elements/designs/fr/managed.json');
+    const fr = json<InLanguage>(media, 'elements/designs/fr/index.json');
     assert.deepEqual(Object.keys(fr.slides), [ID]);
-    assert.deepEqual(fr.slides[ID], { fr: managed.slides[ID]!.fr });
+    assert.deepEqual(fr.slides[ID], { fr: catalog.slides[ID]!.fr });
     assert.deepEqual(fr.languages, { [ID]: [...ALL_LANGUAGES] });
-    assert.deepEqual(fr.from, { [MANAGED]: files[MANAGED]!.sha256 });
-    assert.deepEqual(fr.groups, managed.groups);
+    assert.deepEqual(fr.from, { [INDEX]: files[INDEX]!.sha256 });
+    assert.deepEqual(fr.groups, catalog.groups);
     const revs = json<Revs>(media, REVS);
     const picture = files[`images/designs/${ID}.webp`]!.sha256;
     assert.deepEqual(revs.from, {
-      [MANAGED]: files[MANAGED]!.sha256,
+      [INDEX]: files[INDEX]!.sha256,
       [`images/designs/${ID}.webp`]: picture,
     });
-    assert.deepEqual(revs.catalogs, { [MANAGED]: [ID] });
+    assert.deepEqual(revs.catalogs, { [INDEX]: [ID] });
     assert.deepEqual(Object.keys(revs.designs), [...ALL_LANGUAGES]);
     assert.equal(
       revs.designs.fr![ID],
-      await designWord(designDrawing(managed.slides[ID]!.fr, [picture, null])),
+      await designWord(designDrawing(catalog.slides[ID]!.fr, [picture, null])),
     );
     // No picture made ahead came with it: the galleries draw it live.
     assert.equal(stored(media, THUMBS), undefined);
   });
 
   test('keeps the words of a catalog it did not change, and does not read it', async () => {
-    // The authored catalog, with the words publishing wrote before the library wrote them.
+    // The catalog, with the words publishing wrote before the library wrote them.
     const index = {
       groups: ['deck'],
       groupIds: { deck: ['cover'] },
@@ -651,19 +751,22 @@ describe('a publication', () => {
       reads.push(key);
       return get(key);
     });
-    const added = await approve(design, { picture: webp(1008, 1496) });
-    assert.equal(added.status, 'published');
-    assert.ok(
-      reads.includes(MANAGED) && !reads.includes(INDEX),
-      'the authored catalog is not read',
-    );
+    const tagged = await approve(cake);
+    assert.equal(tagged.status, 'published');
+    assert.ok(!reads.includes(INDEX), 'the catalog is not read');
     const revs = json<Revs>(media, REVS);
-    assert.equal(revs.designs.he!.cover, 'he-word');
-    assert.equal(revs.designs.en!.cover, 'en-word');
-    assert.ok(revs.designs.he![ID]);
-    assert.deepEqual(revs.catalogs, { [INDEX]: ['cover'], [MANAGED]: [ID] });
+    assert.deepEqual(revs.designs, words);
+    assert.deepEqual(revs.catalogs, { [INDEX]: ['cover'] });
     assert.equal(revs.from[INDEX], hashes[INDEX]);
     assert.equal(stored(media, 'elements/designs/he/index.json'), undefined);
+    // A design put in changes it: it is read, and the words of each of its designs are made again.
+    reads.length = 0;
+    await approve(design, { picture: webp(1008, 1496) });
+    assert.ok(reads.includes(INDEX));
+    const now = json<Revs>(media, REVS);
+    assert.deepEqual(now.catalogs, { [INDEX]: ['cover', ID] });
+    assert.ok(now.designs.he![ID] && now.designs.he!.cover);
+    assert.ok(stored(media, 'elements/designs/he/index.json'));
   });
 
   test('takes the pictures made ahead of a design, and names each by the slide it is of', async () => {
@@ -780,36 +883,116 @@ describe('a publication', () => {
     );
   });
 
-  test('Try again writes what is made of the designs where it is of another library', async () => {
-    const record: DesignRecord = {
-      id: 'm-old',
-      name: { he: 'ישן', en: 'Old' },
-      group: 'events',
-      slides: { he: designSlide('he'), en: designSlide('en') },
-      subject: [10, 10],
-      size: [100, 100],
+  /** The two catalogs of a library of before: the first designs, and those of Slidr Studio after. */
+  const before = () => {
+    const both = { he: designSlide('he'), en: designSlide('en') };
+    return {
+      index: {
+        groups: ['deck', 'events'],
+        groupIds: { deck: ['cover'], events: ['party'] },
+        slides: { cover: both, party: both },
+        subjects: { cover: [1, 1] },
+      },
+      managed: {
+        version: 1,
+        groups: ['events', 'tech'],
+        groupNames: { events: { he: 'אירועים', en: 'Events' }, tech: { he: 'טק', en: 'Tech' } },
+        groupIds: { events: ['m-old', 'party'], tech: ['m-chip'] },
+        slides: { 'm-old': both, 'm-chip': both, party: { en: designSlide('en') } },
+        subjects: { 'm-old': [10, 10], 'm-chip': [20, 20] },
+        names: { 'm-old': { he: 'ישן', en: 'Old' }, 'm-chip': { he: 'שבב', en: 'Chip' } },
+        sizes: { 'm-old': [100, 100], 'm-chip': [200, 100] },
+        tags: { 'm-old': { he: ['ישן'], en: ['old'] } },
+      },
     };
+  };
+
+  test('a library of before has its two catalogs made one by its next publication: Try again', async () => {
+    const { index, managed } = before();
     const { send, media, bucket, waiting } = await live({
-      [MANAGED]: mergeDesign(emptyCatalog(), record),
+      [INDEX]: index,
+      [MANAGED]: managed,
+      [SIZES]: { cover: [1600, 900] },
+      [DESIGN_TAGS]: encodeTags({
+        version: 1,
+        tags: { 'm-old': { en: ['vintage'], fr: ['ancien'] } },
+      }),
+      'elements/designs/he/managed.json': { slides: {} },
       [REVS]: { from: { [MANAGED]: 'old' }, designs: {} },
     });
     // Asked to publish no upload, it leaves the accepted one that waits as it is.
     const held = await waiting(cake);
-    const done = await read<Published>(await send('/api/publish', 'POST', { uploads: [] }));
+    const done = await read<Published & { removed: string[] }>(
+      await send('/api/publish', 'POST', { uploads: [] }),
+    );
     assert.ok(done.published);
     assert.deepEqual(done.uploads, []);
     assert.equal((await readUpload(bucket, held))?.upload.status, 'accepted');
-    assert.deepEqual(done.changed, [REVS]);
-    assert.deepEqual(done.added, [
-      'elements/designs/en/managed.json',
-      'elements/designs/he/managed.json',
-    ]);
+    assert.deepEqual(done.removed, ['elements/designs/he/managed.json', MANAGED]);
+    assert.equal(stored(media, MANAGED), undefined);
+    // Its designs after the first ones, as the app listed the two: a design of both is the first's.
+    const one = json<{
+      groups: string[];
+      groupIds: Record<string, string[]>;
+      slides: Record<string, unknown>;
+      subjects: Record<string, unknown>;
+      names: Record<string, unknown>;
+      groupNames: Record<string, unknown>;
+    }>(media, INDEX);
+    assert.deepEqual(one.groups, ['deck', 'events', 'tech']);
+    assert.deepEqual(one.groupIds, {
+      deck: ['cover'],
+      events: ['party', 'm-old'],
+      tech: ['m-chip'],
+    });
+    assert.deepEqual(one.slides.party, index.slides.party);
+    assert.deepEqual(one.subjects, { cover: [1, 1], 'm-old': [10, 10], 'm-chip': [20, 20] });
+    assert.deepEqual(one.names, managed.names);
+    assert.deepEqual(one.groupNames, managed.groupNames);
+    // The sizes of its pictures, and its tags, beside those of the others.
+    assert.deepEqual(JSON.parse(stored(media, SIZES)!), {
+      cover: [1600, 900],
+      'm-old': [100, 100],
+      'm-chip': [200, 100],
+    });
+    assert.deepEqual(json<{ tags: Record<string, unknown> }>(media, DESIGN_TAGS).tags['m-old'], {
+      he: ['ישן'],
+      en: ['old', 'vintage'],
+      fr: ['ancien'],
+    });
+    // What is made of it: the catalog in each language, and the words of each of its designs.
     const revs = json<Revs>(media, REVS);
-    assert.equal(revs.from[MANAGED], manifestOf(media).files[MANAGED]!.sha256);
-    assert.deepEqual(Object.keys(revs.designs.he!), ['m-old']);
+    assert.equal(revs.from[INDEX], manifestOf(media).files[INDEX]!.sha256);
+    assert.equal(revs.from[MANAGED], undefined);
+    assert.deepEqual(revs.catalogs, { [INDEX]: ['cover', 'party', 'm-old', 'm-chip'] });
+    assert.deepEqual(Object.keys(revs.designs.he!), ['cover', 'party', 'm-old', 'm-chip']);
+    assert.deepEqual(
+      Object.keys(json<InLanguage>(media, 'elements/designs/he/index.json').slides),
+      ['cover', 'party', 'm-old', 'm-chip'],
+    );
+    onlyTheLibrary(media);
     // Of the library now, they are left as they are.
     const again = await read<Published>(await send('/api/publish', 'POST', { uploads: [] }));
     assert.equal(again.published, undefined);
+  });
+
+  test('a design of the catalog of before takes a translation, once the catalogs are one', async () => {
+    const { managed } = before();
+    const { media, approve } = await live({
+      [MANAGED]: managed,
+      'images/designs/m-old.webp': webp(100, 100),
+    });
+    const translated = await approve({
+      type: 'designs',
+      action: 'translate',
+      id: 'm-old',
+      languages: { fr: { slide: designSlide('fr') } },
+    });
+    assert.equal(translated.status, 'published');
+    const one = json<{ slides: Record<string, object> }>(media, INDEX);
+    assert.deepEqual(Object.keys(one.slides['m-old']!), ['he', 'en', 'fr']);
+    assert.deepEqual(Object.keys(one.slides), ['m-old', 'party', 'm-chip']);
+    assert.equal(stored(media, MANAGED), undefined);
   });
 
   test('sends back to pending what no longer holds, saying why, and writes the rest', async () => {
@@ -897,8 +1080,9 @@ describe('a publication', () => {
     whole.control.writes = 0;
     await whole.send('/api/publish', 'POST', {});
     const writes = whole.control.writes;
-    // The tags, the catalog, the picture, the catalog in each language, the words, the manifest.
-    assert.equal(writes, 3 + ALL_LANGUAGES.length + 2);
+    // The tags, the sizes of the pictures, the designs' tags, the picture, the catalog, the
+    // catalog in each language, the words, the manifest.
+    assert.equal(writes, 5 + ALL_LANGUAGES.length + 2);
     for (let at = 1; at <= writes; at += 1) {
       const { send, call, bucket, media, control, waiting } = await live();
       const first = await waiting(cake);

@@ -7,6 +7,7 @@ import './styles.css';
 import './library.css';
 import './uploads.css';
 import './members.css';
+import './archive.css';
 
 // The designs and the fonts' samples are drawn in the library's fonts, as the app draws them.
 void registerLibraryFonts().catch(() => undefined);

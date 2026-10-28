@@ -21,6 +21,8 @@ slidr-library <command>
   change                 how it is reached, or its port (asks)
   ca <file> | ca --none  the organization's own authorities (PEM), trusted besides the public
                          ones: its sign-in provider's, a seed's; or the public ones alone
+  import <file>          brings an archive of the library (.tgz, .tar) into its media: one
+                         that the library page's Export wrote, carried from another library
   sign-in <provider> …   the provider everyone else signs in through (slidr-library sign-in)
   owner <email>          hands the library to another member
   vault rotate           a new master key, then a restart
@@ -45,6 +47,16 @@ library() {
   local tty=()
   if [[ -t 0 && -t 1 ]]; then tty=(-it); fi
   docker exec "${tty[@]}" "$CONTAINER" slidr-library "$@"
+}
+
+# An archive of this machine, into the library: the container does not see the machine's files,
+# so it reads the archive from its standard input.
+import_archive() {
+  local file=${1:?import names an archive of the library: a .tgz or .tar file}
+  [[ -f $file && -r $file ]] || fail "$file is not a file that can be read."
+  [[ $(docker inspect -f '{{.State.Running}}' "$CONTAINER" 2>/dev/null) == true ]] ||
+    fail "The library is not running: slidr-library start."
+  docker exec -i "$CONTAINER" slidr-library import - <"$file"
 }
 
 # One answer of the install (library.env).
@@ -113,6 +125,7 @@ command=${1:-help}
 if (($# > 0)); then shift; fi
 case "$command" in
   login | seed | sign-in | owner) library "$command" "$@" ;;
+  import) import_archive "$@" ;;
   status)
     compose ps library
     library status

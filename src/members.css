@@ -417,3 +417,30 @@ button.danger {
 .settings-confirm code {
   max-width: 100%;
 }
+
+/* The system settings: what is offered, a box each, side by side where there is room. */
+.system-offer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.4rem 0.75rem;
+}
+
+/* One of the organization's agents, its fields together under its name. */
+.system-agent {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.system-agent legend {
+  padding: 0 0.3rem;
+  font-weight: 600;
+}
+
+/* Fields side by side keep their own height: a hint under one does not stretch the other. */
+.system-agent .settings-server {
+  align-items: start;
+}

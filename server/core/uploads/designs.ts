@@ -1,8 +1,9 @@
 /**
- * Designs: the ready-made slides of Elements. An uploaded design joins those Slidr Studio makes,
- * in `elements/designs/managed.json`, which publishing merges and never writes over, with its
- * picture in `images/designs/` (docs/media-library.md of the app, "Designs made by Slidr Studio").
- * So it is named as theirs are, `m-<words>`, and named in Hebrew and English in the catalog itself.
+ * Designs: the ready-made slides of Elements. An uploaded design joins the catalog of the designs,
+ * `elements/designs/index.json`, which publishing writes into and never over (`../media/
+ * designCatalog.ts`), with its picture in `images/designs/` (docs/media-library.md of the app,
+ * "Designs"). It is named as the designs made since the first ones are, `m-<words>`, which no id of
+ * those takes, and named in Hebrew and English in the catalog itself.
  *
  * Each language holds the whole slide, drawn for that language. A design is uploaded in Hebrew and
  * English, and is accepted when it is written in every language of the app, as the app's tests
@@ -42,7 +43,7 @@ import {
 import type { Library } from './library.ts';
 import { TAGS_FIELD, checkTags } from './tags.ts';
 
-/** The id of a design made outside the authored catalog. */
+/** The id of a design uploaded: none of the first designs, which the app's messages name, has one. */
 const ID = /^m-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ID_MOST = 64;
 const NAME_MOST = 80;
@@ -259,7 +260,7 @@ export const addDesign: Handler = {
   type: 'designs',
   action: 'add',
   about:
-    'A new ready-made slide. It joins the designs Slidr Studio makes (`elements/designs/managed.json`), ' +
+    'A new ready-made slide. It joins the catalog of the designs (`elements/designs/index.json`), ' +
     'with its picture in `images/designs/`, its names and its search tags in Hebrew and English.',
   id: "The new design's id: `m-` and lowercase words joined by hyphens, as `m-harbour-launch`, not taken in the library.",
   fields: [
@@ -340,11 +341,8 @@ export const addDesign: Handler = {
 export const translateDesign: Handler = {
   type: 'designs',
   action: 'translate',
-  about:
-    'A published design, in languages it is not yet written in, or drawn again in one it is. ' +
-    "The designs uploaded or made by Slidr Studio (`m-…`) take translations here; the app's own " +
-    'are translated with its scripts.',
-  id: "The published design's id, as `m-techmeetup`.",
+  about: 'A published design, in languages it is not yet written in, or drawn again in one it is.',
+  id: "The published design's id, as `m-techmeetup` or `birthday`.",
   fields: [],
   languages: { required: [], allowed: OTHER_LANGUAGES, complete: [] },
   languageFields: [slideField],
@@ -355,12 +353,6 @@ export const translateDesign: Handler = {
     checkThumbs(draft, issues);
     const published = await library.has(picture.path(id));
     if (!published) issues.add('id', `The library has no design ${id}.`);
-    else if (!ID.test(id)) {
-      issues.add(
-        'id',
-        `${id} is one of the app's own designs, which are translated with its scripts.`,
-      );
-    }
     if (!issues.none) return issues.all;
     const withBackdrop = await library.has(backdrop.path(id));
     await checkLanguages(draft, library, { backdrop: withBackdrop, named: false, only }, issues);

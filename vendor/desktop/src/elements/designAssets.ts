@@ -26,11 +26,11 @@ type Size = readonly [number, number];
 
 /**
  * The record of a bundled picture, for the gallery. It carries the picture's size in pixels
- * (`scripts/design-asset-sizes.mjs`; a managed design's, which `managed.json` gives, from the
- * caller): a cropped picture cannot be drawn without it.
+ * (`images/designs/sizes.json` of the library; of a design of a catalog of before, which that
+ * catalog gives, from the caller): a cropped picture cannot be drawn without it.
  */
-function meta(id: string, name: string, managed?: Size): AssetMeta {
-  const size = sizes[name] ?? managed;
+function meta(id: string, name: string, given?: Size): AssetMeta {
+  const size = sizes[name] ?? given;
   const file = `${name}.webp`;
   return {
     id,
@@ -44,12 +44,12 @@ function meta(id: string, name: string, managed?: Size): AssetMeta {
   };
 }
 
-/** The preview record of a design's picture; `managed`, its size as `managed.json` gives it. */
-export const previewAsset = (id: DesignId, managed?: Size) => meta(previewAssetId(id), id, managed);
+/** The preview record of a design's picture; `given`, its size as a catalog of before gives it. */
+export const previewAsset = (id: DesignId, given?: Size) => meta(previewAssetId(id), id, given);
 
 /** The preview record of a design's backdrop, when it has one. */
-export function previewBackdrop(id: DesignId, managed?: Size): AssetMeta | undefined {
-  return url(`${id}-bg`) ? meta(previewBackdropId(id), `${id}-bg`, managed) : undefined;
+export function previewBackdrop(id: DesignId, given?: Size): AssetMeta | undefined {
+  return url(`${id}-bg`) ? meta(previewBackdropId(id), `${id}-bg`, given) : undefined;
 }
 
 export function designAssetUrl(asset: AssetMeta): string | undefined {

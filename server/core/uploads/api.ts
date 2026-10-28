@@ -17,6 +17,7 @@
  *   POST   /api/publish                          writes the accepted uploads into the library
  *   PUT    /api/library/staged/{sha256}          a file of an author's publication, by its hash
  *   POST   /api/library/files                    an author's publication: the files changed since a pull
+ *   POST   /api/library/archive                  brings an archive of the library in: a .tar or .tgz
  *
  * Every route of the uploads asks `access.ts` first: they are the library's editors'. What
  * describes the API is open to anyone. Only a publication changes the published library
@@ -37,6 +38,7 @@ import { describeContent, handlerOf, partOf, PARTS } from './content.ts';
 import { sha256, sniff, webpSize } from './files.ts';
 import type { Draft, Handler, StoredFile } from './handler.ts';
 import {
+  archiveRoute,
   filesRoute,
   importRoute,
   isLive,
@@ -740,6 +742,7 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [new RegExp(`^/api/publications/${MOMENT}$`), { GET: publicationRoute }],
   [/^\/api\/library\/staged\/([0-9a-f]{64})$/, { PUT: stageRoute }],
   [/^\/api\/library\/files$/, { POST: filesRoute }],
+  [/^\/api\/library\/archive$/, { POST: archiveRoute }],
 ];
 
 /** The answer to a request of the API; undefined for a path that is none of its. */

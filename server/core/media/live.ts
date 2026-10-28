@@ -142,7 +142,12 @@ export async function readBytes(bucket: Bucket, path: string): Promise<Uint8Arra
 }
 
 /** Writes a file of the library into the bucket, with what it is served as. */
-export async function putFile(bucket: Bucket, path: string, bytes: Uint8Array, sha256: string) {
+export async function putFile(
+  bucket: Bucket,
+  path: string,
+  bytes: Uint8Array | ReadableStream<Uint8Array>,
+  sha256: string,
+) {
   await bucket.put(path, bytes, {
     httpMetadata: { contentType: contentType(path), cacheControl: cacheControl(path) },
     customMetadata: { sha256 },

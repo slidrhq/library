@@ -4,6 +4,7 @@
  * read when the language is chosen. A value holds `{name}` where a number or a name goes.
  */
 import * as account from './areas/account';
+import * as archive from './areas/archive';
 import * as libraryBrowse from './areas/libraryBrowse';
 import * as libraryCatalogs from './areas/libraryCatalogs';
 import * as libraryShell from './areas/libraryShell';
@@ -11,6 +12,7 @@ import * as people from './areas/people';
 import * as publications from './areas/publications';
 import * as settings from './areas/settings';
 import * as shell from './areas/shell';
+import * as system from './areas/system';
 import * as tokens from './areas/tokens';
 import * as uploads from './areas/uploads';
 
@@ -20,10 +22,12 @@ const areas = [
   libraryShell,
   libraryBrowse,
   libraryCatalogs,
+  archive,
   uploads,
   people,
   tokens,
   settings,
+  system,
   publications,
 ];
 
@@ -32,10 +36,12 @@ export const en = Object.assign({}, ...areas.map((area) => area.en)) as Merge<ty
   Merge<typeof libraryShell.en> &
   Merge<typeof libraryBrowse.en> &
   Merge<typeof libraryCatalogs.en> &
+  Merge<typeof archive.en> &
   Merge<typeof uploads.en> &
   Merge<typeof people.en> &
   Merge<typeof tokens.en> &
   Merge<typeof settings.en> &
+  Merge<typeof system.en> &
   Merge<typeof publications.en>;
 
 export type MessageKey = keyof typeof en;

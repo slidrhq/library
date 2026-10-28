@@ -6,10 +6,13 @@
 
 export interface Bucket {
   get(key: string): Promise<BucketObject | null>;
-  /** Writes an object; with `onlyIf.etagMatches`, only over that version of it, else null. */
+  /**
+   * Writes an object; with `onlyIf.etagMatches`, only over that version of it, else null. A stream
+   * only in a Worker, of a known length (`media/parts.ts`).
+   */
   put(
     key: string,
-    value: string | ArrayBuffer | Uint8Array,
+    value: string | ArrayBuffer | Uint8Array | ReadableStream,
     options?: {
       httpMetadata?: HttpMetadata;
       customMetadata?: Record<string, string>;

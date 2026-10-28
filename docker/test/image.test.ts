@@ -318,7 +318,8 @@ describe('a local library, from end to end', () => {
     // In the folder of this machine, and served from it.
     const written = await readFile(join(media, 'images', 'designs', 'm-harbour-launch.webp'));
     assert.deepEqual(new Uint8Array(written), picture);
-    assert.ok(await readFile(join(media, 'elements', 'designs', 'managed.json')));
+    const catalog = await readFile(join(media, 'elements', 'designs', 'index.json'), 'utf8');
+    assert.ok(catalog.includes('"m-harbour-launch"'));
     const served = await raw('/media/images/designs/m-harbour-launch.webp');
     assert.deepEqual([served.status, served.headers['content-type']], [200, 'image/webp']);
 

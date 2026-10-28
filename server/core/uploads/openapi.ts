@@ -508,6 +508,28 @@ export function openApi() {
           },
         },
       },
+      '/api/library/archive': {
+        post: {
+          summary: 'Brings an archive of the library in: a .tar or .tgz',
+          description:
+            'The body is a tar, plain or gzipped, of files of the library at their paths and the `manifest.json` that names each with its size and SHA-256, as the page’s Export writes it. Each file is checked against the manifest, and the archive holds every file it names; or nothing is written. A file the library lacks is added, one it has with other bytes is written over, and every other file stays as it is. It is written as a publication, and into an empty media it is the library’s first.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/gzip': { schema: { type: 'string', format: 'binary' } },
+              'application/x-tar': { schema: { type: 'string', format: 'binary' } },
+            },
+          },
+          responses: {
+            200: {
+              description:
+                'When the archive’s library was published, the files added and written over, how many were the same, and the publication made (`published`), none where nothing changed.',
+              content: { 'application/json': { schema: { type: 'object' } } },
+            },
+            ...errors(401, 403, 409, 413, 422, 503, 507),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -643,6 +665,7 @@ export function openApi() {
           [422, 'The upload does not hold: `issues` says where.'],
           [502, 'The media could not be written: it was put back as it was, and what waits waits.'],
           [503, 'The server keeps no uploads, or the published library could not be read.'],
+          [507, 'The disk of the media has no room for what an archive writes.'],
         ].map(([code, description]) => [
           String(code),
           { description, content: { 'application/json': { schema: ref('Problem') } } },

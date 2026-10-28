@@ -24,9 +24,7 @@ import {
   designTagsOf,
   localName,
   madeFrom,
-  managedSize,
   mergeCatalogs,
-  type DesignCatalog,
   type InLanguage,
   type ManagedDesignCatalog,
 } from './designCatalog';
@@ -34,21 +32,22 @@ import { designDrawing, designPicturePaths, designWord } from './designWord';
 
 /**
  * The ready-made slides: the catalog of the media library (`elements/designs/index.json`), and
- * after it the designs Slidr Studio publishes (`elements/designs/managed.json`). Slide
- * content is installed in media; this module only inserts it into a deck. Without the catalogs
- * the gallery has no designs to offer.
+ * after it, of a library not published since the two were made one, the catalog of the designs
+ * Slidr Studio made (`elements/designs/managed.json`, ADR-118). Slide content is installed in
+ * media; this module only inserts it into a deck. Without the catalog the gallery has no designs
+ * to offer.
  *
- * A gallery shows the designs of one language, and the catalogs hold every language, sixteen
- * times what it shows: so it reads them in its language, when it is first drawn (ADR-109).
- * Publishing writes each catalog again in each language (`elements/designs/<language>/`). A
- * library without those files, or whose files were not made from the catalogs it has, is read
+ * A gallery shows the designs of one language, and the catalog holds every language, sixteen
+ * times what it shows: so it reads it in its language, when it is first drawn (ADR-109).
+ * Publishing writes the catalog again in each language (`elements/designs/<language>/`). A
+ * library without those files, or whose files were not made from the catalog it has, is read
  * whole, and what is not of the language is let go.
  */
 export type DesignGroup = string;
 export type DesignId = string;
 
 /**
- * The designs as one reading of the catalogs has them: in one language, or in every one. Its
+ * The designs as one reading of the catalog has them: in one language, or in every one. Its
  * functions are of the reading, and may be taken apart from it.
  */
 export interface Designs {
@@ -56,16 +55,17 @@ export interface Designs {
   /** Every design, in the order the gallery shows them. */
   readonly ids: readonly DesignId[];
   readonly subjects: Readonly<Record<string, [number, number]>>;
-  /** The designs that came from `managed.json`. */
-  readonly managed: ReadonlySet<DesignId>;
-  /** The name `managed.json` gives a managed design; the app's messages name the authored ones. */
+  /**
+   * The name the catalog gives a design, in the language of `lang`: the app's messages name the
+   * first designs (`designs.name.<id>`), and the catalog those made since.
+   */
   designName: (id: DesignId, lang: string) => string | undefined;
-  /** The name `managed.json` gives a group of designs, in the language of `lang`. */
+  /** The name the catalog gives a group of designs, in the language of `lang`. */
   designGroupName: (group: DesignGroup, lang: string) => string | undefined;
   /**
-   * The search tags of every design (ADR-108): the library's, with those `managed.json` gives the
-   * designs of the studio. Read when a search first needs them; without them a design is found by
-   * its name and its group's.
+   * The search tags of every design (ADR-108): the library's, with those a catalog of before gives
+   * the designs of the studio. Read when a search first needs them; without them a design is found
+   * by its name and its group's.
    */
   loadDesignTags: () => Promise<TagsOf>;
   designsOf: (group: DesignGroup) => DesignId[];
@@ -117,6 +117,7 @@ export interface Designs {
   ) => Slide;
 }
 
+/** The catalog, and the catalog of before of a library that still has one (ADR-118). */
 const CATALOGS = ['index.json', 'managed.json'] as const;
 type CatalogName = (typeof CATALOGS)[number];
 
@@ -130,16 +131,15 @@ interface Words {
 }
 
 /**
- * The designs of the two catalogs, the languages each is drawn in when they are known, and their
- * words in the language read.
+ * The designs of the catalogs, the languages each is drawn in when they are known, and their words
+ * in the language read.
  */
 function designsFrom(
-  authored: Partial<DesignCatalog> | undefined,
-  managed: Partial<ManagedDesignCatalog> | undefined,
+  catalogs: readonly (CatalogFile | undefined)[],
   drawnIn?: Readonly<Record<string, readonly string[] | undefined>>,
   words?: Words,
 ): Designs {
-  const catalog = mergeCatalogs(authored, managed);
+  const catalog = mergeCatalogs(...catalogs);
   const slides: Readonly<Record<string, Partial<Localized<Slide>> | undefined>> = catalog.slides;
   const designsOf = (group: DesignGroup) => catalog.groupIds[group]?.slice() ?? [];
   const designLanguage = (id: DesignId, lang: string) => pieceLanguage(slides[id] ?? {}, lang);
@@ -155,15 +155,14 @@ function designsFrom(
     }
     return slide;
   };
-  const asset = (id: DesignId) => previewAsset(id, managedSize(managed, id));
-  const backdrop = (id: DesignId) => previewBackdrop(id, managedSize(managed, `${id}-bg`));
+  const asset = (id: DesignId) => previewAsset(id, catalog.sizes.get(id));
+  const backdrop = (id: DesignId) => previewBackdrop(id, catalog.sizes.get(`${id}-bg`));
   let tags: Promise<TagsOf> | undefined;
 
   return {
     groups: catalog.groups,
     ids: catalog.groups.flatMap((group) => catalog.groupIds[group] ?? []),
     subjects: catalog.subjects,
-    managed: catalog.managed,
     designName: (id, lang) => localName(catalog.names.get(id), lang),
     designGroupName: (group, lang) => localName(catalog.groupNames.get(group), lang),
     loadDesignTags: () =>
@@ -298,12 +297,13 @@ async function wordsIn(
 
 async function readIn(lang: ContentLanguage): Promise<Designs> {
   const [{ files }, written] = await Promise.all([mediaManifest(), designRevs()]);
-  const [authored, managed] = await Promise.all(
+  const catalogs = await Promise.all(
     CATALOGS.map((name) => catalogIn(name, lang, files, written !== undefined)),
   );
-  const words = await wordsIn([authored, managed], lang, files);
-  // An id of both catalogs is the authored design, as `mergeCatalogs` keeps it.
-  return designsFrom(authored, managed, { ...managed?.languages, ...authored?.languages }, words);
+  const words = await wordsIn(catalogs, lang, files);
+  // An id of both catalogs is the first's, as `mergeCatalogs` keeps it.
+  const [catalog, managed] = catalogs;
+  return designsFrom(catalogs, { ...managed?.languages, ...catalog?.languages }, words);
 }
 
 const readings = new Map<ContentLanguage, Promise<Designs>>();
@@ -314,7 +314,7 @@ const readings = new Map<ContentLanguage, Promise<Designs>>();
  */
 export function loadDesigns(lang: string): Promise<Designs> {
   const language = contentLanguageOf(lang);
-  if (!language) return Promise.resolve(designsFrom(undefined, undefined));
+  if (!language) return Promise.resolve(designsFrom([]));
   let reading = readings.get(language);
   if (!reading) readings.set(language, (reading = readIn(language)));
   return reading;
@@ -322,10 +322,10 @@ export function loadDesigns(lang: string): Promise<Designs> {
 
 let all: Promise<Designs> | undefined;
 
-/** Every design in every language: the whole catalogs, for the tests and the review pages. */
+/** Every design in every language: the whole catalog, for the tests and the review pages. */
 export function loadAllDesigns(): Promise<Designs> {
   all ??= Promise.all(
     CATALOGS.map((name) => readMediaJson<CatalogFile>(`elements/designs/${name}`)),
-  ).then(([authored, managed]) => designsFrom(authored, managed));
+  ).then((catalogs) => designsFrom(catalogs));
   return all;
 }

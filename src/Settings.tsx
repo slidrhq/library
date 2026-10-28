@@ -8,6 +8,7 @@
 import { MEDIA_LIBRARY_URL as PUBLISHED } from '@slidr/media-library';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { isolate } from './bidi';
+import { ImportPart } from './ImportArchive';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { size } from './media';
 import { useRead } from './shared';
@@ -22,14 +23,15 @@ import {
 import { readAccess, when } from './uploadsApi';
 
 /** What came of a part's work, said in the language shown, whichever that is by then. */
-type Note = { ok: boolean; say: (t: Translate, lang: string) => string };
+export type Note = { ok: boolean; say: (t: Translate, lang: string) => string };
 
 const SAVED: Note = { ok: true, say: (t) => t('settings.saved') };
 
-const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error));
+export const messageOf = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
 
 /** A part's work: whether it runs, and what came of it. */
-function useWork() {
+export function useWork() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note>();
   const run = (work: () => Promise<Note | undefined>) => {
@@ -44,7 +46,7 @@ function useWork() {
   return { busy, note, run };
 }
 
-function Said({ note }: { note?: Note }) {
+export function Said({ note }: { note?: Note }) {
   const t = useT();
   const [uiLang] = useLang();
   if (!note) return null;
@@ -55,7 +57,7 @@ function Said({ note }: { note?: Note }) {
   );
 }
 
-function Field({
+export function Field({
   label,
   hint,
   children,
@@ -598,6 +600,7 @@ export function Settings() {
       <LibraryPart values={values} />
       <MediaPart values={values} />
       {values.media.kind !== 'none' && <SeedPart key={values.media.path} />}
+      {values.media.kind !== 'none' && <ImportPart kind={values.media.kind} />}
       <SignInPart
         values={values}
         local={access.value.local}

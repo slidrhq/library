@@ -1,11 +1,9 @@
 import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
-import type { ManagedDesignCatalog } from '@desktop/elements/designCatalog';
 import { isolate } from './bidi';
 import { useMemo, useState, type DragEvent, type ReactNode } from 'react';
-import { messages, named, templatesModule } from './app';
+import { designsModule, messages, named, templatesModule } from './app';
 import { useT, type MessageKey } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
-import { mediaJson } from './media';
 import { ItemOverlay } from './Overlay';
 import { useRead } from './shared';
 import { FileButton, IssueList, RULES, partsOfFiles } from './UploadDetail';
@@ -34,9 +32,8 @@ import {
 type Parts = Partial<Record<ContentLanguage, LanguagePart>>;
 type Names = { he: string; en: string };
 
-/** The designs Slidr Studio published, whole: their names and groups. */
-const managedCatalog = () =>
-  mediaJson<Partial<ManagedDesignCatalog>>('elements/designs/managed.json');
+/** The designs, every one of which is drawn in English, and their groups (ADR-109). */
+const allDesigns = () => designsModule().then((designs) => designs.loadDesigns('en'));
 
 const isWebp = (file: File) => file.type === 'image/webp' || /\.webp$/i.test(file.name);
 /** A picture whose name says it lies under the other. */
@@ -44,21 +41,29 @@ const isBackdrop = (file: File) => /(?:-bg|backdrop)\.webp$/i.test(file.name);
 
 const kindLabel = (kind: Kind) => `uploads.kind.${kind.replace(':', '.')}` as MessageKey;
 
-/** The designs uploads may translate (those of `managed.json`), and the groups they are in. */
-function useManaged(lang: Lang) {
-  const read = useRead(managedCatalog, []);
+/**
+ * The designs uploads may translate, and the groups a new one may join: named as the app names
+ * them, else as the catalog does (`Designs.tsx`).
+ */
+function useDesigns(lang: Lang) {
+  const read = useRead(allDesigns, []);
   return useMemo(() => {
-    const catalog = read.value;
-    const nameOf = (names: { he?: string; en?: string } | undefined, id: string) =>
-      (lang === 'he' ? names?.he : names?.en) ?? names?.en ?? id;
+    const designs = read.value;
+    if (!designs) return { designs: [], groups: [] };
     return {
-      designs: Object.keys(catalog?.names ?? {}).map((id) => ({
+      designs: designs.ids.map((id) => ({
         id,
-        name: nameOf(catalog?.names?.[id], id),
+        name:
+          named(messages.elements, lang, 'designs', 'name', id) ??
+          designs.designName(id, lang) ??
+          id,
       })),
-      groups: (catalog?.groups ?? []).map((id) => ({
+      groups: designs.groups.map((id) => ({
         id,
-        name: nameOf(catalog?.groupNames?.[id], id),
+        name:
+          named(messages.elements, lang, 'designs', 'group', id) ??
+          designs.designGroupName(id, lang) ??
+          id,
       })),
     };
   }, [read.value, lang]);
@@ -185,7 +190,7 @@ export function NewUpload({
   const [failure, setFailure] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const managed = useManaged(lang);
+  const known = useDesigns(lang);
   const templates = useRead(templatesModule, []);
 
   const rules = RULES[kind];
@@ -194,7 +199,7 @@ export function NewUpload({
   const shown =
     chosen && written.includes(chosen) ? chosen : written.includes(lang) ? lang : written[0];
   const wanting = rules.required.filter((one) => !parts[one]);
-  const groupIsNew = group !== '' && !managed.groups.some((one) => one.id === group);
+  const groupIsNew = group !== '' && !known.groups.some((one) => one.id === group);
 
   // The picture of the design being translated, as the gallery draws it.
   const published = useRead(async () => {
@@ -464,7 +469,7 @@ export function NewUpload({
                   onChange={(e) => setGroup(e.target.value)}
                 />
                 <datalist id="upload-groups">
-                  {managed.groups.map((one) => (
+                  {known.groups.map((one) => (
                     <option key={one.id} value={one.id}>
                       {one.name}
                     </option>
@@ -520,7 +525,7 @@ export function NewUpload({
             <Field label={t('uploads.form.design')}>
               <select value={target} onChange={(e) => setTarget(e.target.value)}>
                 <option value="">{t('uploads.form.designPick')}</option>
-                {managed.designs.map((one) => (
+                {known.designs.map((one) => (
                   <option key={one.id} value={one.id}>
                     {one.name} · {one.id}
                   </option>

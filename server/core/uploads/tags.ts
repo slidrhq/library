@@ -2,8 +2,7 @@
  * Search tags: the words in Hebrew and English that the app finds a thing by beside its name, so
  * that "יום הולדת" finds the birthday invitation, the cake and the balloons (ADR-108 of the app).
  * The library keeps them a file a part, `tags/<part>.json`, each item under the key its catalog
- * gives it; a design uploaded here carries its own, which publishing writes beside its names in
- * `managed.json`.
+ * gives it; a design uploaded here carries its own, which publishing writes there too.
  *
  * Every upload that brings tags holds them to one rule (`checkTags`), the same the app's
  * `scripts/tag-elements.mjs` cleans Claude's answers by. A part of the library whose items are
@@ -168,7 +167,7 @@ const catalogOf = async <T>(library: Library, path: string): Promise<T | undefin
 const KEYS: Partial<Record<TypeId, { about: string; keys: Keys }>> = {
   designs: {
     about: 'a design by its id, as `birthday` or `m-techmeetup`',
-    // Every design, the app's and the studio's, has its picture at `images/designs/<id>.webp`.
+    // Every design has its picture at `images/designs/<id>.webp`.
     async keys(library) {
       const ids = (await library.paths()).flatMap((path) => {
         const id = /^images\/designs\/([^/]+)\.webp$/.exec(path)?.[1];

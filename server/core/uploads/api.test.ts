@@ -650,14 +650,13 @@ describe('a translation', () => {
       ),
     );
     assert.match(none[0]!.message, /no design m-nothing/);
-    const authored = await issuesOf(
-      await send(
-        '/api/uploads',
-        'POST',
-        translation('techmeetup', { fr: { slide: designSlide('fr') } }),
-      ),
+    // One of the first designs takes a translation as every other does: the catalog is one.
+    const first = await send(
+      '/api/uploads',
+      'POST',
+      translation('techmeetup', { fr: { slide: designSlide('fr') } }),
     );
-    assert.match(authored[0]!.message, /translated with its scripts/);
+    assert.equal(first.status, 201);
   });
 
   test('writes a template’s sample in another language, seated on its layouts', async () => {

@@ -1,6 +1,72 @@
 import type { MessageKey } from '../catalog';
 
 const words: Record<MessageKey, string> = {
+  'export.nav': 'Export',
+  'export.about':
+    'Die Bibliothek, ganz oder in Teilen, als eine Datei: Eine andere Bibliothek lädt sie ohne Netzwerk, und jeder Webserver stellt sie entpackt bereit.',
+  'export.empty': 'Noch gibt es nichts zu exportieren: Der Medienspeicher ist leer.',
+  'export.everything': 'Alles',
+  'export.other': 'Weitere Dateien',
+  'export.otherAbout': 'Dateien der Bibliothek, die zu keinem ihrer Teile gehören.',
+  'export.with':
+    'Was auch immer davon gewählt wird: Die Kataloge und Bilder, die alle brauchen, kommen mit: {size}.',
+  'export.pieces.designs':
+    'Nach der Sprache der Präsentationen, in denen sie angeboten werden. Eine nicht gewählte Sprache bietet keine Designs an.',
+  'export.pieces.templates': 'Jede Vorlage für sich, mit ihren Fotos.',
+  'export.pieces.fonts':
+    'Nach der Schrift, für die die Familien gemacht sind. Eine Präsentation bietet die Schriftarten ihrer Sprache und des Englischen an.',
+  'export.referenceDecks': 'Referenzpräsentationen',
+  'export.families': '{count} Familien',
+  'export.familyOne': '1 Familie',
+  'export.gzip': 'Komprimiert (.tgz)',
+  'export.total': 'Gewählt: {files}, {size} vor der Komprimierung.',
+  'export.none': 'Nichts ist gewählt.',
+  'export.start': 'Exportieren',
+  'export.stop': 'Anhalten',
+  'export.progress': '{files} von {of} Dateien · {size} von {ofSize}',
+  'export.done': '{name} ist fertig.',
+  'export.stopped': 'Der Export wurde angehalten, und nichts wurde gespeichert.',
+  'export.changed':
+    'Die Bibliothek wurde während des Exports veröffentlicht, und {path} ist nicht mehr die Datei, die zuerst gelesen wurde. Erneut exportieren, um sie so zu erhalten, wie sie jetzt ist.',
+  'export.kept': 'Die Auswahl bleibt in diesem Browser für das nächste Mal gespeichert.',
+  'export.inMemory':
+    'Dieser Browser speichert die Datei erst, wenn sie vollständig ist, und hält sie bis dahin im Arbeitsspeicher. Chrome und Edge schreiben sie schon beim Erstellen auf die Festplatte.',
+  'export.importHint':
+    'Um eine solche Datei in diese Bibliothek zu laden: Einstellungen → Aus einer Datei importieren.',
+  'export.fileType': 'Slidr-Bibliotheksarchiv',
+  'import.title': 'Aus einer Datei importieren',
+  'import.explain':
+    'Lädt eine Datei, die der Export einer Bibliothek geschrieben hat (.tgz oder .tar), ohne Netzwerk in den Medienspeicher. Jede Datei darin wird anhand ihres Manifests geprüft und dann hinzugefügt oder ersetzt die der Bibliothek. Alles andere bleibt, wie es ist.',
+  'import.machine': 'Oder auf dem Rechner der Bibliothek, ohne Browser:',
+  'import.cloudflare':
+    'Auf Cloudflare ist eine Anfrage höchstens 100 MB groß. Eine lokale Bibliothek nimmt jede Größe an.',
+  'import.choose': 'Datei wählen…',
+  'import.reading': 'Datei wird gelesen…',
+  'import.notArchive': 'Das ist kein Archiv einer Bibliothek: {error}',
+  'import.noManifest':
+    'Die Datei enthält keine manifest.json und ist daher kein Archiv einer Bibliothek.',
+  'import.from': 'Die Datei: eine Bibliothek, veröffentlicht am {when}, {files}, {size}.',
+  'import.here': 'Diese Bibliothek wurde am {when} veröffentlicht.',
+  'import.hereEmpty': 'Der Medienspeicher dieser Bibliothek ist leer, und die Datei befüllt ihn.',
+  'import.older':
+    'Die Datei ist älter als diese Bibliothek: Dateien, die sich hier seitdem geändert haben, kehren zur Version der Datei zurück, etwa hier veröffentlichte Designs und Tags.',
+  'import.part': 'Teil',
+  'import.new': 'Neu',
+  'import.replaced': 'Ersetzt',
+  'import.same': 'Gleich',
+  'import.merged': 'Zusammengeführt',
+  'import.mergedNote':
+    'Ein Katalog wird zusammengeführt, nicht ersetzt: Wo beide einen Eintrag haben, gilt der der Datei; Designs, Tags und Beispiele, die nur diese Bibliothek hat, bleiben.',
+  'import.replacedList': 'Die ersetzten Dateien ({count})',
+  'import.start': 'Importieren',
+  'import.cancel': 'Abbrechen',
+  'import.sending': '{sent} von {size} gesendet',
+  'import.writing': 'Wird in den Medienspeicher geschrieben…',
+  'import.done':
+    'Die Datei ist geladen: {added} hinzugefügt, {changed} ersetzt, und {same} waren gleich.',
+  'import.nothing': 'Die Bibliothek hatte jede dieser Dateien schon: Nichts hat sich geändert.',
+  'import.reload': 'Bibliothek neu lesen',
+  'publications.kind.archive': 'Aus einer Datei importiert',
   'shell.displayLanguage': 'Anzeigesprache',
   'shell.language': 'Sprache',
   'shell.anotherLanguage': 'Andere Sprache',
@@ -8,7 +74,7 @@ const words: Record<MessageKey, string> = {
   'shell.languageEllipsis': 'Sprache…',
   'library.section.designs.name': 'Fertige Designs',
   'library.section.designs.about':
-    'Die fertigen Folien unter Elemente → Designs: die handgeschriebenen und die, die das Studio veröffentlicht hat.',
+    'Die fertigen Folien unter Elemente → Designs, in jeder Sprache, in der sie gestaltet sind.',
   'library.section.templates.name': 'Vorlagen',
   'library.section.templates.about':
     'Die integrierten Vorlagen mit ihren Beispielpräsentationen auf Hebräisch, Englisch und in jeder weiteren Sprache, in der sie geschrieben wurden.',
@@ -103,19 +169,13 @@ const words: Record<MessageKey, string> = {
   'libraryBrowse.designsNone': 'Keine Designs passen zu Ihrer Auswahl.',
   'libraryBrowse.designsWrittenIn': '{shown} von {total} Designs gibt es in der Sprache ',
   'libraryBrowse.designNoGroup': 'Keine Gruppe',
-  'libraryBrowse.designPublished': 'Aus dem Studio veröffentlicht (managed.json)',
-  'libraryBrowse.designHandWritten': 'Von Hand geschrieben (index.json)',
   'libraryBrowse.designFromStudio':
     'Dieses Design wurde im Studio erstellt, und die zugehörige Anfrage ist noch offen.',
   'libraryBrowse.designOpenVariant': 'Vorschlag im Studio öffnen',
-  'libraryBrowse.designSource': 'Quelle',
   'libraryBrowse.designElements': 'Elemente',
   'libraryBrowse.designSubjectPoint': 'Motivpunkt',
   'libraryBrowse.designPictures': 'Bilder',
   'libraryBrowse.designGalleryView': 'So sieht das Design in der Galerie aus ({size} Pixel)',
-  'libraryBrowse.designFilterAll': 'Alle · {count}',
-  'libraryBrowse.designFilterAuthored': 'Von Hand geschrieben · {count}',
-  'libraryBrowse.designFilterManaged': 'Aus dem Studio · {count}',
   'libraryBrowse.designAllGroups': 'Alle Gruppen',
   'libraryBrowse.designOpen': '{name} öffnen',
   'libraryBrowse.cardsLoading': 'Kartensets werden geladen…',
@@ -527,6 +587,76 @@ const words: Record<MessageKey, string> = {
     'Die Mandanten-ID (Tenant ID) Ihrer Organisation oder ihre Domain, etwa contoso.onmicrosoft.com. Nur Konten dieses Mandanten melden sich an.',
   'settings.signIn.ownerOnly':
     'Nur der Eigentümer der Bibliothek bestimmt, wie man sich anmeldet: Wer den Anbieter festlegt, entscheidet, wer wer ist.',
+  'system.nav': 'Systemeinstellungen',
+  'system.about':
+    'Was die Apps der Organisation anbieten: Agenten, Sprachen, Webzugriff, Bilder und Fotos.',
+  'system.title': 'Einstellungen der Apps',
+  'system.explain':
+    'Diese Einstellungen werden in die Medien der Bibliothek veröffentlicht. Jede App, die diese Bibliothek liest, liest sie beim ersten Start, behält sie und liest sie erst wieder, wenn sie auf eine neue Version aktualisiert wird.',
+  'system.updated': 'Veröffentlicht am {when}.',
+  'system.none':
+    'Es sind keine Systemeinstellungen veröffentlicht: Jede App richtet sich nach ihren eigenen Standardwerten.',
+  'system.default': 'Standard',
+  'system.defaultNone': 'Keiner: Die App entscheidet',
+  'system.noneOffered': 'Bieten Sie mindestens einen an.',
+  'system.agents.title': 'Agenten',
+  'system.agents.explain':
+    'Die Agenten, die die App anbietet. Sind alle angehakt, bietet sie alle an, auch die, die in späteren Versionen hinzukommen. Der Standard wird zuerst angeboten und ist anfangs ausgewählt.',
+  'system.web.label': 'Webzugriff',
+  'system.web.hint': 'Im Web suchen und Seiten lesen, während der Agent arbeitet.',
+  'system.web.unset': 'Wahl jedes Benutzers, anfangs an',
+  'system.web.on': 'Anfangs an',
+  'system.web.off': 'Anfangs aus',
+  'system.web.blocked': 'Nie',
+  'system.custom.title': 'Agenten der Organisation',
+  'system.custom.explain':
+    'Ein Befehlszeilenwerkzeug, das das Agentenprotokoll der App spricht. Die App bietet es wie ihre eigenen an: Sie installiert es, sobald der Benutzer zustimmt, meldet sich an und listet seine Modelle auf. Nichts hier ist geheim: Jeder, der die Bibliothek liest, kann es lesen.',
+  'system.custom.unnamed': 'Neuer Agent',
+  'system.custom.add': 'Agent hinzufügen',
+  'system.custom.remove': 'Agent entfernen',
+  'system.custom.name': 'Name',
+  'system.custom.id': 'ID',
+  'system.custom.idHint':
+    'Lateinische Kleinbuchstaben, Ziffern und -. Sie bleibt gleich: Unterhaltungen und Einstellungen speichern sie.',
+  'system.custom.glyph': 'Kürzel',
+  'system.custom.glyphHint': 'Ein oder zwei Zeichen. Ohne sie ein Terminal-Symbol.',
+  'system.custom.tone': 'Farbe',
+  'system.custom.toneNone': 'Violett, wie bei jedem Werkzeug',
+  'system.custom.command': 'Programm',
+  'system.custom.commandHint':
+    'Sein vollständiger Pfad (er darf mit %LOCALAPPDATA% und Ähnlichem beginnen) oder sein Name. Eine ausführbare Datei: Ein Skript wird über seinen Interpreter ausgeführt, mit dem Skript in den Argumenten.',
+  'system.custom.args': 'Argumente',
+  'system.custom.argsHint': 'Eines pro Zeile. Sie stehen vor denen des Protokolls.',
+  'system.custom.env': 'Umgebungsvariablen',
+  'system.custom.envHint': 'NAME=value, eine pro Zeile. Nicht für Geheimnisse.',
+  'system.custom.install': 'Installation',
+  'system.custom.installHint': 'Wie die App es installiert, sobald der Benutzer zustimmt.',
+  'system.custom.installNone': 'Von der Organisation installiert',
+  'system.custom.package': 'Paket',
+  'system.custom.source': 'WinGet-Quelle',
+  'system.custom.sourceHint': 'Die eigene Quelle der Organisation. Ohne sie die der Community.',
+  'system.tone.orange': 'Orange',
+  'system.tone.green': 'Grün',
+  'system.tone.blue': 'Blau',
+  'system.tone.violet': 'Violett',
+  'system.tone.teal': 'Petrol',
+  'system.tone.pink': 'Rosa',
+  'system.tone.rose': 'Rot',
+  'system.languages.title': 'Sprachen',
+  'system.languages.explain':
+    'Die Sprachen der Oberfläche der App und der fertigen Inhalte, die sie anbietet. Ohne Standard startet eine App in der Sprache des Systems, sofern diese angeboten wird.',
+  'system.images.title': 'Bilder',
+  'system.images.explain': 'Die Anbieter, mit denen die App Bilder erstellt.',
+  'system.stock.title': 'Fotos',
+  'system.stock.explain': 'Die Fotodatenbanken, in denen die App sucht.',
+  'system.save': 'Veröffentlichen',
+  'system.saved':
+    'Veröffentlicht. Apps lesen die Einstellungen beim ersten Start oder nach einem Update.',
+  'system.remove': 'Einstellungen entfernen',
+  'system.removeConfirm':
+    'Die Systemeinstellungen entfernen? Eine App, die zum ersten Mal oder in einer neuen Version startet, folgt dann ihren eigenen Standardwerten.',
+  'system.removed': 'Die Einstellungen wurden entfernt.',
+  'system.issues': 'Diese Einstellungen sind ungültig:',
 };
 
 export default words;

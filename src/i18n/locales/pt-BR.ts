@@ -1,6 +1,72 @@
 import type { MessageKey } from '../catalog';
 
 const words: Record<MessageKey, string> = {
+  'export.nav': 'Exportar',
+  'export.about':
+    'A biblioteca, inteira ou algumas de suas partes, em um só arquivo: outra biblioteca o carrega sem rede, e qualquer servidor web o serve depois de extraído.',
+  'export.empty': 'Ainda não há nada para exportar: a mídia está vazia.',
+  'export.everything': 'Tudo',
+  'export.other': 'Outros arquivos',
+  'export.otherAbout': 'Arquivos da biblioteca que não estão em nenhuma de suas partes.',
+  'export.with':
+    'O que quer que se escolha deles leva junto os catálogos e as imagens de que todos precisam: {size}.',
+  'export.pieces.designs':
+    'Pelo idioma das apresentações em que são oferecidos. Um idioma não escolhido não oferece designs.',
+  'export.pieces.templates': 'Cada modelo separado, com suas fotos.',
+  'export.pieces.fonts':
+    'Pela escrita para a qual as famílias foram feitas. Uma apresentação oferece as fontes do seu idioma e do inglês.',
+  'export.referenceDecks': 'Apresentações de referência',
+  'export.families': '{count} famílias',
+  'export.familyOne': '1 família',
+  'export.gzip': 'Compactado (.tgz)',
+  'export.total': 'Escolhido: {files}, {size} antes da compactação.',
+  'export.none': 'Nada foi escolhido.',
+  'export.start': 'Exportar',
+  'export.stop': 'Parar',
+  'export.progress': '{files} de {of} arquivos · {size} de {ofSize}',
+  'export.done': '{name} está pronto.',
+  'export.stopped': 'A exportação foi interrompida, e nada foi salvo.',
+  'export.changed':
+    'A biblioteca foi publicada durante a exportação, e {path} já não é o arquivo lido no início. Exporte de novo para tê-la como está agora.',
+  'export.kept': 'A escolha fica guardada neste navegador para a próxima vez.',
+  'export.inMemory':
+    'Este navegador salva o arquivo só quando ele está completo, e até lá o mantém na memória. O Chrome e o Edge o gravam no disco à medida que é criado.',
+  'export.importHint':
+    'Para carregar um arquivo assim nesta biblioteca: Configurações → Importar de um arquivo.',
+  'export.fileType': 'Pacote de biblioteca do Slidr',
+  'import.title': 'Importar de um arquivo',
+  'import.explain':
+    'Carrega na mídia um arquivo gravado pela exportação de uma biblioteca (.tgz ou .tar), sem rede. Cada arquivo dentro dele é conferido com o seu manifest, e é adicionado ou substitui o da biblioteca. Todo o resto fica como está.',
+  'import.machine': 'Ou no computador da biblioteca, sem o navegador:',
+  'import.cloudflare':
+    'No Cloudflare, uma solicitação tem no máximo 100 MB. Uma biblioteca local aceita qualquer tamanho.',
+  'import.choose': 'Escolher um arquivo…',
+  'import.reading': 'Lendo o arquivo…',
+  'import.notArchive': 'Isto não é um pacote de uma biblioteca: {error}',
+  'import.noManifest':
+    'O arquivo não contém manifest.json, então não é um pacote de uma biblioteca.',
+  'import.from': 'O arquivo: uma biblioteca publicada em {when}, {files}, {size}.',
+  'import.here': 'Esta biblioteca foi publicada em {when}.',
+  'import.hereEmpty': 'A mídia desta biblioteca está vazia, e o arquivo vai preenchê-la.',
+  'import.older':
+    'O arquivo é mais antigo que esta biblioteca: arquivos alterados aqui desde então voltam à versão do arquivo, como designs e tags publicados aqui.',
+  'import.part': 'Parte',
+  'import.new': 'Novos',
+  'import.replaced': 'Substituídos',
+  'import.same': 'Iguais',
+  'import.merged': 'Mesclados',
+  'import.mergedNote':
+    'Um catálogo é mesclado, não substituído: onde ambos têm um item, vale o do arquivo, e designs, tags e exemplos que só esta biblioteca tem permanecem.',
+  'import.replacedList': 'Os arquivos substituídos ({count})',
+  'import.start': 'Importar',
+  'import.cancel': 'Cancelar',
+  'import.sending': '{sent} de {size} enviados',
+  'import.writing': 'Gravando na mídia…',
+  'import.done':
+    'O arquivo foi carregado: {added} adicionados, {changed} substituídos, e {same} eram iguais.',
+  'import.nothing': 'A biblioteca já tinha cada um desses arquivos: nada mudou.',
+  'import.reload': 'Ler a biblioteca de novo',
+  'publications.kind.archive': 'Importado de um arquivo',
   'shell.displayLanguage': 'Idioma de exibição',
   'shell.language': 'Idioma',
   'shell.anotherLanguage': 'Outro idioma',
@@ -8,7 +74,7 @@ const words: Record<MessageKey, string> = {
   'shell.languageEllipsis': 'Idioma…',
   'library.section.designs.name': 'Designs prontos',
   'library.section.designs.about':
-    'Os slides prontos de Elementos → Designs: os escritos à mão e os que o estúdio publicou.',
+    'Os slides prontos de Elementos → Designs, em cada idioma em que foram desenhados.',
   'library.section.templates.name': 'Modelos',
   'library.section.templates.about':
     'Os modelos integrados, com suas apresentações de exemplo em hebraico, inglês e em todos os outros idiomas em que foram escritos.',
@@ -102,19 +168,13 @@ const words: Record<MessageKey, string> = {
   'libraryBrowse.designsNone': 'Nenhum design corresponde à sua seleção.',
   'libraryBrowse.designsWrittenIn': '{shown} de {total} designs estão escritos em ',
   'libraryBrowse.designNoGroup': 'Sem grupo',
-  'libraryBrowse.designPublished': 'Publicado pelo estúdio (managed.json)',
-  'libraryBrowse.designHandWritten': 'Escrito à mão (index.json)',
   'libraryBrowse.designFromStudio':
     'Este design foi feito no estúdio, e o pedido de origem ainda está aberto.',
   'libraryBrowse.designOpenVariant': 'Abrir a proposta no estúdio',
-  'libraryBrowse.designSource': 'Origem',
   'libraryBrowse.designElements': 'Elementos',
   'libraryBrowse.designSubjectPoint': 'Ponto do assunto',
   'libraryBrowse.designPictures': 'Imagens',
   'libraryBrowse.designGalleryView': 'Como o design aparece na galeria ({size} pixels)',
-  'libraryBrowse.designFilterAll': 'Todos · {count}',
-  'libraryBrowse.designFilterAuthored': 'Escritos à mão · {count}',
-  'libraryBrowse.designFilterManaged': 'Do estúdio · {count}',
   'libraryBrowse.designAllGroups': 'Todos os grupos',
   'libraryBrowse.designOpen': 'Abrir {name}',
   'libraryBrowse.cardsLoading': 'Carregando conjuntos de cartões…',
@@ -518,6 +578,75 @@ const words: Record<MessageKey, string> = {
     'O ID de locatário (Tenant) da sua organização, ou o domínio dela, como contoso.onmicrosoft.com. Só as contas desse locatário fazem login.',
   'settings.signIn.ownerOnly':
     'Só o proprietário da biblioteca define como as pessoas fazem login: quem escolhe o provedor diz quem é quem.',
+  'system.nav': 'Configurações do sistema',
+  'system.about':
+    'O que os apps da organização oferecem: agentes, idiomas, acesso à web, imagens e fotos.',
+  'system.title': 'Configurações dos apps',
+  'system.explain':
+    'Estas configurações são publicadas na mídia da biblioteca. Cada app que lê esta biblioteca as lê ao iniciar pela primeira vez, as guarda e só as lê de novo quando é atualizado para uma nova versão.',
+  'system.updated': 'Publicadas em {when}.',
+  'system.none': 'Nenhuma configuração do sistema publicada: cada app segue os próprios padrões.',
+  'system.default': 'Padrão',
+  'system.defaultNone': 'Nenhum: o do próprio app',
+  'system.noneOffered': 'Ofereça pelo menos um.',
+  'system.agents.title': 'Agentes',
+  'system.agents.explain':
+    'Os agentes que o app oferece. Com todos marcados, ele oferece todos, inclusive os adicionados em versões futuras. O padrão é oferecido primeiro e já vem escolhido.',
+  'system.web.label': 'Acesso à web',
+  'system.web.hint': 'Pesquisar na web e ler as páginas enquanto o agente trabalha.',
+  'system.web.unset': 'Escolha de cada usuário, ativado no início',
+  'system.web.on': 'Ativado no início',
+  'system.web.off': 'Desativado no início',
+  'system.web.blocked': 'Nunca',
+  'system.custom.title': 'Os agentes da organização',
+  'system.custom.explain':
+    'Uma ferramenta de linha de comando que fala o protocolo de agentes do app. O app a oferece como oferece os próprios: instala quando o usuário aprova, faz login e lista os modelos dela. Nada aqui é secreto: quem lê a biblioteca pode ler isto.',
+  'system.custom.unnamed': 'Novo agente',
+  'system.custom.add': 'Adicionar um agente',
+  'system.custom.remove': 'Remover o agente',
+  'system.custom.name': 'Nome',
+  'system.custom.id': 'ID',
+  'system.custom.idHint':
+    'Letras latinas minúsculas, dígitos e -. Ele não muda: as conversas e as configurações o guardam.',
+  'system.custom.glyph': 'Símbolo',
+  'system.custom.glyphHint': 'Um ou dois caracteres. Sem eles, um ícone de terminal.',
+  'system.custom.tone': 'Cor',
+  'system.custom.toneNone': 'Violeta, como qualquer ferramenta',
+  'system.custom.command': 'Programa',
+  'system.custom.commandHint':
+    'O caminho completo (pode começar com %LOCALAPPDATA% e similares) ou o nome. Um executável: um script é executado pelo interpretador, com o script nos argumentos.',
+  'system.custom.args': 'Argumentos',
+  'system.custom.argsHint': 'Um por linha. Eles vêm antes dos do protocolo.',
+  'system.custom.env': 'Variáveis de ambiente',
+  'system.custom.envHint': 'NAME=value, uma por linha. Não para segredos.',
+  'system.custom.install': 'Instalação',
+  'system.custom.installHint': 'Como o app o instala quando o usuário aprova.',
+  'system.custom.installNone': 'Instalado pela organização',
+  'system.custom.package': 'Pacote',
+  'system.custom.source': 'Fonte do WinGet',
+  'system.custom.sourceHint': 'A fonte própria da organização. Sem ela, a da comunidade.',
+  'system.tone.orange': 'Laranja',
+  'system.tone.green': 'Verde',
+  'system.tone.blue': 'Azul',
+  'system.tone.violet': 'Violeta',
+  'system.tone.teal': 'Verde-azulado',
+  'system.tone.pink': 'Rosa',
+  'system.tone.rose': 'Vermelho',
+  'system.languages.title': 'Idiomas',
+  'system.languages.explain':
+    'Os idiomas da interface do app e do conteúdo pronto que ele oferece. Sem um padrão, o app inicia no idioma do sistema, se ele for oferecido.',
+  'system.images.title': 'Imagens',
+  'system.images.explain': 'Os provedores com que o app cria imagens.',
+  'system.stock.title': 'Fotos',
+  'system.stock.explain': 'Os bancos de fotos em que o app pesquisa.',
+  'system.save': 'Publicar',
+  'system.saved':
+    'Publicadas. Os apps leem as configurações ao iniciar pela primeira vez ou ao serem atualizados.',
+  'system.remove': 'Remover as configurações',
+  'system.removeConfirm':
+    'Remover as configurações do sistema? Um app que iniciar pela primeira vez, ou em uma nova versão, seguirá os próprios padrões.',
+  'system.removed': 'As configurações foram removidas.',
+  'system.issues': 'Estas configurações não são válidas:',
 };
 
 export default words;

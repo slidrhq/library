@@ -1,13 +1,13 @@
 /**
  * The parts of the library, and what an upload may do to each (`GET /api/content`).
  *
- * A part takes new items where what is uploaded stays: designs join the catalog Slidr Studio
- * publishes into, and a template's sample takes more languages beside those its source writes.
- * The other parts are written whole by the app's own scripts, from packages they read, or are
- * drawn by the app's code, so a new item in them would be written over, or never shown; each
- * says why (`closed`). Opening one takes the app first: a catalog of its own that publishing
- * merges, as `managed.json` is for designs. Every part the app searches takes the search tags of
- * its items (`tag`, `tags.ts`), which are a file of their own, `tags/<part>.json`.
+ * A part takes new items where what is uploaded stays: designs join the catalog of the designs,
+ * which publishing writes into and no script writes over, and a template's sample takes more
+ * languages beside those its source writes. The other parts are written whole by the app's own
+ * scripts, from packages they read, or are drawn by the app's code, so a new item in them would be
+ * written over, or never shown; each says why (`closed`). Opening one takes the app first: a
+ * catalog that publishing writes into, as the designs' is. Every part the app searches takes the
+ * search tags of its items (`tag`, `tags.ts`), which are a file of their own, `tags/<part>.json`.
  */
 import {
   BASE_LANGUAGES,
@@ -61,7 +61,7 @@ export const PARTS: readonly Part[] = [
   tagged({
     type: 'designs',
     written: 'content',
-    paths: ['elements/designs/managed.json', 'images/designs/'],
+    paths: ['elements/designs/index.json', 'images/designs/'],
     handlers: [addDesign, translateDesign, drawDesign],
   }),
   {

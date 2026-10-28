@@ -10,14 +10,16 @@
  * the image, a folder of the machine's own disks mounted there. The data folder is its owner's
  * only (mode 0700).
  */
-import { chmod, mkdir, readFile, realpath, rm, statfs, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, realpath, rm, stat, statfs, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { realpathSync } from 'node:fs';
+import { createReadStream, realpathSync } from 'node:fs';
+import { Readable } from 'node:stream';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { audit } from '../../core/audit.ts';
 import { readConfig, writeConfig, type LibraryConfig } from '../../core/config.ts';
 import type { Context, Room } from '../../core/context.ts';
-import { openLease } from '../../core/media/lease.ts';
+import { ArchiveRefused, importArchive, type ArchiveImported } from '../../core/media/archive.ts';
+import { NotNow, openLease } from '../../core/media/lease.ts';
 import { sweep } from '../../core/media/sweep.ts';
 import { emailOf, isEmail, writePerson } from '../../core/people.ts';
 import { Vault, masterKeyText, newMasterKey, randomKey } from '../../core/vault.ts';
@@ -352,6 +354,38 @@ export async function seed(
         `Nothing was copied three times running: ${step.failed.map((one) => `${one.path}: ${one.message}`).join('; ')}`,
       );
     }
+  }
+}
+
+/**
+ * Brings an archive of the library into its media folder (`slidr-library import`): a .tar or .tgz
+ * file of this machine, or standard input (`-`), as the page's Export writes it. It fills an empty
+ * media, and keeps one up, where the machine does not reach the published library
+ * (`../../core/media/archive.ts`).
+ */
+export async function importFile(ctx: Context, file: string): Promise<ArchiveImported> {
+  if (!ctx.media || !ctx.state) {
+    throw new LibraryError(
+      'The library has no media folder to bring an archive into: install it with one.',
+    );
+  }
+  if (file !== '-' && !(await stat(file).catch(() => undefined))?.isFile()) {
+    throw new LibraryError(`${file} is not a file.`);
+  }
+  const input = file === '-' ? process.stdin : createReadStream(file);
+  try {
+    return await importArchive(
+      ctx,
+      { id: 'cli' },
+      Readable.toWeb(input) as unknown as ReadableStream<Uint8Array>,
+    );
+  } catch (error) {
+    if (error instanceof ArchiveRefused) {
+      const paths = error.paths.length ? `: ${error.paths.slice(0, 5).join(', ')}` : '';
+      throw new LibraryError(`${error.message}${paths}`);
+    }
+    if (error instanceof NotNow) throw new LibraryError(error.message);
+    throw error;
   }
 }
 

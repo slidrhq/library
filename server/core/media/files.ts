@@ -23,6 +23,7 @@ import { recordOf, type Actor } from '../uploads/access.ts';
 import type { Bucket } from '../bucket.ts';
 import { forgetLibrary } from '../uploads/library.ts';
 import type { Purge, Purger } from './cache.ts';
+import { foldManaged } from './designCatalog.ts';
 import { writeDesignFiles } from './designFiles.ts';
 import { Lease, NotNow } from './lease.ts';
 import { recordPublication, undo } from './publish.ts';
@@ -192,7 +193,9 @@ export async function publishFiles(
         }
         await writing.put(path, bytes, change.to.sha256);
       }
-      // What is made of the catalogs of the designs, as the files leave them (`designFiles.ts`).
+      // The catalog of the designs is one (`designCatalog.ts`), and what is made of it is written
+      // as the files leave it (`designFiles.ts`).
+      await foldManaged(media, writing);
       await writeDesignFiles(media, writing);
       await writing.finish();
     } catch (error) {

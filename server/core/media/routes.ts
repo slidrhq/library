@@ -7,10 +7,11 @@
  *                                only what is made of the catalogs of the designs (`designFiles.ts`)
  *   PUT  /api/library/staged/…   a file of an author's publication, by its hash (`files.ts`)
  *   POST /api/library/files      an author's publication: the files changed since the copy was pulled
+ *   POST /api/library/archive    an archive of the library brought in: a .tar or .tgz (`archive.ts`)
  *
  * Reading it is anyone's who signs in (`read-own`); publishing what was accepted and waits is a
- * reviewer's (`publish-waiting`); bringing the library in, and an author's files, an admin's
- * (`publish-files`). A program's key does all of these (`../uploads/access.ts`).
+ * reviewer's (`publish-waiting`); bringing the library in, an archive, and an author's files, an
+ * admin's (`publish-files`). A program's key does all of these (`../uploads/access.ts`).
  */
 import { MEDIA_LIBRARY_URL } from '@slidr/media-library';
 import { keysUnder, type Bucket } from '../bucket.ts';
@@ -19,6 +20,7 @@ import { isRecord, json, jsonBody, problem } from '../http.ts';
 import { authorize } from '../uploads/access.ts';
 import { isUploadId, listUploads } from '../uploads/store.ts';
 import { forgetLibrary } from '../uploads/library.ts';
+import { ArchiveRefused, MOST_ARCHIVE, importArchive } from './archive.ts';
 import { BATCH, ImportRefused, importLibrary } from './import.ts';
 import { MOST_BYTES, Refused, publishFiles, stage } from './files.ts';
 import { PUBLICATIONS, readManifest } from './live.ts';
@@ -236,6 +238,38 @@ export const filesRoute: Route = async (request, ctx) => {
       const status = error.code === 'conflict' ? 409 : error.code === 'not-staged' ? 422 : 400;
       return problem(
         status,
+        error.code,
+        error.message,
+        error.paths.map((path) => ({ path, message: error.message })),
+      );
+    }
+    if (error instanceof NotNow) return problem(409, error.code, error.message);
+    throw error;
+  }
+};
+
+// ---- POST /api/library/archive
+
+/** What each refusal of an archive is answered with. */
+const REFUSED: Record<string, number> = { 'no-room': 507, 'not-set-up': 503 };
+
+export const archiveRoute: Route = async (request, ctx) => {
+  const actor = await authorize(request, ctx, 'publish-files');
+  if (actor instanceof Response) return actor;
+  if (!ctx.media) return noBucket('the library (MEDIA)');
+  if (!ctx.state) return noBucket('the uploads (UPLOADS)');
+  if (Number(request.headers.get('Content-Length') ?? 0) > MOST_ARCHIVE) {
+    return problem(413, 'too-large', `An archive is at most ${MOST_ARCHIVE / 1024 ** 3} GiB.`);
+  }
+  if (!request.body) {
+    return problem(400, 'bad-request', 'Send the archive as the body: a .tar or .tgz file.');
+  }
+  try {
+    return json(await importArchive(ctx, actor, request.body));
+  } catch (error) {
+    if (error instanceof ArchiveRefused) {
+      return problem(
+        REFUSED[error.code] ?? 422,
         error.code,
         error.message,
         error.paths.map((path) => ({ path, message: error.message })),

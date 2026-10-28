@@ -254,10 +254,10 @@ export interface Publication {
   remaining: number;
 }
 
-/** A publication as it is kept: of uploads, or of an author's files; by whom; and the cache. */
+/** A publication as it is kept: of uploads, an author's files, or an archive; by whom; the cache. */
 export interface PublicationRecord extends Omit<Publication, 'remaining' | 'uploads' | 'skipped'> {
   published: string;
-  kind: 'uploads' | 'files';
+  kind: 'uploads' | 'files' | 'archive';
   by: Actor;
   uploads?: Publication['uploads'];
   skipped?: Publication['skipped'];

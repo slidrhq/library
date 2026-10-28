@@ -69,7 +69,13 @@ function Publication({
         <summary>
           <span className="publication-when">{when(uiLang, record.published)}</span>
           <span className="publication-kind">
-            {t(record.kind === 'files' ? 'publications.kind.files' : 'publications.kind.uploads')}
+            {t(
+              record.kind === 'files'
+                ? 'publications.kind.files'
+                : record.kind === 'archive'
+                  ? 'publications.kind.archive'
+                  : 'publications.kind.uploads',
+            )}
             {' · '}
             <bdi>{who(record.by.id)}</bdi>
           </span>

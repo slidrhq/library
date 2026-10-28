@@ -1,7 +1,6 @@
 export const he = {
   'library.section.designs.name': 'עיצובים מוכנים',
-  'library.section.designs.about':
-    'השקפים המוכנים של Elements → עיצובים: הכתובים ביד ואלה שהסטודיו פרסם.',
+  'library.section.designs.about': 'השקפים המוכנים של Elements → עיצובים, בכל שפה שבה הם צוירו.',
   'library.section.templates.name': 'תבניות',
   'library.section.templates.about':
     'התבניות המובנות, עם מצגות הדוגמה שלהן בעברית, באנגלית ובכל שפה אחרת שנכתבו בה.',
@@ -77,7 +76,7 @@ export const he = {
 export const en: Record<keyof typeof he, string> = {
   'library.section.designs.name': 'Ready-made designs',
   'library.section.designs.about':
-    'The ready-made slides of Elements → Designs: the hand-written ones and those the studio published.',
+    'The ready-made slides of Elements → Designs, in each language they are drawn in.',
   'library.section.templates.name': 'Templates',
   'library.section.templates.about':
     'The built-in templates, with their sample decks in Hebrew, English and every other language they were written in.',

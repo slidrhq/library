@@ -1,6 +1,72 @@
 import type { MessageKey } from '../catalog';
 
 const words: Record<MessageKey, string> = {
+  'export.nav': 'Esporta',
+  'export.about':
+    'La libreria, intera o alcune sue parti, in un unico file: un’altra libreria lo carica senza rete, e qualsiasi server web lo serve una volta estratto.',
+  'export.empty': 'Non c’è ancora nulla da esportare: l’archivio media è vuoto.',
+  'export.everything': 'Tutto',
+  'export.other': 'Altri file',
+  'export.otherAbout': 'File della libreria che non sono in nessuna delle sue parti.',
+  'export.with':
+    'Qualunque cosa se ne scelga, porta con sé i cataloghi e le immagini che servono a tutti: {size}.',
+  'export.pieces.designs':
+    'Secondo la lingua delle presentazioni in cui sono proposti. Una lingua non scelta non propone design.',
+  'export.pieces.templates': 'Ogni modello per conto suo, con le sue foto.',
+  'export.pieces.fonts':
+    'Secondo la scrittura per cui le famiglie sono fatte. Una presentazione propone i font della sua lingua e dell’inglese.',
+  'export.referenceDecks': 'Presentazioni di riferimento',
+  'export.families': '{count} famiglie',
+  'export.familyOne': '1 famiglia',
+  'export.gzip': 'Compresso (.tgz)',
+  'export.total': 'Scelti: {files}, {size} prima della compressione.',
+  'export.none': 'Non è scelto nulla.',
+  'export.start': 'Esporta',
+  'export.stop': 'Ferma',
+  'export.progress': '{files} di {of} file · {size} di {ofSize}',
+  'export.done': '{name} è pronto.',
+  'export.stopped': 'L’esportazione è stata fermata, e non è stato salvato nulla.',
+  'export.changed':
+    'La libreria è stata pubblicata durante l’esportazione, e {path} non è più il file letto all’inizio. Esporta di nuovo per averla com’è adesso.',
+  'export.kept': 'La scelta resta in questo browser per la prossima volta.',
+  'export.inMemory':
+    'Questo browser salva il file solo quando è completo, e fino ad allora lo tiene in memoria. Chrome ed Edge lo scrivono sul disco man mano che viene creato.',
+  'export.importHint':
+    'Per caricare un file del genere in questa libreria: Impostazioni → Importa da un file.',
+  'export.fileType': 'Archivio di una libreria Slidr',
+  'import.title': 'Importa da un file',
+  'import.explain':
+    'Carica nell’archivio media un file scritto dall’esportazione di una libreria (.tgz o .tar), senza rete. Ogni file che contiene è verificato rispetto al suo manifest, e viene aggiunto o sostituisce quello della libreria. Tutto il resto resta com’è.',
+  'import.machine': 'Oppure sulla macchina della libreria, senza browser:',
+  'import.cloudflare':
+    'Su Cloudflare una richiesta è al massimo di 100 MB. Una libreria locale accetta qualsiasi dimensione.',
+  'import.choose': 'Scegli un file…',
+  'import.reading': 'Lettura del file…',
+  'import.notArchive': 'Non è un archivio di una libreria: {error}',
+  'import.noManifest':
+    'Il file non contiene manifest.json, quindi non è un archivio di una libreria.',
+  'import.from': 'Il file: una libreria pubblicata il {when}, {files}, {size}.',
+  'import.here': 'Questa libreria è stata pubblicata il {when}.',
+  'import.hereEmpty': 'L’archivio media di questa libreria è vuoto, e il file lo riempie.',
+  'import.older':
+    'Il file è più vecchio di questa libreria: i file cambiati qui da allora tornano alla versione del file, come i design e i tag pubblicati qui.',
+  'import.part': 'Parte',
+  'import.new': 'Nuovi',
+  'import.replaced': 'Sostituiti',
+  'import.same': 'Uguali',
+  'import.merged': 'Uniti',
+  'import.mergedNote':
+    'Un catalogo viene unito, non sostituito: dove entrambi hanno un elemento vale quello del file, e i design, i tag e gli esempi che ha solo questa libreria restano.',
+  'import.replacedList': 'I file sostituiti ({count})',
+  'import.start': 'Importa',
+  'import.cancel': 'Annulla',
+  'import.sending': 'Inviati {sent} di {size}',
+  'import.writing': 'Scrittura nell’archivio media…',
+  'import.done':
+    'Il file è stato caricato: {added} aggiunti, {changed} sostituiti, e {same} erano uguali.',
+  'import.nothing': 'La libreria aveva già tutti questi file: non è cambiato nulla.',
+  'import.reload': 'Rileggi la libreria',
+  'publications.kind.archive': 'Importato da un file',
   'shell.displayLanguage': "Lingua dell'interfaccia",
   'shell.language': 'Lingua',
   'shell.anotherLanguage': 'Altra lingua',
@@ -8,7 +74,7 @@ const words: Record<MessageKey, string> = {
   'shell.languageEllipsis': 'Lingua…',
   'library.section.designs.name': 'Design pronti',
   'library.section.designs.about':
-    'Le diapositive pronte di Elementi → Design: quelle scritte a mano e quelle pubblicate dallo studio.',
+    'Le diapositive pronte di Elementi → Design, in ogni lingua in cui sono disegnate.',
   'library.section.templates.name': 'Modelli',
   'library.section.templates.about':
     'I modelli integrati, con le presentazioni di esempio in ebraico, inglese e in ogni altra lingua in cui sono state scritte.',
@@ -103,19 +169,13 @@ const words: Record<MessageKey, string> = {
   'libraryBrowse.designsNone': 'Nessun design corrisponde alla selezione.',
   'libraryBrowse.designsWrittenIn': '{shown} design su {total} sono scritti in ',
   'libraryBrowse.designNoGroup': 'Nessun gruppo',
-  'libraryBrowse.designPublished': 'Pubblicato dallo studio (managed.json)',
-  'libraryBrowse.designHandWritten': 'Scritto a mano (index.json)',
   'libraryBrowse.designFromStudio':
     'Questo design è stato creato nello studio e la richiesta di origine è ancora aperta.',
   'libraryBrowse.designOpenVariant': 'Apri la proposta nello studio',
-  'libraryBrowse.designSource': 'Origine',
   'libraryBrowse.designElements': 'Elementi',
   'libraryBrowse.designSubjectPoint': 'Punto del soggetto',
   'libraryBrowse.designPictures': 'Immagini',
   'libraryBrowse.designGalleryView': 'Come appare il design nella galleria ({size} pixel)',
-  'libraryBrowse.designFilterAll': 'Tutti · {count}',
-  'libraryBrowse.designFilterAuthored': 'Scritti a mano · {count}',
-  'libraryBrowse.designFilterManaged': 'Dallo studio · {count}',
   'libraryBrowse.designAllGroups': 'Tutti i gruppi',
   'libraryBrowse.designOpen': 'Apri {name}',
   'libraryBrowse.cardsLoading': 'Caricamento dei set di schede…',
@@ -523,6 +583,77 @@ const words: Record<MessageKey, string> = {
     'L’ID tenant della tua organizzazione, o il suo dominio, come contoso.onmicrosoft.com. Accedono solo gli account di quel tenant.',
   'settings.signIn.ownerOnly':
     'Solo il proprietario della libreria decide come si accede: chi sceglie il provider stabilisce chi è chi.',
+  'system.nav': 'Impostazioni di sistema',
+  'system.about':
+    'Cosa offrono le app dell’organizzazione: agenti, lingue, accesso al web, immagini e foto.',
+  'system.title': 'Impostazioni delle app',
+  'system.explain':
+    'Queste impostazioni sono pubblicate nell’archivio media della libreria. Ogni app che legge questa libreria le legge al primo avvio, le conserva e le rilegge solo quando viene aggiornata a una nuova versione.',
+  'system.updated': 'Pubblicate il {when}.',
+  'system.none':
+    'Nessuna impostazione di sistema pubblicata: ogni app segue i propri valori predefiniti.',
+  'system.default': 'Predefinito',
+  'system.defaultNone': 'Nessuno: quello dell’app',
+  'system.noneOffered': 'Offrine almeno uno.',
+  'system.agents.title': 'Agenti',
+  'system.agents.explain':
+    'Gli agenti che l’app offre. Se sono tutti selezionati, li offre tutti, anche quelli aggiunti nelle versioni successive. Quello predefinito è offerto per primo e scelto all’inizio.',
+  'system.web.label': 'Accesso al web',
+  'system.web.hint': 'Cercare sul web e leggerne le pagine mentre l’agente lavora.',
+  'system.web.unset': 'A scelta di ogni utente, attivo all’inizio',
+  'system.web.on': 'Attivo all’inizio',
+  'system.web.off': 'Disattivo all’inizio',
+  'system.web.blocked': 'Mai',
+  'system.custom.title': 'Gli agenti dell’organizzazione',
+  'system.custom.explain':
+    'Uno strumento da riga di comando che parla il protocollo degli agenti dell’app. L’app lo offre come offre i propri: lo installa quando l’utente approva, accede e ne elenca i modelli. Qui nulla è segreto: chiunque legga la libreria può leggerlo.',
+  'system.custom.unnamed': 'Nuovo agente',
+  'system.custom.add': 'Aggiungi un agente',
+  'system.custom.remove': 'Rimuovi l’agente',
+  'system.custom.name': 'Nome',
+  'system.custom.id': 'ID',
+  'system.custom.idHint':
+    'Lettere latine minuscole, cifre e -. Non cambia: le conversazioni e le impostazioni lo conservano.',
+  'system.custom.glyph': 'Simbolo',
+  'system.custom.glyphHint': 'Uno o due caratteri. Se vuoto, l’icona del terminale.',
+  'system.custom.tone': 'Colore',
+  'system.custom.toneNone': 'Viola, come per ogni strumento',
+  'system.custom.command': 'Programma',
+  'system.custom.commandHint':
+    'Il suo percorso completo (può iniziare con %LOCALAPPDATA% e simili) o il suo nome. Un eseguibile: uno script viene eseguito dal suo interprete, con lo script negli argomenti.',
+  'system.custom.args': 'Argomenti',
+  'system.custom.argsHint': 'Uno per riga. Vengono prima di quelli del protocollo.',
+  'system.custom.env': 'Variabili d’ambiente',
+  'system.custom.envHint': 'NAME=value, una per riga. Non per i segreti.',
+  'system.custom.install': 'Installazione',
+  'system.custom.installHint': 'Come l’app lo installa quando l’utente approva.',
+  'system.custom.installNone': 'Installato dall’organizzazione',
+  'system.custom.package': 'Pacchetto',
+  'system.custom.source': 'Origine WinGet',
+  'system.custom.sourceHint':
+    'L’origine propria dell’organizzazione. Senza, quella della community.',
+  'system.tone.orange': 'Arancione',
+  'system.tone.green': 'Verde',
+  'system.tone.blue': 'Blu',
+  'system.tone.violet': 'Viola',
+  'system.tone.teal': 'Verde acqua',
+  'system.tone.pink': 'Rosa',
+  'system.tone.rose': 'Rosso',
+  'system.languages.title': 'Lingue',
+  'system.languages.explain':
+    'Le lingue dell’interfaccia dell’app e dei contenuti pronti che offre. Senza una predefinita, un’app si avvia nella lingua del sistema, se è tra quelle offerte.',
+  'system.images.title': 'Immagini',
+  'system.images.explain': 'I provider con cui l’app crea immagini.',
+  'system.stock.title': 'Foto',
+  'system.stock.explain': 'Le banche di foto in cui cerca l’app.',
+  'system.save': 'Pubblica',
+  'system.saved':
+    'Pubblicate. Le app leggono le impostazioni al primo avvio o quando vengono aggiornate.',
+  'system.remove': 'Rimuovi le impostazioni',
+  'system.removeConfirm':
+    'Rimuovere le impostazioni di sistema? Un’app che si avvia per la prima volta, o in una nuova versione, seguirà i propri valori predefiniti.',
+  'system.removed': 'Le impostazioni sono state rimosse.',
+  'system.issues': 'Queste impostazioni non sono valide:',
 };
 
 export default words;

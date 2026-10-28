@@ -7,6 +7,7 @@
  *                                            "allowedDomains"?, "secret"? }: the provider
  *   DELETE /api/settings/sign-in           no provider: on a machine, the owner's link alone
  *   PUT    /api/settings/limits            { "pending"?, "bytes"?, "tokens"?, "writesPerMinute"? }
+ *   GET|PUT|DELETE /api/settings/system    the settings of the apps that read it (`system.ts`)
  *
  * Where the media is, and the address the library is reached at, are its host's, and are shown
  * here, never changed (docs/SPEC.md D13): on Cloudflare, the Worker's bucket and its own address;
@@ -29,6 +30,7 @@ import {
   saveSignIn,
   secureAddress,
 } from './oidc.ts';
+import { SYSTEM_ROUTES } from './system.ts';
 import { authorize } from './uploads/access.ts';
 
 type Route = (request: Request, ctx: Context) => Promise<Response>;
@@ -244,6 +246,8 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [/^\/api\/settings\/media\/test$/, { POST: test }],
   [/^\/api\/settings\/sign-in$/, { PUT: signIn, DELETE: signIn }],
   [/^\/api\/settings\/limits$/, { PUT: limits }],
+  // The settings of the apps that read the library (`system.ts`).
+  SYSTEM_ROUTES,
 ];
 
 /** The answer to a request of the settings; undefined for a path that is none of theirs. */

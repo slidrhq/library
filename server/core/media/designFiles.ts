@@ -1,8 +1,8 @@
 /**
- * The files a publication writes of the catalogs of the designs, beside them (ADR-109 of the app):
+ * The files a publication writes of the catalog of the designs, beside it (ADR-109 of the app):
  *
- *   elements/designs/<language>/index.json    each catalog with the slides of one language alone,
- *   elements/designs/<language>/managed.json  the languages each design is drawn in, and the hash
+ *   elements/designs/<language>/index.json    the catalog with the slides of one language alone,
+ *                                             the languages each design is drawn in, and the hash
  *                                             of the catalog it was made from (`from`)
  *   elements/designs/revs.json                the word of each design in each language, of its
  *                                             slide and its pictures, and what it was made from
@@ -16,9 +16,9 @@
  * pictures made of it (`thumb-<language>`, drawn by Slidr Studio as the app draws it) has them at
  * once; a design without, or changed since, is drawn live, alone.
  *
- * The authored catalog is some 43 MB, more than a Worker can hold as objects: a catalog is read by
- * the structure of its JSON (`merge.ts`), a slide at a time, and a catalog the last words were made
- * of, with the pictures of its designs, is not read at all.
+ * The catalog is some 54 MB, more than a Worker can hold as objects: it is read by the structure of
+ * its JSON (`merge.ts`), a slide at a time, and a catalog the last words were made of, with the
+ * pictures of its designs, is not read at all.
  */
 import {
   designDrawing,
@@ -32,8 +32,8 @@ import { OPEN_OBJECT, membersOf, skipSpace } from './merge.ts';
 import type { Writing } from './writing.ts';
 
 const DESIGNS = 'elements/designs';
-/** The catalogs, in the order the app lists them: an id of both is the authored design. */
-const CATALOGS = ['index.json', 'managed.json'] as const;
+/** The catalog (`designCatalog.ts`). */
+const CATALOGS = ['index.json'] as const;
 export const REVS = `${DESIGNS}/revs.json`;
 export const THUMBS = 'images/designs/thumbs/index.json';
 /** The size of a picture made ahead of a design (ADR-111 of the app). */
@@ -52,7 +52,10 @@ interface Revs {
   from: Record<string, string>;
   /** By language, then by design. */
   designs: Record<string, Record<string, string>>;
-  /** The designs each catalog gave words, in its order; written since the library writes them. */
+  /**
+   * The designs the catalog gave words, in its order; written since the library writes them. Each
+   * of two catalogs, of a library of before: Slidr Studio reads it to know where a design is.
+   */
   catalogs?: Record<string, string[]>;
 }
 
@@ -153,19 +156,16 @@ export async function writeDesignFiles(media: Bucket, writing: Writing, drawn: D
       ? ids
       : undefined;
 
-  // The studio's designs first: words written before the library wrote them name no catalog, and
-  // those not of the studio's catalog are of the authored one.
+  // Words written before the library wrote them name no catalog: they are of the one there is.
   const read = new Map<string, Catalog>();
   const ids = new Map<string, readonly string[]>();
-  const [authored, managed] = catalogs;
-  for (const catalog of [managed!, authored!]) {
+  for (const catalog of catalogs) {
     if (!catalog.hash) continue;
     let known = last?.catalogs?.[catalog.path];
-    if (!known && last && !last.catalogs && catalog === authored) {
-      const theirs = new Set(ids.get(managed!.path) ?? []);
-      known = [...new Set(Object.values(last.designs).flatMap((words) => Object.keys(words)))]
-        .filter((id) => !theirs.has(id))
-        .sort();
+    if (!known && last && Object.keys(last.catalogs ?? {}).length === 0) {
+      known = [
+        ...new Set(Object.values(last.designs).flatMap((words) => Object.keys(words))),
+      ].sort();
     }
     const same = kept(catalog.path, catalog.hash, known);
     if (same) {
@@ -189,13 +189,8 @@ export async function writeDesignFiles(media: Bucket, writing: Writing, drawn: D
     // A catalog the library no longer has, or that changed, leaves no file of a language behind.
     const languages = new Set(walked?.designs.flatMap(({ slides }) => [...slides.keys()]));
     for (const other of writing.paths()) {
-      const lang =
-        other.startsWith(`${DESIGNS}/`) && other.endsWith(`/${name}`)
-          ? other.slice(DESIGNS.length + 1, -name.length - 1)
-          : undefined;
-      if (lang && LANGUAGE.test(lang) && (!hash || (walked && !languages.has(lang)))) {
-        await writing.remove(other);
-      }
+      const lang = languageOf(other, name);
+      if (lang && (!hash || (walked && !languages.has(lang)))) await writing.remove(other);
     }
     if (!hash || !ids.has(path)) continue;
     revs.from[path] = hash;
@@ -240,27 +235,102 @@ async function writeLanguages(
   pictureHash: (path: string) => string | null,
   writing: Writing,
 ) {
-  const drawnIn = Object.fromEntries(
-    catalog.designs.map(({ id, slides }) => [id, [...slides.keys()]]),
-  );
-  const tail = `,"languages":${JSON.stringify(drawnIn)},"from":${JSON.stringify({ [path]: hash })}}`;
-  const languages = [...new Set(catalog.designs.flatMap(({ slides }) => [...slides.keys()]))];
-  for (const lang of languages) {
-    const slides: string[] = [];
-    for (const { id, slides: places } of catalog.designs) {
-      const place = places.get(lang);
-      if (!place) continue;
-      const slide = slideOf(catalog, place);
-      slides.push(`${JSON.stringify(id)}:${JSON.stringify({ [lang]: slide })}`);
+  const tail = tailOf(catalog, path, hash);
+  for (const lang of languagesOf(catalog)) {
+    const { bytes, slides } = inLanguage(catalog, lang, tail);
+    for (const { id, slide } of slides) {
       if (!mine.has(id)) continue;
       const pictures = designPicturePaths(id).map(pictureHash);
       (revs.designs[lang] ??= {})[id] = await designWord(designDrawing(slide, pictures));
     }
-    const members = catalog.members.map((member) =>
-      typeof member === 'string' ? member : `"slides":{${slides.join(',')}}`,
-    );
-    await writing.put(`${DESIGNS}/${lang}/${name}`, toBytes(`{${members.join(',')}${tail}`));
+    await writing.put(`${DESIGNS}/${lang}/${name}`, bytes);
   }
+}
+
+/** The language of a catalog's file of one language (`elements/designs/fr/index.json`); none for another file. */
+function languageOf(path: string, name: string): string | undefined {
+  if (!path.startsWith(`${DESIGNS}/`) || !path.endsWith(`/${name}`)) return undefined;
+  const lang = path.slice(DESIGNS.length + 1, -name.length - 1);
+  return LANGUAGE.test(lang) ? lang : undefined;
+}
+
+/** The languages a catalog's slides are written in. */
+const languagesOf = (catalog: Catalog) => [
+  ...new Set(catalog.designs.flatMap(({ slides }) => [...slides.keys()])),
+];
+
+/** What follows the slides in each language: the languages of each design, and the catalog's hash. */
+function tailOf(catalog: Catalog, path: string, hash: string) {
+  const drawnIn = Object.fromEntries(
+    catalog.designs.map(({ id, slides }) => [id, [...slides.keys()]]),
+  );
+  return `,"languages":${JSON.stringify(drawnIn)},"from":${JSON.stringify({ [path]: hash })}}`;
+}
+
+/** The catalog with the slides of one language alone, as a gallery in it reads it; and the slides. */
+function inLanguage(catalog: Catalog, lang: string, tail: string) {
+  const slides: string[] = [];
+  const read: { id: string; slide: unknown }[] = [];
+  for (const { id, slides: places } of catalog.designs) {
+    const place = places.get(lang);
+    if (!place) continue;
+    const slide = slideOf(catalog, place);
+    slides.push(`${JSON.stringify(id)}:${JSON.stringify({ [lang]: slide })}`);
+    read.push({ id, slide });
+  }
+  const members = catalog.members.map((member) =>
+    typeof member === 'string' ? member : `"slides":{${slides.join(',')}}`,
+  );
+  return { bytes: toBytes(`{${members.join(',')}${tail}`), slides: read };
+}
+
+/** The hash of each catalog a file of one language was made of (its `from`, written last). */
+function madeOf(bytes: Uint8Array): Record<string, string> | undefined {
+  const end = /"from":(\{[^{}]*\})\}\s*$/.exec(toText(bytes.subarray(-1024)));
+  try {
+    const from: unknown = end
+      ? JSON.parse(end[1]!)
+      : (JSON.parse(toText(bytes)) as { from?: unknown }).from;
+    return isRecord(from) ? (from as Record<string, string>) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Writes again each file of a language the library has whose catalog changed since it was made:
+ * an archive that brought the catalogs in with some of their languages only leaves the others so
+ * (`archive.ts`), and a gallery takes no file of another catalog. The words of the designs are of
+ * the catalogs (`revs.json`), and stay. Answers the files it wrote, or took away where the catalog
+ * no longer has their language.
+ */
+export async function refreshLanguages(media: Bucket, writing: Writing): Promise<string[]> {
+  const refreshed: string[] = [];
+  for (const name of CATALOGS) {
+    const path = `${DESIGNS}/${name}`;
+    const hash = writing.hashOf(path);
+    if (!hash) continue;
+    const stale: string[] = [];
+    for (const other of writing.paths()) {
+      const lang = languageOf(other, name);
+      if (!lang) continue;
+      const bytes = await readBytes(media, other);
+      if (!bytes || madeOf(bytes)?.[path] !== hash) stale.push(lang);
+    }
+    if (stale.length === 0) continue;
+    const bytes = await readBytes(media, path);
+    if (!bytes) continue;
+    const catalog = catalogOf(bytes, path);
+    const tail = tailOf(catalog, path, hash);
+    const written = new Set(languagesOf(catalog));
+    for (const lang of stale.sort()) {
+      const target = `${DESIGNS}/${lang}/${name}`;
+      if (written.has(lang)) await writing.put(target, inLanguage(catalog, lang, tail).bytes);
+      else await writing.remove(target);
+      refreshed.push(target);
+    }
+  }
+  return refreshed;
 }
 
 /** The word of each picture made ahead that `drawn` names, as its design is now. */

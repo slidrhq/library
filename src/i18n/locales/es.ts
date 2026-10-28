@@ -1,6 +1,72 @@
 import type { MessageKey } from '../catalog';
 
 const words: Record<MessageKey, string> = {
+  'export.nav': 'Exportar',
+  'export.about':
+    'La biblioteca, entera o algunas de sus partes, en un solo archivo: otra biblioteca lo carga sin red, y cualquier servidor web lo sirve una vez descomprimido.',
+  'export.empty': 'Todavía no hay nada que exportar: el almacén multimedia está vacío.',
+  'export.everything': 'Todo',
+  'export.other': 'Otros archivos',
+  'export.otherAbout': 'Archivos de la biblioteca que no están en ninguna de sus partes.',
+  'export.with':
+    'Elijas lo que elijas de ellos, se incluyen los catálogos y las imágenes que todos necesitan: {size}.',
+  'export.pieces.designs':
+    'Según el idioma de las presentaciones en que se ofrecen. Un idioma no elegido no ofrece diseños.',
+  'export.pieces.templates': 'Cada plantilla por separado, con sus fotos.',
+  'export.pieces.fonts':
+    'Según la escritura para la que están hechas las familias. Una presentación ofrece las fuentes de su idioma y del inglés.',
+  'export.referenceDecks': 'Presentaciones de referencia',
+  'export.families': '{count} familias',
+  'export.familyOne': '1 familia',
+  'export.gzip': 'Comprimido (.tgz)',
+  'export.total': 'Elegido: {files}, {size} antes de comprimir.',
+  'export.none': 'No hay nada elegido.',
+  'export.start': 'Exportar',
+  'export.stop': 'Detener',
+  'export.progress': '{files} de {of} archivos · {size} de {ofSize}',
+  'export.done': '{name} está listo.',
+  'export.stopped': 'La exportación se detuvo y no se guardó nada.',
+  'export.changed':
+    'La biblioteca se publicó durante la exportación, y {path} ya no es el archivo leído al principio. Exporta de nuevo para tenerla tal como está ahora.',
+  'export.kept': 'La elección se guarda en este navegador para la próxima vez.',
+  'export.inMemory':
+    'Este navegador guarda el archivo solo cuando está completo, y hasta entonces lo mantiene en memoria. Chrome y Edge lo escriben en el disco a medida que se crea.',
+  'export.importHint':
+    'Para cargar un archivo así en esta biblioteca: Configuración → Importar desde un archivo.',
+  'export.fileType': 'Exportación de biblioteca de Slidr',
+  'import.title': 'Importar desde un archivo',
+  'import.explain':
+    'Carga en el almacén multimedia un archivo que escribió la exportación de una biblioteca (.tgz o .tar), sin red. Cada archivo que contiene se comprueba con su manifest y se añade o reemplaza al de la biblioteca. Todo lo demás queda como está.',
+  'import.machine': 'O en el equipo de la biblioteca, sin el navegador:',
+  'import.cloudflare':
+    'En Cloudflare, una solicitud es de 100 MB como máximo. Una biblioteca local acepta cualquier tamaño.',
+  'import.choose': 'Elegir un archivo…',
+  'import.reading': 'Leyendo el archivo…',
+  'import.notArchive': 'No es una exportación de una biblioteca: {error}',
+  'import.noManifest':
+    'El archivo no contiene manifest.json, así que no es una exportación de una biblioteca.',
+  'import.from': 'El archivo: una biblioteca publicada el {when}, {files}, {size}.',
+  'import.here': 'Esta biblioteca se publicó el {when}.',
+  'import.hereEmpty': 'El almacén multimedia de esta biblioteca está vacío, y el archivo lo llena.',
+  'import.older':
+    'El archivo es más antiguo que esta biblioteca: los archivos que cambiaron aquí desde entonces vuelven a la versión del archivo, como los diseños y las etiquetas publicados aquí.',
+  'import.part': 'Parte',
+  'import.new': 'Nuevos',
+  'import.replaced': 'Reemplazados',
+  'import.same': 'Iguales',
+  'import.merged': 'Combinados',
+  'import.mergedNote':
+    'Un catálogo se combina, no se reemplaza: donde ambos tienen un elemento, prevalece el del archivo, y los diseños, etiquetas y muestras que solo tiene esta biblioteca se conservan.',
+  'import.replacedList': 'Los archivos reemplazados ({count})',
+  'import.start': 'Importar',
+  'import.cancel': 'Cancelar',
+  'import.sending': 'Enviados {sent} de {size}',
+  'import.writing': 'Escribiendo en el almacén multimedia…',
+  'import.done':
+    'El archivo está cargado: {added} añadidos, {changed} reemplazados y {same} eran iguales.',
+  'import.nothing': 'La biblioteca ya tenía todos estos archivos: no cambió nada.',
+  'import.reload': 'Volver a leer la biblioteca',
+  'publications.kind.archive': 'Importado desde un archivo',
   'shell.displayLanguage': 'Idioma de la interfaz',
   'shell.language': 'Idioma',
   'shell.anotherLanguage': 'Otro idioma',
@@ -8,7 +74,7 @@ const words: Record<MessageKey, string> = {
   'shell.languageEllipsis': 'Idioma…',
   'library.section.designs.name': 'Diseños listos',
   'library.section.designs.about':
-    'Las diapositivas listas de Elementos → Diseños: las escritas a mano y las que publicó el estudio.',
+    'Las diapositivas listas de Elementos → Diseños, en cada idioma en que están dibujadas.',
   'library.section.templates.name': 'Plantillas',
   'library.section.templates.about':
     'Las plantillas integradas, con sus presentaciones de muestra en hebreo, inglés y cada otro idioma en que se escribieron.',
@@ -103,19 +169,13 @@ const words: Record<MessageKey, string> = {
   'libraryBrowse.designsNone': 'Ningún diseño coincide con tu selección.',
   'libraryBrowse.designsWrittenIn': '{shown} de {total} diseños están escritos en ',
   'libraryBrowse.designNoGroup': 'Sin grupo',
-  'libraryBrowse.designPublished': 'Publicado desde el estudio (managed.json)',
-  'libraryBrowse.designHandWritten': 'Escrito a mano (index.json)',
   'libraryBrowse.designFromStudio':
     'Este diseño se hizo en el estudio y su solicitud de origen sigue abierta.',
   'libraryBrowse.designOpenVariant': 'Abrir la propuesta en el estudio',
-  'libraryBrowse.designSource': 'Origen',
   'libraryBrowse.designElements': 'Elementos',
   'libraryBrowse.designSubjectPoint': 'Punto del sujeto',
   'libraryBrowse.designPictures': 'Imágenes',
   'libraryBrowse.designGalleryView': 'Cómo se ve el diseño en la galería ({size} píxeles)',
-  'libraryBrowse.designFilterAll': 'Todos · {count}',
-  'libraryBrowse.designFilterAuthored': 'Escritos a mano · {count}',
-  'libraryBrowse.designFilterManaged': 'Del estudio · {count}',
   'libraryBrowse.designAllGroups': 'Todos los grupos',
   'libraryBrowse.designOpen': 'Abrir {name}',
   'libraryBrowse.cardsLoading': 'Cargando conjuntos de tarjetas…',
@@ -527,6 +587,76 @@ const words: Record<MessageKey, string> = {
     'El ID de inquilino (Tenant) de tu organización, o su dominio, como contoso.onmicrosoft.com. Solo inician sesión las cuentas de ese inquilino.',
   'settings.signIn.ownerOnly':
     'Solo el propietario de la biblioteca decide cómo se inicia sesión: quien elige el proveedor dice quién es quién.',
+  'system.nav': 'Configuración del sistema',
+  'system.about':
+    'Lo que ofrecen las apps de la organización: agentes, idiomas, acceso web, imágenes y fotos.',
+  'system.title': 'Configuración de las apps',
+  'system.explain':
+    'Esta configuración se publica en el almacén multimedia de la biblioteca. Cada app que lee esta biblioteca la lee al iniciarse por primera vez, la guarda y solo vuelve a leerla cuando se actualiza a una nueva versión.',
+  'system.updated': 'Publicada el {when}.',
+  'system.none':
+    'No hay configuración del sistema publicada: cada app sigue sus propios valores predeterminados.',
+  'system.default': 'Predeterminado',
+  'system.defaultNone': 'Ninguno: el de la app',
+  'system.noneOffered': 'Ofrece al menos uno.',
+  'system.agents.title': 'Agentes',
+  'system.agents.explain':
+    'Los agentes que ofrece la app. Con todos marcados, los ofrece todos, también los que se añadan en versiones posteriores. El predeterminado se ofrece primero y está elegido al empezar.',
+  'system.web.label': 'Acceso web',
+  'system.web.hint': 'Buscar en la web y leer sus páginas mientras el agente trabaja.',
+  'system.web.unset': 'A elección de cada usuario, activado al empezar',
+  'system.web.on': 'Activado al empezar',
+  'system.web.off': 'Desactivado al empezar',
+  'system.web.blocked': 'Nunca',
+  'system.custom.title': 'Los agentes de la organización',
+  'system.custom.explain':
+    'Una herramienta de línea de comandos que habla el protocolo de agentes de la app. La app la ofrece como ofrece los suyos: la instala cuando el usuario lo aprueba, inicia sesión y muestra sus modelos. Nada aquí es secreto: cualquiera que lea la biblioteca puede leerlo.',
+  'system.custom.unnamed': 'Agente nuevo',
+  'system.custom.add': 'Añadir un agente',
+  'system.custom.remove': 'Quitar el agente',
+  'system.custom.name': 'Nombre',
+  'system.custom.id': 'ID',
+  'system.custom.idHint':
+    'Letras latinas minúsculas, dígitos y -. No cambia: las conversaciones y la configuración lo guardan.',
+  'system.custom.glyph': 'Símbolo',
+  'system.custom.glyphHint': 'Uno o dos caracteres. Sin ellos, un icono de terminal.',
+  'system.custom.tone': 'Color',
+  'system.custom.toneNone': 'Violeta, como cualquier herramienta',
+  'system.custom.command': 'Programa',
+  'system.custom.commandHint':
+    'Su ruta completa (puede empezar por %LOCALAPPDATA% y similares) o su nombre. Un ejecutable: un script se ejecuta con su intérprete, con el script en los argumentos.',
+  'system.custom.args': 'Argumentos',
+  'system.custom.argsHint': 'Uno por línea. Van antes que los del protocolo.',
+  'system.custom.env': 'Variables de entorno',
+  'system.custom.envHint': 'NAME=value, una por línea. No para secretos.',
+  'system.custom.install': 'Instalación',
+  'system.custom.installHint': 'Cómo lo instala la app cuando el usuario lo aprueba.',
+  'system.custom.installNone': 'Lo instala la organización',
+  'system.custom.package': 'Paquete',
+  'system.custom.source': 'Origen de WinGet',
+  'system.custom.sourceHint': 'El origen propio de la organización. Sin él, el de la comunidad.',
+  'system.tone.orange': 'Naranja',
+  'system.tone.green': 'Verde',
+  'system.tone.blue': 'Azul',
+  'system.tone.violet': 'Violeta',
+  'system.tone.teal': 'Verde azulado',
+  'system.tone.pink': 'Rosa',
+  'system.tone.rose': 'Rojo',
+  'system.languages.title': 'Idiomas',
+  'system.languages.explain':
+    'Los idiomas de la interfaz de la app y del contenido listo para usar que ofrece. Sin idioma predeterminado, una app se inicia en el idioma del sistema si está entre los ofrecidos.',
+  'system.images.title': 'Imágenes',
+  'system.images.explain': 'Los proveedores con los que la app crea imágenes.',
+  'system.stock.title': 'Fotos',
+  'system.stock.explain': 'Los bancos de fotos en los que busca la app.',
+  'system.save': 'Publicar',
+  'system.saved':
+    'Publicada. Las apps leen la configuración al iniciarse por primera vez o al actualizarse.',
+  'system.remove': 'Quitar la configuración',
+  'system.removeConfirm':
+    '¿Quitar la configuración del sistema? Una app que se inicie por primera vez, o en una nueva versión, seguirá sus propios valores predeterminados.',
+  'system.removed': 'Se quitó la configuración.',
+  'system.issues': 'Esta configuración no es válida:',
 };
 
 export default words;

@@ -1,8 +1,9 @@
 /**
  * What a publication writes of each kind of upload into the files of the library: the search
- * tags of a part into `tags/<part>.json`, a design into the catalog of the designs Slidr Studio
- * makes (`elements/designs/managed.json`), a template's sample into `templates/catalog.json`.
- * Each is a function of the file as it is and the upload, and changes nothing else of the file.
+ * tags of a part into `tags/<part>.json`, a design into the catalog of the designs
+ * (`elements/designs/index.json`, `designCatalog.ts`), a template's sample into
+ * `templates/catalog.json`. Each is a function of the file as it is and the upload, and changes
+ * nothing else of the file.
  */
 import { BASE_LANGUAGES, CONTENT_LANGUAGES } from '@slidr/model';
 import { isRecord } from '../http.ts';
@@ -13,7 +14,7 @@ import { toBytes, toText } from './live.ts';
 export class PublishError extends Error {}
 
 /** Codes of languages in the app's order, Hebrew and English first; others after, as they came. */
-function inOrder(codes: Iterable<string>): string[] {
+export function inOrder(codes: Iterable<string>): string[] {
   const all = [...codes];
   return [
     ...CONTENT_LANGUAGES.filter((code) => all.includes(code)),
@@ -21,7 +22,7 @@ function inOrder(codes: Iterable<string>): string[] {
   ];
 }
 
-const byLanguage = <T>(values: Record<string, T>): Record<string, T> =>
+export const byLanguage = <T>(values: Record<string, T>): Record<string, T> =>
   Object.fromEntries(inOrder(Object.keys(values)).map((code) => [code, values[code]!]));
 
 /* ---------------------------------------------------------------- search tags */
@@ -70,37 +71,9 @@ export function encodeTags(file: TagsFile): string {
 
 /* ---------------------------------------------------------------- designs */
 
-export const MANAGED = 'elements/designs/managed.json';
-
 type Names = Record<string, string>;
 
-/** The catalog of the designs Slidr Studio makes (docs/media-library.md of the app). */
-export interface ManagedCatalog {
-  version: number;
-  groups: string[];
-  groupNames: Record<string, Names>;
-  groupIds: Record<string, string[]>;
-  slides: Record<string, Record<string, unknown>>;
-  subjects: Record<string, [number, number]>;
-  names: Record<string, Names>;
-  sizes: Record<string, [number, number]>;
-  tags: Record<string, Record<string, string[]>>;
-  [key: string]: unknown;
-}
-
-export const emptyCatalog = (): ManagedCatalog => ({
-  version: 1,
-  groups: [],
-  groupNames: {},
-  groupIds: {},
-  slides: {},
-  subjects: {},
-  names: {},
-  sizes: {},
-  tags: {},
-});
-
-/** A design as a catalog keeps it. */
+/** A design as an upload brings it (`designCatalog.ts` puts it into the catalog). */
 export interface DesignRecord {
   id: string;
   name: Names;
@@ -170,62 +143,6 @@ export function designOf(upload: Draft & { id?: string }): DesignRecord {
   return record;
 }
 
-/**
- * Puts a design into the managed catalog, in place when it is there, as Slidr Studio's own
- * publication did (`merge_design` of its `library.py`): a design has one group, a group keeps
- * the names it was first published with, and a group left without designs goes.
- */
-export function mergeDesign(catalog: ManagedCatalog, design: DesignRecord): ManagedCatalog {
-  for (const [key, value] of Object.entries(emptyCatalog())) {
-    if (!Object.hasOwn(catalog, key)) catalog[key] = value;
-  }
-  const { id, group } = design;
-  if (!catalog.groups.includes(group)) catalog.groups.push(group);
-  catalog.groupNames[group] ??= design.groupName ?? { he: group, en: group };
-  for (const [other, ids] of Object.entries(catalog.groupIds)) {
-    if (other !== group && ids.includes(id)) ids.splice(ids.indexOf(id), 1);
-  }
-  const ids = (catalog.groupIds[group] ??= []);
-  if (!ids.includes(id)) ids.push(id);
-  catalog.slides[id] = design.slides;
-  catalog.subjects[id] = design.subject;
-  catalog.names[id] = design.name;
-  catalog.sizes[id] = design.size;
-  if (design.tags) catalog.tags[id] = design.tags;
-  else delete catalog.tags[id];
-  for (const empty of catalog.groups.filter((one) => !catalog.groupIds[one]?.length)) {
-    catalog.groups.splice(catalog.groups.indexOf(empty), 1);
-    delete catalog.groupIds[empty];
-    delete catalog.groupNames[empty];
-  }
-  catalog.groupIds = Object.fromEntries(catalog.groups.map((one) => [one, catalog.groupIds[one]!]));
-  return catalog;
-}
-
-/**
- * Puts the slides of an upload of `designs: translate` beside those its design has, in the
- * app's order of languages. The languages it wrote.
- */
-export function mergeTranslation(
-  catalog: ManagedCatalog,
-  id: string,
-  languages: Draft['languages'],
-): string[] {
-  const slides = catalog.slides?.[id];
-  if (!isRecord(slides)) {
-    throw new PublishError(`The catalog of the studio's designs has no design ${id}.`);
-  }
-  const written = Object.entries(languages)
-    .filter(([, content]) => isRecord(content) && content.slide)
-    .map(([lang]) => lang);
-  if (written.length === 0) throw new PublishError(`The translation of ${id} holds no slide.`);
-  const mine: Record<string, unknown> = { ...slides };
-  for (const lang of written)
-    mine[lang] = (languages as Record<string, { slide: unknown }>)[lang]!.slide;
-  catalog.slides[id] = byLanguage(mine);
-  return inOrder(written);
-}
-
 /* ---------------------------------------------------------------- the samples of templates */
 
 export const TEMPLATES = 'templates/catalog.json';
@@ -233,8 +150,8 @@ export const TEMPLATES = 'templates/catalog.json';
 // The catalog of templates is some 17 MB, more than a Worker can hold as objects: a sample is
 // written into its text, found by reading only the structure of the JSON around it. Every byte
 // that is not ASCII is part of a string in UTF-8, so the structure is read byte by byte. The
-// catalogs of the designs are read so too (`designFiles.ts`); `name` names the file read in what
-// is said of one that is not JSON.
+// catalog of the designs is read so too (`designCatalog.ts`, `designFiles.ts`); `name` names the
+// file read in what is said of one that is not JSON.
 
 const QUOTE = 0x22;
 const BACKSLASH = 0x5c;
@@ -290,6 +207,8 @@ function endOfValue(bytes: Uint8Array, at: number, name: string) {
 
 export interface Member {
   key: string;
+  /** Where its name starts. */
+  from: number;
   /** Where its value starts and ends. */
   start: number;
   end: number;
@@ -309,13 +228,14 @@ export function membersOf(
   if (bytes[i] === CLOSE_OBJECT) return { members, close: i };
   for (;;) {
     if (bytes[i] !== QUOTE) throw new PublishError(`${name} has a member without a name.`);
+    const from = i;
     const keyEnd = endOfString(bytes, i, name);
     const key = JSON.parse(toText(bytes.subarray(i, keyEnd))) as string;
     i = skipSpace(bytes, keyEnd);
     if (bytes[i] !== COLON) throw new PublishError(`${name} has a member without a value.`);
     const start = skipSpace(bytes, i + 1);
     const end = endOfValue(bytes, start, name);
-    members.push({ key, start, end });
+    members.push({ key, from, start, end });
     i = skipSpace(bytes, end);
     if (bytes[i] === COMMA) i = skipSpace(bytes, i + 1);
     else if (bytes[i] === CLOSE_OBJECT) return { members, close: i };

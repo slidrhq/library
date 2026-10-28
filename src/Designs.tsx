@@ -33,9 +33,7 @@ const load = (lang: Lang) =>
       [designs, thumb, search, await designs.loadDesignTags()] as const,
   );
 
-type Source = 'all' | 'authored' | 'managed';
-
-/** The app's names first, then the ones `managed.json` gives, then the id (`DesignsCollection`). */
+/** The app's names first, then the catalog's, then the id (`DesignsCollection`). */
 const nameOf = (designs: Designs, id: string, lang: Lang) =>
   named(messages.elements, lang, 'designs', 'name', id) ?? designs.designName(id, lang) ?? id;
 const groupNameOf = (designs: Designs, group: string, lang: Lang) =>
@@ -191,7 +189,6 @@ function DesignDetail({
   const [lang, setLang] = useState<Lang>(initial);
   // The design up close, in the language its picker shows: the designs of that language.
   const shown = useRead(() => designsIn(lang), [lang]);
-  const managed = designs.managed.has(id);
   const group = designs.groups.find((g) => designs.designsOf(g).includes(id));
   const slide = shown.value?.designIn(id, lang)
     ? previewOf(shown.value, id, lang).slide
@@ -213,8 +210,7 @@ function DesignDetail({
       subtitle={
         <>
           <span dir="ltr">{id}</span> ·{' '}
-          {group ? groupNameOf(designs, group, lang) : t('libraryBrowse.designNoGroup')} ·{' '}
-          {managed ? t('libraryBrowse.designPublished') : t('libraryBrowse.designHandWritten')}
+          {group ? groupNameOf(designs, group, lang) : t('libraryBrowse.designNoGroup')}
         </>
       }
       actions={<LanguagePicker langs={languages} lang={lang} onChange={setLang} />}
@@ -240,8 +236,6 @@ function DesignDetail({
                 {group ? `${groupNameOf(designs, group, lang)} · ` : ''}
                 <span dir="ltr">{group ?? '—'}</span>
               </dd>
-              <dt>{t('libraryBrowse.designSource')}</dt>
-              <dd dir="ltr">elements/designs/{managed ? 'managed.json' : 'index.json'}</dd>
               <dt>{t('libraryBrowse.languages')}</dt>
               <dd>
                 <LanguageNames langs={languages} />
@@ -310,7 +304,6 @@ export function Designs({
     () => (isBase(lang) ? Promise.resolve(undefined) : designsIn('en')),
     [lang],
   );
-  const [source, setSource] = useState<Source>('all');
   const [designs, thumb, search, tags] = read.value ?? [];
 
   /** The studio's variant each published design came from, by design id. */
@@ -329,9 +322,6 @@ export function Designs({
       .map((group) => ({
         group,
         ids: designs.designsIn(group, lang).filter((id) => {
-          const managed = designs.managed.has(id);
-          if (source === 'managed' && !managed) return false;
-          if (source === 'authored' && managed) return false;
           // As the app's Ready slides search (`DesignsCollection`), and by any name as typed.
           return (
             finds(
@@ -352,7 +342,7 @@ export function Designs({
           );
         }),
       }));
-  }, [designs, search, tags, route.group, source, lang, query]);
+  }, [designs, search, tags, route.group, lang, query]);
   const listed = useMemo(() => groups.flatMap(({ ids }) => ids), [groups]);
 
   if (read.error) return <p className="error-text">{read.error}</p>;
@@ -362,7 +352,6 @@ export function Designs({
 
   // The designs of a language are only those written in it: none is shown in English instead.
   const written = designs.ids;
-  const managedCount = written.filter((id) => designs.managed.has(id)).length;
   const open = (id: string) => go({ ...route, item: id });
 
   return (
@@ -377,27 +366,6 @@ export function Designs({
         </p>
       )}
       <div className="lib-filters">
-        <div className="segmented" role="group" aria-label={t('libraryBrowse.designSource')}>
-          {(
-            [
-              ['all', t('libraryBrowse.designFilterAll', { count: written.length })],
-              [
-                'authored',
-                t('libraryBrowse.designFilterAuthored', { count: written.length - managedCount }),
-              ],
-              ['managed', t('libraryBrowse.designFilterManaged', { count: managedCount })],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              type="button"
-              key={value}
-              aria-pressed={source === value}
-              onClick={() => setSource(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
         <div className="chips" role="group" aria-label={t('libraryBrowse.group')}>
           <button
             type="button"

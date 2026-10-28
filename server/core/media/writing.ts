@@ -14,15 +14,8 @@
 import { removeUnder, type Bucket } from '../bucket.ts';
 import type { Lease } from './lease.ts';
 import { NotNow } from './lease.ts';
-import {
-  HISTORY,
-  MANIFEST,
-  encodeManifest,
-  putFile,
-  putManifest,
-  sha256Hex,
-  type Manifest,
-} from './live.ts';
+import { HISTORY, MANIFEST, encodeManifest, putFile, putManifest, type Manifest } from './live.ts';
+import { bodyOf, copyOf, sha256Of, sizeOf, type Parts } from './parts.ts';
 
 export class Writing {
   readonly published: string;
@@ -33,17 +26,19 @@ export class Writing {
   private readonly state: Bucket;
   private readonly lease: Lease;
   private readonly manifest: Manifest;
-  private readonly etag: string;
+  /** The version of the manifest it starts from; none where the media has no library yet. */
+  private readonly etag: string | undefined;
   private readonly files: Manifest['files'];
   /** The files replaced or taken away whose bytes the history holds. */
   private readonly kept = new Set<string>();
   private begun = false;
+  private done = false;
 
   constructor(
     media: Bucket,
     state: Bucket,
     lease: Lease,
-    live: { manifest: Manifest; etag: string },
+    live: { manifest: Manifest; etag?: string },
     published = new Date().toISOString(),
   ) {
     this.media = media;
@@ -71,13 +66,16 @@ export class Writing {
   private async keep(path: string) {
     const old = await this.media.get(path);
     if (!old) return;
-    await this.state.put(`${this.history}/${path}`, await old.arrayBuffer());
+    await this.state.put(`${this.history}/${path}`, await copyOf(old));
     this.kept.add(path);
   }
 
-  /** Writes a file; one with the bytes the library has already is left as it is. */
-  async put(path: string, bytes: Uint8Array, sha256?: string): Promise<boolean> {
-    const hash = sha256 ?? (await sha256Hex(bytes));
+  /**
+   * Writes a file, whole or in parts (`parts.ts`); one with the bytes the library has already is
+   * left as it is.
+   */
+  async put(path: string, data: Uint8Array | Parts, sha256?: string): Promise<boolean> {
+    const hash = sha256 ?? (await sha256Of(data));
     const before = this.files[path];
     if (before?.sha256 === hash) return false;
     await this.begin();
@@ -88,8 +86,8 @@ export class Writing {
         this.changed.push(path);
       }
     } else if (!this.added.includes(path)) this.added.push(path);
-    await putFile(this.media, path, bytes, hash);
-    this.files[path] = { size: bytes.length, sha256: hash };
+    await putFile(this.media, path, bodyOf(data), hash);
+    this.files[path] = { size: sizeOf(data), sha256: hash };
     return true;
   }
 
@@ -119,6 +117,11 @@ export class Writing {
     return this.added.length + this.changed.length + this.removed.length > 0;
   }
 
+  /** Whether the manifest was written: the library is the publication's, and stays so. */
+  get finished() {
+    return this.done;
+  }
+
   /** Writes the manifest, over the one the publication started from: the library is then this. */
   async finish(): Promise<void> {
     await this.lease.check();
@@ -130,6 +133,7 @@ export class Writing {
     if (!written) {
       throw new NotNow('changed-meanwhile', 'The library was published meanwhile. Try again.');
     }
+    this.done = true;
     this.added.sort();
     this.changed.sort();
     this.removed.sort();

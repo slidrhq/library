@@ -28,30 +28,29 @@ import { listUploads, readFile, readUpload, saveUpload, type Upload } from '../u
 import type { Purge, Purger } from './cache.ts';
 import { writeDesignFiles, type Drawn } from './designFiles.ts';
 import { Lease, NotNow } from './lease.ts';
+import { PUBLICATIONS, readBytes, readManifest, sha256Hex, toBytes, toText } from './live.ts';
 import {
-  PUBLICATIONS,
-  readBytes,
-  readManifest,
-  sha256Hex,
-  toBytes,
-  toText,
-  type Manifest,
-} from './live.ts';
+  CATALOG,
+  DESIGN_TAGS,
+  DesignCatalog,
+  SIZES,
+  encodeSizes,
+  foldManaged,
+  putDesign,
+  putDesignTags,
+  putTranslation,
+  sizesOf,
+} from './designCatalog.ts';
 import {
-  MANAGED,
   PublishError,
   TEMPLATES,
   designOf,
-  emptyCatalog,
   encodeTags,
-  mergeDesign,
   mergeTags,
-  mergeTranslation,
   spliceSample,
   tagsPath,
-  type ManagedCatalog,
 } from './merge.ts';
-
+import type { Parts } from './parts.ts';
 import { Writing } from './writing.ts';
 
 export { NotNow };
@@ -82,25 +81,30 @@ export interface Publication {
     message: string;
     issues?: Issue[];
   }[];
-  /** The library's files the publication added, and those it changed. */
+  /** The library's files the publication added, those it changed, and those it took away. */
   added: string[];
   changed: string[];
+  removed: string[];
   /** Accepted uploads left for the next publication. */
   remaining: number;
   /** What became of the cache before the library, once something was written. */
   cache?: Purge;
 }
 
-/** The files a publication changes, as it changes them: read from the bucket once, written once. */
+/**
+ * The files a publication changes, as it changes them: read from the bucket once, written once.
+ * The catalog of the designs is read by its structure (`designCatalog.ts`).
+ */
 class Changes {
   private readonly values = new Map<string, { value: unknown; encode: (value: never) => string }>();
   private readonly bytes = new Map<string, Uint8Array>();
+  private catalog: DesignCatalog | undefined;
   private readonly bucket: Bucket;
-  private readonly manifest: Manifest;
+  private readonly writing: Writing;
 
-  constructor(bucket: Bucket, manifest: Manifest) {
+  constructor(bucket: Bucket, writing: Writing) {
     this.bucket = bucket;
-    this.manifest = manifest;
+    this.writing = writing;
   }
 
   /** A file as it is now: as changed here, or as the library has it. */
@@ -108,8 +112,14 @@ class Changes {
     const held = this.values.get(path);
     if (held) return toBytes(held.encode(held.value as never));
     if (this.bytes.has(path)) return this.bytes.get(path);
-    if (!this.manifest.files[path]) return undefined;
+    if (!this.writing.hashOf(path)) return undefined;
     return readBytes(this.bucket, path);
+  }
+
+  /** The catalog of the designs, to change in place; an empty one where the library has none. */
+  async designs(): Promise<DesignCatalog> {
+    this.catalog ??= DesignCatalog.of(await this.read(CATALOG));
+    return this.catalog;
   }
 
   /** A JSON file as it is now, to change in place; written with `encode`. */
@@ -134,14 +144,20 @@ class Changes {
     this.bytes.set(path, bytes);
   }
 
-  /** Every file changed, by its path. */
-  *written(): Generator<[string, Uint8Array]> {
+  /** Every file changed, by its path; the catalog of the designs in parts, when it was read. */
+  *written(): Generator<[string, Uint8Array | Parts]> {
     for (const [path, held] of this.values) yield [path, toBytes(held.encode(held.value as never))];
     yield* this.bytes;
+    if (this.catalog) yield [CATALOG, this.catalog.parts()];
+  }
+
+  /** Lets go of what was read: the catalog of the designs is read again once it is written. */
+  forget() {
+    this.values.clear();
+    this.bytes.clear();
+    this.catalog = undefined;
   }
 }
-
-const compact = (value: unknown) => JSON.stringify(value);
 
 /**
  * The files of an upload, each with its place in the library as its kind names it, checked
@@ -206,21 +222,26 @@ async function apply(
   if (type === 'designs' && action === 'add') {
     const record = designOf(upload);
     const files = await filesOf(upload, uploads);
-    const catalog = (await changes.json<ManagedCatalog>(MANAGED, compact)) ?? emptyCatalog();
-    mergeDesign(catalog, record);
-    changes.setJson(MANAGED, catalog, compact);
+    const catalog = await changes.designs();
+    const sizes = sizesOf(await changes.json(SIZES, encodeSizes));
+    const tags = record.tags && (await changes.json(DESIGN_TAGS, encodeTags));
+    putDesign(catalog, record);
+    sizes[record.id] = record.size;
+    changes.setJson(SIZES, sizes, encodeSizes);
+    if (record.tags) {
+      changes.setJson(DESIGN_TAGS, putDesignTags(tags, record.id, record.tags), encodeTags);
+    }
     for (const [path, bytes] of files) changes.setBytes(path, bytes);
     noteDrawn(upload, Object.keys(record.slides), drawn);
-    return [MANAGED, ...files.map(([path]) => path)];
+    return [CATALOG, SIZES, ...(record.tags ? [DESIGN_TAGS] : []), ...files.map(([path]) => path)];
   }
   if (type === 'designs' && action === 'translate') {
-    const catalog = await changes.json<ManagedCatalog>(MANAGED, compact);
-    if (!catalog) throw new PublishError(`The library has no ${MANAGED}.`);
+    const catalog = await changes.designs();
     const files = await filesOf(upload, uploads);
-    const written = mergeTranslation(catalog, target, upload.languages);
+    const written = putTranslation(catalog, target, upload.languages);
     for (const [path, bytes] of files) changes.setBytes(path, bytes);
     noteDrawn(upload, written, drawn);
-    return [MANAGED, ...files.map(([path]) => path)];
+    return [CATALOG, ...files.map(([path]) => path)];
   }
   if (type === 'designs' && action === 'draw') {
     const files = await filesOf(upload, uploads);
@@ -248,7 +269,7 @@ async function apply(
 export async function recordPublication(
   state: Bucket,
   published: string,
-  record: { kind: 'uploads' | 'files'; by: Recorded } & object,
+  record: { kind: 'uploads' | 'files' | 'archive'; by: Recorded } & object,
 ) {
   await state.put(`${PUBLICATIONS}/${published}.json`, JSON.stringify({ published, ...record }), {
     httpMetadata: { contentType: 'application/json' },
@@ -301,11 +322,20 @@ export async function publish(
     );
   }
   const lease = await Lease.take(uploads, actor);
+  const writing = new Writing(media, uploads, lease, live);
   try {
-    const { manifest } = live;
-    const changes = new Changes(media, manifest);
+    // A library of before has the catalog of the designs in two: it is one before anything else.
+    await foldManaged(media, writing);
+    const changes = new Changes(media, writing);
     const drawn: Drawn = new Map();
-    const result: Publication = { uploads: [], skipped: [], added: [], changed: [], remaining: 0 };
+    const result: Publication = {
+      uploads: [],
+      skipped: [],
+      added: [],
+      changed: [],
+      removed: [],
+      remaining: 0,
+    };
     const picked = await chosen(uploads, ids);
     result.remaining = picked.remaining;
     for (const id of picked.ids) {
@@ -357,23 +387,21 @@ export async function publish(
         result.skipped.push({ id, reason: 'unwritable', message: error.message });
       }
     }
-    const writing = new Writing(media, uploads, lease, live);
-    try {
-      for (const [path, bytes] of changes.written()) await writing.put(path, bytes);
-      // What is made of the catalogs of the designs, as the library now is; with no upload, only
-      // where it is of another library (`designFiles.ts`).
-      await writeDesignFiles(media, writing, drawn);
-      if (result.uploads.length === 0 && !writing.written) return result;
-      await writing.finish();
-    } catch (error) {
-      await undo(writing);
-      throw error;
-    }
+    for (const [path, data] of changes.written()) await writing.put(path, data);
+    changes.forget();
+    // What is made of the catalog of the designs, as the library now is; with no upload, only
+    // where it is of another library (`designFiles.ts`).
+    await writeDesignFiles(media, writing, drawn);
+    if (result.uploads.length === 0 && !writing.written) return result;
+    await writing.finish();
     const { published } = writing;
     forgetLibrary();
     result.added = writing.added;
     result.changed = writing.changed;
-    if (purge) result.cache = await purge([...result.added, ...result.changed]);
+    result.removed = writing.removed;
+    if (purge) {
+      result.cache = await purge([...result.added, ...result.changed, ...result.removed]);
+    }
     for (const one of result.uploads) await markPublished(uploads, one.id, published, actor);
     result.published = published;
     await recordPublication(uploads, published, {
@@ -382,6 +410,9 @@ export async function publish(
       ...result,
     });
     return result;
+  } catch (error) {
+    if (!writing.finished) await undo(writing);
+    throw error;
   } finally {
     await lease.release();
   }

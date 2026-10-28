@@ -1,6 +1,73 @@
 import type { MessageKey } from '../catalog';
 
 const words: Record<MessageKey, string> = {
+  'export.nav': 'Exporter',
+  'export.about':
+    'La médiathèque, entière ou certaines de ses parties, en un seul fichier : une autre médiathèque le charge sans réseau, et n’importe quel serveur web le sert une fois décompressé.',
+  'export.empty': 'Il n’y a encore rien à exporter : le stockage des médias est vide.',
+  'export.everything': 'Tout',
+  'export.other': 'Autres fichiers',
+  'export.otherAbout': 'Des fichiers de la médiathèque qui ne sont dans aucune de ses parties.',
+  'export.with':
+    'Quoi qu’on en choisisse, les catalogues et les images dont tous ont besoin viennent avec : {size}.',
+  'export.pieces.designs':
+    'Selon la langue des présentations où ils sont proposés. Une langue non choisie ne propose aucun design.',
+  'export.pieces.templates': 'Chaque modèle à part, avec ses photos.',
+  'export.pieces.fonts':
+    'Selon les écritures pour lesquelles les familles sont faites. Une présentation propose les polices de sa langue et de l’anglais.',
+  'export.referenceDecks': 'Présentations de référence',
+  'export.families': '{count} familles',
+  'export.familyOne': '1 famille',
+  'export.gzip': 'Compressé (.tgz)',
+  'export.total': 'Choisis : {files}, {size} avant compression.',
+  'export.none': 'Rien n’est choisi.',
+  'export.start': 'Exporter',
+  'export.stop': 'Arrêter',
+  'export.progress': '{files} fichiers sur {of} · {size} sur {ofSize}',
+  'export.done': '{name} est prêt.',
+  'export.stopped': 'L’export a été arrêté, et rien n’a été enregistré.',
+  'export.changed':
+    'La médiathèque a été publiée pendant l’export, et {path} n’est plus le fichier lu au départ. Exportez à nouveau pour l’avoir telle qu’elle est maintenant.',
+  'export.kept': 'Ce choix est gardé dans ce navigateur pour la prochaine fois.',
+  'export.inMemory':
+    'Ce navigateur n’enregistre le fichier qu’une fois complet, et le garde en mémoire jusque-là. Chrome et Edge l’écrivent sur le disque au fur et à mesure.',
+  'export.importHint':
+    'Pour charger un tel fichier dans cette médiathèque : Paramètres → Importer depuis un fichier.',
+  'export.fileType': 'Archive de médiathèque Slidr',
+  'import.title': 'Importer depuis un fichier',
+  'import.explain':
+    'Charge dans le stockage des médias un fichier écrit par l’export d’une médiathèque (.tgz ou .tar), sans réseau. Chaque fichier qu’il contient est vérifié d’après son manifest, puis ajouté ou mis à la place de celui de la médiathèque. Tout le reste ne change pas.',
+  'import.machine': 'Ou sur la machine de la médiathèque, sans le navigateur :',
+  'import.cloudflare':
+    'Sur Cloudflare, une requête fait au plus 100 Mo. Une médiathèque locale accepte toute taille.',
+  'import.choose': 'Choisir un fichier…',
+  'import.reading': 'Lecture du fichier…',
+  'import.notArchive': 'Ce n’est pas une archive de médiathèque : {error}',
+  'import.noManifest':
+    'Le fichier ne contient pas de manifest.json : ce n’est donc pas une archive de médiathèque.',
+  'import.from': 'Le fichier : une médiathèque publiée le {when}, {files}, {size}.',
+  'import.here': 'Cette médiathèque a été publiée le {when}.',
+  'import.hereEmpty':
+    'Le stockage des médias de cette médiathèque est vide, et le fichier le remplit.',
+  'import.older':
+    'Le fichier est plus ancien que cette médiathèque : les fichiers modifiés ici depuis reviennent à leur version du fichier, comme les designs et les mots-clés publiés ici.',
+  'import.part': 'Partie',
+  'import.new': 'Nouveaux',
+  'import.replaced': 'Remplacés',
+  'import.same': 'Identiques',
+  'import.merged': 'Fusionnés',
+  'import.mergedNote':
+    'Un catalogue est fusionné, pas remplacé : là où les deux ont un élément, celui du fichier l’emporte, et les designs, étiquettes et exemples que seule cette bibliothèque possède restent.',
+  'import.replacedList': 'Fichiers remplacés ({count})',
+  'import.start': 'Importer',
+  'import.cancel': 'Annuler',
+  'import.sending': '{sent} envoyés sur {size}',
+  'import.writing': 'Écriture dans le stockage des médias…',
+  'import.done':
+    'Le fichier est chargé : {added} ajoutés, {changed} remplacés, et {same} étaient identiques.',
+  'import.nothing': 'La médiathèque avait déjà chacun de ces fichiers : rien n’a changé.',
+  'import.reload': 'Relire la médiathèque',
+  'publications.kind.archive': 'Import depuis un fichier',
   'shell.displayLanguage': 'Langue d’affichage',
   'shell.language': 'Langue',
   'shell.anotherLanguage': 'Autre langue',
@@ -8,7 +75,7 @@ const words: Record<MessageKey, string> = {
   'shell.languageEllipsis': 'Langue…',
   'library.section.designs.name': 'Designs prêts à l’emploi',
   'library.section.designs.about':
-    'Les diapositives prêtes à l’emploi d’Éléments → Designs : celles écrites à la main et celles publiées par le studio.',
+    'Les diapositives prêtes à l’emploi d’Éléments → Designs, dans chaque langue où elles sont dessinées.',
   'library.section.templates.name': 'Modèles',
   'library.section.templates.about':
     'Les modèles intégrés, avec leurs présentations d’exemple en hébreu, en anglais et dans toutes les autres langues où ils ont été écrits.',
@@ -104,19 +171,13 @@ const words: Record<MessageKey, string> = {
   'libraryBrowse.designsNone': 'Aucun design ne correspond à votre sélection.',
   'libraryBrowse.designsWrittenIn': '{shown} designs sur {total} sont écrits en ',
   'libraryBrowse.designNoGroup': 'Sans groupe',
-  'libraryBrowse.designPublished': 'Publié depuis le studio (managed.json)',
-  'libraryBrowse.designHandWritten': 'Écrit à la main (index.json)',
   'libraryBrowse.designFromStudio':
     'Ce design a été créé dans le studio, et sa demande d’origine est toujours ouverte.',
   'libraryBrowse.designOpenVariant': 'Ouvrir la proposition dans le studio',
-  'libraryBrowse.designSource': 'Source',
   'libraryBrowse.designElements': 'Éléments',
   'libraryBrowse.designSubjectPoint': 'Point du sujet',
   'libraryBrowse.designPictures': 'Images',
   'libraryBrowse.designGalleryView': 'Aspect du design dans la galerie ({size} pixels)',
-  'libraryBrowse.designFilterAll': 'Tous · {count}',
-  'libraryBrowse.designFilterAuthored': 'Écrits à la main · {count}',
-  'libraryBrowse.designFilterManaged': 'Du studio · {count}',
   'libraryBrowse.designAllGroups': 'Tous les groupes',
   'libraryBrowse.designOpen': 'Ouvrir {name}',
   'libraryBrowse.cardsLoading': 'Chargement des jeux de cartes…',
@@ -528,6 +589,77 @@ const words: Record<MessageKey, string> = {
     'L’ID de locataire (Tenant) de votre organisation, ou son domaine, comme contoso.onmicrosoft.com. Seuls les comptes de ce locataire se connectent.',
   'settings.signIn.ownerOnly':
     'Seul le propriétaire de la médiathèque décide comment on s’y connecte : qui choisit le fournisseur dit qui est qui.',
+  'system.nav': 'Paramètres système',
+  'system.about':
+    'Ce que proposent les applications de l’organisation : agents, langues, accès au web, images et photos.',
+  'system.title': 'Paramètres des applications',
+  'system.explain':
+    'Ces paramètres sont publiés dans les médias de la médiathèque. Chaque application qui lit cette médiathèque les lit à son premier démarrage, les conserve, et ne les relit que lorsqu’elle est mise à jour vers une nouvelle version.',
+  'system.updated': 'Publiés le {when}.',
+  'system.none':
+    'Aucun paramètre système n’est publié : chaque application suit ses propres valeurs par défaut.',
+  'system.default': 'Par défaut',
+  'system.defaultNone': 'Aucun : celui de l’application',
+  'system.noneOffered': 'Proposez-en au moins un.',
+  'system.agents.title': 'Agents',
+  'system.agents.explain':
+    'Les agents que propose l’application. Si tous sont cochés, elle les propose tous, y compris ceux ajoutés dans les versions suivantes. Celui par défaut est proposé en premier, et choisi au départ.',
+  'system.web.label': 'Accès au web',
+  'system.web.hint': 'Rechercher sur le web et lire ses pages pendant que l’agent travaille.',
+  'system.web.unset': 'Au choix de chaque utilisateur, activé au départ',
+  'system.web.on': 'Activé au départ',
+  'system.web.off': 'Désactivé au départ',
+  'system.web.blocked': 'Jamais',
+  'system.custom.title': 'Les agents de l’organisation',
+  'system.custom.explain':
+    'Un outil en ligne de commande qui parle le protocole d’agent de l’application. L’application le propose comme les siens : elle l’installe dès que l’utilisateur l’accepte, s’y connecte et affiche ses modèles. Rien ici n’est secret : quiconque lit la médiathèque peut le lire.',
+  'system.custom.unnamed': 'Nouvel agent',
+  'system.custom.add': 'Ajouter un agent',
+  'system.custom.remove': 'Supprimer l’agent',
+  'system.custom.name': 'Nom',
+  'system.custom.id': 'Identifiant',
+  'system.custom.idHint':
+    'Lettres latines minuscules, chiffres et -. Il ne change pas : les conversations et les paramètres le conservent.',
+  'system.custom.glyph': 'Symbole',
+  'system.custom.glyphHint': 'Un ou deux caractères. Sans eux, une icône de terminal.',
+  'system.custom.tone': 'Couleur',
+  'system.custom.toneNone': 'Violet, comme pour tout outil',
+  'system.custom.command': 'Programme',
+  'system.custom.commandHint':
+    'Son chemin complet (il peut commencer par %LOCALAPPDATA% et autres), ou son nom. Un exécutable : un script est lancé par son interpréteur, avec le script dans les arguments.',
+  'system.custom.args': 'Arguments',
+  'system.custom.argsHint': 'Un par ligne. Ils viennent avant ceux du protocole.',
+  'system.custom.env': 'Variables d’environnement',
+  'system.custom.envHint': 'NAME=value, une par ligne. Pas pour les secrets.',
+  'system.custom.install': 'Installation',
+  'system.custom.installHint': 'Comment l’application l’installe dès que l’utilisateur l’accepte.',
+  'system.custom.installNone': 'Installé par l’organisation',
+  'system.custom.package': 'Paquet',
+  'system.custom.source': 'Source WinGet',
+  'system.custom.sourceHint':
+    'La source propre à l’organisation. Sans elle, celle de la communauté.',
+  'system.tone.orange': 'Orange',
+  'system.tone.green': 'Vert',
+  'system.tone.blue': 'Bleu',
+  'system.tone.violet': 'Violet',
+  'system.tone.teal': 'Bleu sarcelle',
+  'system.tone.pink': 'Rose',
+  'system.tone.rose': 'Rouge',
+  'system.languages.title': 'Langues',
+  'system.languages.explain':
+    'Les langues de l’interface de l’application, et du contenu prêt à l’emploi qu’elle propose. Sans langue par défaut, une application démarre dans la langue du système, si elle est proposée.',
+  'system.images.title': 'Images',
+  'system.images.explain': 'Les fournisseurs avec lesquels l’application crée des images.',
+  'system.stock.title': 'Photos',
+  'system.stock.explain': 'Les banques de photos dans lesquelles l’application cherche.',
+  'system.save': 'Publier',
+  'system.saved':
+    'Publiés. Les applications lisent les paramètres à leur premier démarrage, ou à leur mise à jour.',
+  'system.remove': 'Supprimer les paramètres',
+  'system.removeConfirm':
+    'Supprimer les paramètres système ? Une application qui démarre pour la première fois, ou dans une nouvelle version, suivra ses propres valeurs par défaut.',
+  'system.removed': 'Les paramètres ont été supprimés.',
+  'system.issues': 'Ces paramètres ne sont pas valides :',
 };
 
 export default words;

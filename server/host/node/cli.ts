@@ -7,6 +7,7 @@
  *   start         serves it, on http://127.0.0.1:5176 unless told otherwise
  *   login         prints a link that signs the owner in, once
  *   seed          copies a published library into the library's empty media folder
+ *   import        brings an archive of the library (.tar, .tgz) into its media folder
  *   sign-in       names the provider everyone else signs in through, and its client
  *   owner         hands the library to another member
  *   status        where the library is, whether it runs, and a test of its media
@@ -29,6 +30,7 @@ import {
   LibraryError,
   contextOf,
   defaultDataDir,
+  importFile,
   install,
   markRunning,
   openLibrary,
@@ -56,6 +58,7 @@ const USAGE = `slidr-library <command>
                 [--host <address> (--tls-cert <file> --tls-key <file> | --behind-proxy)]
   login         [--data <dir>]
   seed          [--data <dir>] [--from <address>]   (the published library unless named)
+  import        <file.tgz | file.tar | -> [--data <dir>]   (an archive the page's Export wrote)
   sign-in       google --client-id <id> [--allowed-domains <a.org,b.org>] [--data <dir>]
                 microsoft --tenant <id> --client-id <id> [--allowed-domains …]
                 oidc --issuer <address> --client-id <id> [--name <shown>] [--allowed-domains …]
@@ -172,6 +175,36 @@ async function seedCommand(args: string[]) {
     options: { data: { type: 'string' }, from: { type: 'string' } },
   });
   await seedFrom(values.data ?? defaultDataDir(), values.from ?? MEDIA_LIBRARY_URL);
+}
+
+async function importCommand(args: string[]) {
+  const { values, positionals } = parseArgs({
+    args,
+    options: { data: { type: 'string' } },
+    allowPositionals: true,
+  });
+  const [file] = positionals;
+  if (!file) {
+    throw new LibraryError(
+      'Name the archive: import <file.tgz>, or - to read it from standard input.',
+    );
+  }
+  const library = await openLibrary(values.data ?? defaultDataDir());
+  const done = await importFile(contextOf(library), file);
+  console.log(
+    `Brought in the archive of the library published ${done.from || 'at an unknown time'}:`,
+  );
+  console.log(
+    `  ${done.files} files: ${done.added.length} added, ${done.changed.length} written over, ${done.same} the same`,
+  );
+  if (done.removed.length > 0) console.log(`  ${done.removed.length} taken away`);
+  if (done.skipped.length > 0)
+    console.log(`  ${done.skipped.length} left out: ${done.skipped.slice(0, 5).join(', ')}`);
+  console.log(
+    done.published
+      ? `The library is published ${done.published}. Apps read it at their next start.`
+      : 'The library had every file of it already: nothing changed.',
+  );
 }
 
 async function start(args: string[]) {
@@ -400,6 +433,7 @@ const COMMANDS: Record<string, (args: string[]) => Promise<void>> = {
   start,
   login,
   seed: seedCommand,
+  import: importCommand,
   'sign-in': signIn,
   owner,
   status,

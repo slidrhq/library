@@ -26,9 +26,11 @@ const CardsPeek = lazy(() => import('./Cards').then((m) => ({ default: m.CardsPe
 const ShapesPeek = lazy(() => import('./Shapes').then((m) => ({ default: m.ShapesPeek })));
 const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPeek })));
 const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
+const Export = lazy(() => import('./Export').then((m) => ({ default: m.Export })));
 const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
 const Profile = lazy(() => import('./Profile').then((m) => ({ default: m.Profile })));
 const Settings = lazy(() => import('./Settings').then((m) => ({ default: m.Settings })));
+const System = lazy(() => import('./System').then((m) => ({ default: m.System })));
 const Publications = lazy(() =>
   import('./Publications').then((m) => ({ default: m.Publications })),
 );
@@ -44,8 +46,12 @@ const MEMBERS = 'members';
 const PROFILE = 'profile';
 /** Where the library is kept, how people sign in, the limits: for its admins (§5.3). */
 const SETTINGS = 'settings';
+/** What the organization's apps offer and start with: for its admins (README, "System settings"). */
+const SYSTEM = 'system';
 /** What each publication wrote into the library: for its reviewers (§9.5). */
 const PUBLICATIONS = 'publications';
+/** The library, or parts of it, as one file another library brings in (README, "Exporting and importing"). */
+const EXPORT = 'export';
 
 /** The library's own pages, beside the parts of its media: each one's name, and what it is. */
 const OWN: Record<string, { name: MessageKey; about: MessageKey }> = {
@@ -54,6 +60,8 @@ const OWN: Record<string, { name: MessageKey; about: MessageKey }> = {
   [MEMBERS]: { name: 'people.nav', about: 'people.about' },
   [PROFILE]: { name: 'tokens.nav', about: 'tokens.about' },
   [SETTINGS]: { name: 'settings.nav', about: 'settings.about' },
+  [SYSTEM]: { name: 'system.nav', about: 'system.about' },
+  [EXPORT]: { name: 'export.nav', about: 'export.about' },
 };
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
@@ -222,6 +230,7 @@ export function Library({
   const uploads = route.section === UPLOADS;
   const members = route.section === MEMBERS;
   const settings = route.section === SETTINGS;
+  const system = route.section === SYSTEM;
   const publications = route.section === PUBLICATIONS;
   const access = useRead(readAccess, []);
   // A language is shown once the app's words in it are read; until then, the one before.
@@ -258,6 +267,14 @@ export function Library({
       break;
     case SETTINGS:
       content = <Settings />;
+      break;
+    case SYSTEM:
+      content = <System />;
+      break;
+    case EXPORT:
+      content = (
+        <Export lang={shown} go={go} canImport={Boolean(access.value?.user?.can.settings)} />
+      );
       break;
     case PUBLICATIONS:
       content = <Publications go={go} />;
@@ -345,6 +362,14 @@ export function Library({
               {t(entry.nameKey)}
             </button>
           ))}
+          <button
+            type="button"
+            className="lib-export"
+            aria-current={route.section === EXPORT ? 'page' : undefined}
+            onClick={() => go({ section: EXPORT })}
+          >
+            {t('export.nav')}
+          </button>
         </nav>
         <nav className="lib-sections lib-uploads" aria-label={t('uploads.nav')}>
           <button
@@ -379,6 +404,15 @@ export function Library({
               onClick={() => go({ section: SETTINGS })}
             >
               {t('settings.nav')}
+            </button>
+          )}
+          {access.value?.user?.can.settings && (
+            <button
+              type="button"
+              aria-current={system ? 'page' : undefined}
+              onClick={() => go({ section: SYSTEM })}
+            >
+              {t('system.nav')}
             </button>
           )}
         </nav>
