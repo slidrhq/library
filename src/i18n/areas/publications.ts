@@ -25,6 +25,12 @@ export const he = {
   'publications.waitingNext': 'ניסיונות שנכשלו: {attempts}. הניסיון הבא: {when}.',
   'publications.waitingByHand': 'ניסיונות שנכשלו: {attempts}. היא לא תנוסה שוב מעצמה.',
   'publications.tryAgain': 'לנסות שוב',
+  'publications.upToDate': 'לעדכן את העיצובים',
+  'publications.upToDateAbout':
+    'כותב מחדש את מה שהאפליקציות קוראות מקטלוג העיצובים, כשהוא לא מעודכן, ומאחד לקובץ אחד קטלוג עיצובים שעדיין מחולק לשניים.',
+  'publications.upToDateBusy': 'כותב לספרייה…',
+  'publications.upToDateDone': 'נכתב לספרייה. נוספו: {added}, שונו: {changed}, הוסרו: {removed}.',
+  'publications.upToDateNone': 'לא היה מה לכתוב: העיצובים מעודכנים.',
   'publications.written': 'אושרה ונכתבה לספרייה:',
   'publications.publishSkipped':
     'לא פורסמו: {count}. מה שכבר לא תקף חזר להמתנה, והשאר ממתין לכתיבה. אפשר לפתוח אותן כדי לראות למה.',
@@ -57,6 +63,13 @@ export const en: Record<keyof typeof he, string> = {
   'publications.waitingNext': 'Failed tries: {attempts}. Next try: {when}.',
   'publications.waitingByHand': 'Failed tries: {attempts}. It is not tried again on its own.',
   'publications.tryAgain': 'Try again',
+  'publications.upToDate': 'Bring the designs up to date',
+  'publications.upToDateAbout':
+    'Writes again what the apps read of the catalog of the designs where it is out of date, and makes a catalog of the designs still split in two files one.',
+  'publications.upToDateBusy': 'Writing into the library…',
+  'publications.upToDateDone':
+    'Written into the library. Added: {added}, changed: {changed}, removed: {removed}.',
+  'publications.upToDateNone': 'Nothing to write: the designs are up to date.',
   'publications.written': 'Approved, and written into the library:',
   'publications.publishSkipped':
     'Not published: {count}. Those that no longer hold went back to pending, and the rest wait to be written. Open them to see why.',

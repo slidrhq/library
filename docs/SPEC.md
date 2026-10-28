@@ -489,7 +489,7 @@ The page's words are in Hebrew and English, and every other locale of `src/i18n`
 
 - **Account button → Profile:** the person's name, address, provider and role; their tokens (make, choose the scope, copy once, revoke); sign out.
 - **Uploads:** an uploader sees "My uploads", and a reviewer sees all of them, with the review actions. Approving shows the publication that followed. An approved upload that waits shows why, and **Try again**. **Publish N accepted** stays, for reviewers.
-- **Publications** (reviewers): the list of §9.5, and each publication up close.
+- **Publications** (reviewers): the list of §9.5, and each publication up close. Above it, for those who may publish, **Bring the designs up to date**: a publication of no upload (`POST /api/publish` with `uploads: []`), which writes again what is made of the catalog of the designs where it is of another library and makes a catalog still in two one (§9.2), and says what it wrote, or that there was nothing to write.
 - **Export** (anyone): the library, whole or by its parts and their pieces, as one archive made in the browser (§5.6). The choice is kept in a cookie of the browser.
 - **Members** (admins): members by email and role, add by email, change a role, remove, block. The owner is marked and cannot be changed. Until OIDC is set, it says that the people added cannot sign in yet.
 - **Settings** (admins): §5.3. The media shows where it is, its **Test** and the result (reached, read the manifest, wrote a probe file), the room left on a local library's disk, and **Seed**; and **Import from a file**, which shows what an archive would add and replace before it is sent. It offers no choice of store, and no key of one.

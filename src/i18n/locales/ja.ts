@@ -574,6 +574,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': '失敗回数: {attempts}。次の試行: {when}。',
   'publications.waitingByHand': '失敗回数: {attempts}。自動では再試行されません。',
   'publications.tryAgain': 'もう一度試す',
+  'publications.upToDate': 'デザインを最新にする',
+  'publications.upToDateAbout':
+    'アプリがデザインのカタログから読む内容が古ければ書き直し、まだ2つのファイルに分かれているデザインのカタログを1つにまとめます。',
+  'publications.upToDateBusy': 'ライブラリに書き込んでいます…',
+  'publications.upToDateDone':
+    'ライブラリに書き込みました。追加: {added}、変更: {changed}、削除: {removed}。',
+  'publications.upToDateNone': '書き込むものはありません: デザインは最新です。',
   'publications.written': '承認され、ライブラリに書き込まれました:',
   'publications.publishSkipped':
     '公開されなかったもの: {count}。有効でなくなったものは審査待ちに戻り、残りは書き込み待ちです。開くと理由を確認できます。',

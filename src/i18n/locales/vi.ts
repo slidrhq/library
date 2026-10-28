@@ -569,6 +569,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': 'Số lần thử thất bại: {attempts}. Lần thử tiếp theo: {when}.',
   'publications.waitingByHand': 'Số lần thử thất bại: {attempts}. Sẽ không tự thử lại.',
   'publications.tryAgain': 'Thử lại',
+  'publications.upToDate': 'Cập nhật thiết kế',
+  'publications.upToDateAbout':
+    'Ghi lại những gì ứng dụng đọc từ danh mục thiết kế khi nó đã cũ, và gộp thành một tệp danh mục thiết kế vẫn còn bị chia làm hai.',
+  'publications.upToDateBusy': 'Đang ghi vào thư viện…',
+  'publications.upToDateDone':
+    'Đã ghi vào thư viện. Thêm: {added}, thay đổi: {changed}, gỡ bỏ: {removed}.',
+  'publications.upToDateNone': 'Không có gì để ghi: thiết kế đã được cập nhật.',
   'publications.written': 'Đã chấp nhận và ghi vào thư viện:',
   'publications.publishSkipped':
     'Chưa xuất bản: {count}. Những bản không còn hợp lệ đã trở lại trạng thái chờ, số còn lại đang chờ ghi. Mở chúng để xem lý do.',

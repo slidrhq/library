@@ -544,6 +544,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': 'محاولات فاشلة: {attempts}. المحاولة التالية: {when}.',
   'publications.waitingByHand': 'محاولات فاشلة: {attempts}. لن تُعاد محاولته تلقائيًا.',
   'publications.tryAgain': 'حاول مرة أخرى',
+  'publications.upToDate': 'تحديث التصاميم',
+  'publications.upToDateAbout':
+    'يعيد كتابة ما تقرؤه التطبيقات من فهرس التصاميم حين لا يكون محدَّثًا، ويجمع في ملف واحد فهرس التصاميم الذي ما زال مقسومًا على ملفين.',
+  'publications.upToDateBusy': 'تجري الكتابة في المكتبة…',
+  'publications.upToDateDone':
+    'كُتب في المكتبة. أُضيف: {added}، تغيّر: {changed}، أُزيل: {removed}.',
+  'publications.upToDateNone': 'لا شيء يُكتب: التصاميم محدَّثة.',
   'publications.written': 'تمت الموافقة عليه، وكُتب في المكتبة:',
   'publications.publishSkipped':
     'لم يُنشر: {count}. ما لم يعد صالحًا أُعيد إلى الانتظار، والباقي ينتظر الكتابة. افتحها لترى السبب.',

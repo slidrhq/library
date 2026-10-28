@@ -560,6 +560,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': '실패 횟수: {attempts}. 다음 시도: {when}.',
   'publications.waitingByHand': '실패 횟수: {attempts}. 자동으로 다시 시도하지 않습니다.',
   'publications.tryAgain': '다시 시도',
+  'publications.upToDate': '디자인 최신으로 맞추기',
+  'publications.upToDateAbout':
+    '앱이 디자인 카탈로그에서 읽는 내용이 오래되었으면 다시 쓰고, 아직 두 파일로 나뉜 디자인 카탈로그를 하나로 합칩니다.',
+  'publications.upToDateBusy': '라이브러리에 쓰는 중…',
+  'publications.upToDateDone':
+    '라이브러리에 썼습니다. 추가: {added}, 변경: {changed}, 제거: {removed}.',
+  'publications.upToDateNone': '쓸 것이 없습니다: 디자인이 최신입니다.',
   'publications.written': '승인되어 라이브러리에 기록됨:',
   'publications.publishSkipped':
     '게시되지 않음: {count}. 더 이상 유효하지 않은 항목은 대기 상태로 돌아갔고, 나머지는 기록을 기다립니다. 열어서 이유를 확인하세요.',

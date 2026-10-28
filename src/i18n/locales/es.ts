@@ -580,6 +580,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingByHand':
     'Intentos fallidos: {attempts}. No se volverá a intentar por sí sola.',
   'publications.tryAgain': 'Intentar de nuevo',
+  'publications.upToDate': 'Actualizar los diseños',
+  'publications.upToDateAbout':
+    'Vuelve a escribir lo que las apps leen del catálogo de los diseños cuando no está al día, y une en un solo archivo un catálogo de los diseños que sigue dividido en dos.',
+  'publications.upToDateBusy': 'Escribiendo en la biblioteca…',
+  'publications.upToDateDone':
+    'Escrito en la biblioteca. Añadidos: {added}, cambiados: {changed}, quitados: {removed}.',
+  'publications.upToDateNone': 'Nada que escribir: los diseños están al día.',
   'publications.written': 'Aprobada y escrita en la biblioteca:',
   'publications.publishSkipped':
     'No publicadas: {count}. Las que ya no son válidas volvieron a la espera, y el resto espera a escribirse. Ábrelas para ver por qué.',

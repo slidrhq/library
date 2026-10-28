@@ -582,6 +582,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingByHand':
     'Tentatives échouées : {attempts}. Il ne sera pas réessayé de lui-même.',
   'publications.tryAgain': 'Réessayer',
+  'publications.upToDate': 'Mettre les designs à jour',
+  'publications.upToDateAbout':
+    'Réécrit ce que les applications lisent du catalogue des designs lorsqu’il n’est pas à jour, et réunit en un seul fichier un catalogue des designs encore partagé en deux.',
+  'publications.upToDateBusy': 'Écriture dans la bibliothèque…',
+  'publications.upToDateDone':
+    'Écrit dans la bibliothèque. Ajoutés : {added}, modifiés : {changed}, retirés : {removed}.',
+  'publications.upToDateNone': 'Rien à écrire : les designs sont à jour.',
   'publications.written': 'Approuvé, et écrit dans la bibliothèque :',
   'publications.publishSkipped':
     'Non publiés : {count}. Ceux qui ne sont plus valides ont été remis en attente, et les autres attendent d’être écrits. Ouvrez-les pour voir pourquoi.',

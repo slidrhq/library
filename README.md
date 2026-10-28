@@ -259,7 +259,9 @@ The published media library lives in the Worker's own R2 bucket, `slidr-media` (
 ```text
 GET  /api/library            where the library is, when it was published, how many uploads wait
 POST /api/publish            every accepted upload, oldest first; or { "uploads": ["u-…"] } (Try again);
-                             { "uploads": [] }: none, only what is made of the catalogs of the designs
+                             { "uploads": [] }: none, only what is made of the catalog of the designs,
+                             and the catalog made one where it is in two
+                             (Publications → Bring the designs up to date)
 GET  /api/publications       what each publication did, newest first (?before=, ?limit=)
 GET  /api/publications/<at>  one of them
 POST /api/library/import     once: the site's library into the bucket, a batch per call

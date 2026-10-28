@@ -487,6 +487,16 @@ details.danger p {
   width: 100%;
 }
 
+.publications-up-to-date {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+.publications-up-to-date p {
+  margin: 0;
+}
+
 .publication {
   border-bottom: 1px solid var(--line);
 }

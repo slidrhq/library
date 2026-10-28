@@ -571,6 +571,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingByHand':
     'Percobaan gagal: {attempts}. Tidak akan dicoba lagi secara otomatis.',
   'publications.tryAgain': 'Coba lagi',
+  'publications.upToDate': 'Perbarui desain',
+  'publications.upToDateAbout':
+    'Menulis ulang apa yang dibaca aplikasi dari katalog desain bila belum mutakhir, dan menyatukan katalog desain yang masih terbagi dalam dua berkas menjadi satu.',
+  'publications.upToDateBusy': 'Menulis ke pustaka…',
+  'publications.upToDateDone':
+    'Ditulis ke pustaka. Ditambahkan: {added}, diubah: {changed}, dihapus: {removed}.',
+  'publications.upToDateNone': 'Tidak ada yang perlu ditulis: desain sudah mutakhir.',
   'publications.written': 'Disetujui, dan ditulis ke pustaka:',
   'publications.publishSkipped':
     'Tidak diterbitkan: {count}. Yang tidak lagi valid kembali ke status menunggu, dan sisanya menunggu ditulis. Buka untuk melihat alasannya.',

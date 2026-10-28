@@ -580,6 +580,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingByHand':
     'Fehlgeschlagene Versuche: {attempts}. Er wird nicht von selbst erneut versucht.',
   'publications.tryAgain': 'Erneut versuchen',
+  'publications.upToDate': 'Designs aktualisieren',
+  'publications.upToDateAbout':
+    'Schreibt neu, was die Apps aus dem Katalog der Designs lesen, wo es veraltet ist, und führt einen Katalog der Designs, der noch auf zwei Dateien verteilt ist, in einer zusammen.',
+  'publications.upToDateBusy': 'Wird in die Bibliothek geschrieben…',
+  'publications.upToDateDone':
+    'In die Bibliothek geschrieben. Hinzugefügt: {added}, geändert: {changed}, entfernt: {removed}.',
+  'publications.upToDateNone': 'Nichts zu schreiben: Die Designs sind aktuell.',
   'publications.written': 'Angenommen und in die Bibliothek geschrieben:',
   'publications.publishSkipped':
     'Nicht veröffentlicht: {count}. Was nicht mehr gültig ist, ist zurück in der Warteschlange; der Rest wartet auf das Schreiben. Öffnen Sie sie, um den Grund zu sehen.',

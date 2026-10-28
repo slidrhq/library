@@ -12,9 +12,10 @@
  * the design has the word that picture was drawn from (the app's `designWord.ts`, which makes the
  * words here too). An app takes none of these files when they are of another library than the
  * one it reads: so every publication that changes a catalog, or a picture of a design, writes them
- * again, and **Try again** writes them when they are of another one. A design uploaded with the
- * pictures made of it (`thumb-<language>`, drawn by Slidr Studio as the app draws it) has them at
- * once; a design without, or changed since, is drawn live, alone.
+ * again, and a publication of no upload (**Bring the designs up to date** of the page) writes them
+ * when they are of another one. A design uploaded with the pictures made of it
+ * (`thumb-<language>`, drawn by Slidr Studio as the app draws it) has them at once; a design
+ * without, or changed since, is drawn live, alone.
  *
  * The catalog is some 54 MB, more than a Worker can hold as objects: it is read by the structure of
  * its JSON (`merge.ts`), a slide at a time, and a catalog the last words were made of, with the

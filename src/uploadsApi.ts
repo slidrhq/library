@@ -251,6 +251,7 @@ export interface Publication {
   }[];
   added: string[];
   changed: string[];
+  removed?: string[];
   remaining: number;
 }
 
@@ -261,7 +262,6 @@ export interface PublicationRecord extends Omit<Publication, 'remaining' | 'uplo
   by: Actor;
   uploads?: Publication['uploads'];
   skipped?: Publication['skipped'];
-  removed?: string[];
   cache?: { emptied: 'files' | 'host' | 'none'; files?: number; message?: string };
 }
 

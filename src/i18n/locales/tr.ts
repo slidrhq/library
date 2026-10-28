@@ -564,6 +564,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': 'Başarısız denemeler: {attempts}. Sonraki deneme: {when}.',
   'publications.waitingByHand': 'Başarısız denemeler: {attempts}. Kendiliğinden yeniden denenmez.',
   'publications.tryAgain': 'Yeniden dene',
+  'publications.upToDate': 'Tasarımları güncelle',
+  'publications.upToDateAbout':
+    'Uygulamaların tasarım kataloğundan okuduklarını güncel değilse yeniden yazar ve hâlâ iki dosyaya bölünmüş bir tasarım kataloğunu tek dosyada birleştirir.',
+  'publications.upToDateBusy': 'Kütüphaneye yazılıyor…',
+  'publications.upToDateDone':
+    'Kütüphaneye yazıldı. Eklenen: {added}, değişen: {changed}, kaldırılan: {removed}.',
+  'publications.upToDateNone': 'Yazılacak bir şey yok: tasarımlar güncel.',
   'publications.written': 'Kabul edildi ve kütüphaneye yazıldı:',
   'publications.publishSkipped':
     'Yayımlanmayan: {count}. Artık geçerli olmayanlar beklemeye döndü, kalanlar yazılmayı bekliyor. Nedenini görmek için açın.',

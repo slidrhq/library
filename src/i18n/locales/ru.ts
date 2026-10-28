@@ -565,6 +565,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingByHand':
     'Неудачных попыток: {attempts}. Автоматически повторяться не будет.',
   'publications.tryAgain': 'Попробовать ещё раз',
+  'publications.upToDate': 'Обновить дизайны',
+  'publications.upToDateAbout':
+    'Заново записывает то, что приложения читают из каталога дизайнов, если это устарело, и объединяет в один файл каталог дизайнов, который всё ещё разделён на два.',
+  'publications.upToDateBusy': 'Запись в библиотеку…',
+  'publications.upToDateDone':
+    'Записано в библиотеку. Добавлено: {added}, изменено: {changed}, удалено: {removed}.',
+  'publications.upToDateNone': 'Нечего записывать: дизайны актуальны.',
   'publications.written': 'Принята и записана в библиотеку:',
   'publications.publishSkipped':
     'Не опубликовано: {count}. Те, что больше не проходят проверку, вернулись в ожидание, остальные ждут записи. Откройте их, чтобы узнать причину.',

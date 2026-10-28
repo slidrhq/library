@@ -569,6 +569,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': 'विफल प्रयास: {attempts}। अगला प्रयास: {when}।',
   'publications.waitingByHand': 'विफल प्रयास: {attempts}। इसे अपने-आप फिर से नहीं आज़माया जाएगा।',
   'publications.tryAgain': 'फिर से कोशिश करें',
+  'publications.upToDate': 'डिज़ाइन अद्यतन करें',
+  'publications.upToDateAbout':
+    'ऐप्स डिज़ाइनों की सूची से जो पढ़ते हैं, वह पुराना हो तो उसे फिर से लिखता है, और जो डिज़ाइन-सूची अब भी दो फ़ाइलों में बँटी है उसे एक फ़ाइल में मिला देता है।',
+  'publications.upToDateBusy': 'लाइब्रेरी में लिखा जा रहा है…',
+  'publications.upToDateDone':
+    'लाइब्रेरी में लिखा गया। जोड़ी गईं: {added}, बदली गईं: {changed}, हटाई गईं: {removed}।',
+  'publications.upToDateNone': 'लिखने को कुछ नहीं: डिज़ाइन अद्यतन हैं।',
   'publications.written': 'स्वीकृत हुआ, और लाइब्रेरी में लिखा गया:',
   'publications.publishSkipped':
     'प्रकाशित नहीं हुए: {count}। जो अब मान्य नहीं, वे फिर से प्रतीक्षा में गए, और बाकी लिखे जाने की प्रतीक्षा में हैं। कारण देखने के लिए उन्हें खोलें।',

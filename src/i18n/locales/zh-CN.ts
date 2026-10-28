@@ -531,6 +531,12 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': '失败次数：{attempts}。下次尝试：{when}。',
   'publications.waitingByHand': '失败次数：{attempts}。不会自动重试。',
   'publications.tryAgain': '重试',
+  'publications.upToDate': '更新设计',
+  'publications.upToDateAbout':
+    '在应用从设计目录读取的内容过时时重新写入，并把仍分成两个文件的设计目录合并为一个。',
+  'publications.upToDateBusy': '正在写入媒体库…',
+  'publications.upToDateDone': '已写入媒体库。新增：{added}，更改：{changed}，移除：{removed}。',
+  'publications.upToDateNone': '没有需要写入的内容：设计已是最新。',
   'publications.written': '已通过并写入媒体库：',
   'publications.publishSkipped':
     '未发布：{count}。已不再有效的已恢复为待审核，其余等待写入。打开即可查看原因。',

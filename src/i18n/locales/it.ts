@@ -576,6 +576,13 @@ const words: Record<MessageKey, string> = {
   'publications.waitingNext': 'Tentativi falliti: {attempts}. Prossimo tentativo: {when}.',
   'publications.waitingByHand': 'Tentativi falliti: {attempts}. Non verrà ritentato da solo.',
   'publications.tryAgain': 'Riprova',
+  'publications.upToDate': 'Aggiorna i design',
+  'publications.upToDateAbout':
+    'Riscrive ciò che le app leggono dal catalogo dei design quando non è aggiornato, e riunisce in un solo file un catalogo dei design ancora diviso in due.',
+  'publications.upToDateBusy': 'Scrittura nella libreria…',
+  'publications.upToDateDone':
+    'Scritto nella libreria. Aggiunti: {added}, modificati: {changed}, rimossi: {removed}.',
+  'publications.upToDateNone': 'Niente da scrivere: i design sono aggiornati.',
   'publications.written': 'Approvato e scritto nella libreria:',
   'publications.publishSkipped':
     'Non pubblicati: {count}. Quelli non più validi sono stati rimessi in attesa, gli altri attendono la scrittura. Aprili per vedere perché.',
