@@ -22,6 +22,11 @@
   // The library's own jobs (server/core/media/sweep.ts), once a minute: an approved upload that
   // could not be written at once is written then, and rejected uploads are cleared after 30 days.
   "triggers": { "crons": ["* * * * *"] },
+  // A publication writes the files made of the catalog of the designs, some 55 MB (designFiles.ts),
+  // and folds managed.json into it (designCatalog.ts): more CPU than the Worker had without this
+  // limit, which stopped it midway (error 1102) from 2026-10-28 on. Five minutes is the most
+  // Cloudflare gives, on the Paid plan only: on Free the deploy fails (code 100328).
+  "limits": { "cpu_ms": 300000 },
   // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are secrets of the Worker (`wrangler secret put`),
   // and `.dev.vars` on this machine (README, "Signing in"). LIBRARY_MASTER_KEY is a secret of the
   // repository too, which each deploy gives the Worker (deploy.yml). MEDIA_ZONE_ID and
