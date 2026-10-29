@@ -9,6 +9,8 @@
  *   a time; the search tags of each part, an item and a language at a time: the archive's where
  *   both have one.
  * - The samples of the templates, a template and a language at a time.
+ * - The catalog of the frames, a group and a frame at a time, as the page exports them by their
+ *   groups: a frame only the library has comes after the others of its group.
  *
  * An archive of a library of before holds `managed.json` too: it is folded into the archive's
  * catalog first, as a publication folds the library's (`foldManaged`), and its files of each
@@ -106,6 +108,61 @@ export function mergeItemTags(theirs: TagsFile['tags'], ours: TagsFile['tags']):
     const extra = Object.keys(mine).filter((lang) => !Object.hasOwn(given, lang));
     if (extra.length === 0) continue;
     theirs[key] = byLanguage({ ...mine, ...given });
+    any = true;
+  }
+  return any;
+}
+
+/** The catalog of the frames (the app's `frames.ts`). */
+export const FRAMES = 'elements/catalogs/frames-catalog.json';
+
+type Frame = Record<string, unknown> & { id: string };
+
+const framesIn = (group: Record<string, unknown>): Frame[] =>
+  (Array.isArray(group.frames) ? group.frames : []).filter(
+    (frame): frame is Frame => isRecord(frame) && typeof frame.id === 'string',
+  );
+
+/**
+ * The archive's catalog of the frames, with ours: each frame the archive has as it has it, and one
+ * only ours has after the others of its group, or in its group, where ours has it among the
+ * archive's groups; the stickers and the frames shown first, the archive's, then those only ours
+ * has. Whether ours added any.
+ */
+export function mergeFrames(
+  theirs: Record<string, unknown>,
+  ours: Record<string, unknown>,
+): boolean {
+  const groups = (Array.isArray(theirs.groups) ? theirs.groups : []).filter(isRecord);
+  const have = new Set(groups.flatMap((group) => framesIn(group).map((frame) => frame.id)));
+  let any = false;
+  // Where the group of ours before it is among the archive's.
+  let after = -1;
+  for (const group of (Array.isArray(ours.groups) ? ours.groups : []).filter(isRecord)) {
+    const at = groups.findIndex((one) => one.id === group.id);
+    if (at !== -1) after = at;
+    const more = framesIn(group).filter((frame) => !have.has(frame.id));
+    if (more.length === 0) continue;
+    for (const frame of more) have.add(frame.id);
+    if (at !== -1) groups[at]!.frames = [...framesIn(groups[at]!), ...more];
+    else groups.splice((after += 1), 0, { ...group, frames: more });
+    any = true;
+  }
+  theirs.groups = groups;
+  if (isRecord(ours.stickers)) {
+    const stickers = isRecord(theirs.stickers) ? theirs.stickers : {};
+    if (withOurs(stickers, ours.stickers)) {
+      theirs.stickers = stickers;
+      any = true;
+    }
+  }
+  const featured: unknown[] = Array.isArray(theirs.featured) ? theirs.featured : [];
+  const listed: unknown[] = Array.isArray(ours.featured) ? ours.featured : [];
+  const first = listed.filter(
+    (id) => typeof id === 'string' && have.has(id) && !featured.includes(id),
+  );
+  if (first.length > 0) {
+    theirs.featured = [...featured, ...first];
     any = true;
   }
   return any;
@@ -212,6 +269,14 @@ export async function mergeHeld(
     const tags = tagsOf(tagsFile);
     mergeItemTags(tags, tagsOf(parsed(await ours(DESIGN_TAGS))));
     files.set(DESIGN_TAGS, toBytes(encodeTags({ version: 1, tags })));
+  }
+
+  const frames = held.get(FRAMES);
+  if (frames) {
+    const theirs = parsed(frames);
+    const mine = parsed(await ours(FRAMES));
+    const more = isRecord(theirs) && isRecord(mine) && mergeFrames(theirs, mine);
+    files.set(FRAMES, more ? toBytes(`${JSON.stringify(theirs, null, 2)}\n`) : frames);
   }
 
   const templates = held.get(TEMPLATES);

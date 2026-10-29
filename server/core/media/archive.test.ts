@@ -486,6 +486,50 @@ describe('an archive brought into the library', () => {
     assert.equal(again.published, undefined, JSON.stringify(again));
   });
 
+  test('merges the frames a group and a frame at a time, as the page exports them by group', async () => {
+    const FRAMES = 'elements/catalogs/frames-catalog.json';
+    const frame = (id: string, more: Record<string, unknown> = {}) => ({ id, w: 1, h: 1, ...more });
+    const { bring, media } = await admin({
+      [FRAMES]: {
+        featured: ['circle', 'heart-magnet'],
+        stickers: { balloon: '<svg/>' },
+        groups: [
+          { id: 'basic', frames: [frame('circle', { en: 'Circle' }), frame('square')] },
+          { id: 'magnets', frames: [frame('heart-magnet', { extras: [{ art: 'balloon' }] })] },
+          { id: 'devices', frames: [frame('phone')] },
+        ],
+      },
+    });
+    // Exported with the basic frames and the devices alone, the circle drawn again.
+    const archive = await archiveOf({
+      [FRAMES]: {
+        featured: ['circle'],
+        stickers: {},
+        groups: [
+          { id: 'basic', frames: [frame('circle', { en: 'Round' }), frame('pill')] },
+          { id: 'devices', frames: [frame('laptop')] },
+        ],
+      },
+    });
+    const done = await read<Imported>(await bring(archive));
+    assert.ok(done.changed.includes(FRAMES), JSON.stringify(done));
+    assert.deepEqual(JSON.parse(stored(media, FRAMES)!), {
+      featured: ['circle', 'heart-magnet'],
+      stickers: { balloon: '<svg/>' },
+      groups: [
+        {
+          id: 'basic',
+          frames: [frame('circle', { en: 'Round' }), frame('pill'), frame('square')],
+        },
+        { id: 'magnets', frames: [frame('heart-magnet', { extras: [{ art: 'balloon' }] })] },
+        { id: 'devices', frames: [frame('laptop'), frame('phone')] },
+      ],
+    });
+    // Brought in again, it changes nothing.
+    const again = await read<Imported>(await bring(archive));
+    assert.equal(again.published, undefined, JSON.stringify(again));
+  });
+
   test('of a library of before, makes its two catalogs one, as the library’s own', async () => {
     const both = { he: designSlide('he'), en: designSlide('en') };
     const { bring, media } = await admin({

@@ -30,19 +30,19 @@ async function ourManifest(): Promise<Manifest | null> {
  */
 function compare(theirs: Manifest, ours: Manifest | null) {
   const rows = partsOf(theirs).map((part) => {
-    const paths = [...part.core, ...part.pieces.flatMap((piece) => piece.paths)];
     let added = 0;
     let merged = 0;
     let same = 0;
     const replaced: string[] = [];
-    for (const path of new Set(paths)) {
+    for (const path of part.paths) {
       const here = ours?.files[path];
       if (!here) added += 1;
       else if (here.sha256 === theirs.files[path]!.sha256) same += 1;
       else if (isMerged(path)) merged += 1;
       else replaced.push(path);
     }
-    return { id: part.id, files: part.files, bytes: part.bytes, added, merged, same, replaced };
+    const bytes = part.paths.reduce((sum, path) => sum + theirs.files[path]!.size, 0);
+    return { id: part.id, files: part.paths.length, bytes, added, merged, same, replaced };
   });
   return {
     rows,

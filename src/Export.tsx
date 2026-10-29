@@ -1,89 +1,134 @@
 /**
- * Export (README, "Exporting and importing"): the library, or the parts of it chosen, as one
- * archive made in this browser from the files it reads (`exportArchive.ts`), which another library
- * brings in without a network. Each part is chosen whole, or by its pieces where it has them
- * (`exportParts.ts`), and the choice is kept in a cookie of this browser for the next time. The
+ * Export (README, "Exporting and importing"): the library, or the parts of it chosen, in the
+ * languages chosen, as one archive made in this browser from the files it reads
+ * (`exportArchive.ts`), which another library brings in without a network. The languages are
+ * chosen first, for the whole library; then each part, whole or by its groups where it has them
+ * (`exportParts.ts`). The choice is kept in a cookie of this browser for the next time. The
  * archive is of the library as it is published when the export starts.
  */
-import { CONTENT_LANGUAGES } from '@slidr/model';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { messages, named } from './app';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { designsModule, messages, named } from './app';
 import { isolate } from './bidi';
 import {
   ExportFailed,
   archiveOf,
+  cutCatalogs,
   manifestNow,
   pickFile,
   saveArchive,
   type Progress,
 } from './exportArchive';
 import {
+  FRAMES_CATALOG,
   OTHER,
   REFERENCE_DECKS,
+  bytesOf,
   chooseAll,
+  chooseLanguage,
   choosePart,
   choosePiece,
-  chosenPaths,
+  chosenOf,
+  inLanguages,
   isChosen,
+  languagesIn,
+  languagesOf,
   partsOf,
   readSaved,
   save,
   stateOf,
+  type Catalogs,
+  type Chosen,
   type FontsCatalog,
   type Part,
   type Piece,
   type Saved,
 } from './exportParts';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
-import { nativeName, type Lang } from './languages';
+import { isBase, nativeName, type Lang } from './languages';
 import { manifest, mediaJson, NotInLibrary, size, type Manifest } from './media';
 import { sectionOf } from './sections';
 import { useRead, type LibraryRoute } from './shared';
 
 const FONTS = 'fonts/catalog.json';
+const DESIGN_CATALOGS = ['elements/designs/index.json', 'elements/designs/managed.json'];
 
 /** What each part with pieces says of them. */
 const PIECES: Record<string, MessageKey> = {
   designs: 'export.pieces.designs',
+  frames: 'export.pieces.frames',
   templates: 'export.pieces.templates',
-  fonts: 'export.pieces.fonts',
 };
 
-/** The letters a family is made for, by a name of the browser's in the language shown. */
-const SCRIPT_NAMES: Record<string, { type: 'script' | 'language'; code: string }> = {
-  he: { type: 'script', code: 'Hebr' },
-  latin: { type: 'script', code: 'Latn' },
-  arabic: { type: 'script', code: 'Arab' },
-  cyrillic: { type: 'script', code: 'Cyrl' },
-  devanagari: { type: 'script', code: 'Deva' },
-  vietnamese: { type: 'language', code: 'vi' },
-  japanese: { type: 'language', code: 'ja' },
-  korean: { type: 'language', code: 'ko' },
-  chinese: { type: 'language', code: 'zh' },
-};
-
-function scriptName(script: string, uiLang: string) {
-  const known = SCRIPT_NAMES[script];
-  if (!known) return script;
-  try {
-    return new Intl.DisplayNames([uiLang], { type: known.type }).of(known.code) ?? script;
-  } catch {
-    return script;
-  }
+/** Of the frames' catalog, its groups and the ids of their frames, and their stickers. */
+interface FramesFile {
+  groups?: { id?: unknown; frames?: { id?: unknown; extras?: { art?: unknown }[] }[] }[];
+  stickers?: Record<string, unknown>;
 }
 
-const isLanguage = (id: string): id is Lang =>
-  (CONTENT_LANGUAGES as readonly string[]).includes(id);
+/** How much of the frames' catalog a group is: its frames, and the stickers they put beside them. */
+function weightOf(group: NonNullable<FramesFile['groups']>[number], file: FramesFile) {
+  let weight = JSON.stringify(group).length;
+  for (const frame of group.frames ?? []) {
+    for (const { art } of frame.extras ?? []) {
+      const sticker = typeof art === 'string' ? file.stickers?.[art] : undefined;
+      if (typeof sticker === 'string') weight += sticker.length;
+    }
+  }
+  return weight;
+}
+
+/** What the page reads of the catalogs, and the names of the designs' groups. */
+interface Read extends Catalogs {
+  designGroup: (group: string, lang: Lang) => string;
+}
+
+/**
+ * The catalogs the pieces and the languages are known by: the designs as a gallery reads them
+ * (every design is drawn in Hebrew and in English, so a reading in either has them all), the
+ * frames' groups, and the letters each family of fonts is made for.
+ */
+async function readCatalogs(library: Manifest, base: Lang): Promise<Read> {
+  const has = (path: string) => Object.hasOwn(library.files, path);
+  const [fonts, designs, frames] = await Promise.all([
+    has(FONTS) ? mediaJson<FontsCatalog>(FONTS).catch(() => undefined) : undefined,
+    DESIGN_CATALOGS.some(has)
+      ? designsModule().then((module) => module.loadDesigns(base))
+      : undefined,
+    has(FRAMES_CATALOG) ? mediaJson<FramesFile>(FRAMES_CATALOG).catch(() => undefined) : undefined,
+  ]);
+  const ids = (list: { id?: unknown }[] | undefined) =>
+    (list ?? []).map(({ id }) => id).filter((id): id is string => typeof id === 'string');
+  return {
+    fonts,
+    designs: designs?.groups
+      .map((id) => ({ id, items: designs.designsOf(id) }))
+      .filter(({ items }) => items.length > 0),
+    frames: frames?.groups
+      ?.filter((group) => typeof group.id === 'string')
+      .map((group) => ({
+        id: group.id as string,
+        items: ids(group.frames),
+        weight: weightOf(group, frames),
+      }))
+      .filter(({ items }) => items.length > 0),
+    designGroup: (group, lang) =>
+      named(messages.elements, lang, 'designs', 'group', group) ??
+      designs?.designGroupName(group, lang) ??
+      group,
+  };
+}
 
 /** A checkbox of a whole and its parts: checked, unchecked, or some of it. */
 function Check({
   state,
   disabled,
   onChange,
+  label,
 }: {
   state: 'all' | 'some' | 'none';
   disabled?: boolean;
   onChange: (on: boolean) => void;
+  label?: string;
 }) {
   const box = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -95,12 +140,13 @@ function Check({
       type="checkbox"
       checked={state === 'all'}
       disabled={disabled}
+      aria-label={label}
       onChange={(event) => onChange(event.target.checked)}
     />
   );
 }
 
-const bytesOf = (read: Manifest, paths: Iterable<string>) => {
+const sizeOfPaths = (read: Manifest, paths: Iterable<string>) => {
   let bytes = 0;
   for (const path of paths) bytes += read.files[path]?.size ?? 0;
   return bytes;
@@ -115,7 +161,7 @@ const archiveName = (published: string | undefined, whole: boolean, gzip: boolea
 /** How an export went, said in the language shown, whichever that is by then. */
 type Run =
   | { at: 'idle' }
-  | { at: 'running'; progress?: Progress }
+  | { at: 'running'; progress?: Progress; preparing?: boolean }
   | { at: 'done'; name: string }
   | { at: 'stopped' }
   | { at: 'failed'; say: (t: Translate) => string };
@@ -146,33 +192,35 @@ export function Export({
     [],
   );
   const library = read.value;
-  const fonts = useRead(
-    () =>
-      library?.files[FONTS]
-        ? mediaJson<FontsCatalog>(FONTS).catch(() => undefined)
-        : Promise.resolve(undefined),
-    [library],
+  const base: Lang = isBase(lang) ? lang : 'en';
+  const catalogs = useRead(
+    () => (library ? readCatalogs(library, base) : Promise.resolve(undefined)),
+    [library, base],
   );
-  const parts = useMemo(
-    () => (library ? partsOf(library, fonts.value) : []),
-    [library, fonts.value],
-  );
+  const known = catalogs.value;
+  const of = useMemo(() => languagesOf(known?.fonts), [known]);
+  const parts = useMemo(() => (library && known ? partsOf(library, known) : []), [library, known]);
+  const offered = useMemo(() => (library ? languagesIn(library, of) : []), [library, of]);
   const [saved, setSaved] = useState<Saved>(readSaved);
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set());
   const [run, setRun] = useState<Run>({ at: 'idle' });
   const stop = useRef<AbortController | undefined>(undefined);
   useEffect(() => () => stop.current?.abort(), []);
 
-  const chosen = saved.chosen;
-  const paths = useMemo(() => chosenPaths(parts, chosen), [parts, chosen]);
+  const { chosen, languages } = saved;
+  const choice = useMemo(
+    () => chosenOf(parts, chosen, languages, of),
+    [parts, chosen, languages, of],
+  );
   const running = run.at === 'running';
 
   if (read.error !== undefined) {
     return <p className="error-text">{isolate(t('people.failed', { error: read.error }))}</p>;
   }
-  // The fonts are offered by their letters once their catalog is read.
-  const fontsPending = Boolean(library?.files[FONTS]) && !('value' in fonts) && !fonts.error;
-  if (library === undefined || fontsPending) {
+  if (catalogs.error !== undefined) {
+    return <p className="error-text">{isolate(t('people.failed', { error: catalogs.error }))}</p>;
+  }
+  if (library === undefined || (library && !known)) {
     return <p className="muted">{t('library.loading')}</p>;
   }
   if (library === null || parts.length === 0) {
@@ -187,39 +235,51 @@ export function Export({
     setSaved(next);
     save(next);
   };
-  const choose = (next: typeof chosen) => keep({ ...saved, chosen: next });
+  const choose = (next: Chosen) => keep({ ...saved, chosen: next });
   const files = (count: number) =>
     count === 1 ? t('library.fileOne') : t('library.fileMany', { count });
-  const whole = chosen === '*';
-  const allState = whole ? 'all' : paths.length === 0 ? 'none' : 'some';
+  const inChosen = (path: string) => inLanguages(languages, of(path));
+  const languageOn = (one: string) => languages === '*' || languages.includes(one);
+  const languagesOn = offered.filter(languageOn);
+  const noLanguage = offered.length > 0 && languagesOn.length === 0;
+  const whole = chosen === '*' && languages === '*';
+  const allState = chosen === '*' ? 'all' : choice.paths.length === 0 ? 'none' : 'some';
+  const total = bytesOf(library, choice);
 
   const nameOf = (part: Part) => {
     if (part.id === OTHER) return t('export.other');
     const section = sectionOf(part.id);
     return section ? t(section.nameKey) : part.id;
   };
+  const aboutOf = (part: Part) => {
+    if (part.id === OTHER) return t('export.otherAbout');
+    const section = sectionOf(part.id);
+    return section ? t(section.aboutKey) : '';
+  };
 
-  const pieceName = (part: Part, piece: Piece) => {
-    if (part.id === 'designs' && isLanguage(piece.id)) {
-      return <bdi lang={piece.id}>{nativeName(piece.id)}</bdi>;
+  const pieceName = (part: Part, piece: Piece): ReactNode => {
+    if (part.id === 'designs') return known!.designGroup(piece.id, lang);
+    if (part.id === 'frames') {
+      return named(messages.elements, lang, 'frames', 'group', piece.id) ?? piece.id;
     }
     if (part.id === 'templates') {
       return piece.id === REFERENCE_DECKS
         ? t('export.referenceDecks')
         : (named(messages.templates, lang, 'name', piece.id) ?? piece.id);
     }
-    if (part.id === 'fonts') {
-      const families = new Set(piece.paths.map((path) => path.split('/')[1])).size;
-      return (
-        <>
-          {scriptName(piece.id, uiLang)}{' '}
-          <span className="muted">
-            · {families === 1 ? t('export.familyOne') : t('export.families', { count: families })}
-          </span>
-        </>
-      );
-    }
     return <bdi dir="ltr">{piece.id}</bdi>;
+  };
+
+  /** How many items a piece is, where they are counted: designs, or frames. */
+  const itemsOf = (part: Part, piece: Piece) => {
+    const count = piece.items.length;
+    if (part.id === 'designs') {
+      return count === 1 ? t('export.designOne') : t('export.designs', { count });
+    }
+    if (part.id === 'frames') {
+      return count === 1 ? t('export.frameOne') : t('export.frames', { count });
+    }
+    return undefined;
   };
 
   /** The pieces of a part in the order shown: the templates by their names, the decks last. */
@@ -235,14 +295,9 @@ export function Export({
           return name(a).localeCompare(name(b), uiLang);
         });
 
-  const chosenOf = (part: Part) => {
-    if (stateOf(chosen, part) === 'none') return 0;
-    const held = new Set(part.core);
-    for (const piece of part.pieces) {
-      if (isChosen(chosen, part, piece)) for (const path of piece.paths) held.add(path);
-    }
-    return bytesOf(library, held);
-  };
+  /** The bytes of a part: of what is chosen of it, or of all of it in the languages chosen. */
+  const bytesOfPart = (part: Part, wanted: Chosen) =>
+    bytesOf(library, chosenOf([part], wanted, languages, of));
 
   const toggle = (part: Part) =>
     setOpen((was) => {
@@ -254,8 +309,9 @@ export function Export({
 
   const start = () => {
     const name = archiveName(library.published, whole, saved.gzip);
-    const gzip = saved.gzip;
-    const wanted = chosen;
+    const { gzip } = saved;
+    const wanted = { chosen, languages };
+    const groups = known;
     void (async () => {
       // Asked first, while the page still answers the click.
       const file = await pickFile(name, gzip, t('export.fileType'));
@@ -266,10 +322,14 @@ export function Export({
       let shown = 0;
       try {
         const now = await manifestNow();
-        const all = chosenPaths(partsOf(now, fonts.value), wanted);
-        const archive = archiveOf(now, all, {
+        const nowParts = partsOf(now, groups ?? {});
+        const all = chosenOf(nowParts, wanted.chosen, wanted.languages, languagesOf(groups?.fonts));
+        if (all.cut.size > 0) setRun({ at: 'running', preparing: true });
+        const written = await cutCatalogs(now, all, controller.signal);
+        const archive = archiveOf(now, all.paths, {
           gzip,
           signal: controller.signal,
+          written,
           onProgress: (progress) => {
             // A few times a second is enough to be seen.
             if (progress.files < progress.ofFiles && Date.now() - shown < 150) return;
@@ -293,119 +353,249 @@ export function Export({
   };
 
   const progress = run.at === 'running' ? run.progress : undefined;
+  const preparing = run.at === 'running' && run.preparing && !progress;
+  const chosenParts = parts.filter((part) => stateOf(chosen, part) !== 'none');
 
   return (
     <div className="export">
-      <section className="export-tree" aria-label={t('export.nav')}>
-        <label className="export-row export-all">
-          <Check state={allState} disabled={running} onChange={(on) => choose(chooseAll(on))} />
-          <span className="export-name">{t('export.everything')}</span>
-          <span className="muted small export-size">
-            {t('library.filesAndSize', {
-              files: files(Object.keys(library.files).length),
-              size: size(bytesOf(library, Object.keys(library.files))),
-            })}
-          </span>
-        </label>
-        <ul>
-          {parts.map((part) => {
-            const state = stateOf(chosen, part);
-            const expanded = open.has(part.id);
-            const some = chosenOf(part);
-            return (
-              <li key={part.id} className="export-part">
-                <div className="export-row">
-                  {part.pieces.length > 0 ? (
-                    <button
-                      type="button"
-                      className="ghost export-toggle"
-                      aria-expanded={expanded}
-                      aria-label={nameOf(part)}
-                      onClick={() => toggle(part)}
-                    >
-                      <span aria-hidden>{expanded ? '▾' : '▸'}</span>
-                    </button>
-                  ) : (
-                    <span className="export-toggle" />
-                  )}
-                  <label>
-                    <Check
-                      state={state}
-                      disabled={running}
-                      onChange={(on) => choose(choosePart(chosen, parts, part, on))}
-                    />
-                    <span className="export-name">{nameOf(part)}</span>
-                  </label>
-                  <span className="muted small export-size">
-                    {state === 'some' && `${size(some)} / `}
-                    {t('library.filesAndSize', {
-                      files: files(part.files),
-                      size: size(part.bytes),
-                    })}
-                  </span>
-                </div>
-                {part.id === OTHER && (
-                  <p className="muted small export-note">{t('export.otherAbout')}</p>
-                )}
-                {expanded && (
-                  <div className="export-pieces">
-                    <p className="muted small">
-                      {PIECES[part.id] ? `${t(PIECES[part.id]!)} ` : ''}
-                      {part.core.length > 0 && t('export.with', { size: size(part.coreBytes) })}
-                    </p>
-                    <div className="export-piece-grid">
-                      {shownPieces(part).map((piece) => (
-                        <label key={piece.id} className="export-piece">
-                          <input
-                            type="checkbox"
-                            checked={isChosen(chosen, part, piece)}
-                            disabled={running}
-                            onChange={(event) =>
-                              choose(choosePiece(chosen, parts, part, piece, event.target.checked))
-                            }
-                          />
-                          <span className="export-piece-name">{pieceName(part, piece)}</span>
-                          <span className="muted small">{size(piece.bytes)}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      <div className="export-main">
+        <section className="export-card" aria-labelledby="export-languages">
+          <header className="export-head">
+            <h3 id="export-languages">
+              <span className="export-step" aria-hidden>
+                1
+              </span>
+              {t('export.languages')}
+            </h3>
+            <label className="export-all-languages">
+              <Check
+                state={languages === '*' ? 'all' : noLanguage ? 'none' : 'some'}
+                disabled={running}
+                onChange={(on) => keep({ ...saved, languages: on ? '*' : [] })}
+              />
+              {t('export.allLanguages')}
+              <span className="muted small">
+                {t('export.languagesChosen', {
+                  count: languagesOn.length.toLocaleString(uiLang),
+                  of: offered.length.toLocaleString(uiLang),
+                })}
+              </span>
+            </label>
+          </header>
+          <div className="export-body">
+            <p className="muted small">{t('export.languagesAbout')}</p>
+            <div className="export-langs" role="group" aria-labelledby="export-languages">
+              {offered.map((one) => (
+                <label key={one} className="export-lang">
+                  <input
+                    type="checkbox"
+                    checked={languageOn(one)}
+                    disabled={running}
+                    onChange={(event) =>
+                      keep({
+                        ...saved,
+                        languages: chooseLanguage(languages, offered, one, event.target.checked),
+                      })
+                    }
+                  />
+                  <bdi lang={one}>{nativeName(one)}</bdi>
+                </label>
+              ))}
+            </div>
+            {noLanguage && <p className="warn small">{t('export.noLanguage')}</p>}
+          </div>
+        </section>
 
-      <section className="export-bar">
+        <section className="export-card" aria-labelledby="export-content">
+          <header className="export-head">
+            <h3 id="export-content">
+              <span className="export-step" aria-hidden>
+                2
+              </span>
+              {t('export.content')}
+            </h3>
+            <label className="export-everything">
+              <Check state={allState} disabled={running} onChange={(on) => choose(chooseAll(on))} />
+              {t('export.everything')}
+              <span className="muted small export-size">
+                {t('library.filesAndSize', {
+                  files: files(Object.keys(library.files).length),
+                  size: size(sizeOfPaths(library, Object.keys(library.files))),
+                })}
+              </span>
+            </label>
+          </header>
+          <ul className="export-list">
+            {parts.map((part) => {
+              const state = stateOf(chosen, part);
+              const expanded = open.has(part.id);
+              const pieces = shownPieces(part);
+              const chosenPieces = pieces.filter((piece) => isChosen(chosen, part, piece));
+              const bytes = bytesOfPart(part, state === 'none' ? '*' : chosen);
+              const count = chosenOf([part], state === 'none' ? '*' : chosen, languages, of).paths
+                .length;
+              const coreBytes = sizeOfPaths(library, part.core.filter(inChosen));
+              return (
+                <li key={part.id} className="export-part" data-state={state}>
+                  <div className="export-row">
+                    <label className="export-pick">
+                      <Check
+                        state={state}
+                        disabled={running}
+                        onChange={(on) => choose(choosePart(chosen, parts, part, on))}
+                      />
+                      <span className="export-label">
+                        <span className="export-name">{nameOf(part)}</span>
+                        <span className="export-about">{aboutOf(part)}</span>
+                      </span>
+                    </label>
+                    {pieces.length > 0 && (
+                      <button
+                        type="button"
+                        className="export-toggle"
+                        aria-expanded={expanded}
+                        onClick={() => toggle(part)}
+                      >
+                        {t(
+                          part.id === 'templates'
+                            ? 'export.templatesChosen'
+                            : 'export.groupsChosen',
+                          {
+                            count: chosenPieces.length.toLocaleString(uiLang),
+                            of: pieces.length.toLocaleString(uiLang),
+                          },
+                        )}
+                        <span className="export-caret" aria-hidden />
+                      </button>
+                    )}
+                    <span className="export-sizes">
+                      <span className="export-size">{size(bytes)}</span>
+                      <span className="muted small export-size">{files(count)}</span>
+                    </span>
+                  </div>
+                  {expanded && (
+                    <div className="export-pieces">
+                      <div className="export-pieces-head">
+                        <p className="muted small">
+                          {PIECES[part.id] ? `${t(PIECES[part.id]!)} ` : ''}
+                          {part.cut.length === 0 &&
+                            coreBytes > 0 &&
+                            t('export.with', { size: size(coreBytes) })}
+                        </p>
+                        <span className="export-pick-all">
+                          <button
+                            type="button"
+                            className="link small"
+                            disabled={running || state === 'all'}
+                            onClick={() => choose(choosePart(chosen, parts, part, true))}
+                          >
+                            {t('export.pickAll')}
+                          </button>
+                          <button
+                            type="button"
+                            className="link small"
+                            disabled={running || state === 'none'}
+                            onClick={() => choose(choosePart(chosen, parts, part, false))}
+                          >
+                            {t('export.pickNone')}
+                          </button>
+                        </span>
+                      </div>
+                      <div className="export-piece-grid">
+                        {pieces.map((piece) => {
+                          const items = itemsOf(part, piece);
+                          const pieceBytes = sizeOfPaths(library, piece.paths.filter(inChosen));
+                          return (
+                            <label key={piece.id} className="export-piece">
+                              <input
+                                type="checkbox"
+                                checked={isChosen(chosen, part, piece)}
+                                disabled={running}
+                                onChange={(event) =>
+                                  choose(
+                                    choosePiece(chosen, parts, part, piece, event.target.checked),
+                                  )
+                                }
+                              />
+                              <span className="export-piece-text">
+                                <span className="export-piece-name">{pieceName(part, piece)}</span>
+                                <span className="export-piece-meta">
+                                  {[items, pieceBytes > 0 && size(pieceBytes)]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                </span>
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </div>
+
+      <aside className="export-card export-bar" aria-labelledby="export-summary">
+        <h3 id="export-summary">{t('export.summary')}</h3>
+        {chosenParts.length > 0 ? (
+          <ul className="export-chosen">
+            {chosenParts.map((part) => (
+              <li key={part.id}>
+                <span>{nameOf(part)}</span>
+                <span className="export-size">{size(bytesOfPart(part, chosen))}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">{t('export.none')}</p>
+        )}
+        {offered.length > 0 && (
+          <p className="muted small">
+            {languages === '*'
+              ? t('export.allLanguages')
+              : t('export.inLanguages', {
+                  languages: languagesOn.map((one) => nativeName(one)).join(', ') || '—',
+                })}
+          </p>
+        )}
         <p className="export-total">
-          {paths.length > 0
-            ? t('export.total', { files: files(paths.length), size: size(bytesOf(library, paths)) })
+          {choice.paths.length > 0
+            ? t(choice.cut.size > 0 ? 'export.totalAbout' : 'export.total', {
+                files: files(choice.paths.length),
+                size: size(total),
+              })
             : t('export.none')}
         </p>
-        <div className="row">
-          <label className="export-gzip">
-            <input
-              type="checkbox"
-              checked={saved.gzip}
-              disabled={running}
-              onChange={(event) => keep({ ...saved, gzip: event.target.checked })}
-            />
-            {t('export.gzip')}
-          </label>
-          {running ? (
-            <button type="button" onClick={() => stop.current?.abort()}>
-              {t('export.stop')}
-            </button>
-          ) : (
-            <button type="button" className="primary" disabled={paths.length === 0} onClick={start}>
-              {t('export.start')}
-            </button>
-          )}
-        </div>
+        <label className="export-gzip">
+          <input
+            type="checkbox"
+            checked={saved.gzip}
+            disabled={running}
+            onChange={(event) => keep({ ...saved, gzip: event.target.checked })}
+          />
+          {t('export.gzip')}
+        </label>
+        {running ? (
+          <button type="button" className="export-go" onClick={() => stop.current?.abort()}>
+            {t('export.stop')}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="primary export-go"
+            disabled={choice.paths.length === 0 || noLanguage}
+            onClick={start}
+          >
+            {t('export.start')}
+          </button>
+        )}
         {running && (
           <div className="settings-progress">
-            <progress max={progress?.ofBytes ?? 1} value={progress?.bytes ?? 0} />
+            {progress ? <progress max={progress.ofBytes} value={progress.bytes} /> : <progress />}
+            {preparing && <span className="small">{t('export.preparing')}</span>}
             {progress && (
               <span className="small">
                 {t('export.progress', {
@@ -433,7 +623,7 @@ export function Export({
             {t('export.importHint')}
           </button>
         )}
-      </section>
+      </aside>
     </div>
   );
 }

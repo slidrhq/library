@@ -1,8 +1,10 @@
 /**
  * An archive of the library, made in this browser from the files it reads (`exportParts.ts` says
  * which): a tar, gzipped unless asked otherwise, of `manifest.json` (the files it holds, with their
- * sizes and SHA-256, as the library names them) and each file at its path. Each file is checked
- * against the manifest as it is read. Another library brings it in (server/core/media/archive.ts:
+ * sizes and SHA-256) and each file at its path. Each file is checked against the library's manifest
+ * as it is read. The catalogs of a part some of whose groups only are chosen are read first, and
+ * written again with the items of those (`exportCut.ts`): the archive's manifest names them as
+ * they are written. Another library brings it in (server/core/media/archive.ts:
  * **Settings** → **Import**, or `slidr-library import`); unpacked, it is a copy of the library any
  * web server serves (docs/media-library.md of the app, "A copy").
  *
@@ -11,7 +13,10 @@
  *
  * And the other way: what an archive holds, read here before it is sent, and the sending of it.
  */
+import { sha256Here } from '../server/core/media/sha256';
 import { TarError, readTar, tarEnd, tarHeader, tarPadding } from '../server/core/media/tar';
+import { cutCatalog, fromIn, isMadeOf, textOf } from './exportCut';
+import type { Choice } from './exportParts';
 import { mediaUrl, type Manifest, type ManifestFile } from './media';
 import { ApiError, type Issue } from './uploadsApi';
 
@@ -44,6 +49,7 @@ export class ExportFailed extends Error {
 }
 
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 async function sha256Hex(bytes: Uint8Array): Promise<string | undefined> {
   // Only a secure page has it: the library is reached over HTTPS, or on this machine.
@@ -51,6 +57,9 @@ async function sha256Hex(bytes: Uint8Array): Promise<string | undefined> {
   const digest = await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+
+/** The SHA-256 of bytes written here: WebCrypto's, or, on a page that is not secure, made here. */
+const hashOfWritten = async (bytes: Uint8Array) => (await sha256Hex(bytes)) ?? sha256Here(bytes);
 
 /** The manifest of some files, as the library writes its own (`encodeManifest` of live.ts). */
 function manifestText(published: string, files: Record<string, ManifestFile>) {
@@ -97,17 +106,68 @@ async function fileOf(path: string, file: ManifestFile, signal: AbortSignal): Pr
   throw new ExportFailed(path, why, changed);
 }
 
+/** A file of the archive written here, not read (`cutCatalogs`), and what its manifest says of it. */
+export interface Written {
+  bytes: Uint8Array;
+  file: ManifestFile;
+}
+
+/**
+ * The catalogs of a choice written again with the items it keeps (`exportCut.ts`), each read and
+ * checked first: those that say what they were made of after the others, of them as they are
+ * written.
+ */
+export async function cutCatalogs(
+  manifest: Manifest,
+  choice: Choice,
+  signal: AbortSignal,
+): Promise<Map<string, Written>> {
+  const read = await Promise.all(
+    [...choice.cut].map(async ([path, keep]) => {
+      const text = decoder.decode(await fileOf(path, manifest.files[path]!, signal));
+      return {
+        path,
+        text,
+        file: cutCatalog(path, JSON.parse(text) as Record<string, unknown>, keep),
+      };
+    }),
+  );
+  const written = new Map<string, Written>();
+  const held = new Set(choice.paths);
+  const hashOf = (path: string) =>
+    written.get(path)?.file.sha256 ?? (held.has(path) ? manifest.files[path]?.sha256 : undefined);
+  const write = async (path: string, text: string) => {
+    const bytes = encoder.encode(text);
+    written.set(path, { bytes, file: { size: bytes.length, sha256: await hashOfWritten(bytes) } });
+  };
+  for (const { path, text, file } of read) {
+    if (!isMadeOf(file)) await write(path, textOf(file, text));
+  }
+  for (const { path, text, file } of read) {
+    if (!isMadeOf(file)) continue;
+    const from = fromIn(file, (made) => manifest.files[made]?.sha256, hashOf);
+    await write(path, textOf(from, text));
+  }
+  return written;
+}
+
 /**
  * The archive of `paths` of the library of `manifest`, made as it is read: the manifest first, then
- * each file in order, a few read ahead.
+ * each file in order, a few read ahead. A file `written` is as it was written, not as it is read.
  */
 export function archiveOf(
   manifest: Manifest,
   paths: readonly string[],
-  options: { gzip: boolean; signal: AbortSignal; onProgress: (progress: Progress) => void },
+  options: {
+    gzip: boolean;
+    signal: AbortSignal;
+    onProgress: (progress: Progress) => void;
+    written?: ReadonlyMap<string, Written>;
+  },
 ): ReadableStream<Uint8Array> {
+  const written = options.written ?? new Map<string, Written>();
   const files: Record<string, ManifestFile> = Object.fromEntries(
-    paths.map((path) => [path, manifest.files[path]!]),
+    paths.map((path) => [path, written.get(path)?.file ?? manifest.files[path]!]),
   );
   const published = manifest.published ?? '';
   const own = encoder.encode(manifestText(published, files));
@@ -121,7 +181,8 @@ export function archiveOf(
     while (ahead.length < AHEAD && next < paths.length) {
       const path = paths[next]!;
       next += 1;
-      const read = fileOf(path, files[path]!, options.signal);
+      const own = written.get(path);
+      const read = own ? Promise.resolve(own.bytes) : fileOf(path, files[path]!, options.signal);
       // Read ahead, it may fail before it is waited for: it is said when it is.
       read.catch(() => undefined);
       ahead.push({ path, read });
