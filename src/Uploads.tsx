@@ -1,13 +1,15 @@
-import { CONTENT_LANGUAGES } from '@slidr/model';
+import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
 import { useMemo, useState } from 'react';
 import { signIn } from './account';
 import { isolate } from './bidi';
 import { useLang, useT } from './i18n';
 import { LanguageNames, type Lang } from './languages';
+import { WhenSeen } from './Lazy';
 import { manifest, mediaUrl } from './media';
 import { NewUpload } from './NewUpload';
 import { matches, useRead, type LibraryRoute } from './shared';
-import { UploadDetail } from './UploadDetail';
+import { UploadDetail, useDesignPictures } from './UploadDetail';
+import { DesignPreview } from './uploadPreview';
 import {
   ApiError,
   STATUSES,
@@ -22,6 +24,7 @@ import {
   who,
   type Status,
   type Summary,
+  type Upload,
 } from './uploadsApi';
 
 const NEW = 'new';
@@ -41,19 +44,95 @@ function pictureOf(upload: Summary, files: Record<string, unknown> | undefined) 
   return path ? mediaUrl(path) : undefined;
 }
 
+/** The language a design's card shows its slide in: the page's, else English, else Hebrew. */
+function cardLanguage(upload: Summary, lang: Lang) {
+  const preferred: ContentLanguage[] = [lang, 'en', 'he'];
+  return preferred.find((one) => upload.languages.includes(one)) ?? upload.languages[0];
+}
+
+/** A design's slide drawn from the upload, read when its card is seen; its picture without one. */
+function DrawnDesign({
+  id,
+  lang,
+  picture,
+}: {
+  id: string;
+  lang: ContentLanguage;
+  picture?: string;
+}) {
+  const read = useRead(() => uploadsApi.get(id), [id]);
+  if (!read.value && !read.error) return null;
+  const upload = read.value;
+  if (!upload?.languages[lang]?.slide) {
+    return picture ? <img src={picture} alt="" className="upload-card-image" /> : null;
+  }
+  return <DrawnSlide upload={upload} lang={lang} />;
+}
+
+function DrawnSlide({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
+  const t = useT();
+  const { picture, backdrop } = useDesignPictures(upload);
+  return (
+    <DesignPreview
+      slide={upload.languages[lang]?.slide}
+      lang={lang}
+      picture={picture}
+      backdrop={backdrop}
+      notSlide={(problem) => t('uploads.form.notSlide', { error: problem })}
+    />
+  );
+}
+
+/**
+ * A design's upload as the galleries will show it: its slide in a language, as the picture the
+ * studio made of it ahead (`thumb-<language>`), or, where the upload has none, drawn from the
+ * upload by the app's renderer. Its picture alone only when it has no slide in that language.
+ */
+function DesignCardSlide({
+  upload,
+  lang,
+  picture,
+}: {
+  upload: Summary;
+  lang: ContentLanguage;
+  picture?: string;
+}) {
+  const [unmade, setUnmade] = useState(false);
+  if (!unmade) {
+    return (
+      <img
+        src={`/api/uploads/${upload.id}/files/thumb-${lang}`}
+        alt=""
+        lang={lang}
+        loading="lazy"
+        className="upload-card-image"
+        onError={() => setUnmade(true)}
+      />
+    );
+  }
+  return (
+    <WhenSeen>
+      <DrawnDesign id={upload.id} lang={lang} picture={picture} />
+    </WhenSeen>
+  );
+}
+
 function UploadCard({
   upload,
   files,
+  lang,
   onOpen,
 }: {
   upload: Summary;
   files?: Record<string, unknown>;
+  lang: Lang;
   onOpen: () => void;
 }) {
   const t = useT();
   const [uiLang] = useLang();
   const picture = pictureOf(upload, files);
   const adds = upload.action === 'add';
+  const slideIn = upload.type === 'designs' && picture ? cardLanguage(upload, lang) : undefined;
   return (
     <button type="button" className="lib-card upload-card" onClick={onOpen}>
       <span
@@ -61,7 +140,11 @@ function UploadCard({
           upload.type === 'designs' ? 'upload-card-picture checker' : 'upload-card-picture'
         }
       >
-        {picture ? <img src={picture} alt="" loading="lazy" /> : null}
+        {slideIn ? (
+          <DesignCardSlide key={slideIn} upload={upload} lang={slideIn} picture={picture} />
+        ) : picture ? (
+          <img src={picture} alt="" loading="lazy" className="upload-card-image" />
+        ) : null}
         <span className={`badge status-badge ${upload.status}`}>{t(statusKey(upload.status))}</span>
       </span>
       <span className="lib-card-body">
@@ -233,6 +316,7 @@ export function Uploads({
               key={upload.id}
               upload={upload}
               files={files.value?.files}
+              lang={lang}
               onOpen={() => open(upload.id)}
             />
           ))}

@@ -55,8 +55,13 @@ import { Writing } from './writing.ts';
 
 export { NotNow };
 
-/** The most uploads one publication takes: the rest wait for the next. */
-export const MOST_UPLOADS = 50;
+/**
+ * The most uploads one publication takes: the rest wait for the next. A publication holds what
+ * each upload brings until it writes (a design: its slides parsed, some 1 MB of JSON, and its
+ * pictures), beside the catalog of the designs, within the Worker's 128 MB: 45 designs in one ran
+ * out of memory on 2026-10-29, where one at a time were published.
+ */
+export const MOST_UPLOADS = 5;
 
 /** What came of a publication. */
 export interface Publication {

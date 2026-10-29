@@ -189,7 +189,7 @@ Reading the media is public, as the published library is. Only managing it needs
 ### 4.7 Jobs
 
 - **The lease.** One publication or author's publication runs at a time. It holds `media/lock.json` in the state store (10 minutes). The lock is taken, kept and let go with put-if-match, so two never take it together. It stays in the store once made, written as free when let go, since no store makes a file only when it is absent. A publication keeps it once a minute while it writes, and checks it still holds it before it writes the manifest.
-- **The sweep.** Each minute it publishes the uploads that are approved and not yet written, oldest first, up to 50, as `POST /api/publish` does. It skips an upload that is waiting before its next try (§8). It runs from a timer of the process in a local library, and from a Cron Trigger on Cloudflare, which is off until the user turns it on.
+- **The sweep.** Each minute it publishes the uploads that are approved and not yet written, oldest first, up to 5, as `POST /api/publish` does. It skips an upload that is waiting before its next try (§8). It runs from a timer of the process in a local library, and from a Cron Trigger on Cloudflare, which is off until the user turns it on.
 - **Clearing.** Once a day, rejected uploads older than 30 days are removed, and the history of publications is kept to the last 100.
 
 ## 5. Installation (R1, R5, R6)
@@ -422,7 +422,7 @@ The publication is `publish.ts`:
 - approving and the sweep start it;
 - a failure part-way puts the media back as it was (§9.4).
 
-It takes the uploads named, or every accepted one, oldest first, up to 50. It reads what it changes from the store as it is now, checks each upload again, applies each (`merge.ts`), and writes.
+It takes the uploads named, or every accepted one, oldest first, up to 5 (what one holds of them must fit in the Worker's memory). It reads what it changes from the store as it is now, checks each upload again, applies each (`merge.ts`), and writes.
 
 ### 9.2 What each upload changes
 

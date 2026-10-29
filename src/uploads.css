@@ -40,7 +40,7 @@
   overflow: hidden;
 }
 
-.upload-card-picture img {
+.upload-card-picture .upload-card-image {
   width: 100%;
   height: 100%;
   object-fit: contain;

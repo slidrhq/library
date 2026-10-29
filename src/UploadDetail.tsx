@@ -242,8 +242,8 @@ function TemplateStage({ upload, lang }: { upload: Upload; lang: ContentLanguage
   );
 }
 
-function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
-  const t = useT();
+/** The pictures a design's slides are drawn with: its own, or the published design's. */
+export function useDesignPictures(upload: Upload) {
   const published = useRead(
     () =>
       upload.action === 'translate' ? publishedPicture(upload.target) : Promise.resolve(undefined),
@@ -253,8 +253,14 @@ function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }
     const file = upload.files[name];
     return file ? { url: file.url, width: file.width, height: file.height } : undefined;
   };
-  const picture = upload.action === 'add' ? own('picture') : published.value?.picture;
-  const backdrop = upload.action === 'add' ? own('backdrop') : published.value?.backdrop;
+  return upload.action === 'add'
+    ? { picture: own('picture'), backdrop: own('backdrop') }
+    : { picture: published.value?.picture, backdrop: published.value?.backdrop };
+}
+
+function DesignStage({ upload, lang }: { upload: Upload; lang: ContentLanguage }) {
+  const t = useT();
+  const { picture, backdrop } = useDesignPictures(upload);
   const written = CONTENT_LANGUAGES.filter((one) => upload.languages[one]);
   const notSlide = (problem: string) => t('uploads.form.notSlide', { error: problem });
   return (
