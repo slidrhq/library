@@ -32,6 +32,36 @@ The protocol starts a native executable, so the registration names `pwsh.exe` an
 
 `command` is `pwsh.exe` of PowerShell 7.5 or later: `(Get-Command pwsh).Source`. For PowerShell from the Microsoft Store that is `%LOCALAPPDATA%\Microsoft\WindowsApps\pwsh.exe`, an alias that starts PowerShell itself as the one process, so ending it ends the CLI, and that keeps its path across updates. `-NoProfile` keeps the user's own PowerShell profile out of every run.
 
+### As a package of the library
+
+An organization whose machines do not reach the internet gives the agent as a package of its library (ADR-125 of the app): the app downloads it from the library alone and unpacks it into a folder of the agent's own, `%LOCALAPPDATA%\<the app's identifier>\custom_agents\open-webui\`. The package is the script and its page, at its top; PowerShell 7.5 is the machines':
+
+```powershell
+Compress-Archive -Path .\openwebui-agent.ps1, .\login.html -DestinationPath .\open-webui.zip
+```
+
+On **System settings** of the library, the agent's installation is **A package of this library (.zip)**, with that file, and its arguments name the script by the agent's folder, `%SLIDR_AGENT_DIR%`. Published, its entry is:
+
+```json
+{
+  "id": "open-webui",
+  "name": "Open WebUI",
+  "command": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+  "args": [
+    "-NoLogo",
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    "%SLIDR_AGENT_DIR%\\openwebui-agent.ps1"
+  ],
+  "env": { "POWERSHELL_UPDATECHECK": "Off", "POWERSHELL_TELEMETRY_OPTOUT": "1" },
+  "install": { "package": "system/agents/open-webui.zip", "sha256": "…", "size": 101234 }
+}
+```
+
+The script reads its page beside it (`$PSScriptRoot`), so it runs from the package's folder as it is. A new .zip published replaces it on each machine at a later start of the app.
+
 ## Signing in
 
 `slidr login` (Settings › Sign in) opens a page in the browser, served by the CLI itself on `127.0.0.1` under a path no other page can guess, and closes when the account is signed in or after 9½ minutes. It asks the Open WebUI what it allows and offers that:

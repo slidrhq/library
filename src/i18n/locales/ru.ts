@@ -644,6 +644,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'Пакет',
   'system.custom.source': 'Источник WinGet',
   'system.custom.sourceHint': 'Собственный источник организации. Без него — источник сообщества.',
+  'system.custom.installPackage': 'Пакет этой библиотеки (.zip)',
+  'system.custom.zip': 'Файл .zip',
+  'system.custom.zipHint':
+    'Программа агента и все нужные ей файлы, до 95 MB. Приложение скачивает его только из этой библиотеки, никогда из интернета, и распаковывает в собственную папку агента: программой может быть путь внутри неё (bin\\acme.exe), а %SLIDR_AGENT_DIR% в аргументах и переменных среды — это та самая папка.',
+  'system.custom.zipMissing': 'Выберите файл .zip агента.',
+  'system.custom.zipSending': 'Отправка пакета…',
+  'system.custom.zipChosen': '{name}, {size}: будет опубликован вместе с настройками.',
+  'system.custom.zipPublished':
+    'Пакет в библиотеке: {size}, SHA-256 {hash}…. Чтобы заменить его, выберите другой файл.',
+  'system.custom.zipTooLarge': 'Пакет занимает не больше {most}.',
+  'system.custom.zipFailed': 'Пакет не отправлен: {error}',
   'system.tone.orange': 'Оранжевый',
   'system.tone.green': 'Зелёный',
   'system.tone.blue': 'Синий',

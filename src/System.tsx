@@ -3,24 +3,27 @@
  * settings"): what the organization's apps offer, and what they start with. The agents, the
  * organization's own among them; the languages of the interface; web access; the image providers
  * and the photo libraries. They are published into the media at once, as one file, and each app
- * reads it when it first starts, and again only when it starts as a new version of the app.
+ * reads it when it first starts, and again at every start, in the background, for the next one.
  */
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { ContentLanguage } from '@slidr/model';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey } from './i18n';
 import { nativeName } from './languages';
+import { size } from './media';
 import { Field, Said, messageOf, useWork, type Note } from './Settings';
 import { useRead } from './shared';
 import {
   AGENTS,
   IMAGE_PROVIDERS,
   LANGUAGES,
+  MOST_PACKAGE,
   STOCK_SOURCES,
   TONES,
   systemApi,
   type CustomAgent,
   type Offer,
+  type Package,
   type SystemChange,
   type SystemSettings,
   type WebAccess,
@@ -40,9 +43,14 @@ interface AgentDraft {
   args: string;
   /** `NAME=value`, one a line. */
   env: string;
-  install: '' | 'winget' | 'npm';
+  install: '' | 'winget' | 'npm' | 'package';
   package: string;
   source: string;
+  /**
+   * Its package of the library (ADR-125 of the app): the one published, or one sent to be
+   * published with the settings, by the name of its file.
+   */
+  zip?: Package & { name?: string };
 }
 
 /** What is offered of one kind, as the boxes hold it; every box checked, every one. */
@@ -75,9 +83,18 @@ const agentDraft = (agent?: CustomAgent): AgentDraft => {
     env: Object.entries(agent?.env ?? {})
       .map(([name, value]) => `${name}=${value}`)
       .join('\n'),
-    install: install ? ('npm' in install ? 'npm' : 'winget') : '',
-    package: install ? ('npm' in install ? install.npm : install.winget) : '',
+    install: !install ? '' : 'npm' in install ? 'npm' : 'sha256' in install ? 'package' : 'winget',
+    package: !install
+      ? ''
+      : 'npm' in install
+        ? install.npm
+        : 'winget' in install
+          ? install.winget
+          : '',
     source: install && 'source' in install ? (install.source ?? '') : '',
+    ...(install && 'sha256' in install
+      ? { zip: { sha256: install.sha256, size: install.size } }
+      : {}),
   };
 };
 
@@ -145,7 +162,10 @@ function changeOf(draft: Draft): SystemChange {
         }
       : agent.install === 'npm'
         ? { install: { npm: agent.package.trim() } }
-        : {}),
+        : agent.install === 'package' && agent.zip
+          ? // The server names where it keeps it.
+            { install: { sha256: agent.zip.sha256, size: agent.zip.size } }
+          : {}),
   }));
   const agents = [...AGENTS.map((agent) => agent.id), ...custom.map((agent) => agent.id)];
   return {
@@ -224,14 +244,83 @@ function OfferPart({
   );
 }
 
+/** A run of text set apart from the sentence around it, as a file's name in Hebrew. */
+const apart = (text: string) => `⁨${text}⁩`;
+
+/**
+ * The .zip of an agent installed from a package of the library (ADR-125 of the app), sent as it
+ * is chosen: publishing the settings publishes it.
+ */
+function PackageField({
+  zip,
+  onZip,
+}: {
+  zip: AgentDraft['zip'];
+  onZip: (zip: NonNullable<AgentDraft['zip']>) => void;
+}) {
+  const t = useT();
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState<string>();
+  const choose = async (file: File | undefined) => {
+    if (!file) return;
+    setFailed(undefined);
+    if (file.size > MOST_PACKAGE) {
+      setFailed(t('system.custom.zipTooLarge', { most: size(MOST_PACKAGE) }));
+      return;
+    }
+    setSending(true);
+    try {
+      const sent = await systemApi.stagePackage(file);
+      onZip({ sha256: sent.sha256, size: sent.size, name: file.name });
+    } catch (error) {
+      setFailed(t('system.custom.zipFailed', { error: messageOf(error) }));
+    } finally {
+      setSending(false);
+    }
+  };
+  const status = sending
+    ? t('system.custom.zipSending')
+    : !zip
+      ? t('system.custom.zipMissing')
+      : zip.name
+        ? t('system.custom.zipChosen', { name: apart(zip.name), size: size(zip.size) })
+        : t('system.custom.zipPublished', {
+            size: size(zip.size),
+            hash: apart(zip.sha256.slice(0, 12)),
+          });
+  return (
+    <Field label={t('system.custom.zip')} hint={isolate(t('system.custom.zipHint'))}>
+      <input
+        type="file"
+        accept=".zip,application/zip"
+        disabled={sending}
+        onChange={(event) => {
+          void choose(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
+      <span className={zip || sending ? 'small' : 'small error-text'} aria-live="polite">
+        {status}
+      </span>
+      {failed && (
+        <span className="small error-text" role="alert">
+          {isolate(failed)}
+        </span>
+      )}
+    </Field>
+  );
+}
+
 /** The fields of one of the organization's agents. */
 function AgentFields({
   agent,
   onChange,
+  onZip,
   onRemove,
 }: {
   agent: AgentDraft;
   onChange: (agent: AgentDraft) => void;
+  onZip: (zip: NonNullable<AgentDraft['zip']>) => void;
   onRemove: () => void;
 }) {
   const t = useT();
@@ -299,9 +388,11 @@ function AgentFields({
           <option value="">{t('system.custom.installNone')}</option>
           <option value="winget">WinGet</option>
           <option value="npm">npm</option>
+          <option value="package">{t('system.custom.installPackage')}</option>
         </select>
       </Field>
-      {agent.install && (
+      {agent.install === 'package' && <PackageField zip={agent.zip} onZip={onZip} />}
+      {(agent.install === 'winget' || agent.install === 'npm') && (
         <div className={agent.install === 'winget' ? 'settings-server two' : undefined}>
           <Field label={t('system.custom.package')}>
             <input
@@ -391,6 +482,18 @@ export function System() {
   const empty = [draft.agents, draft.languages, draft.images, draft.stock].some(
     (offer) => offer.offered.length === 0,
   );
+  // An agent installed from a package needs its .zip, sent before it is published.
+  const zipless = draft.custom.some((agent) => agent.install === 'package' && !agent.zip);
+
+  // A package comes when it has been sent: to the agent it was chosen for, as it is by then.
+  const changeZip = (key: number, zip: NonNullable<AgentDraft['zip']>) =>
+    setDraft(
+      (now) =>
+        now && {
+          ...now,
+          custom: now.custom.map((agent) => (agent.key === key ? { ...agent, zip } : agent)),
+        },
+    );
 
   const changeAgent = (index: number, agent: AgentDraft) => {
     const before = draft.custom[index]!.id.trim();
@@ -484,6 +587,7 @@ export function System() {
             key={agent.key}
             agent={agent}
             onChange={(next) => changeAgent(index, next)}
+            onZip={(zip) => changeZip(agent.key, zip)}
             onRemove={() => removeAgent(index)}
           />
         ))}
@@ -524,7 +628,7 @@ export function System() {
       <section className="settings-part">
         <Issues issues={issues} />
         <div className="row">
-          <button type="submit" className="primary" disabled={work.busy || empty}>
+          <button type="submit" className="primary" disabled={work.busy || empty || zipless}>
             {t('system.save')}
           </button>
           {settings && (

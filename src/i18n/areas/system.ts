@@ -3,7 +3,7 @@ export const he = {
   'system.about': 'מה האפליקציות של הארגון מציעות: סוכנים, שפות, גישה לאינטרנט, תמונות וצילומים.',
   'system.title': 'ההגדרות של האפליקציות',
   'system.explain':
-    'ההגדרות מתפרסמות במדיה של הספרייה. כל אפליקציה שקוראת את הספרייה הזאת קוראת אותן כשהיא עולה לראשונה, שומרת אותן אצלה, וקוראת אותן שוב רק כשהיא מתעדכנת לגרסה חדשה.',
+    'ההגדרות מתפרסמות במדיה של הספרייה. כל אפליקציה שקוראת את הספרייה הזאת קוראת אותן כשהיא עולה לראשונה ושומרת אותן אצלה. בכל עלייה אחרת היא פועלת לפי מה ששמרה, וקוראת אותן שוב ברקע לקראת העלייה הבאה.',
   'system.updated': 'פורסמו {when}.',
   'system.none': 'לא פורסמו הגדרות מערכת: כל אפליקציה פועלת לפי ברירות המחדל שלה.',
   'system.default': 'ברירת מחדל',
@@ -45,6 +45,17 @@ export const he = {
   'system.custom.package': 'חבילה',
   'system.custom.source': 'מקור של WinGet',
   'system.custom.sourceHint': 'המקור של הארגון. בלי מקור, של הקהילה.',
+  'system.custom.installPackage': 'חבילה מהספרייה הזאת (zip)',
+  'system.custom.zip': 'קובץ ה-zip',
+  'system.custom.zipHint':
+    'התוכנה של הסוכן וכל הקבצים שהוא צריך, עד 95 MB. האפליקציה מורידה אותה מהספרייה הזאת בלבד, אף פעם לא מהאינטרנט, ומחלצת אותה לתיקייה של הסוכן: התוכנה יכולה להיות נתיב בתוכה (bin\\acme.exe), ו-%SLIDR_AGENT_DIR% בארגומנטים ובמשתני הסביבה הוא התיקייה הזאת.',
+  'system.custom.zipMissing': 'צריך לבחור את קובץ ה-zip של הסוכן.',
+  'system.custom.zipSending': 'שולחים את החבילה…',
+  'system.custom.zipChosen': '{name}, {size}: יתפרסם עם ההגדרות.',
+  'system.custom.zipPublished':
+    'החבילה שבספרייה: {size}, SHA-256 {hash}…. אפשר לבחור קובץ אחר במקומה.',
+  'system.custom.zipTooLarge': 'חבילה היא עד {most}.',
+  'system.custom.zipFailed': 'החבילה לא נשלחה: {error}',
   'system.tone.orange': 'כתום',
   'system.tone.green': 'ירוק',
   'system.tone.blue': 'כחול',
@@ -60,10 +71,10 @@ export const he = {
   'system.stock.title': 'צילומים',
   'system.stock.explain': 'מאגרי הצילומים שהאפליקציה מחפשת בהם.',
   'system.save': 'פרסום',
-  'system.saved': 'פורסם. אפליקציות קוראות את ההגדרות כשהן עולות לראשונה או מתעדכנות.',
+  'system.saved': 'פורסם. כל אפליקציה תקרא את ההגדרות בעלייה הבאה שלה, ותפעל לפיהן מהעלייה שאחריה.',
   'system.remove': 'הסרת ההגדרות',
   'system.removeConfirm':
-    'להסיר את הגדרות המערכת? אפליקציה שתעלה לראשונה, או בגרסה חדשה, תפעל לפי ברירות המחדל שלה.',
+    'להסיר את הגדרות המערכת? כל אפליקציה תקרא זאת בעלייה הבאה שלה, ותפעל לפי ברירות המחדל שלה מהעלייה שאחריה.',
   'system.removed': 'ההגדרות הוסרו.',
   'system.issues': 'ההגדרות האלה לא תקינות:',
 };
@@ -74,7 +85,7 @@ export const en: Record<keyof typeof he, string> = {
     'What the organization’s apps offer: agents, languages, web access, images and photos.',
   'system.title': 'The apps’ settings',
   'system.explain':
-    'These settings are published into the library’s media. Each app that reads this library reads them when it first starts, keeps them, and reads them again only when it is updated to a new version.',
+    'These settings are published into the library’s media. Each app that reads this library reads them when it first starts, and keeps them. Every later start goes by what it kept, and reads them again in the background for the next start.',
   'system.updated': 'Published {when}.',
   'system.none': 'No system settings are published: every app goes by its own defaults.',
   'system.default': 'Default',
@@ -116,6 +127,17 @@ export const en: Record<keyof typeof he, string> = {
   'system.custom.package': 'Package',
   'system.custom.source': 'WinGet source',
   'system.custom.sourceHint': 'The organization’s own source. Without one, the community’s.',
+  'system.custom.installPackage': 'A package of this library (.zip)',
+  'system.custom.zip': 'The .zip file',
+  'system.custom.zipHint':
+    'The agent’s program and every file it needs, up to 95 MB. The app downloads it from this library alone, never from the internet, and unpacks it into a folder of the agent’s own: the program may be a path within it (bin\\acme.exe), and %SLIDR_AGENT_DIR% in the arguments and the environment is that folder.',
+  'system.custom.zipMissing': 'Choose the agent’s .zip file.',
+  'system.custom.zipSending': 'Sending the package…',
+  'system.custom.zipChosen': '{name}, {size}: published with the settings.',
+  'system.custom.zipPublished':
+    'The library’s package: {size}, SHA-256 {hash}…. Choose another file to replace it.',
+  'system.custom.zipTooLarge': 'A package is at most {most}.',
+  'system.custom.zipFailed': 'The package was not sent: {error}',
   'system.tone.orange': 'Orange',
   'system.tone.green': 'Green',
   'system.tone.blue': 'Blue',
@@ -131,10 +153,11 @@ export const en: Record<keyof typeof he, string> = {
   'system.stock.title': 'Photos',
   'system.stock.explain': 'The photo libraries the app searches.',
   'system.save': 'Publish',
-  'system.saved': 'Published. Apps read the settings when they first start, or are updated.',
+  'system.saved':
+    'Published. Each app reads the settings at its next start, and goes by them from the start after.',
   'system.remove': 'Remove the settings',
   'system.removeConfirm':
-    'Remove the system settings? An app that starts for the first time, or as a new version, will go by its own defaults.',
+    'Remove the system settings? Each app reads this at its next start, and goes by its own defaults from the start after.',
   'system.removed': 'The settings were removed.',
   'system.issues': 'These settings do not hold:',
 };

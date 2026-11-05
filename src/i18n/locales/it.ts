@@ -656,6 +656,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.source': 'Origine WinGet',
   'system.custom.sourceHint':
     'L’origine propria dell’organizzazione. Senza, quella della community.',
+  'system.custom.installPackage': 'Un pacchetto di questa libreria (.zip)',
+  'system.custom.zip': 'Il file .zip',
+  'system.custom.zipHint':
+    'Il programma dell’agente e tutti i file di cui ha bisogno, fino a 95 MB. L’app lo scarica solo da questa libreria, mai da internet, e lo estrae in una cartella tutta dell’agente: il programma può essere un percorso al suo interno (bin\\acme.exe), e %SLIDR_AGENT_DIR% negli argomenti e nelle variabili d’ambiente è quella cartella.',
+  'system.custom.zipMissing': 'Scegli il file .zip dell’agente.',
+  'system.custom.zipSending': 'Invio del pacchetto…',
+  'system.custom.zipChosen': '{name}, {size}: pubblicato con le impostazioni.',
+  'system.custom.zipPublished':
+    'Il pacchetto della libreria: {size}, SHA-256 {hash}…. Scegli un altro file per sostituirlo.',
+  'system.custom.zipTooLarge': 'Un pacchetto è al massimo di {most}.',
+  'system.custom.zipFailed': 'Il pacchetto non è stato inviato: {error}',
   'system.tone.orange': 'Arancione',
   'system.tone.green': 'Verde',
   'system.tone.blue': 'Blu',

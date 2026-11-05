@@ -647,6 +647,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'Gói',
   'system.custom.source': 'Nguồn WinGet',
   'system.custom.sourceHint': 'Nguồn riêng của tổ chức. Nếu không có, dùng nguồn cộng đồng.',
+  'system.custom.installPackage': 'Gói từ thư viện này (.zip)',
+  'system.custom.zip': 'Tệp .zip',
+  'system.custom.zipHint':
+    'Chương trình của tác nhân và mọi tệp nó cần, tối đa 95 MB. Ứng dụng chỉ tải gói này từ thư viện này, không bao giờ từ internet, rồi giải nén vào một thư mục riêng của tác nhân: chương trình có thể là một đường dẫn bên trong (bin\\acme.exe), và %SLIDR_AGENT_DIR% trong đối số và biến môi trường chính là thư mục đó.',
+  'system.custom.zipMissing': 'Chọn tệp .zip của tác nhân.',
+  'system.custom.zipSending': 'Đang gửi gói…',
+  'system.custom.zipChosen': '{name}, {size}: được xuất bản cùng cài đặt.',
+  'system.custom.zipPublished':
+    'Gói trong thư viện: {size}, SHA-256 {hash}…. Chọn một tệp khác để thay thế.',
+  'system.custom.zipTooLarge': 'Một gói tối đa {most}.',
+  'system.custom.zipFailed': 'Không gửi được gói: {error}',
   'system.tone.orange': 'Cam',
   'system.tone.green': 'Xanh lá',
   'system.tone.blue': 'Xanh dương',

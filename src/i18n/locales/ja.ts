@@ -651,6 +651,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'パッケージ',
   'system.custom.source': 'WinGet ソース',
   'system.custom.sourceHint': '組織独自のソース。空欄ならコミュニティのソース。',
+  'system.custom.installPackage': 'このライブラリのパッケージ（.zip）',
+  'system.custom.zip': '.zip ファイル',
+  'system.custom.zipHint':
+    'エージェントのプログラムと、必要なすべてのファイル（95 MB まで）。アプリはこのライブラリからのみダウンロードし、インターネットからは決してダウンロードせず、エージェント専用のフォルダーに展開します。プログラムにはその中のパス（bin\\acme.exe）を指定でき、引数と環境変数の %SLIDR_AGENT_DIR% はそのフォルダーを指します。',
+  'system.custom.zipMissing': 'エージェントの .zip ファイルを選んでください。',
+  'system.custom.zipSending': 'パッケージを送信しています…',
+  'system.custom.zipChosen': '{name}、{size}：設定と一緒に公開されます。',
+  'system.custom.zipPublished':
+    'ライブラリのパッケージ：{size}、SHA-256 {hash}…。置き換えるには別のファイルを選んでください。',
+  'system.custom.zipTooLarge': 'パッケージは最大 {most} です。',
+  'system.custom.zipFailed': 'パッケージを送信できませんでした：{error}',
   'system.tone.orange': 'オレンジ',
   'system.tone.green': '緑',
   'system.tone.blue': '青',

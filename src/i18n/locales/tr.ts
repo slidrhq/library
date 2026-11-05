@@ -643,6 +643,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'Paket',
   'system.custom.source': 'WinGet kaynağı',
   'system.custom.sourceHint': 'Kuruluşun kendi kaynağı. Boşsa topluluğun kaynağı.',
+  'system.custom.installPackage': 'Bu kütüphanenin bir paketi (.zip)',
+  'system.custom.zip': '.zip dosyası',
+  'system.custom.zipHint':
+    'Ajanın programı ve ihtiyaç duyduğu tüm dosyalar, en çok 95 MB. Uygulama onu yalnızca bu kütüphaneden indirir, asla internetten indirmez ve ajanın kendi klasörüne açar: program bu klasör içindeki bir yol olabilir (bin\\acme.exe), argümanlarda ve ortam değişkenlerinde %SLIDR_AGENT_DIR% de o klasördür.',
+  'system.custom.zipMissing': 'Ajanın .zip dosyasını seçin.',
+  'system.custom.zipSending': 'Paket gönderiliyor…',
+  'system.custom.zipChosen': '{name}, {size}: ayarlarla birlikte yayımlanır.',
+  'system.custom.zipPublished':
+    'Kütüphanedeki paket: {size}, SHA-256 {hash}…. Değiştirmek için başka bir dosya seçin.',
+  'system.custom.zipTooLarge': 'Bir paket en çok {most} olabilir.',
+  'system.custom.zipFailed': 'Paket gönderilemedi: {error}',
   'system.tone.orange': 'Turuncu',
   'system.tone.green': 'Yeşil',
   'system.tone.blue': 'Mavi',

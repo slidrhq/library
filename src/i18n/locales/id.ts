@@ -649,6 +649,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'Paket',
   'system.custom.source': 'Sumber WinGet',
   'system.custom.sourceHint': 'Sumber milik organisasi. Tanpa itu, sumber komunitas.',
+  'system.custom.installPackage': 'Paket dari pustaka ini (.zip)',
+  'system.custom.zip': 'File .zip',
+  'system.custom.zipHint':
+    'Program agen dan semua file yang dibutuhkannya, hingga 95 MB. Aplikasi mengunduhnya hanya dari pustaka ini, tidak pernah dari internet, lalu mengekstraknya ke folder milik agen sendiri: programnya boleh berupa jalur di dalamnya (bin\\acme.exe), dan %SLIDR_AGENT_DIR% di argumen dan variabel lingkungan adalah folder itu.',
+  'system.custom.zipMissing': 'Pilih file .zip agen.',
+  'system.custom.zipSending': 'Mengirim paket…',
+  'system.custom.zipChosen': '{name}, {size}: diterbitkan bersama pengaturan.',
+  'system.custom.zipPublished':
+    'Paket di pustaka: {size}, SHA-256 {hash}…. Pilih file lain untuk menggantinya.',
+  'system.custom.zipTooLarge': 'Ukuran paket paling besar {most}.',
+  'system.custom.zipFailed': 'Paket tidak terkirim: {error}',
   'system.tone.orange': 'Oranye',
   'system.tone.green': 'Hijau',
   'system.tone.blue': 'Biru',

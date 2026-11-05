@@ -12,6 +12,7 @@ import {
   toText,
   type Manifest,
 } from './media/live.ts';
+import { stagedKey } from './media/files.ts';
 import { SYSTEM_SETTINGS } from './system.ts';
 
 afterEach(() => {
@@ -166,6 +167,27 @@ describe('the system settings', () => {
     );
     await refused({ agents: { custom: [{ ...agent, glyph: 'ABC' }] } }, 'agents.custom.0.glyph');
     await refused({ agents: { webAccess: 'sometimes' } }, 'agents.webAccess');
+    // The folder of a package, and a path within one, are an agent's that comes as a package.
+    await refused(
+      { agents: { custom: [{ ...agent, command: '%SLIDR_AGENT_DIR%\\acme.exe' }] } },
+      'agents.custom.0.command',
+    );
+    await refused(
+      { agents: { custom: [{ ...agent, args: ['-File', '%slidr_agent_dir%\\a.ps1'] }] } },
+      'agents.custom.0.args.1',
+    );
+    await refused(
+      { agents: { custom: [{ ...agent, env: { HOME: '%SLIDR_AGENT_DIR%' } }] } },
+      'agents.custom.0.env.HOME',
+    );
+    await refused(
+      { agents: { custom: [{ ...agent, env: { SLIDR_AGENT_DIR: 'x' } }] } },
+      'agents.custom.0.env',
+    );
+    await refused(
+      { agents: { custom: [{ ...agent, install: { sha256: 'AB', size: 1 } }] } },
+      'agents.custom.0.install.sha256',
+    );
     await refused({ images: { offered: [] } }, 'images.offered');
     assert.equal(library.fileOf(), undefined);
   });
@@ -202,6 +224,88 @@ describe('the system settings', () => {
     }
     const admin = await as('admin@example.com');
     assert.equal((await admin.send('/api/settings/system', 'PUT', SETTINGS)).status, 200);
+  });
+
+  test('publish an agent’s package with them, and take it away when no agent names it', async () => {
+    const library = await live();
+    // A .zip begins as one; the server reads no further.
+    const zip = toBytes('PK\u0003\u0004 the files of the Acme agent');
+    const sha256 = await sha256Hex(zip);
+    const stage = (hash: string, bytes: Uint8Array) =>
+      library.call(`/api/settings/system/packages/${hash}`, {
+        method: 'PUT',
+        body: bytes as Uint8Array<ArrayBuffer>,
+      });
+    assert.equal((await stage(sha256, toBytes('MZ not a zip'))).status, 415);
+    assert.equal((await stage('0'.repeat(64), zip)).status, 400);
+    const staged = await stage(sha256, zip);
+    assert.equal(staged.status, 200, await staged.clone().text());
+    assert.deepEqual(await read(staged), { sha256, size: zip.length });
+
+    const agent = {
+      id: 'acme',
+      name: 'Acme Agent',
+      command: 'bin\\acme.exe',
+      args: ['--home', '%SLIDR_AGENT_DIR%'],
+      install: { sha256, size: zip.length },
+    };
+    const settings = { agents: { custom: [agent] } };
+    const answer = await library.send('/api/settings/system', 'PUT', settings);
+    assert.equal(answer.status, 200, await answer.clone().text());
+    const path = 'system/agents/acme.zip';
+    // The settings name it where it is, and the same publication wrote it.
+    const written = library.fileOf() as { agents: { custom: { install: unknown }[] } };
+    assert.deepEqual(written.agents.custom[0]!.install, {
+      package: path,
+      sha256,
+      size: zip.length,
+    });
+    const manifest = library.manifestOf();
+    assert.deepEqual(manifest.files[path], { size: zip.length, sha256 });
+    assert.ok(manifest.files[SYSTEM_SETTINGS]);
+    assert.deepEqual(library.media.objects.get(path)!.data, zip);
+    // What was sent is not kept once it is published.
+    assert.equal(library.bucket.objects.has(stagedKey(sha256)), false);
+
+    // Published again, the package is the library's: it is not sent again.
+    assert.equal((await library.send('/api/settings/system', 'PUT', settings)).status, 200);
+    // An agent whose id changed takes its package with it.
+    const renamed = { agents: { custom: [{ ...agent, id: 'acme-two' }] } };
+    assert.equal((await library.send('/api/settings/system', 'PUT', renamed)).status, 200);
+    assert.deepEqual(library.manifestOf().files['system/agents/acme-two.zip'], {
+      size: zip.length,
+      sha256,
+    });
+    assert.equal(library.manifestOf().files[path], undefined);
+
+    // A package neither sent nor in the library is refused, and nothing is published.
+    const before = library.manifestOf().published;
+    const unsent = await library.send('/api/settings/system', 'PUT', {
+      agents: { custom: [{ ...agent, install: { sha256: 'ab'.repeat(32), size: 10 } }] },
+    });
+    assert.equal(unsent.status, 422);
+    const { issues } = await read<{ issues: { path: string }[] }>(unsent);
+    assert.deepEqual(
+      issues.map((issue) => issue.path),
+      ['agents.custom.0.install'],
+    );
+    assert.equal(library.manifestOf().published, before);
+
+    // An agent that is no longer installed from a package leaves none behind; nor do none.
+    const winget = { ...agent, command: 'acme.exe', args: [], install: { winget: 'Acme.Agent' } };
+    assert.equal(
+      (await library.send('/api/settings/system', 'PUT', { agents: { custom: [winget] } })).status,
+      200,
+    );
+    assert.deepEqual(
+      Object.keys(library.manifestOf().files).filter((one) => one.startsWith('system/agents/')),
+      [],
+    );
+    assert.equal((await stage(sha256, zip)).status, 200);
+    assert.equal((await library.send('/api/settings/system', 'PUT', settings)).status, 200);
+    assert.equal((await library.call('/api/settings/system', { method: 'DELETE' })).status, 204);
+    assert.equal(library.manifestOf().files[path], undefined);
+    assert.equal(library.media.objects.has(path), false);
   });
 
   test('wait for the library to be in its bucket', async () => {

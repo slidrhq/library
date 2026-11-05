@@ -646,6 +646,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': 'पैकेज',
   'system.custom.source': 'WinGet स्रोत',
   'system.custom.sourceHint': 'संगठन का अपना स्रोत। इसके बिना, कम्युनिटी का स्रोत।',
+  'system.custom.installPackage': 'इस लाइब्रेरी का पैकेज (.zip)',
+  'system.custom.zip': '.zip फ़ाइल',
+  'system.custom.zipHint':
+    'एजेंट का प्रोग्राम और उसकी ज़रूरत की हर फ़ाइल, 95 MB तक। ऐप इसे सिर्फ़ इसी लाइब्रेरी से डाउनलोड करता है, इंटरनेट से कभी नहीं, और इसे एजेंट के अपने फ़ोल्डर में निकालता है: प्रोग्राम उसके अंदर का कोई पाथ हो सकता है (bin\\acme.exe), और आर्ग्युमेंट्स और एनवायरनमेंट वेरिएबल में %SLIDR_AGENT_DIR% वही फ़ोल्डर है।',
+  'system.custom.zipMissing': 'एजेंट की .zip फ़ाइल चुनें।',
+  'system.custom.zipSending': 'पैकेज भेजा जा रहा है…',
+  'system.custom.zipChosen': '{name}, {size}: सेटिंग्स के साथ प्रकाशित होगा।',
+  'system.custom.zipPublished':
+    'लाइब्रेरी का पैकेज: {size}, SHA-256 {hash}…। इसे बदलने के लिए कोई और फ़ाइल चुनें।',
+  'system.custom.zipTooLarge': 'पैकेज ज़्यादा से ज़्यादा {most} का हो सकता है।',
+  'system.custom.zipFailed': 'पैकेज नहीं भेजा गया: {error}',
   'system.tone.orange': 'नारंगी',
   'system.tone.green': 'हरा',
   'system.tone.blue': 'नीला',

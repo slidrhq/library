@@ -58,8 +58,12 @@ async function sha256Hex(bytes: Uint8Array): Promise<string | undefined> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-/** The SHA-256 of bytes written here: WebCrypto's, or, on a page that is not secure, made here. */
-const hashOfWritten = async (bytes: Uint8Array) => (await sha256Hex(bytes)) ?? sha256Here(bytes);
+/**
+ * The SHA-256 of bytes written here, or sent from here (an agent's package, `systemApi.ts`):
+ * WebCrypto's, or, on a page that is not secure, made here.
+ */
+export const hashOfWritten = async (bytes: Uint8Array) =>
+  (await sha256Hex(bytes)) ?? sha256Here(bytes);
 
 /** The manifest of some files, as the library writes its own (`encodeManifest` of live.ts). */
 function manifestText(published: string, files: Record<string, ManifestFile>) {

@@ -637,6 +637,17 @@ const words: Record<MessageKey, string> = {
   'system.custom.package': '패키지',
   'system.custom.source': 'WinGet 소스',
   'system.custom.sourceHint': '조직 자체의 소스입니다. 없으면 커뮤니티 소스를 씁니다.',
+  'system.custom.installPackage': '이 라이브러리의 패키지(.zip)',
+  'system.custom.zip': '.zip 파일',
+  'system.custom.zipHint':
+    '에이전트의 프로그램과 필요한 모든 파일, 최대 95 MB. 앱은 이 라이브러리에서만 내려받고 인터넷에서는 절대 내려받지 않으며, 에이전트 전용 폴더에 압축을 풉니다. 프로그램은 그 안의 경로(bin\\acme.exe)일 수 있고, 인수와 환경 변수의 %SLIDR_AGENT_DIR%은(는) 그 폴더입니다.',
+  'system.custom.zipMissing': '에이전트의 .zip 파일을 선택하세요.',
+  'system.custom.zipSending': '패키지를 보내는 중…',
+  'system.custom.zipChosen': '{name}, {size}: 설정과 함께 게시됩니다.',
+  'system.custom.zipPublished':
+    '라이브러리의 패키지: {size}, SHA-256 {hash}…. 바꾸려면 다른 파일을 선택하세요.',
+  'system.custom.zipTooLarge': '패키지는 최대 {most}입니다.',
+  'system.custom.zipFailed': '패키지를 보내지 못했습니다: {error}',
   'system.tone.orange': '주황',
   'system.tone.green': '초록',
   'system.tone.blue': '파랑',

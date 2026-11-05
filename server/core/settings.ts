@@ -246,8 +246,8 @@ const ROUTES: [RegExp, Partial<Record<string, Route>>][] = [
   [/^\/api\/settings\/media\/test$/, { POST: test }],
   [/^\/api\/settings\/sign-in$/, { PUT: signIn, DELETE: signIn }],
   [/^\/api\/settings\/limits$/, { PUT: limits }],
-  // The settings of the apps that read the library (`system.ts`).
-  SYSTEM_ROUTES,
+  // The settings of the apps that read the library, and their agents' packages (`system.ts`).
+  ...SYSTEM_ROUTES,
 ];
 
 /** The answer to a request of the settings; undefined for a path that is none of theirs. */
