@@ -34,7 +34,7 @@ The protocol starts a native executable, so the registration names `pwsh.exe` an
 
 ### As a package of the library
 
-An organization whose machines do not reach the internet gives the agent as a package of its library (ADR-125 of the app): the app downloads it from the library alone and unpacks it into a folder of the agent's own, `%LOCALAPPDATA%\<the app's identifier>\custom_agents\open-webui\`. The package is the script and its page, at its top; PowerShell 7.5 is the machines':
+An organization whose machines do not reach the internet gives the agent as a package of its library (ADR-130 of the app): the app downloads it from the library alone and unpacks it into a folder of the agent's own, `%LOCALAPPDATA%\<the app's identifier>\custom_agents\open-webui\`. The package is the script and its page, at its top; PowerShell 7.5 is the machines':
 
 ```powershell
 Compress-Archive -Path .\openwebui-agent.ps1, .\login.html -DestinationPath .\open-webui.zip

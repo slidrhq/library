@@ -37,7 +37,7 @@ export type Tone = (typeof TONES)[number];
 export type WebAccess = 'on' | 'off' | 'blocked';
 
 /**
- * A package of this library (ADR-125 of the app): a .zip the app downloads from it alone and
+ * A package of this library (ADR-130 of the app): a .zip the app downloads from it alone and
  * unpacks into a folder of the agent's own. Sent by its hash and size; the server names where it
  * keeps it, `system/agents/<id>.zip`.
  */

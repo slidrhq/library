@@ -47,7 +47,7 @@ interface AgentDraft {
   package: string;
   source: string;
   /**
-   * Its package of the library (ADR-125 of the app): the one published, or one sent to be
+   * Its package of the library (ADR-130 of the app): the one published, or one sent to be
    * published with the settings, by the name of its file.
    */
   zip?: Package & { name?: string };
@@ -248,7 +248,7 @@ function OfferPart({
 const apart = (text: string) => `⁨${text}⁩`;
 
 /**
- * The .zip of an agent installed from a package of the library (ADR-125 of the app), sent as it
+ * The .zip of an agent installed from a package of the library (ADR-130 of the app), sent as it
  * is chosen: publishing the settings publishes it.
  */
 function PackageField({

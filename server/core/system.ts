@@ -18,7 +18,7 @@
  * it. The media is public to whoever reads the library, so the file holds nothing secret, and no
  * person's address: an agent's `env` is shown to everyone who reads it.
  *
- * An agent of the organization's own may come as a package of the library (ADR-125 of the app): a
+ * An agent of the organization's own may come as a package of the library (ADR-130 of the app): a
  * .zip of its program and every file it needs, which the app downloads from the library alone,
  * never from the internet, and unpacks into a folder of the agent's own, `%SLIDR_AGENT_DIR%` in
  * the agent's program, arguments and environment. The page sends the zip first, by its hash; the
