@@ -35,6 +35,7 @@ export {
 export { presetPath, scalePath, shapePresets, isBoxPreset, type ShapePath } from './geometry';
 export { extraShapes, type ExtraShape } from './extraShapes';
 export { imagePlacement, linePath } from './elements';
+export { AMBIENT_ATTRIBUTE, AMBIENT_KEYFRAMES, ambientAnimation, hasAmbient } from './ambient';
 export {
   colorRgb,
   duotonePreset,
@@ -78,6 +79,7 @@ export { loadCharts } from './chart/view';
 export { CHART_ATTRIBUTE, CHART_EVENT, type ChartCue } from './chart/cue';
 export { chartSpec, type ChartSpec } from './chart/spec';
 export { clipAttributes, CLIP_ATTRIBUTE, CLIP_TOGGLE_ATTRIBUTE } from './clip';
+export { DISABLED_ATTRIBUTE, DISABLED_FILTER } from './disabled';
 export { renderSlideOffscreen, type OffscreenOptions, type OffscreenSlide } from './offscreen';
 export {
   measureSlide,

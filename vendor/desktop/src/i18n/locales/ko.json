@@ -51,6 +51,8 @@
     "setup": {
       "welcome": "Slidr 채팅에 오신 것을 환영합니다",
       "intro": "먼저 사용할 서비스를 선택하세요. 다음 단계에서 모델과 추론 수준을 고릅니다.",
+      "finish": "설정을 마무리해 볼까요",
+      "finishIntro": "에이전트가 작업을 이어가려면 아직 몇 가지를 선택해야 합니다.",
       "steps": "설정 단계",
       "steps_harness": "서비스",
       "steps_model": "모델",
@@ -65,6 +67,7 @@
       "signingIn": "열린 창에서 로그인을 완료하세요. 완료되면 여기에서 계속합니다.",
       "installDescription": "이 컴퓨터에 {{name}}이(가) 설치되어 있지 않습니다. 승인하시면 Windows App Installer로 다운로드하여 설치한 다음 여기에서 계속합니다.",
       "installDescriptionNpm": "이 컴퓨터에 {{name}}이(가) 설치되어 있지 않습니다. 승인하시면 npm으로 설치하고(Node.js가 없으면 먼저 Windows App Installer로 설치합니다) 여기에서 계속합니다.",
+      "installDescriptionLibrary": "이 컴퓨터에 {{name}}이(가) 설치되어 있지 않습니다. 승인하시면 조직의 라이브러리에서 다운로드하여 설치한 다음 여기에서 계속합니다.",
       "install": "승인 및 설치",
       "signInDescription": "사용 가능한 모델을 불러오려면 계정에 로그인하세요.",
       "signIn": "로그인",
@@ -609,7 +612,9 @@
       "paragraph": "단락 {{n}}/{{total}}",
       "row": "{{name}}: {{effect}}",
       "original": "원래 동작",
-      "originalHint": "가져온 파일에 작성된 그대로의 동작입니다. 다른 효과를 선택하면 바뀝니다."
+      "originalHint": "가져온 파일에 작성된 그대로의 동작입니다. 다른 효과를 선택하면 바뀝니다.",
+      "disableHint": "개체는 “활성화” 애니메이션이 나올 때까지 회색으로 흐리게 유지됩니다. 슬라이드가 열릴 때부터 비활성으로 보이게 하려면 개체에서 “비활성으로 표시”를 선택하세요.",
+      "enableHint": "개체가 원래 모습으로 돌아와 그대로 유지됩니다. 이 애니메이션 전까지 비활성으로 보이게 하려면 개체에서 “비활성으로 표시”를 선택하세요."
     },
     "group": {
       "leadIn": "슬라이드가 열릴 때",
@@ -656,7 +661,9 @@
         "heartbeat": "심장 박동",
         "flicker": "깜빡이기",
         "float": "떠다니기",
-        "tilt": "기울이기"
+        "tilt": "기울이기",
+        "disable": "비활성화",
+        "enable": "활성화"
       },
       "exit": {
         "disappear": "사라지기",
@@ -800,6 +807,8 @@
       "lock": "잠금",
       "unlock": "잠금 해제",
       "hide": "숨기기",
+      "disable": "비활성으로 표시",
+      "enable": "활성으로 표시",
       "duplicate": "복제",
       "pasteStyle": "스타일 붙여넣기",
       "delete": "삭제",
@@ -858,6 +867,7 @@
       "order": "레이어 순서",
       "lock": "잠금",
       "visibility": "숨기기 및 표시",
+      "disabled": "비활성 또는 활성으로 표시",
       "rename": "이름 바꾸기",
       "paste": "붙여넣기",
       "cut": "잘라내기",
@@ -1040,7 +1050,10 @@
       "insert": "그래픽 삽입",
       "frame": "프레임 삽입",
       "reframe": "이미지를 프레임에 넣기",
-      "cards": "카드 세트 삽입"
+      "cards": "카드 세트 삽입",
+      "animation": "애니메이션 삽입",
+      "background": "배경 적용",
+      "motion": "움직임 변경"
     },
     "collection": {
       "cards": "카드 세트",
@@ -1049,7 +1062,9 @@
       "emoji": "이모지",
       "icons": "아이콘",
       "frames": "프레임",
-      "tables": "표"
+      "tables": "표",
+      "animations": "애니메이션",
+      "backgrounds": "배경"
     },
     "designs": {
       "title": "완성 슬라이드",
@@ -1456,17 +1471,129 @@
       "ready": "기본 크기",
       "custom": "다른 크기",
       "size": "{{rows}}행 × {{cols}}열"
+    },
+    "animations": {
+      "search": "애니메이션 검색",
+      "searchPlaceholder": "애니메이션 검색…",
+      "hint": "애니메이션을 클릭하면 슬라이드에 추가됩니다. 스스로 움직이며, 다른 개체처럼 이동하고 크기를 바꾸고 회전할 수 있습니다.",
+      "group": {
+        "basic": "애니메이션 도형",
+        "path": "경로를 따라",
+        "spin": "회전",
+        "scale": "커지기와 맥박",
+        "lines": "선과 파동",
+        "particles": "입자와 네트워크"
+      },
+      "name": {
+        "orbit": "궤도",
+        "conveyor": "경로 위의 상자",
+        "trace": "회로 배선",
+        "atom": "원자",
+        "shuttle": "선 위의 점",
+        "hexagon": "도는 육각형",
+        "rings": "도는 고리",
+        "radar": "레이더",
+        "ripple": "퍼지는 물결",
+        "breathe": "숨 쉬는 도형",
+        "bars": "올라가는 막대",
+        "waves": "파동",
+        "draw": "그려지는 화살표",
+        "flowArrow": "흐르는 연결선",
+        "heartbeat": "심장 박동",
+        "network": "네트워크",
+        "converge": "모이는 입자",
+        "float": "떠오르는 거품"
+      }
+    },
+    "backgrounds": {
+      "hint": "배경을 클릭하면 슬라이드나 선택한 모든 슬라이드에 적용됩니다. 색은 템플릿에서 가져오며, „배경” 도구로 템플릿 배경으로 돌아갈 수 있습니다.",
+      "animated": "움직이는 배경",
+      "still": "차분한 배경",
+      "name": {
+        "flow": "회로 흐름",
+        "waves": "파동",
+        "converge": "수렴",
+        "orbit": "궤도",
+        "radar": "레이더",
+        "network": "네트워크",
+        "drift": "떠도는 빛",
+        "particles": "떠오르는 입자",
+        "dots": "점 격자",
+        "contours": "등고선",
+        "arcs": "모서리 호"
+      }
+    },
+    "animatedShapes": {
+      "title": "애니메이션 도형",
+      "hint": "움직임을 반복하는 일반 도형입니다. 색, 윤곽선, 크기는 다른 도형처럼 편집하고, 움직임은 움직임 도구로 편집합니다.",
+      "more": "모든 애니메이션",
+      "name": {
+        "ring": "회전하는 고리",
+        "hexagon": "회전하는 육각형",
+        "star": "회전하는 별",
+        "octagon": "회전하는 팔각형",
+        "square": "돌다가 멈추는 사각형",
+        "pulse": "뛰는 원",
+        "heart": "뛰는 하트",
+        "float": "떠 있는 원",
+        "arrow": "흔들리는 화살표",
+        "blink": "깜박이는 점"
+      }
+    },
+    "motion": {
+      "title": "움직임",
+      "piece": "애니메이션 속도",
+      "loop": "반복 움직임",
+      "kind": {
+        "none": "없음",
+        "spin": "회전",
+        "pulse": "맥박",
+        "float": "떠오르기",
+        "swing": "흔들기",
+        "blink": "깜박임"
+      },
+      "speed": "속도",
+      "pace": {
+        "slow": "느리게",
+        "medium": "보통",
+        "fast": "빠르게"
+      },
+      "round": "한 바퀴당 초",
+      "rhythm": "리듬",
+      "rhythmKind": {
+        "steady": "일정하게",
+        "smooth": "부드럽게",
+        "pause": "쉬면서"
+      },
+      "direction": "방향",
+      "clockwise": "시계 방향",
+      "counterclockwise": "시계 반대 방향",
+      "amount": {
+        "pulse": "맥박 크기",
+        "float": "떠오르는 높이",
+        "swing": "흔들리는 각도",
+        "blink": "깜박임 강도"
+      },
+      "hint": "슬라이드가 표시되는 동안 움직임이 반복됩니다. 편집기, 프레젠테이션, 내보낸 파일에서도 마찬가지입니다."
     }
   },
   "export": {
-    "title": "HTML로 내보내기",
+    "title": "프레젠테이션 내보내기",
+    "intro": "Slidr 없이도 열리는 파일입니다. 형식과 포함할 내용을 고른 뒤 저장하세요.",
     "description": "인터넷 연결 여부와 관계없이 모든 브라우저에서 재생되는 단일 파일입니다.",
     "descriptionBeside": "인터넷 연결 여부와 관계없이 모든 브라우저에서 재생되는 파일과, 비디오 및 오디오가 담긴 옆 폴더로 내보냅니다.",
+    "steps": "내보내기 단계",
+    "stepContent": "내용",
+    "stepSave": "저장",
+    "formatQuestion": "어떤 형식으로 내보낼까요?",
+    "continue": "계속",
+    "back": "뒤로",
     "close": "닫기",
     "cancel": "취소",
     "export": "내보내기",
     "again": "다시 내보내기",
     "filter": "HTML 페이지",
+    "format": "형식",
     "slides": {
       "label": "슬라이드",
       "all": "프레젠테이션 전체",
@@ -1482,6 +1609,7 @@
     "animations": {
       "label": "애니메이션 및 전환",
       "with": "포함",
+      "withHint": "슬라이드 쇼처럼 슬라이드가 구성되고 전환됩니다.",
       "without": "제외",
       "withoutHint": "각 슬라이드가 완성된 상태로 표시되고, 다음 슬라이드로 바로 넘어갑니다."
     },
@@ -2305,6 +2433,11 @@
       "blur": "흐리게",
       "dim": "어둡게",
       "applyAll": "모든 슬라이드에 적용",
+      "noDrawing": "배경 그림 제거",
+      "drawingColours": "그림 색상",
+      "drawingColour": "그림 색상 {{n}}",
+      "speed": "움직임 속도",
+      "drawingOpacity": "그림 불투명도",
       "reset": "테마 배경으로 되돌리기"
     },
     "groups": {
@@ -2400,8 +2533,7 @@
   "pptx": {
     "filter": "PowerPoint 프레젠테이션",
     "export": {
-      "title": "PowerPoint로 내보내기",
-      "description": "PowerPoint, Keynote, Google 프레젠테이션에서 열리는 .pptx 파일로, 모든 텍스트, 도형, 표, 차트를 편집할 수 있습니다.",
+      "description": "PowerPoint, Keynote, Google 프레젠테이션에서 열리며, 모든 내용을 편집할 수 있습니다.",
       "working": "프레젠테이션을 내보내는 중…",
       "mediaOne": "파일 안의 미디어 파일 1개, {{size}}",
       "mediaMany": "파일 안의 미디어 파일 {{n}}개, {{size}}",
@@ -2521,10 +2653,10 @@
       "not_logged_in": "CLI가 설치되어 있습니다. 계속하려면 계정에 로그인하세요.",
       "install": "설치…",
       "signIn": "로그인",
-      "refresh": "연결 및 모델 새로 고침",
       "installTitle": "{{name}}을(를) 설치하시겠습니까?",
       "installDescription": "앱에서 Windows App Installer를 사용하여 {{name}}을(를) 다운로드하고 설치합니다. 그런 다음 연결을 확인하고 필요하면 로그인을 요청합니다.",
       "installDescriptionNpm": "앱에서 npm을 사용하여 {{name}}을(를) 설치합니다. Node.js가 없으면 먼저 Windows App Installer로 설치합니다. 그런 다음 연결을 확인하고 필요하면 로그인을 요청합니다.",
+      "installDescriptionLibrary": "앱에서 조직의 라이브러리에서 {{name}}을(를) 다운로드하여 이 컴퓨터에 설치합니다. 그런 다음 연결을 확인하고 필요하면 로그인을 요청합니다.",
       "approveInstall": "승인 및 설치",
       "chooseModel": "모델 선택",
       "chooseEffort": "추론 수준 선택",
@@ -2549,6 +2681,8 @@
       "pickerHint": "이 채팅에만 적용됩니다. 기본값은 설정에서 지정합니다.",
       "web": "웹 검색 및 읽기",
       "webHint": "에이전트가 슬라이드를 만드는 동안 웹을 검색하고 페이지를 읽을 수 있습니다.",
+      "webBlocked": "조직에서 에이전트의 웹 검색이나 페이지 읽기를 허용하지 않습니다.",
+      "askAdmin": "{{name}}은(는) 조직에서 직접 설치합니다. 이 컴퓨터에 설치해 달라고 관리자에게 요청하세요.",
       "gate": "응답이 끝날 때마다 디자인 검사",
       "gateHint": "에이전트가 작업을 마치기 전에 변경한 슬라이드의 디자인 문제를 수정합니다.",
       "outline": "프레젠테이션을 만들기 전에 개요 제시",
@@ -2575,10 +2709,7 @@
       "open": "열기…",
       "recent": "최근 항목 열기",
       "noRecent": "최근 파일 없음",
-      "importHtml": "HTML 가져오기…",
-      "importPptx": "PowerPoint 가져오기…",
-      "exportHtml": "HTML 내보내기…",
-      "exportPptx": "PowerPoint로 내보내기…",
+      "export": "내보내기…",
       "missing": "파일을 찾을 수 없음",
       "save": "저장",
       "saveAs": "다른 이름으로 저장…",
@@ -2586,6 +2717,8 @@
       "properties": "프레젠테이션 속성…",
       "filter": "Slidr 프레젠테이션",
       "filterAll": "Slidr에서 열 수 있는 모든 파일",
+      "importUnknown": "이 종류의 파일은 가져올 수 없습니다",
+      "importKinds": "Slidr에서 가져올 수 있는 파일: {{kinds}}.",
       "unsavedTitle": "“{{name}}”의 변경 내용을 저장하시겠습니까?",
       "unsavedBody": "저장하지 않으면 변경 내용이 손실됩니다.",
       "dontSave": "저장 안 함",
@@ -3060,7 +3193,17 @@
       "magen": "파수꾼",
       "shvav": "회로",
       "mutzar": "론칭",
-      "atlas": "아틀라스"
+      "atlas": "아틀라스",
+      "dofek": "맥박",
+      "gir": "분필",
+      "hon": "자본",
+      "tavlin": "향신료",
+      "rakia": "우주",
+      "maslul": "트랙",
+      "taarucha": "전시회",
+      "hadran": "앙코르",
+      "tefer": "바느질",
+      "sade": "수확"
     },
     "tagline": {
       "zerem": "짙푸른 밤에 청록빛이 빛나는, 움직이는 기술",
@@ -3087,7 +3230,17 @@
       "magen": "짙은 올리브와 경고의 주황, 관제 화면처럼 정밀하게",
       "shvav": "회로 기판의 초록과 구리, 양산을 앞둔 하드웨어를 위해",
       "mutzar": "제품 화면, 커서, 알림, 새 버전 출시를 위해",
-      "atlas": "지도 종이 위의 지구본, 경로, 우표. 모든 언어로, 국경을 넘는 이야기를 위해"
+      "atlas": "지도 종이 위의 지구본, 경로, 우표. 모든 언어로, 국경을 넘는 이야기를 위해",
+      "dofek": "수술실의 청록, 맥박의 빨강, 모니터의 파형, 병원과 의원, 공중보건을 위해",
+      "gir": "참나무 틀에 끼운 초록 칠판, 손에 쥔 분필과 선생님의 컴퍼스. 수업과 강좌, 학부모 모임을 위해",
+      "hon": "지폐 용지 위의 와인빛 잉크, 기요셰 문양, 구리 실. 가치를 지키는 숫자를 위해",
+      "tavlin": "향신료 자루, 크라프트지 가격표, 사프란빛 종이 위 요리책의 세리프, 주방과 셰프, 미식 축제를 위해",
+      "rakia": "별의 궤적과 초승달, 스펙트럼을 깊은 밤하늘에. 위를 올려다보는 과학을 위해",
+      "maslul": "붉은 레인, 흰 선, 스톱워치. 출발선에 선 선수와 클럽을 위해",
+      "taarucha": "색을 칠한 갤러리 벽, 액자에 담긴 작품과 미술관 라벨, 곧 문을 여는 전시를 위해",
+      "hadran": "분홍빛 종이 위의 음반, 티켓, 무대 조명. 한 곡 더를 부르는 음악을 위해",
+      "tefer": "패턴 종이와 줄자, 가넷색 실. 패션 브랜드와 아틀리에, 만드는 사람들을 위해",
+      "sade": "흙의 띠 위로 여문 밀 이삭, 단면으로 그린 들판. 우리의 먹거리를 기르는 이들을 위해"
     },
     "properties": {
       "title": "프레젠테이션 속성",

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Command, commandDefs, type CommandType } from './commands';
 import {
+  AmbientMotion,
   AnimationStep,
   Background,
   Color,
@@ -48,6 +49,8 @@ for (const [id, schema] of Object.entries({
   AnimationStep,
   Transition,
   Layout,
+  // Every kind of element may have one (ADR-128): written once, not in each of them.
+  AmbientMotion,
 })) {
   named.add(schema, { id });
 }

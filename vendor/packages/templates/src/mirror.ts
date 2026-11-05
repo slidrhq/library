@@ -98,17 +98,28 @@ function mirrorFill(fill: Fill): Fill {
   }
 }
 
+/** A background for the other direction: its gradients and its drawing change sides. */
 export function mirrorBackground(background: Background): Background {
   return {
-    ...background,
+    ...mirrorBackgroundDrawing(background),
     fill: mirrorFill(background.fill),
     ...(background.overlay ? { overlay: mirrorFill(background.overlay) } : {}),
   };
 }
 
 /**
+ * A background whose drawing (ADR-125) changes sides, and nothing else: for the theme's
+ * backgrounds, whose fills stay as they are when a deck turns (`changeDirection`).
+ */
+export function mirrorBackgroundDrawing(background: Background): Background {
+  if (!background.elements) return background;
+  return { ...background, elements: background.elements.map((e) => mirrorElement(e)) };
+}
+
+/**
  * A layout for the other direction: placeholders, decorations and objects change sides, and so
- * do the gradients of its background. Alignment is `start` / `end` already, so it needs no change.
+ * do the gradients and the drawing of its background. Alignment is `start` / `end` already, so
+ * it needs no change.
  */
 export function mirrorLayout(layout: Layout): Layout {
   return {

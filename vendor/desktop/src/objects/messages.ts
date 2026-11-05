@@ -250,6 +250,11 @@ export const he = {
     blur: 'טשטוש',
     dim: 'הכהיה',
     applyAll: 'החלה על כל השקפים',
+    noDrawing: 'הסרת הציור מהרקע',
+    drawingColours: 'צבעי הציור',
+    drawingColour: 'צבע {{n}} של הציור',
+    speed: 'מהירות התנועה',
+    drawingOpacity: 'אטימות הציור',
     reset: 'חזרה לרקע התבנית',
   },
   groups: {
@@ -592,6 +597,11 @@ export const en: Messages<typeof he> = {
     blur: 'Blur',
     dim: 'Dim',
     applyAll: 'Apply to all slides',
+    noDrawing: 'Remove the background drawing',
+    drawingColours: 'Drawing colours',
+    drawingColour: 'Drawing colour {{n}}',
+    speed: 'Motion speed',
+    drawingOpacity: 'Drawing opacity',
     reset: 'Back to the theme background',
   },
   groups: {

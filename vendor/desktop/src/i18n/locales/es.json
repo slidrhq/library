@@ -53,6 +53,8 @@
     "setup": {
       "welcome": "Te damos la bienvenida al chat de Slidr",
       "intro": "Elige tu servicio para empezar. Después elegiremos un modelo y un nivel de esfuerzo.",
+      "finish": "Terminemos la configuración",
+      "finishIntro": "Faltan algunas elecciones para que el agente pueda continuar.",
       "steps": "Pasos de configuración",
       "steps_harness": "Servicio",
       "steps_model": "Modelo",
@@ -67,6 +69,7 @@
       "signingIn": "Completa el inicio de sesión en la ventana que se abrió. Después continuaremos aquí.",
       "installDescription": "{{name}} no está instalado en este equipo. Con tu aprobación, lo descargaremos e instalaremos con Windows App Installer y luego continuaremos aquí.",
       "installDescriptionNpm": "{{name}} no está instalado en este equipo. Con tu aprobación, lo instalaremos con npm (si falta Node.js, primero lo instalaremos con Windows App Installer) y luego continuaremos aquí.",
+      "installDescriptionLibrary": "{{name}} no está instalado en este equipo. Con tu aprobación, lo descargaremos de la biblioteca de tu organización, lo instalaremos y luego continuaremos aquí.",
       "install": "Aprobar e instalar",
       "signInDescription": "Inicia sesión en tu cuenta para cargar los modelos disponibles.",
       "signIn": "Iniciar sesión",
@@ -611,7 +614,9 @@
       "paragraph": "Párrafo {{n}} de {{total}}",
       "row": "{{effect}} de {{name}}",
       "original": "Movimiento original",
-      "originalHint": "El movimiento que reproducía el archivo importado, tal como estaba definido en él. Si eliges otro efecto, lo reemplazará."
+      "originalHint": "El movimiento que reproducía el archivo importado, tal como estaba definido en él. Si eliges otro efecto, lo reemplazará.",
+      "disableHint": "El objeto queda gris y atenuado hasta una animación “Activar”. Para que se vea desactivado desde que se abre la diapositiva, elige “Mostrar como desactivado” en él.",
+      "enableHint": "El objeto recupera su aspecto habitual y lo mantiene. Para que se vea desactivado hasta esta animación, elige “Mostrar como desactivado” en él."
     },
     "group": {
       "leadIn": "Al abrirse la diapositiva",
@@ -658,7 +663,9 @@
         "heartbeat": "Latido",
         "flicker": "Parpadeo",
         "float": "Flotar",
-        "tilt": "Inclinar"
+        "tilt": "Inclinar",
+        "disable": "Desactivar",
+        "enable": "Activar"
       },
       "exit": {
         "disappear": "Desaparecer",
@@ -802,6 +809,8 @@
       "lock": "Bloquear",
       "unlock": "Desbloquear",
       "hide": "Ocultar",
+      "disable": "Mostrar como desactivado",
+      "enable": "Mostrar como activo",
       "duplicate": "Duplicar",
       "pasteStyle": "Pegar estilo",
       "delete": "Eliminar",
@@ -860,6 +869,7 @@
       "order": "Orden de las capas",
       "lock": "Bloquear",
       "visibility": "Ocultar y mostrar",
+      "disabled": "Mostrar como desactivado o activo",
       "rename": "Cambiar nombre",
       "paste": "Pegar",
       "cut": "Cortar",
@@ -1048,7 +1058,10 @@
       "insert": "Insertar elemento gráfico",
       "frame": "Insertar marco",
       "reframe": "Poner una imagen en un marco",
-      "cards": "Insertar conjunto de tarjetas"
+      "cards": "Insertar conjunto de tarjetas",
+      "animation": "Insertar animación",
+      "background": "Aplicar fondo",
+      "motion": "Cambiar movimiento"
     },
     "collection": {
       "cards": "Conjuntos de tarjetas",
@@ -1057,7 +1070,9 @@
       "emoji": "Emojis",
       "icons": "Iconos",
       "frames": "Marcos",
-      "tables": "Tablas"
+      "tables": "Tablas",
+      "animations": "Animaciones",
+      "backgrounds": "Fondos"
     },
     "designs": {
       "title": "Diapositivas listas",
@@ -1464,17 +1479,129 @@
       "ready": "Tamaños predefinidos",
       "custom": "Otro tamaño",
       "size": "{{rows}} filas por {{cols}} columnas"
+    },
+    "animations": {
+      "search": "Buscar animaciones",
+      "searchPlaceholder": "Buscar animaciones…",
+      "hint": "Haz clic en una animación para añadirla a la diapositiva. Se mueve sola, y puedes moverla, cambiar su tamaño y girarla como cualquier objeto.",
+      "group": {
+        "basic": "Formas animadas",
+        "path": "Por un recorrido",
+        "spin": "Giro",
+        "scale": "Crecer y latir",
+        "lines": "Líneas y ondas",
+        "particles": "Partículas y redes"
+      },
+      "name": {
+        "orbit": "Órbita",
+        "conveyor": "Cajas en un recorrido",
+        "trace": "Circuito",
+        "atom": "Átomo",
+        "shuttle": "Punto en una línea",
+        "hexagon": "Hexágonos que giran",
+        "rings": "Anillos que giran",
+        "radar": "Radar",
+        "ripple": "Ondas expansivas",
+        "breathe": "Forma que respira",
+        "bars": "Barras que suben",
+        "waves": "Ondas",
+        "draw": "Flecha dibujada",
+        "flowArrow": "Conector que fluye",
+        "heartbeat": "Latido",
+        "network": "Red",
+        "converge": "Partículas que se reúnen",
+        "float": "Burbujas que suben"
+      }
+    },
+    "backgrounds": {
+      "hint": "Haz clic en un fondo para aplicarlo a la diapositiva o a todas las que seleccionaste. Sus colores vienen de la plantilla, y la herramienta «Fondo» te devuelve al fondo de la plantilla.",
+      "animated": "Fondos en movimiento",
+      "still": "Fondos tranquilos",
+      "name": {
+        "flow": "Flujo de circuito",
+        "waves": "Ondas",
+        "converge": "Convergencia",
+        "orbit": "Órbitas",
+        "radar": "Radar",
+        "network": "Red",
+        "drift": "Luz que deriva",
+        "particles": "Partículas que suben",
+        "dots": "Cuadrícula de puntos",
+        "contours": "Curvas de nivel",
+        "arcs": "Arcos en la esquina"
+      }
+    },
+    "animatedShapes": {
+      "title": "Formas animadas",
+      "hint": "Formas normales que repiten un movimiento. Su color, contorno y tamaño se editan como en cualquier forma, y su movimiento con la herramienta Movimiento.",
+      "more": "Todas las animaciones",
+      "name": {
+        "ring": "Anillo que gira",
+        "hexagon": "Hexágono que gira",
+        "star": "Estrella que gira",
+        "octagon": "Octágono que gira",
+        "square": "Cuadrado que gira y descansa",
+        "pulse": "Círculo que late",
+        "heart": "Corazón que late",
+        "float": "Círculo flotante",
+        "arrow": "Flecha que se balancea",
+        "blink": "Punto parpadeante"
+      }
+    },
+    "motion": {
+      "title": "Movimiento",
+      "piece": "Velocidad de la animación",
+      "loop": "Movimiento repetido",
+      "kind": {
+        "none": "Ninguno",
+        "spin": "Girar",
+        "pulse": "Latir",
+        "float": "Flotar",
+        "swing": "Balancear",
+        "blink": "Parpadear"
+      },
+      "speed": "Velocidad",
+      "pace": {
+        "slow": "Lenta",
+        "medium": "Media",
+        "fast": "Rápida"
+      },
+      "round": "Segundos por vuelta",
+      "rhythm": "Ritmo",
+      "rhythmKind": {
+        "steady": "Constante",
+        "smooth": "Suave",
+        "pause": "Con pausas"
+      },
+      "direction": "Dirección",
+      "clockwise": "En sentido horario",
+      "counterclockwise": "En sentido antihorario",
+      "amount": {
+        "pulse": "Tamaño del latido",
+        "float": "Altura de flotación",
+        "swing": "Ángulo de balanceo",
+        "blink": "Intensidad del parpadeo"
+      },
+      "hint": "El movimiento se repite mientras se muestra la diapositiva: en el editor, en la presentación y en un archivo exportado."
     }
   },
   "export": {
-    "title": "Exportar a HTML",
+    "title": "Exportar presentación",
+    "intro": "Un archivo que se abre sin Slidr: elige el formato y lo que incluye, y guárdalo.",
     "description": "Un solo archivo que se reproduce en cualquier navegador, con o sin internet.",
     "descriptionBeside": "Un archivo que se reproduce en cualquier navegador, con o sin internet, y una carpeta junto a él con el video y el audio.",
+    "steps": "Pasos de la exportación",
+    "stepContent": "Contenido",
+    "stepSave": "Guardar",
+    "formatQuestion": "¿En qué formato quieres exportar?",
+    "continue": "Continuar",
+    "back": "Atrás",
     "close": "Cerrar",
     "cancel": "Cancelar",
     "export": "Exportar",
     "again": "Exportar de nuevo",
     "filter": "Página HTML",
+    "format": "Formato",
     "slides": {
       "label": "Diapositivas",
       "all": "Toda la presentación",
@@ -1490,6 +1617,7 @@
     "animations": {
       "label": "Animaciones y transiciones",
       "with": "Incluidas",
+      "withHint": "Las diapositivas se construyen y cambian como en la presentación.",
       "without": "Sin ellas",
       "withoutHint": "Cada diapositiva se muestra completa y la siguiente aparece de inmediato."
     },
@@ -2317,6 +2445,11 @@
       "blur": "Desenfoque",
       "dim": "Oscurecer",
       "applyAll": "Aplicar a todas las diapositivas",
+      "noDrawing": "Quitar el dibujo del fondo",
+      "drawingColours": "Colores del dibujo",
+      "drawingColour": "Color {{n}} del dibujo",
+      "speed": "Velocidad del movimiento",
+      "drawingOpacity": "Opacidad del dibujo",
       "reset": "Volver al fondo del tema"
     },
     "groups": {
@@ -2412,8 +2545,7 @@
   "pptx": {
     "filter": "Presentación de PowerPoint",
     "export": {
-      "title": "Exportar a PowerPoint",
-      "description": "Un archivo .pptx que se abre en PowerPoint, Keynote y Presentaciones de Google, con cada texto, forma, tabla y gráfico editable.",
+      "description": "Se abre en PowerPoint, Keynote y Presentaciones de Google, y todo en él se puede editar.",
       "working": "Exportando la presentación…",
       "mediaOne": "Un archivo multimedia dentro del archivo, {{size}}",
       "mediaMany": "{{n}} archivos multimedia dentro del archivo, {{size}}",
@@ -2533,10 +2665,10 @@
       "not_logged_in": "La CLI está instalada. Inicia sesión en tu cuenta para continuar.",
       "install": "Instalar…",
       "signIn": "Iniciar sesión",
-      "refresh": "Actualizar la conexión y los modelos",
       "installTitle": "¿Instalar {{name}}?",
       "installDescription": "La aplicación descargará e instalará {{name}} con Windows App Installer. Después comprobaremos la conexión y, si hace falta, te pediremos que inicies sesión.",
       "installDescriptionNpm": "La aplicación instalará {{name}} con npm. Si falta Node.js, primero lo instalará con Windows App Installer. Después comprobaremos la conexión y, si hace falta, te pediremos que inicies sesión.",
+      "installDescriptionLibrary": "La aplicación descargará {{name}} de la biblioteca de tu organización y lo instalará en este equipo. Después comprobaremos la conexión y, si hace falta, te pediremos que inicies sesión.",
       "approveInstall": "Aprobar e instalar",
       "chooseModel": "Elige un modelo",
       "chooseEffort": "Elige un nivel de esfuerzo",
@@ -2561,6 +2693,8 @@
       "pickerHint": "Solo para este chat. El valor predeterminado se define en Configuración.",
       "web": "Búsqueda y lectura en la web",
       "webHint": "El agente puede buscar en la web y leer páginas mientras crea diapositivas.",
+      "webBlocked": "Tu organización no permite que el agente busque en la web ni lea páginas.",
+      "askAdmin": "Tu organización instala {{name}} por su cuenta. Pide a tu administrador que lo instale en este equipo.",
       "gate": "Revisión de diseño al final de cada turno",
       "gateHint": "Antes de terminar, el agente corrige las observaciones de diseño de las diapositivas que modificó.",
       "outline": "Un esquema antes de crear una presentación",
@@ -2587,10 +2721,7 @@
       "open": "Abrir…",
       "recent": "Abrir reciente",
       "noRecent": "No hay archivos recientes",
-      "importHtml": "Importar HTML…",
-      "importPptx": "Importar PowerPoint…",
-      "exportHtml": "Exportar HTML…",
-      "exportPptx": "Exportar a PowerPoint…",
+      "export": "Exportar…",
       "missing": "No se encontró el archivo",
       "save": "Guardar",
       "saveAs": "Guardar como…",
@@ -2598,6 +2729,8 @@
       "properties": "Propiedades de la presentación…",
       "filter": "Presentación de Slidr",
       "filterAll": "Todos los archivos que Slidr puede cargar",
+      "importUnknown": "Este tipo de archivo no se puede importar",
+      "importKinds": "Slidr importa: {{kinds}}.",
       "unsavedTitle": "¿Quieres guardar los cambios en “{{name}}”?",
       "unsavedBody": "Si no los guardas, se perderán los cambios.",
       "dontSave": "No guardar",
@@ -3072,7 +3205,17 @@
       "magen": "Centinela",
       "shvav": "Circuito",
       "mutzar": "Lanzamiento",
-      "atlas": "Atlas"
+      "atlas": "Atlas",
+      "dofek": "Pulso",
+      "gir": "Tiza",
+      "hon": "Capital",
+      "tavlin": "Especia",
+      "rakia": "Cosmos",
+      "maslul": "Pista",
+      "taarucha": "Exposición",
+      "hadran": "Bis",
+      "tefer": "Costura",
+      "sade": "Cosecha"
     },
     "tagline": {
       "zerem": "Tecnología en movimiento: turquesa brillante sobre una noche azul profundo",
@@ -3099,7 +3242,17 @@
       "magen": "Verde oliva oscuro y naranja de alerta, con la precisión de una pantalla de control",
       "shvav": "Verde de placa de circuito y cobre, para hardware rumbo a la producción",
       "mutzar": "Ventanas de producto, cursores y notificaciones, para el lanzamiento de una nueva versión",
-      "atlas": "Un globo terráqueo, rutas y sellos postales sobre papel de mapa, en todos los idiomas, para lo que cruza fronteras"
+      "atlas": "Un globo terráqueo, rutas y sellos postales sobre papel de mapa, en todos los idiomas, para lo que cruza fronteras",
+      "dofek": "Turquesa de quirófano, rojo pulso y el trazo de un monitor, para hospitales, clínicas y salud pública",
+      "gir": "Una pizarra verde con marco de roble, tiza en mano y el compás del profesor, para clases, cursos y reuniones de padres",
+      "hon": "Tinta burdeos, guilloches y un hilo de cobre sobre papel moneda, para cifras que conservan su valor",
+      "tavlin": "Sacos de especias, etiquetas de papel kraft y la serif de un libro de cocina sobre papel azafrán, para cocinas, chefs y festivales gastronómicos",
+      "rakia": "Estelas de estrellas, una luna creciente y el espectro sobre un cielo nocturno profundo, para una ciencia que mira hacia arriba",
+      "maslul": "Calles rojas, líneas blancas y un cronómetro, para atletas y clubes listos para la salida",
+      "taarucha": "Paredes de galería pintadas, obras enmarcadas y cartelas de museo, para una exposición a punto de abrir",
+      "hadran": "Discos, entradas y luz de escenario sobre papel rosado, para la música que pide una canción más",
+      "tefer": "Papel de patronaje, cinta métrica e hilo granate, para marcas de moda, talleres y artesanos",
+      "sade": "Trigo maduro sobre una franja de tierra, un campo dibujado en corte, para quienes cultivan nuestros alimentos"
     },
     "properties": {
       "title": "Propiedades de la presentación",

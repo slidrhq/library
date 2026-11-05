@@ -7,7 +7,7 @@ import {
   type GroupElement,
   type Point,
 } from '@slidr/model';
-import { cardBox } from '../objects/card';
+import { cardGround } from '../objects/card';
 
 /**
  * Coordinate spaces on the slide (WG5, ARR-01). A child of a group has its frame in the group's
@@ -298,10 +298,11 @@ export function resolvePress(
   if (top && !top.locked && !top.hidden && holdsText(top, onText)) {
     return { ...hit, inside: { scope: pathIds(top), id: top.element.id, edit: true } };
   }
-  // The foreground objects of a card have the same direct hover and click as its text. The
-  // press still takes the group at the current depth, so dragging one moves the group.
-  const card = top?.path.findLast((group) => cardBox(group));
-  if (top && card && top.element.id !== cardBox(card)?.id && !top.locked && !top.hidden) {
+  // The foreground objects of a card have the same direct hover and click as its text, also on
+  // a card whose ground is HTML. The press still takes the group at the current depth, so
+  // dragging one moves the group.
+  const card = top?.path.findLast((group) => cardGround(group));
+  if (top && card && top.element.id !== cardGround(card)?.id && !top.locked && !top.hidden) {
     return { ...hit, inside: { scope: pathIds(top), id: top.element.id, edit: false } };
   }
   // Outside a card, a second click on a selected group still enters one level at a time.

@@ -1,11 +1,13 @@
 import { lazyMediaJson } from '@slidr/media-library';
 import {
+  CONTENT_LANGUAGES,
   contentLanguageOf,
   createDeck,
   createElement,
   createSlide,
   frameLayout,
   LANGUAGE_SCRIPT,
+  languageDir,
   locateElement,
   normalizeAngle,
   plainText,
@@ -14,12 +16,14 @@ import {
   type AssetMeta,
   type Color,
   type Command,
+  type ContentLanguage,
   type Deck,
   type Element,
   type ElementPatch,
   type Frame,
   type GroupElement,
   type ImageElement,
+  type Localized,
   type RichText,
   type Shadow,
   type Slide,
@@ -47,8 +51,8 @@ import {
  * so a deck shows it wherever it is opened. The magnet of an event comes with stickers, captions
  * and labels beside its picture: on a slide it is a group, the picture and those around it.
  *
- * The catalogue says what is offered, group by group; `scripts/generate-frames-catalog.mjs`
- * writes it. It is read as text and parsed the first time the frames are shown.
+ * The catalogue says what is offered, group by group (`elements/catalogs/frames-catalog.json` of
+ * the library). It is read as text and parsed the first time the frames are shown.
  */
 
 /** The groups of frames, in the order the panel shows them. */
@@ -73,7 +77,7 @@ export type FrameGroup = (typeof FRAME_GROUPS)[number];
 
 /**
  * The sets of the magnets, in the order the panel shows them: what the event is, or that the
- * magnet is a style with no event (`MAGNET_SETS` in `scripts/frames-magnets.mjs`).
+ * magnet is a style with no event.
  */
 export const MAGNET_SETS = [
   'family',
@@ -137,16 +141,16 @@ type StickerExtra = Placed & { kind: 'sticker'; art: string; flip?: boolean };
 
 /**
  * A line of words, in the middle of its box unless `align` sets it to one side, the same side
- * in both languages. `colors` paints its letters one after the other, in turn.
+ * in every language. `colors` paints its letters one after the other, in turn. It is written in
+ * Hebrew and English, and in any other language of the app under its code beside them.
  */
-type CaptionExtra = Placed & {
-  kind: 'caption';
-  he: CaptionWords;
-  en: CaptionWords;
-  color: Color;
-  colors?: readonly string[];
-  align?: 'left' | 'right';
-};
+type CaptionExtra = Placed &
+  Localized<CaptionWords> & {
+    kind: 'caption';
+    color: Color;
+    colors?: readonly string[];
+    align?: 'left' | 'right';
+  };
 
 /**
  * A plate with words on it: a ribbon, a badge, a tag. The plate is a drawing of the catalogue's
@@ -174,6 +178,8 @@ interface CatalogFrame extends Size {
   id: string;
   en: string;
   he: string;
+  /** Its name in the other languages of the app: Indonesian's `id` could not stand beside `id`. */
+  names?: Partial<Record<ContentLanguage, string>>;
   mask?: FrameMask;
   d?: string;
   art?: FrameArt;
@@ -197,8 +203,8 @@ export interface PhotoFrame extends SearchWords {
   /** `frame:instant`: the name of the element it becomes. */
   id: string;
   group: FrameGroup;
-  /** What it is called, by the language of the interface. */
-  label: { en: string; he: string };
+  /** What it is called, by the language of the interface (`frameName`). */
+  label: Localized<string>;
   /** Its box on a slide when it is added, in slide pixels. The artwork is drawn in this box. */
   size: Size;
   /** What cuts the photograph, at that size. A plain box and a decorated frame may have none. */
@@ -220,8 +226,14 @@ export interface PhotoFrame extends SearchWords {
  */
 export function framesOf(catalog: FramesCatalog, tagged: TagsOf = {}): PhotoFrame[] {
   return catalog.groups.flatMap(({ id: group, frames }) =>
-    frames.map(({ id, en, he, w, h, mask, d, art, extras, shadow, set, tags }): PhotoFrame => {
-      const nameWords = wordsOf(en);
+    frames.map(({ id, en, he, names, w, h, mask, d, art, extras, shadow, set, tags }) => {
+      const label: Localized<string> = { ...names, en, he };
+      // The words of its names in every language but Hebrew, as the tags of those languages are.
+      const nameWords = [
+        ...new Set(
+          Object.entries(label).flatMap(([lang, name]) => (lang === 'he' ? [] : wordsOf(name))),
+        ),
+      ];
       const nameHebrew = wordsOf(he);
       const cut = d ? ({ kind: 'path', d, viewBox: { w, h } } as const) : mask;
       const featured = catalog.featured.indexOf(id);
@@ -233,7 +245,7 @@ export function framesOf(catalog: FramesCatalog, tagged: TagsOf = {}): PhotoFram
       const frame: PhotoFrame = {
         id: `frame:${id}`,
         group: group as FrameGroup,
-        label: { en, he },
+        label,
         size: { w, h },
         ...(cut ? { mask: cut } : {}),
         ...(art ? { art } : {}),
@@ -290,18 +302,33 @@ export function featuredFrames(all: readonly PhotoFrame[]): PhotoFrame[] {
 const LATIN = ['latin', 'vietnamese'];
 
 /**
+ * The language a frame says its words in to an interface in `lang`: the interface's own when
+ * every line of the frame is written in it, else English. A frame with no words says them in any.
+ */
+export function frameLanguage(frame: PhotoFrame, lang: string): ContentLanguage {
+  const own = contentLanguageOf(lang);
+  return own && linesOf(frame.extras).every((line) => line[own]) ? own : 'en';
+}
+
+/** What a frame is called in an interface in `lang`: in its language, else in English. */
+export function frameName(frame: PhotoFrame, lang: string): string {
+  const own = contentLanguageOf(lang);
+  return (own && frame.label[own]) || frame.label.en;
+}
+
+/**
  * Whether an interface in `lang` offers a frame. The letters of an alphabet are offered in the
  * languages written in it: the `hebrew` frames in Hebrew, the `latin` ones in the languages of
  * the Latin alphabet, Vietnamese among them. A frame with words beside its picture, a magnet's
- * captions and labels, is offered in Hebrew and English, the languages it is written in. Any
- * other frame has no language and is offered in all of them.
+ * captions and labels, is offered in the languages all its words are written in. Any other frame
+ * has no language and is offered in all of them.
  */
 export function frameIn(frame: PhotoFrame, lang: string): boolean {
   const own = contentLanguageOf(lang);
   if (frame.group === 'hebrew') return own === 'he';
   if (frame.group === 'latin') return own !== undefined && LATIN.includes(LANGUAGE_SCRIPT[own]);
-  const worded = frame.extras?.some((extra) => extra.kind !== 'sticker');
-  return !worded || own === 'he' || own === 'en';
+  const lines = linesOf(frame.extras);
+  return lines.length === 0 || (own !== undefined && lines.every((line) => line[own]));
 }
 
 /** The frames an interface in `lang` offers (`frameIn`), in their order. */
@@ -419,7 +446,7 @@ function labelStretch(extra: LabelExtra, scale: number): SvgStretch {
 
 /**
  * What a frame puts beside its picture, as new elements in a box of the given size, placed from
- * the corner of the box: the stickers, the captions in the language of the deck, and the labels,
+ * the corner of the box: the stickers, the captions in the language given (`frameLanguage`), and the labels,
  * each a group of its plate and its words. `words` are said in place of the lines' own, one
  * after the other. What lies under the picture is apart from what lies over it.
  */
@@ -429,7 +456,8 @@ export function frameExtras(
   lang: string,
   words: readonly (string | undefined)[] = [],
 ): { under: Element[]; over: Element[] } {
-  const hebrew = lang.startsWith('he');
+  const language = frameLanguage(frame, lang);
+  const backwards = languageDir(language) === 'rtl';
   const scale = Math.min(box.w / frame.size.w, box.h / frame.size.h);
   const placed = (extra: Placed) => ({
     frame: {
@@ -449,12 +477,13 @@ export function frameExtras(
     });
   let said = 0;
   const line = (extra: CaptionExtra) => {
-    const set = hebrew ? extra.he : extra.en;
+    const set = extra[language] ?? extra.en;
     const says = words[said++] ?? set.text;
-    // Words with no Hebrew letter (an age, a time, a code) read from the left in a Hebrew deck
-    // too: a line that begins with a digit would otherwise have its parts in the wrong order.
-    const rtl = hebrew && /\p{Script=Hebrew}/u.test(says);
-    // A side is the same side in both languages: a magnet is not mirrored for Hebrew.
+    // Words with no Hebrew or Arabic letter (an age, a time, a code) read from the left in a
+    // Hebrew or Arabic deck too: a line that begins with a digit would otherwise have its parts
+    // in the wrong order.
+    const rtl = backwards && /[\p{Script=Hebrew}\p{Script=Arabic}]/u.test(says);
+    // A side is the same side in every language: a magnet is not mirrored for Hebrew or Arabic.
     const align = !extra.align ? 'center' : (extra.align === 'right') === rtl ? 'start' : 'end';
     const written = richText(says, {
       dir: rtl ? 'rtl' : 'ltr',
@@ -521,8 +550,7 @@ export function frameSizeOn(frame: PhotoFrame, slide: Size): Size {
 
 /*
  * A magnet's card and its photograph are two elements (ADR-095). The card's drawing has a window
- * for the photograph, cut by its mask `border`: the card in white, the window in black
- * (`frames-magnets/kit.mjs`). On a slide the card lies under the photograph with its window
+ * for the photograph, cut by its mask `border`: the card in white, the window in black. On a slide the card lies under the photograph with its window
  * filled, so the photograph can be moved and sized on it like any picture. The photograph is cut
  * by the card as it was drawn, window and all: it shows wherever that card does not paint, as it
  * did when the card lay over it, and the window goes where the photograph goes.
@@ -845,7 +873,9 @@ export function reframe(
         ...(effects ? { effects } : {}),
       };
   const earlier = host && all.find((one) => one.id === host.name);
-  const came = linesOf(earlier?.extras).map((line) => [line.he.text, line.en.text]);
+  const came = linesOf(earlier?.extras).map((line) =>
+    CONTENT_LANGUAGES.flatMap((lang) => line[lang]?.text ?? []),
+  );
   const words = (host ? captionsOf(host) : []).map((caption, i) => {
     const said = plainText(caption.content);
     return said.trim() && !came[i]?.includes(said) ? said : undefined;
@@ -953,7 +983,7 @@ export function followsTheme(frame: PhotoFrame): boolean {
 
 /**
  * Whether the panel shows a frame from a small picture that was made ahead
- * (`scripts/generate-frames-thumbs.mjs`), not from a drawing of the renderer: a whole design,
+ * (`images/frames/` of the library), not from a drawing of the renderer: a whole design,
  * with its stickers and its words, that looks the same in every deck. A hundred of those drawn
  * live are tens of thousands of nodes, and megabytes of pictures to clean, each time they are
  * shown.

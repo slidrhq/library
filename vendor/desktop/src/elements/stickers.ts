@@ -1,4 +1,5 @@
 import { lazyMediaJson, requireMediaJson } from '@slidr/media-library';
+import { CONTENT_LANGUAGES, contentLanguageOf, type Localized } from '@slidr/model';
 import { hebrewTags, searchTags } from '../media/icons/library';
 import {
   hebrewOf,
@@ -14,8 +15,8 @@ import {
  * The colour art of the Elements panel: graphics in four styles, and every emoji. Each is a
  * drawing of an art set, and goes onto a slide as an `svg` element with the drawing's own
  * markup, so a deck carries it wherever it is opened. A set is a package of the app's, or the
- * drawings taken from a far larger set, copied into `art/` by the script that writes the
- * graphics catalogue (`scripts/generate-graphics-catalog.mjs`).
+ * drawings taken from a far larger set, in `elements/art/` of the library beside the graphics
+ * catalogue.
  *
  * Nothing of it is loaded when the app starts. The two catalogues say what is offered, in what
  * order and under which words; a set's drawings are megabytes of JSON, read as text and parsed
@@ -52,8 +53,28 @@ export interface Sticker extends SearchWords {
   /** The art set that draws it, and its name there. */
   set: ArtSet;
   art: string;
-  /** What it is called, by the language of the interface. */
-  label: { en: string; he: string };
+  /** What it is called, by the language of the interface (`stickerName`). */
+  label: Localized<string>;
+}
+
+/** What a graphic or an emoji is called in an interface in `lang`: in its language, else in English. */
+export function stickerName(sticker: { label: Localized<string> }, lang: string): string {
+  const own = contentLanguageOf(lang);
+  return (own && sticker.label[own]) || sticker.label.en;
+}
+
+const LANGUAGES = new Set<string>(CONTENT_LANGUAGES);
+
+/** The names of an emoji in other languages, `de=Geburtstagskuchen`, after its six fields. */
+function namesOf(fields: readonly string[]): Partial<Record<string, string>> {
+  const names: Record<string, string> = {};
+  for (const field of fields) {
+    const at = field.indexOf('=');
+    const lang = field.slice(0, at);
+    const name = field.slice(at + 1).trim();
+    if (at > 0 && LANGUAGES.has(lang) && lang !== 'he' && lang !== 'en' && name) names[lang] = name;
+  }
+  return names;
 }
 
 /* ---------------------------------------------------------------- the drawings */
@@ -192,8 +213,12 @@ function keywords(list: string, known: ReadonlySet<string>) {
 export function emojiOf(catalog: EmojiCatalog, tags: TagsOf = {}): Sticker[] {
   return catalog.flatMap(({ id, emoji }) =>
     emoji.map((line): Sticker => {
-      const [art = '', , en = '', enWords = '', he = '', heWords = ''] = line.split('|');
-      const nameWords = wordsOf(en);
+      const [art = '', , en = '', enWords = '', he = '', heWords = '', ...more] = line.split('|');
+      const names = namesOf(more);
+      // The words of its names in every language but Hebrew, as the tags of those languages are.
+      const nameWords = [
+        ...new Set([en, ...Object.values(names)].flatMap((name) => wordsOf(name ?? ''))),
+      ];
       const nameHebrew = wordsOf(he);
       const nameTerms = [nameHebrew.join(' ')];
       const english = keywords(enWords, new Set(nameWords));
@@ -204,7 +229,7 @@ export function emojiOf(catalog: EmojiCatalog, tags: TagsOf = {}): Sticker[] {
         group: id,
         set: 'twemoji',
         art,
-        label: { en, he: he || en },
+        label: { ...names, en, he: he || en },
         filled: false,
         nameWords,
         tagWords: english.parts,

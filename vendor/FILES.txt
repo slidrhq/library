@@ -66,6 +66,7 @@ packages/model/src/migrations.ts
 packages/model/src/queries.ts
 packages/model/src/save.ts
 packages/model/src/schema/animation.ts
+packages/model/src/schema/background.ts
 packages/model/src/schema/deck.ts
 packages/model/src/schema/elements.ts
 packages/model/src/schema/index.ts
@@ -75,6 +76,7 @@ packages/model/src/schema/theme.ts
 packages/model/src/store.ts
 packages/model/src/svgStretch.ts
 packages/renderer/src/SlideRenderer.tsx
+packages/renderer/src/ambient.ts
 packages/renderer/src/chart/controller.ts
 packages/renderer/src/chart/cue.ts
 packages/renderer/src/chart/engine.ts
@@ -84,7 +86,9 @@ packages/renderer/src/chart/view.tsx
 packages/renderer/src/clip.ts
 packages/renderer/src/context.ts
 packages/renderer/src/css.ts
+packages/renderer/src/disabled.ts
 packages/renderer/src/elements.tsx
+packages/renderer/src/extraShapeNames.ts
 packages/renderer/src/extraShapes.ts
 packages/renderer/src/fill.tsx
 packages/renderer/src/geometry.ts

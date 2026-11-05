@@ -51,6 +51,8 @@
     "setup": {
       "welcome": "Selamat datang di obrolan Slidr",
       "intro": "Pilih layanan untuk memulai. Selanjutnya, kita akan memilih model dan tingkat upaya.",
+      "finish": "Mari selesaikan penyiapan",
+      "finishIntro": "Masih ada beberapa pilihan yang diperlukan agar agen dapat melanjutkan.",
       "steps": "Langkah penyiapan",
       "steps_harness": "Layanan",
       "steps_model": "Model",
@@ -65,6 +67,7 @@
       "signingIn": "Selesaikan proses masuk di jendela yang terbuka. Setelah itu, kita akan melanjutkan di sini.",
       "installDescription": "{{name}} belum terinstal di komputer ini. Dengan persetujuan Anda, kami akan mengunduh dan menginstalnya menggunakan Windows App Installer, lalu melanjutkan di sini.",
       "installDescriptionNpm": "{{name}} belum terinstal di komputer ini. Dengan persetujuan Anda, kami akan menginstalnya menggunakan npm, dan jika Node.js belum ada, kami akan menginstalnya terlebih dahulu menggunakan Windows App Installer, lalu melanjutkan di sini.",
+      "installDescriptionLibrary": "{{name}} belum terinstal di komputer ini. Dengan persetujuan Anda, kami akan mengunduhnya dari pustaka organisasi Anda dan menginstalnya, lalu melanjutkan di sini.",
       "install": "Setujui dan instal",
       "signInDescription": "Masuk ke akun Anda untuk memuat model yang tersedia.",
       "signIn": "Masuk",
@@ -609,7 +612,9 @@
       "paragraph": "Paragraf {{n}} dari {{total}}",
       "row": "{{effect}} pada {{name}}",
       "original": "Gerakan asli",
-      "originalHint": "Gerakan yang diputar oleh file impor, persis seperti yang ditulisnya. Memilih efek lain akan menggantikannya."
+      "originalHint": "Gerakan yang diputar oleh file impor, persis seperti yang ditulisnya. Memilih efek lain akan menggantikannya.",
+      "disableHint": "Objek tetap abu-abu dan pudar sampai ada animasi “Aktifkan”. Agar objek tampak nonaktif sejak slide dibuka, pilih “Tampilkan sebagai nonaktif” pada objek itu.",
+      "enableHint": "Objek kembali ke tampilan biasanya dan tetap begitu. Agar objek tampak nonaktif sampai animasi ini, pilih “Tampilkan sebagai nonaktif” pada objek itu."
     },
     "group": {
       "leadIn": "Saat slide dibuka",
@@ -656,7 +661,9 @@
         "heartbeat": "Detak jantung",
         "flicker": "Berkedip",
         "float": "Melayang",
-        "tilt": "Miring"
+        "tilt": "Miring",
+        "disable": "Nonaktifkan",
+        "enable": "Aktifkan"
       },
       "exit": {
         "disappear": "Menghilang",
@@ -800,6 +807,8 @@
       "lock": "Kunci",
       "unlock": "Buka kunci",
       "hide": "Sembunyikan",
+      "disable": "Tampilkan sebagai nonaktif",
+      "enable": "Tampilkan sebagai aktif",
       "duplicate": "Duplikat",
       "pasteStyle": "Tempel gaya",
       "delete": "Hapus",
@@ -858,6 +867,7 @@
       "order": "Urutan lapisan",
       "lock": "Kunci",
       "visibility": "Sembunyikan dan tampilkan",
+      "disabled": "Tampilkan sebagai nonaktif atau aktif",
       "rename": "Ganti nama",
       "paste": "Tempel",
       "cut": "Potong",
@@ -1040,7 +1050,10 @@
       "insert": "Sisipkan grafik",
       "frame": "Sisipkan bingkai",
       "reframe": "Masukkan gambar ke bingkai",
-      "cards": "Sisipkan set kartu"
+      "cards": "Sisipkan set kartu",
+      "animation": "Sisipkan animasi",
+      "background": "Terapkan latar belakang",
+      "motion": "Ubah gerakan"
     },
     "collection": {
       "cards": "Set kartu",
@@ -1049,7 +1062,9 @@
       "emoji": "Emoji",
       "icons": "Ikon",
       "frames": "Bingkai",
-      "tables": "Tabel"
+      "tables": "Tabel",
+      "animations": "Animasi",
+      "backgrounds": "Latar belakang"
     },
     "designs": {
       "title": "Slide siap pakai",
@@ -1456,17 +1471,129 @@
       "ready": "Ukuran siap pakai",
       "custom": "Ukuran lain",
       "size": "{{rows}} baris × {{cols}} kolom"
+    },
+    "animations": {
+      "search": "Cari animasi",
+      "searchPlaceholder": "Cari animasi…",
+      "hint": "Klik sebuah animasi untuk menambahkannya ke slide. Animasi bergerak sendiri, dan Anda dapat memindahkan, mengubah ukuran, serta memutarnya seperti objek lain.",
+      "group": {
+        "basic": "Bentuk animasi",
+        "path": "Di sepanjang lintasan",
+        "spin": "Berputar",
+        "scale": "Membesar dan berdenyut",
+        "lines": "Garis dan gelombang",
+        "particles": "Partikel dan jaringan"
+      },
+      "name": {
+        "orbit": "Orbit",
+        "conveyor": "Kotak di lintasan",
+        "trace": "Jalur sirkuit",
+        "atom": "Atom",
+        "shuttle": "Titik di garis",
+        "hexagon": "Segi enam berputar",
+        "rings": "Cincin berputar",
+        "radar": "Radar",
+        "ripple": "Riak",
+        "breathe": "Bentuk bernapas",
+        "bars": "Batang naik",
+        "waves": "Gelombang",
+        "draw": "Panah tergambar",
+        "flowArrow": "Penghubung mengalir",
+        "heartbeat": "Detak jantung",
+        "network": "Jaringan",
+        "converge": "Partikel berkumpul",
+        "float": "Gelembung naik"
+      }
+    },
+    "backgrounds": {
+      "hint": "Klik sebuah latar belakang untuk menerapkannya ke slide, atau ke semua slide yang Anda pilih. Warnanya berasal dari templat, dan alat “Latar belakang” membawa Anda kembali ke latar belakang templat.",
+      "animated": "Latar belakang bergerak",
+      "still": "Latar belakang tenang",
+      "name": {
+        "flow": "Aliran sirkuit",
+        "waves": "Gelombang",
+        "converge": "Berkumpul",
+        "orbit": "Orbit",
+        "radar": "Radar",
+        "network": "Jaringan",
+        "drift": "Cahaya melayang",
+        "particles": "Partikel naik",
+        "dots": "Kisi titik",
+        "contours": "Garis kontur",
+        "arcs": "Busur di sudut"
+      }
+    },
+    "animatedShapes": {
+      "title": "Bentuk animasi",
+      "hint": "Bentuk biasa yang mengulang suatu gerakan. Warna, garis tepi, dan ukurannya diedit seperti bentuk lain, dan gerakannya dengan alat Gerakan.",
+      "more": "Semua animasi",
+      "name": {
+        "ring": "Cincin berputar",
+        "hexagon": "Segi enam berputar",
+        "star": "Bintang berputar",
+        "octagon": "Segi delapan berputar",
+        "square": "Persegi yang berputar lalu diam",
+        "pulse": "Lingkaran berdenyut",
+        "heart": "Hati berdenyut",
+        "float": "Lingkaran melayang",
+        "arrow": "Panah bergoyang",
+        "blink": "Titik berkedip"
+      }
+    },
+    "motion": {
+      "title": "Gerakan",
+      "piece": "Kecepatan animasi",
+      "loop": "Gerakan berulang",
+      "kind": {
+        "none": "Tidak ada",
+        "spin": "Putar",
+        "pulse": "Denyut",
+        "float": "Melayang",
+        "swing": "Ayun",
+        "blink": "Kedip"
+      },
+      "speed": "Kecepatan",
+      "pace": {
+        "slow": "Lambat",
+        "medium": "Sedang",
+        "fast": "Cepat"
+      },
+      "round": "Detik per putaran",
+      "rhythm": "Irama",
+      "rhythmKind": {
+        "steady": "Tetap",
+        "smooth": "Halus",
+        "pause": "Dengan jeda"
+      },
+      "direction": "Arah",
+      "clockwise": "Searah jarum jam",
+      "counterclockwise": "Berlawanan arah jarum jam",
+      "amount": {
+        "pulse": "Besar denyut",
+        "float": "Tinggi melayang",
+        "swing": "Sudut ayunan",
+        "blink": "Kekuatan kedipan"
+      },
+      "hint": "Gerakan berulang selama slide ditampilkan: di editor, saat presentasi, dan dalam file yang diekspor."
     }
   },
   "export": {
-    "title": "Ekspor ke HTML",
+    "title": "Ekspor presentasi",
+    "intro": "File yang terbuka tanpa Slidr: pilih format dan isinya, lalu simpan.",
     "description": "Satu file yang dapat diputar di browser apa pun, dengan atau tanpa internet.",
     "descriptionBeside": "File yang dapat diputar di browser apa pun, dengan atau tanpa internet, beserta folder di sebelahnya yang berisi video dan audio.",
+    "steps": "Langkah ekspor",
+    "stepContent": "Isi",
+    "stepSave": "Simpan",
+    "formatQuestion": "Ekspor dalam format apa?",
+    "continue": "Lanjutkan",
+    "back": "Kembali",
     "close": "Tutup",
     "cancel": "Batal",
     "export": "Ekspor",
     "again": "Ekspor lagi",
     "filter": "Halaman HTML",
+    "format": "Format",
     "slides": {
       "label": "Slide",
       "all": "Seluruh presentasi",
@@ -1482,6 +1609,7 @@
     "animations": {
       "label": "Animasi dan transisi",
       "with": "Disertakan",
+      "withHint": "Slide tersusun dan berganti seperti saat presentasi.",
       "without": "Tanpa",
       "withoutHint": "Setiap slide ditampilkan utuh, dan slide berikutnya langsung muncul."
     },
@@ -2305,6 +2433,11 @@
       "blur": "Kabur",
       "dim": "Redupkan",
       "applyAll": "Terapkan ke semua slide",
+      "noDrawing": "Hapus gambar latar belakang",
+      "drawingColours": "Warna gambar",
+      "drawingColour": "Warna gambar {{n}}",
+      "speed": "Kecepatan gerak",
+      "drawingOpacity": "Opasitas gambar",
       "reset": "Kembali ke latar belakang tema"
     },
     "groups": {
@@ -2400,8 +2533,7 @@
   "pptx": {
     "filter": "Presentasi PowerPoint",
     "export": {
-      "title": "Ekspor ke PowerPoint",
-      "description": "File .pptx yang dapat dibuka di PowerPoint, Keynote, dan Google Slide, dengan setiap teks, bentuk, tabel, dan diagram di dalamnya dapat diedit.",
+      "description": "Terbuka di PowerPoint, Keynote, dan Google Slide, dan semua isinya dapat diedit.",
       "working": "Mengekspor presentasi…",
       "mediaOne": "Satu file media di dalam file, {{size}}",
       "mediaMany": "{{n}} file media di dalam file, {{size}}",
@@ -2521,10 +2653,10 @@
       "not_logged_in": "CLI sudah terinstal. Masuk ke akun Anda untuk melanjutkan.",
       "install": "Instal…",
       "signIn": "Masuk",
-      "refresh": "Segarkan koneksi dan model",
       "installTitle": "Instal {{name}}?",
       "installDescription": "Aplikasi akan mengunduh dan menginstal {{name}} menggunakan Windows App Installer. Setelah itu, kami akan memeriksa koneksi dan meminta Anda masuk jika diperlukan.",
       "installDescriptionNpm": "Aplikasi akan menginstal {{name}} menggunakan npm, dan jika Node.js belum ada, aplikasi akan menginstalnya terlebih dahulu menggunakan Windows App Installer. Setelah itu, kami akan memeriksa koneksi dan meminta Anda masuk jika diperlukan.",
+      "installDescriptionLibrary": "Aplikasi akan mengunduh {{name}} dari pustaka organisasi Anda dan menginstalnya di komputer ini. Setelah itu, kami akan memeriksa koneksi dan meminta Anda masuk jika diperlukan.",
       "approveInstall": "Setujui dan instal",
       "chooseModel": "Pilih model",
       "chooseEffort": "Pilih tingkat upaya",
@@ -2549,6 +2681,8 @@
       "pickerHint": "Hanya untuk obrolan ini. Default diatur di Pengaturan.",
       "web": "Pencarian dan pembacaan web",
       "webHint": "Agen boleh mencari di web dan membaca halaman saat membuat slide.",
+      "webBlocked": "Organisasi Anda tidak mengizinkan agen mencari di web atau membaca halaman.",
+      "askAdmin": "Organisasi Anda menginstal {{name}} sendiri. Minta administrator Anda untuk menginstalnya di komputer ini.",
       "gate": "Pemeriksaan desain di akhir setiap giliran",
       "gateHint": "Sebelum selesai, Agen memperbaiki temuan desain pada slide yang diubahnya.",
       "outline": "Kerangka sebelum membuat presentasi",
@@ -2575,10 +2709,7 @@
       "open": "Buka…",
       "recent": "Buka terbaru",
       "noRecent": "Tidak ada file terbaru",
-      "importHtml": "Impor HTML…",
-      "importPptx": "Impor PowerPoint…",
-      "exportHtml": "Ekspor HTML…",
-      "exportPptx": "Ekspor ke PowerPoint…",
+      "export": "Ekspor…",
       "missing": "File tidak ditemukan",
       "save": "Simpan",
       "saveAs": "Simpan sebagai…",
@@ -2586,6 +2717,8 @@
       "properties": "Properti presentasi…",
       "filter": "Presentasi Slidr",
       "filterAll": "Semua file yang dapat dimuat Slidr",
+      "importUnknown": "Jenis file ini tidak dapat diimpor",
+      "importKinds": "Slidr mengimpor: {{kinds}}.",
       "unsavedTitle": "Simpan perubahan pada “{{name}}”?",
       "unsavedBody": "Perubahan Anda akan hilang jika tidak disimpan.",
       "dontSave": "Jangan simpan",
@@ -3060,7 +3193,17 @@
       "magen": "Penjaga",
       "shvav": "Sirkuit",
       "mutzar": "Peluncuran",
-      "atlas": "Atlas"
+      "atlas": "Atlas",
+      "dofek": "Denyut",
+      "gir": "Kapur",
+      "hon": "Modal",
+      "tavlin": "Rempah",
+      "rakia": "Cakrawala",
+      "maslul": "Lintasan",
+      "taarucha": "Pameran",
+      "hadran": "Sekali Lagi",
+      "tefer": "Jahitan",
+      "sade": "Panen"
     },
     "tagline": {
       "zerem": "Teknologi yang bergerak, toska menyala di malam biru pekat",
@@ -3087,7 +3230,17 @@
       "magen": "Zaitun gelap dan jingga siaga, dengan presisi layar kendali",
       "shvav": "Hijau papan sirkuit dan tembaga, untuk perangkat keras yang menuju produksi",
       "mutzar": "Jendela produk, kursor, dan notifikasi, untuk peluncuran versi baru",
-      "atlas": "Bola dunia, rute, dan perangko di atas kertas peta, dalam setiap bahasa, untuk apa pun yang melintasi batas negara"
+      "atlas": "Bola dunia, rute, dan perangko di atas kertas peta, dalam setiap bahasa, untuk apa pun yang melintasi batas negara",
+      "dofek": "Toska ruang operasi, merah denyut, dan garis monitor, untuk rumah sakit, klinik, dan kesehatan masyarakat",
+      "gir": "Papan hijau berbingkai kayu ek, kapur di tangan dan jangka milik guru, untuk pelajaran, kursus, dan pertemuan orang tua murid",
+      "hon": "Tinta merah marun, ukiran guilloche, dan benang tembaga di atas kertas uang, untuk angka yang tetap bernilai",
+      "tavlin": "Karung rempah, label harga kertas kraft, dan huruf serif buku resep di atas kertas kunyit, untuk dapur, koki, dan festival kuliner",
+      "rakia": "Jejak bintang, bulan sabit, dan spektrum di langit malam yang pekat, untuk ilmu yang menatap ke atas",
+      "maslul": "Lintasan merah, garis putih, dan stopwatch, untuk atlet dan klub yang siap di garis start",
+      "taarucha": "Dinding galeri berwarna, karya berbingkai, dan label museum, untuk pameran yang segera dibuka",
+      "hadran": "Piringan hitam, tiket, dan cahaya panggung di atas kertas merah muda, untuk musik yang membuat penonton meminta satu lagu lagi",
+      "tefer": "Kertas pola, meteran jahit, dan benang merah delima, untuk label mode, bengkel jahit, dan perajin",
+      "sade": "Gandum matang di atas sejalur tanah, ladang yang digambar dalam irisan, untuk mereka yang menanam pangan kita"
     },
     "properties": {
       "title": "Properti presentasi",

@@ -17,7 +17,7 @@ import {
 import { followTheme } from './follow';
 import { copyJson, equalJson } from './json';
 import { isMaster } from './master';
-import { mirrorBackground, mirrorElement, mirrorLayout } from './mirror';
+import { mirrorBackground, mirrorBackgroundDrawing, mirrorElement, mirrorLayout } from './mirror';
 import { layoutCopies, sameDrawing, sameObjects, untouchedObjects } from './objects';
 import {
   adoptLayout,
@@ -298,6 +298,18 @@ export function layoutsDirection(deck: Deck, template: Template): Direction | un
 export function changeDirection(deck: Deck, dir: Direction, template?: Template): Command[] {
   if (dir === deck.meta.dir) return [];
   const commands: Command[] = [{ type: 'deck.setMeta', patch: { dir } }];
+
+  // The theme's backgrounds keep their fills, as they always have, but a drawing on one
+  // (ADR-125) stands on a side of the slide and changes sides with everything else.
+  const { theme } = deck;
+  const background = mirrorBackgroundDrawing(theme.background);
+  const backgroundVariants = theme.backgroundVariants.map(mirrorBackgroundDrawing);
+  if (
+    background !== theme.background ||
+    backgroundVariants.some((variant, i) => variant !== theme.backgroundVariants[i])
+  ) {
+    commands.push({ type: 'theme.update', patch: { background, backgroundVariants } });
+  }
 
   const drawn = byId(template ? layoutsFor(template, deck.meta.dir) : []);
   const drawnTurned = byId(template ? layoutsFor(template, dir) : []);

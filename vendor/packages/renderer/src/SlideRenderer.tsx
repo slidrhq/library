@@ -10,6 +10,7 @@ import {
   type RenderMode,
   type TextSlot,
 } from './context';
+import { AMBIENT_KEYFRAMES, hasAmbient } from './ambient';
 import { cssString, scopeSlideCss } from './css';
 import { ElementView } from './elements';
 import { BackgroundLayers } from './fill';
@@ -204,6 +205,11 @@ function SlideRendererView({
   const ownFooter = slide.elements.some(says);
   const background = slide.background ?? layout?.background ?? theme.background;
   const body = theme.textStyles.body;
+  // The keyframes of the motions elements repeat (ADR-128), once, where the slide has one.
+  const moves =
+    hasAmbient(slide.elements) ||
+    hasAmbient(layout?.decorations) ||
+    hasAmbient(background.elements);
   // The slide's own stylesheet can name an asset of the deck too (`url("slidr-asset:<id>")`):
   // a face of a font the deck keeps, which has no record of its own on the asset.
   const scopedCss = useMemo(
@@ -262,7 +268,15 @@ function SlideRendererView({
       >
         {fontFaces ? <style data-slidr-fonts="">{fontFaces}</style> : null}
         {scopedCss ? <style>{scopedCss}</style> : null}
+        {moves ? <style data-slidr-ambient="">{AMBIENT_KEYFRAMES}</style> : null}
         <BackgroundLayers background={background} ctx={ctx} />
+        {/* The background's drawing (ADR-125): the background's, as the decorations are the
+            layout's, so nothing selects it; it goes when the slide takes another background. */}
+        {background.elements?.map((d) => (
+          // Keyed apart from the decorations beside it: the two lists name their elements
+          // each for itself.
+          <ElementView key={`background:${d.id}`} element={d} decoration />
+        ))}
         {layout?.decorations.map((d) =>
           d.role === 'footer' && ownFooter ? null : (
             <ElementView key={d.id} element={d} decoration />

@@ -53,6 +53,8 @@
     "setup": {
       "welcome": "Boas-vindas ao chat do Slidr",
       "intro": "Escolha o seu serviço para começar. Em seguida, vamos escolher um modelo e o nível de esforço.",
+      "finish": "Vamos concluir a configuração",
+      "finishIntro": "Ainda faltam algumas escolhas para o agente poder continuar.",
       "steps": "Etapas da configuração",
       "steps_harness": "Serviço",
       "steps_model": "Modelo",
@@ -67,6 +69,7 @@
       "signingIn": "Conclua o login na janela que se abriu. Depois, continuamos aqui.",
       "installDescription": "{{name}} não está instalado neste computador. Com a sua aprovação, vamos baixá-lo e instalá-lo com o Instalador de Aplicativo do Windows e depois continuar aqui.",
       "installDescriptionNpm": "{{name}} não está instalado neste computador. Com a sua aprovação, vamos instalá-lo com o npm (se o Node.js estiver faltando, ele será instalado antes com o Instalador de Aplicativo do Windows) e depois continuar aqui.",
+      "installDescriptionLibrary": "{{name}} não está instalado neste computador. Com a sua aprovação, vamos baixá-lo da biblioteca da sua organização, instalá-lo e depois continuar aqui.",
       "install": "Aprovar e instalar",
       "signInDescription": "Entre na sua conta para carregar os modelos disponíveis.",
       "signIn": "Entrar",
@@ -611,7 +614,9 @@
       "paragraph": "Parágrafo {{n}} de {{total}}",
       "row": "{{effect}} em {{name}}",
       "original": "Movimento original",
-      "originalHint": "O movimento que o arquivo importado reproduzia, tal como ele o descreveu. Escolher outro efeito o substitui."
+      "originalHint": "O movimento que o arquivo importado reproduzia, tal como ele o descreveu. Escolher outro efeito o substitui.",
+      "disableHint": "O objeto fica cinza e esmaecido até uma animação “Ativar”. Para que ele apareça desativado desde a abertura do slide, escolha “Mostrar como desativado” nele.",
+      "enableHint": "O objeto volta à sua aparência habitual e continua assim. Para que ele apareça desativado até esta animação, escolha “Mostrar como desativado” nele."
     },
     "group": {
       "leadIn": "Ao abrir o slide",
@@ -658,7 +663,9 @@
         "heartbeat": "Batimento",
         "flicker": "Tremeluzir",
         "float": "Flutuar",
-        "tilt": "Inclinar"
+        "tilt": "Inclinar",
+        "disable": "Desativar",
+        "enable": "Ativar"
       },
       "exit": {
         "disappear": "Desaparecer",
@@ -802,6 +809,8 @@
       "lock": "Bloquear",
       "unlock": "Desbloquear",
       "hide": "Ocultar",
+      "disable": "Mostrar como desativado",
+      "enable": "Mostrar como ativo",
       "duplicate": "Duplicar",
       "pasteStyle": "Colar estilo",
       "delete": "Excluir",
@@ -860,6 +869,7 @@
       "order": "Ordem das camadas",
       "lock": "Bloquear",
       "visibility": "Ocultar e mostrar",
+      "disabled": "Mostrar como desativado ou ativo",
       "rename": "Renomear",
       "paste": "Colar",
       "cut": "Recortar",
@@ -1048,7 +1058,10 @@
       "insert": "Inserir ilustração",
       "frame": "Inserir moldura",
       "reframe": "Colocar imagem na moldura",
-      "cards": "Inserir conjunto de cartões"
+      "cards": "Inserir conjunto de cartões",
+      "animation": "Inserir animação",
+      "background": "Aplicar plano de fundo",
+      "motion": "Alterar movimento"
     },
     "collection": {
       "cards": "Conjuntos de cartões",
@@ -1057,7 +1070,9 @@
       "emoji": "Emojis",
       "icons": "Ícones",
       "frames": "Molduras",
-      "tables": "Tabelas"
+      "tables": "Tabelas",
+      "animations": "Animações",
+      "backgrounds": "Planos de fundo"
     },
     "designs": {
       "title": "Slides prontos",
@@ -1464,17 +1479,129 @@
       "ready": "Tamanhos prontos",
       "custom": "Outro tamanho",
       "size": "{{rows}} linhas por {{cols}} colunas"
+    },
+    "animations": {
+      "search": "Pesquisar animações",
+      "searchPlaceholder": "Pesquisar animações…",
+      "hint": "Clique em uma animação para adicioná-la ao slide. Ela se move sozinha, e você pode movê-la, redimensioná-la e girá-la como qualquer objeto.",
+      "group": {
+        "basic": "Formas animadas",
+        "path": "Por um caminho",
+        "spin": "Giro",
+        "scale": "Crescer e pulsar",
+        "lines": "Linhas e ondas",
+        "particles": "Partículas e redes"
+      },
+      "name": {
+        "orbit": "Órbita",
+        "conveyor": "Caixas em um caminho",
+        "trace": "Trilha de circuito",
+        "atom": "Átomo",
+        "shuttle": "Ponto em uma linha",
+        "hexagon": "Hexágonos girando",
+        "rings": "Anéis girando",
+        "radar": "Radar",
+        "ripple": "Ondulações",
+        "breathe": "Forma que respira",
+        "bars": "Barras subindo",
+        "waves": "Ondas",
+        "draw": "Seta desenhada",
+        "flowArrow": "Conector que flui",
+        "heartbeat": "Batimento",
+        "network": "Rede",
+        "converge": "Partículas se reunindo",
+        "float": "Bolhas subindo"
+      }
+    },
+    "backgrounds": {
+      "hint": "Clique em um plano de fundo para aplicá-lo ao slide ou a todos os slides selecionados. As cores vêm do modelo, e a ferramenta “Plano de fundo” leva de volta ao plano de fundo do modelo.",
+      "animated": "Planos de fundo em movimento",
+      "still": "Planos de fundo calmos",
+      "name": {
+        "flow": "Fluxo de circuito",
+        "waves": "Ondas",
+        "converge": "Convergência",
+        "orbit": "Órbitas",
+        "radar": "Radar",
+        "network": "Rede",
+        "drift": "Luz flutuante",
+        "particles": "Partículas subindo",
+        "dots": "Grade de pontos",
+        "contours": "Curvas de nível",
+        "arcs": "Arcos no canto"
+      }
+    },
+    "animatedShapes": {
+      "title": "Formas animadas",
+      "hint": "Formas comuns que repetem um movimento. Cor, contorno e tamanho são editados como em qualquer forma, e o movimento com a ferramenta Movimento.",
+      "more": "Todas as animações",
+      "name": {
+        "ring": "Anel girando",
+        "hexagon": "Hexágono girando",
+        "star": "Estrela girando",
+        "octagon": "Octógono girando",
+        "square": "Quadrado que gira e descansa",
+        "pulse": "Círculo pulsante",
+        "heart": "Coração batendo",
+        "float": "Círculo flutuante",
+        "arrow": "Seta balançando",
+        "blink": "Ponto piscando"
+      }
+    },
+    "motion": {
+      "title": "Movimento",
+      "piece": "Velocidade da animação",
+      "loop": "Movimento repetido",
+      "kind": {
+        "none": "Nenhum",
+        "spin": "Girar",
+        "pulse": "Pulsar",
+        "float": "Flutuar",
+        "swing": "Balançar",
+        "blink": "Piscar"
+      },
+      "speed": "Velocidade",
+      "pace": {
+        "slow": "Lenta",
+        "medium": "Média",
+        "fast": "Rápida"
+      },
+      "round": "Segundos por volta",
+      "rhythm": "Ritmo",
+      "rhythmKind": {
+        "steady": "Constante",
+        "smooth": "Suave",
+        "pause": "Com pausas"
+      },
+      "direction": "Direção",
+      "clockwise": "Sentido horário",
+      "counterclockwise": "Sentido anti-horário",
+      "amount": {
+        "pulse": "Tamanho da pulsação",
+        "float": "Altura da flutuação",
+        "swing": "Ângulo do balanço",
+        "blink": "Intensidade da piscada"
+      },
+      "hint": "O movimento se repete enquanto o slide é exibido: no editor, na apresentação e em um arquivo exportado."
     }
   },
   "export": {
-    "title": "Exportar para HTML",
+    "title": "Exportar apresentação",
+    "intro": "Um arquivo que abre sem o Slidr: escolha o formato e o que entra nele, depois salve.",
     "description": "Um único arquivo que é reproduzido em qualquer navegador, com ou sem internet.",
     "descriptionBeside": "Um arquivo que é reproduzido em qualquer navegador, com ou sem internet, e uma pasta ao lado dele com os vídeos e áudios.",
+    "steps": "Etapas da exportação",
+    "stepContent": "Conteúdo",
+    "stepSave": "Salvar",
+    "formatQuestion": "Em qual formato você quer exportar?",
+    "continue": "Continuar",
+    "back": "Voltar",
     "close": "Fechar",
     "cancel": "Cancelar",
     "export": "Exportar",
     "again": "Exportar novamente",
     "filter": "Página HTML",
+    "format": "Formato",
     "slides": {
       "label": "Slides",
       "all": "A apresentação inteira",
@@ -1490,6 +1617,7 @@
     "animations": {
       "label": "Animações e transições",
       "with": "Incluídas",
+      "withHint": "Os slides se montam e mudam como na apresentação.",
       "without": "Não incluídas",
       "withoutHint": "Cada slide é mostrado por inteiro, e o seguinte aparece de imediato."
     },
@@ -2317,6 +2445,11 @@
       "blur": "Desfoque",
       "dim": "Escurecer",
       "applyAll": "Aplicar a todos os slides",
+      "noDrawing": "Remover o desenho do plano de fundo",
+      "drawingColours": "Cores do desenho",
+      "drawingColour": "Cor {{n}} do desenho",
+      "speed": "Velocidade do movimento",
+      "drawingOpacity": "Opacidade do desenho",
       "reset": "Voltar ao plano de fundo do tema"
     },
     "groups": {
@@ -2412,8 +2545,7 @@
   "pptx": {
     "filter": "Apresentação do PowerPoint",
     "export": {
-      "title": "Exportar para o PowerPoint",
-      "description": "Um arquivo .pptx que abre no PowerPoint, no Keynote e no Apresentações Google, com cada texto, forma, tabela e gráfico editável.",
+      "description": "Abre no PowerPoint, no Keynote e no Apresentações Google, com tudo editável.",
       "working": "Exportando a apresentação…",
       "mediaOne": "Um arquivo de mídia dentro do arquivo, {{size}}",
       "mediaMany": "{{n}} arquivos de mídia dentro do arquivo, {{size}}",
@@ -2533,10 +2665,10 @@
       "not_logged_in": "A CLI está instalada. Entre na sua conta para continuar.",
       "install": "Instalar…",
       "signIn": "Entrar",
-      "refresh": "Atualizar conexão e modelos",
       "installTitle": "Instalar {{name}}?",
       "installDescription": "O aplicativo vai baixar e instalar {{name}} com o Instalador de Aplicativo do Windows. Em seguida, verificaremos a conexão e pediremos que você entre na sua conta, se necessário.",
       "installDescriptionNpm": "O aplicativo vai instalar {{name}} com o npm. Se o Node.js estiver faltando, ele será instalado antes com o Instalador de Aplicativo do Windows. Em seguida, verificaremos a conexão e pediremos que você entre na sua conta, se necessário.",
+      "installDescriptionLibrary": "O aplicativo vai baixar {{name}} da biblioteca da sua organização e instalá-lo neste computador. Em seguida, verificaremos a conexão e pediremos que você entre na sua conta, se necessário.",
       "approveInstall": "Aprovar e instalar",
       "chooseModel": "Escolha um modelo",
       "chooseEffort": "Escolha um nível de esforço",
@@ -2561,6 +2693,8 @@
       "pickerHint": "Somente para este chat. O padrão é definido nas Configurações.",
       "web": "Pesquisa e leitura na web",
       "webHint": "O agente pode pesquisar na web e ler páginas enquanto cria os slides.",
+      "webBlocked": "Sua organização não permite que o agente pesquise na web nem leia páginas.",
+      "askAdmin": "Sua organização instala o {{name}} por conta própria. Peça ao administrador para instalá-lo neste computador.",
       "gate": "Verificação de design ao fim de cada turno",
       "gateHint": "Antes de terminar, o agente corrige os apontamentos de design nos slides em que mexeu.",
       "outline": "Roteiro antes de criar uma apresentação",
@@ -2587,10 +2721,7 @@
       "open": "Abrir…",
       "recent": "Abrir recente",
       "noRecent": "Nenhum arquivo recente",
-      "importHtml": "Importar HTML…",
-      "importPptx": "Importar PowerPoint…",
-      "exportHtml": "Exportar HTML…",
-      "exportPptx": "Exportar para o PowerPoint…",
+      "export": "Exportar…",
       "missing": "Arquivo não encontrado",
       "save": "Salvar",
       "saveAs": "Salvar como…",
@@ -2598,6 +2729,8 @@
       "properties": "Propriedades da apresentação…",
       "filter": "Apresentação do Slidr",
       "filterAll": "Todos os arquivos que o Slidr pode abrir",
+      "importUnknown": "Este tipo de arquivo não pode ser importado",
+      "importKinds": "O Slidr importa: {{kinds}}.",
       "unsavedTitle": "Salvar as alterações em “{{name}}”?",
       "unsavedBody": "Suas alterações serão perdidas se você não as salvar.",
       "dontSave": "Não salvar",
@@ -3072,7 +3205,17 @@
       "magen": "Sentinela",
       "shvav": "Circuito",
       "mutzar": "Lançamento",
-      "atlas": "Atlas"
+      "atlas": "Atlas",
+      "dofek": "Pulso",
+      "gir": "Giz",
+      "hon": "Capital",
+      "tavlin": "Especiaria",
+      "rakia": "Cosmos",
+      "maslul": "Pista",
+      "taarucha": "Exposição",
+      "hadran": "Bis",
+      "tefer": "Ateliê",
+      "sade": "Colheita"
     },
     "tagline": {
       "zerem": "Tecnologia em movimento, turquesa brilhando em uma noite azul-profunda",
@@ -3099,7 +3242,17 @@
       "magen": "Verde-oliva escuro e laranja de alerta, com a precisão de uma tela de controle",
       "shvav": "Verde de placa de circuito e cobre, para um hardware a caminho da produção",
       "mutzar": "Janelas de produto, cursores e notificações, para o lançamento de uma nova versão",
-      "atlas": "Um globo, rotas e selos postais sobre papel de mapa, em todos os idiomas, para o que atravessa fronteiras"
+      "atlas": "Um globo, rotas e selos postais sobre papel de mapa, em todos os idiomas, para o que atravessa fronteiras",
+      "dofek": "Turquesa de centro cirúrgico, vermelho de pulso e o traçado de um monitor, para hospitais, clínicas e saúde pública",
+      "gir": "Um quadro verde com moldura de carvalho, giz na mão e o compasso do professor, para aulas, cursos e reuniões de pais",
+      "hon": "Tinta bordô, guilhochês e um fio de cobre sobre papel-moeda, para números que guardam seu valor",
+      "tavlin": "Sacas de especiarias, etiquetas de papel kraft e a serifa de um livro de receitas sobre papel açafrão, para cozinhas, chefs e festivais gastronômicos",
+      "rakia": "Rastros de estrelas, uma lua crescente e o espectro sobre um céu noturno profundo, para a ciência que olha para cima",
+      "maslul": "Raias vermelhas, linhas brancas e um cronômetro, para atletas e clubes na linha de largada",
+      "taarucha": "Paredes de galeria pintadas, obras emolduradas e etiquetas de museu, para uma exposição prestes a abrir",
+      "hadran": "Discos, ingressos e luz de palco sobre papel rosado, para a música que pede bis",
+      "tefer": "Papel de molde, fita métrica e linha grená, para marcas de moda, ateliês e artesãos",
+      "sade": "Trigo maduro sobre uma faixa de terra, um campo desenhado em corte, para quem cultiva nosso alimento"
     },
     "properties": {
       "title": "Propriedades da apresentação",

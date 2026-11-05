@@ -51,6 +51,8 @@
     "setup": {
       "welcome": "Chào mừng bạn đến với trò chuyện Slidr",
       "intro": "Chọn dịch vụ để bắt đầu. Tiếp theo, chúng ta sẽ chọn mô hình và mức nỗ lực.",
+      "finish": "Hãy hoàn tất thiết lập",
+      "finishIntro": "Cần chọn thêm một vài mục để tác nhân có thể tiếp tục.",
       "steps": "Các bước thiết lập",
       "steps_harness": "Dịch vụ",
       "steps_model": "Mô hình",
@@ -65,6 +67,7 @@
       "signingIn": "Hãy hoàn tất đăng nhập trong cửa sổ vừa mở. Sau đó chúng ta sẽ tiếp tục tại đây.",
       "installDescription": "{{name}} chưa được cài đặt trên máy tính này. Nếu bạn đồng ý, chúng tôi sẽ tải xuống và cài đặt bằng Windows App Installer, rồi tiếp tục tại đây.",
       "installDescriptionNpm": "{{name}} chưa được cài đặt trên máy tính này. Nếu bạn đồng ý, chúng tôi sẽ cài đặt bằng npm (nếu thiếu Node.js, chúng tôi sẽ cài nó trước bằng Windows App Installer), rồi tiếp tục tại đây.",
+      "installDescriptionLibrary": "{{name}} chưa được cài đặt trên máy tính này. Nếu bạn đồng ý, chúng tôi sẽ tải xuống từ thư viện của tổ chức bạn và cài đặt, rồi tiếp tục tại đây.",
       "install": "Đồng ý và cài đặt",
       "signInDescription": "Hãy đăng nhập tài khoản để tải các mô hình khả dụng.",
       "signIn": "Đăng nhập",
@@ -609,7 +612,9 @@
       "paragraph": "Đoạn {{n}}/{{total}}",
       "row": "{{effect}} cho {{name}}",
       "original": "Chuyển động gốc",
-      "originalHint": "Chuyển động có sẵn trong tệp đã nhập, đúng như được viết trong tệp. Chọn hiệu ứng khác sẽ thay thế chuyển động này."
+      "originalHint": "Chuyển động có sẵn trong tệp đã nhập, đúng như được viết trong tệp. Chọn hiệu ứng khác sẽ thay thế chuyển động này.",
+      "disableHint": "Đối tượng vẫn xám và mờ cho đến hiệu ứng động “Kích hoạt”. Để đối tượng trông như bị vô hiệu hóa ngay khi trang chiếu mở ra, hãy chọn “Hiển thị như bị vô hiệu hóa” cho đối tượng đó.",
+      "enableHint": "Đối tượng trở lại diện mạo thường ngày và giữ nguyên như vậy. Để đối tượng trông như bị vô hiệu hóa cho đến hiệu ứng động này, hãy chọn “Hiển thị như bị vô hiệu hóa” cho đối tượng đó."
     },
     "group": {
       "leadIn": "Khi mở trang chiếu",
@@ -656,7 +661,9 @@
         "heartbeat": "Nhịp tim",
         "flicker": "Nhấp nháy",
         "float": "Lơ lửng",
-        "tilt": "Nghiêng"
+        "tilt": "Nghiêng",
+        "disable": "Vô hiệu hóa",
+        "enable": "Kích hoạt"
       },
       "exit": {
         "disappear": "Biến mất",
@@ -800,6 +807,8 @@
       "lock": "Khóa",
       "unlock": "Mở khóa",
       "hide": "Ẩn",
+      "disable": "Hiển thị như bị vô hiệu hóa",
+      "enable": "Hiển thị như đang hoạt động",
       "duplicate": "Nhân bản",
       "pasteStyle": "Dán kiểu",
       "delete": "Xóa",
@@ -858,6 +867,7 @@
       "order": "Thứ tự lớp",
       "lock": "Khóa",
       "visibility": "Ẩn và hiện",
+      "disabled": "Hiển thị như bị vô hiệu hóa hoặc đang hoạt động",
       "rename": "Đổi tên",
       "paste": "Dán",
       "cut": "Cắt",
@@ -1040,7 +1050,10 @@
       "insert": "Chèn đồ họa",
       "frame": "Chèn khung",
       "reframe": "Đặt ảnh vào khung",
-      "cards": "Chèn bộ thẻ"
+      "cards": "Chèn bộ thẻ",
+      "animation": "Chèn hoạt ảnh",
+      "background": "Áp dụng nền",
+      "motion": "Thay đổi chuyển động"
     },
     "collection": {
       "cards": "Bộ thẻ",
@@ -1049,7 +1062,9 @@
       "emoji": "Emoji",
       "icons": "Biểu tượng",
       "frames": "Khung",
-      "tables": "Bảng"
+      "tables": "Bảng",
+      "animations": "Hoạt ảnh",
+      "backgrounds": "Nền"
     },
     "designs": {
       "title": "Trang chiếu có sẵn",
@@ -1456,17 +1471,129 @@
       "ready": "Kích thước có sẵn",
       "custom": "Kích thước khác",
       "size": "{{rows}} hàng × {{cols}} cột"
+    },
+    "animations": {
+      "search": "Tìm hoạt ảnh",
+      "searchPlaceholder": "Tìm hoạt ảnh…",
+      "hint": "Bấm vào một hoạt ảnh để thêm vào trang chiếu. Hoạt ảnh tự chuyển động, và bạn có thể di chuyển, đổi kích thước và xoay nó như mọi đối tượng.",
+      "group": {
+        "basic": "Hình động",
+        "path": "Theo đường đi",
+        "spin": "Xoay",
+        "scale": "Phóng to và nhịp đập",
+        "lines": "Đường và sóng",
+        "particles": "Hạt và mạng lưới"
+      },
+      "name": {
+        "orbit": "Quỹ đạo",
+        "conveyor": "Hộp trên đường đi",
+        "trace": "Đường mạch",
+        "atom": "Nguyên tử",
+        "shuttle": "Chấm trên đường thẳng",
+        "hexagon": "Lục giác xoay",
+        "rings": "Vòng xoay",
+        "radar": "Ra-đa",
+        "ripple": "Gợn sóng",
+        "breathe": "Hình đang thở",
+        "bars": "Cột đi lên",
+        "waves": "Sóng",
+        "draw": "Mũi tên được vẽ",
+        "flowArrow": "Đường nối chảy",
+        "heartbeat": "Nhịp tim",
+        "network": "Mạng lưới",
+        "converge": "Hạt hội tụ",
+        "float": "Bong bóng bay lên"
+      }
+    },
+    "backgrounds": {
+      "hint": "Bấm vào một nền để áp dụng cho trang chiếu, hoặc cho mọi trang chiếu bạn đã chọn. Màu sắc lấy từ mẫu, và công cụ “Nền” đưa bạn về nền của mẫu.",
+      "animated": "Nền chuyển động",
+      "still": "Nền tĩnh",
+      "name": {
+        "flow": "Dòng chảy mạch",
+        "waves": "Sóng",
+        "converge": "Hội tụ",
+        "orbit": "Quỹ đạo",
+        "radar": "Ra-đa",
+        "network": "Mạng lưới",
+        "drift": "Ánh sáng trôi",
+        "particles": "Hạt bay lên",
+        "dots": "Lưới chấm",
+        "contours": "Đường đồng mức",
+        "arcs": "Vòng cung ở góc"
+      }
+    },
+    "animatedShapes": {
+      "title": "Hình động",
+      "hint": "Các hình thông thường lặp lại một chuyển động. Màu, đường viền và kích thước được chỉnh như mọi hình khác, còn chuyển động thì chỉnh bằng công cụ Chuyển động.",
+      "more": "Tất cả hoạt ảnh",
+      "name": {
+        "ring": "Vòng xoay",
+        "hexagon": "Lục giác xoay",
+        "star": "Ngôi sao xoay",
+        "octagon": "Bát giác xoay",
+        "square": "Hình vuông xoay rồi nghỉ",
+        "pulse": "Hình tròn đập nhịp",
+        "heart": "Trái tim đập",
+        "float": "Hình tròn trôi nổi",
+        "arrow": "Mũi tên lắc lư",
+        "blink": "Chấm nhấp nháy"
+      }
+    },
+    "motion": {
+      "title": "Chuyển động",
+      "piece": "Tốc độ hoạt ảnh",
+      "loop": "Chuyển động lặp lại",
+      "kind": {
+        "none": "Không",
+        "spin": "Xoay",
+        "pulse": "Đập nhịp",
+        "float": "Trôi nổi",
+        "swing": "Lắc lư",
+        "blink": "Nhấp nháy"
+      },
+      "speed": "Tốc độ",
+      "pace": {
+        "slow": "Chậm",
+        "medium": "Vừa",
+        "fast": "Nhanh"
+      },
+      "round": "Số giây mỗi vòng",
+      "rhythm": "Nhịp",
+      "rhythmKind": {
+        "steady": "Đều",
+        "smooth": "Mượt",
+        "pause": "Có quãng nghỉ"
+      },
+      "direction": "Hướng",
+      "clockwise": "Theo chiều kim đồng hồ",
+      "counterclockwise": "Ngược chiều kim đồng hồ",
+      "amount": {
+        "pulse": "Độ lớn nhịp đập",
+        "float": "Độ cao trôi nổi",
+        "swing": "Góc lắc lư",
+        "blink": "Độ mạnh nhấp nháy"
+      },
+      "hint": "Chuyển động lặp lại khi trang chiếu đang hiển thị: trong trình soạn thảo, khi trình chiếu và trong tệp đã xuất."
     }
   },
   "export": {
-    "title": "Xuất sang HTML",
+    "title": "Xuất bản trình bày",
+    "intro": "Một tệp mở được cả khi không có Slidr: chọn định dạng và nội dung, rồi lưu lại.",
     "description": "Một tệp duy nhất phát được trên mọi trình duyệt, dù có hay không có internet.",
     "descriptionBeside": "Một tệp phát được trên mọi trình duyệt, dù có hay không có internet, kèm một thư mục bên cạnh chứa video và âm thanh.",
+    "steps": "Các bước xuất",
+    "stepContent": "Nội dung",
+    "stepSave": "Lưu",
+    "formatQuestion": "Bạn muốn xuất ở định dạng nào?",
+    "continue": "Tiếp tục",
+    "back": "Quay lại",
     "close": "Đóng",
     "cancel": "Hủy",
     "export": "Xuất",
     "again": "Xuất lại",
     "filter": "Trang HTML",
+    "format": "Định dạng",
     "slides": {
       "label": "Trang chiếu",
       "all": "Toàn bộ bản trình bày",
@@ -1482,6 +1609,7 @@
     "animations": {
       "label": "Hiệu ứng động và chuyển tiếp",
       "with": "Bao gồm",
+      "withHint": "Các trang chiếu được dựng và chuyển như khi trình chiếu.",
       "without": "Không bao gồm",
       "withoutHint": "Mỗi trang chiếu hiển thị trọn vẹn ngay và trang tiếp theo xuất hiện tức thì."
     },
@@ -2305,6 +2433,11 @@
       "blur": "Làm mờ",
       "dim": "Làm tối",
       "applyAll": "Áp dụng cho tất cả trang chiếu",
+      "noDrawing": "Xóa hình vẽ trên nền",
+      "drawingColours": "Màu của hình vẽ",
+      "drawingColour": "Màu {{n}} của hình vẽ",
+      "speed": "Tốc độ chuyển động",
+      "drawingOpacity": "Độ mờ đục của hình vẽ",
       "reset": "Trở về nền chủ đề"
     },
     "groups": {
@@ -2400,8 +2533,7 @@
   "pptx": {
     "filter": "Bản trình bày PowerPoint",
     "export": {
-      "title": "Xuất sang PowerPoint",
-      "description": "Một tệp .pptx mở được trong PowerPoint, Keynote và Google Trang trình bày, trong đó mọi văn bản, hình, bảng và biểu đồ đều chỉnh sửa được.",
+      "description": "Mở được trong PowerPoint, Keynote và Google Trang trình bày, mọi nội dung đều chỉnh sửa được.",
       "working": "Đang xuất bản trình bày…",
       "mediaOne": "Một tệp đa phương tiện trong tệp, {{size}}",
       "mediaMany": "{{n}} tệp đa phương tiện trong tệp, {{size}}",
@@ -2521,10 +2653,10 @@
       "not_logged_in": "CLI đã được cài đặt. Hãy đăng nhập tài khoản để tiếp tục.",
       "install": "Cài đặt…",
       "signIn": "Đăng nhập",
-      "refresh": "Làm mới kết nối và mô hình",
       "installTitle": "Cài đặt {{name}}?",
       "installDescription": "Ứng dụng sẽ tải xuống và cài đặt {{name}} bằng Windows App Installer. Sau đó chúng tôi sẽ kiểm tra kết nối và yêu cầu bạn đăng nhập nếu cần.",
       "installDescriptionNpm": "Ứng dụng sẽ cài đặt {{name}} bằng npm. Nếu thiếu Node.js, ứng dụng sẽ cài nó trước bằng Windows App Installer. Sau đó chúng tôi sẽ kiểm tra kết nối và yêu cầu bạn đăng nhập nếu cần.",
+      "installDescriptionLibrary": "Ứng dụng sẽ tải {{name}} xuống từ thư viện của tổ chức bạn và cài đặt trên máy tính này. Sau đó chúng tôi sẽ kiểm tra kết nối và yêu cầu bạn đăng nhập nếu cần.",
       "approveInstall": "Đồng ý và cài đặt",
       "chooseModel": "Chọn mô hình",
       "chooseEffort": "Chọn mức nỗ lực",
@@ -2549,6 +2681,8 @@
       "pickerHint": "Chỉ cho cuộc trò chuyện này. Mặc định được đặt trong Cài đặt.",
       "web": "Tìm kiếm và đọc nội dung web",
       "webHint": "Tác nhân có thể tìm kiếm trên web và đọc các trang trong khi tạo trang chiếu.",
+      "webBlocked": "Tổ chức của bạn không cho phép tác nhân tìm kiếm trên web hoặc đọc các trang.",
+      "askAdmin": "Tổ chức của bạn tự cài đặt {{name}}. Hãy nhờ quản trị viên cài đặt trên máy tính này.",
       "gate": "Kiểm tra thiết kế sau mỗi lượt",
       "gateHint": "Trước khi hoàn tất, tác nhân sẽ sửa các vấn đề thiết kế trên những trang chiếu mà nó đã chỉnh sửa.",
       "outline": "Dàn ý trước khi tạo bản trình bày",
@@ -2575,10 +2709,7 @@
       "open": "Mở…",
       "recent": "Mở gần đây",
       "noRecent": "Không có tệp gần đây",
-      "importHtml": "Nhập HTML…",
-      "importPptx": "Nhập PowerPoint…",
-      "exportHtml": "Xuất HTML…",
-      "exportPptx": "Xuất sang PowerPoint…",
+      "export": "Xuất…",
       "missing": "Không tìm thấy tệp",
       "save": "Lưu",
       "saveAs": "Lưu thành…",
@@ -2586,6 +2717,8 @@
       "properties": "Thuộc tính bản trình bày…",
       "filter": "Bản trình bày Slidr",
       "filterAll": "Tất cả tệp Slidr có thể mở",
+      "importUnknown": "Không thể nhập loại tệp này",
+      "importKinds": "Slidr nhập được: {{kinds}}.",
       "unsavedTitle": "Lưu thay đổi cho “{{name}}”?",
       "unsavedBody": "Thay đổi của bạn sẽ bị mất nếu bạn không lưu.",
       "dontSave": "Không lưu",
@@ -3060,7 +3193,17 @@
       "magen": "Lính gác",
       "shvav": "Bo mạch",
       "mutzar": "Ra mắt",
-      "atlas": "Tập bản đồ"
+      "atlas": "Tập bản đồ",
+      "dofek": "Nhịp tim",
+      "gir": "Phấn",
+      "hon": "Nguồn vốn",
+      "tavlin": "Gia vị",
+      "rakia": "Vũ trụ",
+      "maslul": "Đường chạy",
+      "taarucha": "Triển lãm",
+      "hadran": "Thêm một bài",
+      "tefer": "Xưởng may",
+      "sade": "Mùa gặt"
     },
     "tagline": {
       "zerem": "Công nghệ chuyển động, sắc ngọc lam rực sáng giữa đêm xanh thẳm",
@@ -3087,7 +3230,17 @@
       "magen": "Xanh ô liu sẫm và cam cảnh báo, chính xác như một màn hình điều khiển",
       "shvav": "Xanh bảng mạch và ánh đồng, cho phần cứng đang trên đường vào sản xuất",
       "mutzar": "Cửa sổ sản phẩm, con trỏ và thông báo, cho buổi ra mắt phiên bản mới",
-      "atlas": "Quả địa cầu, tuyến đường và tem thư trên giấy bản đồ, bằng mọi ngôn ngữ, cho những gì vượt qua biên giới"
+      "atlas": "Quả địa cầu, tuyến đường và tem thư trên giấy bản đồ, bằng mọi ngôn ngữ, cho những gì vượt qua biên giới",
+      "dofek": "Xanh ngọc phòng mổ, đỏ nhịp tim và đường sóng monitor, cho bệnh viện, phòng khám và y tế cộng đồng",
+      "gir": "Bảng xanh trong khung gỗ sồi, viên phấn trên tay và chiếc com-pa của thầy cô, cho những giờ học, khóa học và buổi họp phụ huynh",
+      "hon": "Mực đỏ rượu vang, hoa văn guilloche và sợi chỉ đồng trên giấy in tiền, cho những con số giữ trọn giá trị",
+      "tavlin": "Bao gia vị, nhãn giá giấy kraft và kiểu chữ có chân của sách dạy nấu ăn trên nền giấy màu nghệ tây, cho những gian bếp, đầu bếp và lễ hội ẩm thực",
+      "rakia": "Vệt sao, trăng lưỡi liềm và quang phổ trên bầu trời đêm sâu thẳm, cho khoa học hướng lên cao",
+      "maslul": "Làn chạy đỏ, vạch trắng và đồng hồ bấm giờ, cho vận động viên và câu lạc bộ trên vạch xuất phát",
+      "taarucha": "Tường phòng trưng bày sơn màu, tác phẩm đóng khung và nhãn bảo tàng, cho một triển lãm sắp khai mạc",
+      "hadran": "Đĩa than, vé và ánh đèn sân khấu trên giấy hồng, cho âm nhạc khiến khán giả đòi thêm một bài",
+      "tefer": "Giấy rập, thước dây và chỉ đỏ lựu, cho nhãn hàng thời trang, xưởng may và người làm nghề",
+      "sade": "Lúa mì chín trên dải đất nâu, cánh đồng vẽ theo mặt cắt, cho những người trồng nên lương thực của chúng ta"
     },
     "properties": {
       "title": "Thuộc tính bản trình bày",

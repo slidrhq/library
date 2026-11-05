@@ -1,4 +1,10 @@
-import { CONTENT_LANGUAGES, type Localized, type Slide } from '@slidr/model';
+import {
+  CONTENT_LANGUAGES,
+  contentLanguageOf,
+  type ContentLanguage,
+  type Localized,
+  type Slide,
+} from '@slidr/model';
 import {
   searchIcons,
   withTags,
@@ -14,11 +20,8 @@ import {
  * reads: `designs.ts` and `designThumbs.ts` do.
  */
 
-/** A name in the two languages of the interface. */
-export interface DesignNames {
-  he?: string;
-  en?: string;
-}
+/** A name in the languages it is given in: Hebrew and English, and any other of the app. */
+export type DesignNames = Partial<Record<ContentLanguage, string>>;
 
 /**
  * The catalog of the ready-made slides, `elements/designs/index.json` (ADR-118). A design's slide
@@ -173,10 +176,17 @@ function tagsOf(given: unknown): Tags {
   return localized;
 }
 
-/** A name in the language of `lang` (`he`, `he-IL`; anything else is English), if it has one. */
+/**
+ * A name in the language of `lang` (`de`, `de-AT`), if it has one; else, but for Hebrew, the
+ * English one.
+ */
 export function localName(names: DesignNames | undefined, lang: string): string | undefined {
-  const name: unknown = names?.[lang.startsWith('he') ? 'he' : 'en'];
-  return typeof name === 'string' && name.trim() ? name : undefined;
+  const own = contentLanguageOf(lang) ?? 'en';
+  for (const key of own === 'he' ? ['he'] : [own, 'en']) {
+    const name: unknown = names?.[key as ContentLanguage];
+    if (typeof name === 'string' && name.trim()) return name;
+  }
+  return undefined;
 }
 
 /**

@@ -50,6 +50,16 @@ export const he = {
     shvav: 'שבב',
     mutzar: 'מוצר',
     atlas: 'אטלס',
+    dofek: 'דופק',
+    gir: 'גיר',
+    hon: 'הון',
+    tavlin: 'תבלין',
+    rakia: 'רקיע',
+    maslul: 'מסלול',
+    taarucha: 'תערוכה',
+    hadran: 'הדרן',
+    tefer: 'תפר',
+    sade: 'שדה',
   },
   // What each built-in template feels like, in a sentence beside its name.
   tagline: {
@@ -78,6 +88,17 @@ export const he = {
     shvav: 'ירוק של מעגל מודפס ונחושת, לחומרה שיוצאת לייצור',
     mutzar: 'חלונות של מוצר, סמנים והתראות, להשקה של גרסה חדשה',
     atlas: 'גלובוס, מסלולים ובולי דואר על נייר של מפה, בכל השפות, למה שחוצה גבולות',
+    dofek: 'טורקיז של חדר ניתוח, אדום של דופק וקו של מוניטור, לבתי חולים, למרפאות ולבריאות הציבור',
+    gir: 'לוח ירוק במסגרת עץ, גיר ביד ומחוגה של מורה, לשיעורים, לקורסים ולערב ההורים',
+    hon: 'דיו בורדו, גיליושים וחוט נחושת על נייר של שטר, למספרים ששומרים על ערכם',
+    tavlin:
+      'שקי תבלינים, תגיות קראפט וסריף של ספר בישול על נייר זעפרן, למטבחים, לשפים ולפסטיבלי אוכל',
+    rakia: 'שובלי כוכבים, ירח וקשת הספקטרום על שמי לילה עמוקים, למדע שמביט למעלה',
+    maslul: 'מסלולים אדומים, קווים לבנים ושעון עצר, לספורטאים ולמועדונים שעומדים על קו הזינוק',
+    taarucha: 'קירות גלריה צבועים, יצירות ממוסגרות ותוויות של מוזיאון, לתערוכה שעומדת להיפתח',
+    hadran: 'תקליטים, כרטיסים ואור של במה על נייר ורוד, למוזיקה שמבקשת עוד שיר',
+    tefer: 'נייר גזרות, סרט מידה וחוט בורדו, למותגי אופנה, לסדנאות וליוצרים',
+    sade: 'שיבולים בשלות מעל רצועת אדמה, שדה בחתך, למי שמגדל את המזון שלנו',
   },
   properties: {
     title: 'מאפייני המצגת',
@@ -330,6 +351,16 @@ export const en: typeof he = {
     shvav: 'Circuit',
     mutzar: 'Launch',
     atlas: 'Atlas',
+    dofek: 'Pulse',
+    gir: 'Chalk',
+    hon: 'Capital',
+    tavlin: 'Spice',
+    rakia: 'Cosmos',
+    maslul: 'Track',
+    taarucha: 'Exhibit',
+    hadran: 'Encore',
+    tefer: 'Atelier',
+    sade: 'Harvest',
   },
   tagline: {
     zerem: 'Technology in motion, turquoise glowing on a deep blue night',
@@ -358,6 +389,22 @@ export const en: typeof he = {
     mutzar: 'Product windows, cursors and notifications, for the launch of a new version',
     atlas:
       'A globe, routes and postage stamps on map paper, in every language, for what crosses borders',
+    dofek:
+      'Surgical teal, pulse red and a monitor’s trace, for hospitals, clinics and public health',
+    gir: 'A green board in an oak frame, chalk in hand and the teacher’s compass, for lessons, courses and parents’ evenings',
+    hon: 'Claret ink, guilloche and a copper thread on banknote paper, for figures that hold their value',
+    tavlin:
+      'Sacks of spice, kraft price tags and a cookbook serif on saffron paper, for kitchens, chefs and food festivals',
+    rakia:
+      'Star trails, a crescent Moon and the spectrum on a deep night sky, for science that looks up',
+    maslul: 'Red lanes, white lines and a stopwatch, for athletes and clubs on their marks',
+    taarucha:
+      'Painted gallery walls, framed works and museum labels, for an exhibition about to open',
+    hadran:
+      'Records, tickets and a stage light on blush paper, for music that calls for one more song',
+    tefer:
+      'Pattern paper, a tape measure and garnet thread, for fashion labels, ateliers and makers',
+    sade: 'Ripe wheat over a strip of loam, a field drawn in section, for those who grow our food',
   },
   properties: {
     title: 'Presentation properties',

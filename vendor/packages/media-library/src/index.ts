@@ -123,7 +123,7 @@ export function lazyMediaJson<T>(path: string): () => Promise<T> {
   };
 }
 
-/** The list of the library's files, as `pnpm media:publish` writes it. */
+/** The list of the library's files, as Slidr Library writes it. */
 export interface MediaManifest {
   version: number;
   /** When the library was published. */

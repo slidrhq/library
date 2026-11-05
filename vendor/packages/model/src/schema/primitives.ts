@@ -22,7 +22,8 @@ export const ColorToken = z.enum([
 ]);
 export type ColorToken = z.infer<typeof ColorToken>;
 
-const Alpha = z.number().min(0).max(1);
+/** A strength from 0 to 1: an opacity, a dimming. */
+export const Alpha = z.number().min(0).max(1);
 
 /**
  * A theme token or an explicit CSS colour. The explicit form takes any CSS colour syntax, not
@@ -80,17 +81,6 @@ export const Fill = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('css'), value: z.string().min(1) }),
 ]);
 export type Fill = z.infer<typeof Fill>;
-
-export const Background = z.strictObject({
-  fill: Fill,
-  /** Drawn over the fill, usually to keep text readable on a photo. */
-  overlay: Fill.optional(),
-  /** For image fills: blur radius in slide pixels. */
-  blur: z.number().nonnegative().optional(),
-  /** For image fills: 0 = untouched, 1 = black. */
-  dim: Alpha.optional(),
-});
-export type Background = z.infer<typeof Background>;
 
 export const Shadow = z.strictObject({
   x: z.number(),

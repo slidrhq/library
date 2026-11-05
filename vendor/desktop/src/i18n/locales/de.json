@@ -52,6 +52,8 @@
     "setup": {
       "welcome": "Willkommen im Slidr-Chat",
       "intro": "Wählen Sie zuerst Ihren Dienst. Danach legen wir Modell und Aufwandsstufe fest.",
+      "finish": "Schließen wir die Einrichtung ab",
+      "finishIntro": "Es fehlen noch ein paar Angaben, damit der Agent weiterarbeiten kann.",
       "steps": "Einrichtungsschritte",
       "steps_harness": "Dienst",
       "steps_model": "Modell",
@@ -66,6 +68,7 @@
       "signingIn": "Schließen Sie die Anmeldung im geöffneten Fenster ab. Danach geht es hier weiter.",
       "installDescription": "{{name}} ist auf diesem Computer nicht installiert. Mit Ihrer Zustimmung laden wir es herunter, installieren es mit dem Windows App Installer und machen dann hier weiter.",
       "installDescriptionNpm": "{{name}} ist auf diesem Computer nicht installiert. Mit Ihrer Zustimmung installieren wir es mit npm – fehlt Node.js, installieren wir es zuerst mit dem Windows App Installer – und machen dann hier weiter.",
+      "installDescriptionLibrary": "{{name}} ist auf diesem Computer nicht installiert. Mit Ihrer Zustimmung laden wir es aus der Bibliothek Ihrer Organisation herunter, installieren es und machen dann hier weiter.",
       "install": "Zustimmen und installieren",
       "signInDescription": "Melden Sie sich bei Ihrem Konto an, um die verfügbaren Modelle zu laden.",
       "signIn": "Anmelden",
@@ -610,7 +613,9 @@
       "paragraph": "Absatz {{n}} von {{total}}",
       "row": "{{effect}}: {{name}}",
       "original": "Ursprüngliche Bewegung",
-      "originalHint": "Die Bewegung aus der importierten Datei, so wie sie dort festgelegt war. Wenn Sie einen anderen Effekt wählen, wird sie ersetzt."
+      "originalHint": "Die Bewegung aus der importierten Datei, so wie sie dort festgelegt war. Wenn Sie einen anderen Effekt wählen, wird sie ersetzt.",
+      "disableHint": "Das Objekt bleibt grau und blass, bis eine Animation „Aktivieren“ folgt. Damit es schon beim Öffnen der Folie deaktiviert erscheint, wählen Sie dafür „Als deaktiviert anzeigen“.",
+      "enableHint": "Das Objekt erhält sein gewohntes Aussehen zurück und behält es. Damit es bis zu dieser Animation deaktiviert erscheint, wählen Sie dafür „Als deaktiviert anzeigen“."
     },
     "group": {
       "leadIn": "Beim Öffnen der Folie",
@@ -657,7 +662,9 @@
         "heartbeat": "Herzschlag",
         "flicker": "Flackern",
         "float": "Schweben",
-        "tilt": "Neigen"
+        "tilt": "Neigen",
+        "disable": "Deaktivieren",
+        "enable": "Aktivieren"
       },
       "exit": {
         "disappear": "Verschwinden",
@@ -801,6 +808,8 @@
       "lock": "Sperren",
       "unlock": "Entsperren",
       "hide": "Ausblenden",
+      "disable": "Als deaktiviert anzeigen",
+      "enable": "Als aktiv anzeigen",
       "duplicate": "Duplizieren",
       "pasteStyle": "Formatierung einfügen",
       "delete": "Löschen",
@@ -859,6 +868,7 @@
       "order": "Ebenenreihenfolge",
       "lock": "Sperren",
       "visibility": "Aus- und einblenden",
+      "disabled": "Als deaktiviert oder aktiv anzeigen",
       "rename": "Umbenennen",
       "paste": "Einfügen",
       "cut": "Ausschneiden",
@@ -1044,7 +1054,10 @@
       "insert": "Grafik einfügen",
       "frame": "Rahmen einfügen",
       "reframe": "Bild in Rahmen setzen",
-      "cards": "Kartenset einfügen"
+      "cards": "Kartenset einfügen",
+      "animation": "Animation einfügen",
+      "background": "Hintergrund anwenden",
+      "motion": "Bewegung ändern"
     },
     "collection": {
       "cards": "Kartensets",
@@ -1053,7 +1066,9 @@
       "emoji": "Emojis",
       "icons": "Symbole",
       "frames": "Rahmen",
-      "tables": "Tabellen"
+      "tables": "Tabellen",
+      "animations": "Animationen",
+      "backgrounds": "Hintergründe"
     },
     "designs": {
       "title": "Fertige Folien",
@@ -1460,17 +1475,129 @@
       "ready": "Vorgegebene Größen",
       "custom": "Andere Größe",
       "size": "{{rows}} Zeilen × {{cols}} Spalten"
+    },
+    "animations": {
+      "search": "Animationen durchsuchen",
+      "searchPlaceholder": "Animationen suchen…",
+      "hint": "Klicken Sie auf eine Animation, um sie zur Folie hinzuzufügen. Sie bewegt sich von selbst, und Sie können sie wie jedes Objekt verschieben, skalieren und drehen.",
+      "group": {
+        "basic": "Animierte Formen",
+        "path": "Auf einer Bahn",
+        "spin": "Drehen",
+        "scale": "Wachsen und Pulsieren",
+        "lines": "Linien und Wellen",
+        "particles": "Partikel und Netze"
+      },
+      "name": {
+        "orbit": "Umlaufbahn",
+        "conveyor": "Boxen auf einer Bahn",
+        "trace": "Leiterbahn",
+        "atom": "Atom",
+        "shuttle": "Punkt auf einer Linie",
+        "hexagon": "Drehende Sechsecke",
+        "rings": "Drehende Ringe",
+        "radar": "Radar",
+        "ripple": "Wellenringe",
+        "breathe": "Atmende Form",
+        "bars": "Wachsende Balken",
+        "waves": "Wellen",
+        "draw": "Gezeichneter Pfeil",
+        "flowArrow": "Fließender Verbinder",
+        "heartbeat": "Herzschlag",
+        "network": "Netzwerk",
+        "converge": "Sich sammelnde Partikel",
+        "float": "Aufsteigende Blasen"
+      }
+    },
+    "backgrounds": {
+      "hint": "Klicken Sie auf einen Hintergrund, um ihn auf die Folie oder auf alle ausgewählten Folien anzuwenden. Die Farben stammen aus der Vorlage; das Werkzeug „Hintergrund“ führt zum Hintergrund der Vorlage zurück.",
+      "animated": "Bewegte Hintergründe",
+      "still": "Ruhige Hintergründe",
+      "name": {
+        "flow": "Schaltkreisfluss",
+        "waves": "Wellen",
+        "converge": "Sammeln",
+        "orbit": "Umlaufbahnen",
+        "radar": "Radar",
+        "network": "Netzwerk",
+        "drift": "Wanderndes Licht",
+        "particles": "Aufsteigende Partikel",
+        "dots": "Punktraster",
+        "contours": "Höhenlinien",
+        "arcs": "Bögen in der Ecke"
+      }
+    },
+    "animatedShapes": {
+      "title": "Animierte Formen",
+      "hint": "Gewöhnliche Formen, die eine Bewegung wiederholen. Farbe, Kontur und Größe bearbeiten Sie wie bei jeder Form, die Bewegung mit dem Werkzeug „Bewegung“.",
+      "more": "Alle Animationen",
+      "name": {
+        "ring": "Drehender Ring",
+        "hexagon": "Drehendes Sechseck",
+        "star": "Drehender Stern",
+        "octagon": "Drehendes Achteck",
+        "square": "Quadrat, das sich dreht und ruht",
+        "pulse": "Pulsierender Kreis",
+        "heart": "Schlagendes Herz",
+        "float": "Schwebender Kreis",
+        "arrow": "Wackelnder Pfeil",
+        "blink": "Blinkender Punkt"
+      }
+    },
+    "motion": {
+      "title": "Bewegung",
+      "piece": "Tempo der Animation",
+      "loop": "Wiederholte Bewegung",
+      "kind": {
+        "none": "Keine",
+        "spin": "Drehen",
+        "pulse": "Pulsieren",
+        "float": "Schweben",
+        "swing": "Schwingen",
+        "blink": "Blinken"
+      },
+      "speed": "Tempo",
+      "pace": {
+        "slow": "Langsam",
+        "medium": "Mittel",
+        "fast": "Schnell"
+      },
+      "round": "Sekunden pro Runde",
+      "rhythm": "Rhythmus",
+      "rhythmKind": {
+        "steady": "Gleichmäßig",
+        "smooth": "Weich",
+        "pause": "Mit Pausen"
+      },
+      "direction": "Richtung",
+      "clockwise": "Im Uhrzeigersinn",
+      "counterclockwise": "Gegen den Uhrzeigersinn",
+      "amount": {
+        "pulse": "Pulsgröße",
+        "float": "Schwebehöhe",
+        "swing": "Schwingwinkel",
+        "blink": "Blinkstärke"
+      },
+      "hint": "Die Bewegung wiederholt sich, solange die Folie gezeigt wird: im Editor, in der Präsentation und in einer exportierten Datei."
     }
   },
   "export": {
-    "title": "Als HTML exportieren",
+    "title": "Präsentation exportieren",
+    "intro": "Eine Datei, die sich auch ohne Slidr öffnet: Format und Inhalt wählen, dann speichern.",
     "description": "Eine Datei, die in jedem Browser abgespielt wird – mit oder ohne Internet.",
     "descriptionBeside": "Eine Datei, die in jedem Browser abgespielt wird – mit oder ohne Internet –, und daneben ein Ordner mit Video und Audio.",
+    "steps": "Exportschritte",
+    "stepContent": "Inhalt",
+    "stepSave": "Speichern",
+    "formatQuestion": "In welchem Format möchten Sie exportieren?",
+    "continue": "Weiter",
+    "back": "Zurück",
     "close": "Schließen",
     "cancel": "Abbrechen",
     "export": "Exportieren",
     "again": "Erneut exportieren",
     "filter": "HTML-Seite",
+    "format": "Format",
     "slides": {
       "label": "Folien",
       "all": "Die ganze Präsentation",
@@ -1486,6 +1613,7 @@
     "animations": {
       "label": "Animationen und Übergänge",
       "with": "Mit",
+      "withHint": "Die Folien bauen sich auf und wechseln wie in der Bildschirmpräsentation.",
       "without": "Ohne",
       "withoutHint": "Jede Folie wird vollständig angezeigt, und die nächste folgt sofort."
     },
@@ -2311,6 +2439,11 @@
       "blur": "Weichzeichnen",
       "dim": "Abdunkeln",
       "applyAll": "Auf alle Folien anwenden",
+      "noDrawing": "Hintergrundzeichnung entfernen",
+      "drawingColours": "Farben der Zeichnung",
+      "drawingColour": "Farbe {{n}} der Zeichnung",
+      "speed": "Bewegungsgeschwindigkeit",
+      "drawingOpacity": "Deckkraft der Zeichnung",
       "reset": "Zurück zum Designhintergrund"
     },
     "groups": {
@@ -2406,8 +2539,7 @@
   "pptx": {
     "filter": "PowerPoint-Präsentation",
     "export": {
-      "title": "Nach PowerPoint exportieren",
-      "description": "Eine .pptx-Datei, die sich in PowerPoint, Keynote und Google Präsentationen öffnen lässt und in der jeder Text, jede Form, Tabelle und jedes Diagramm bearbeitbar ist.",
+      "description": "Öffnet sich in PowerPoint, Keynote und Google Präsentationen, und alles darin bleibt bearbeitbar.",
       "working": "Präsentation wird exportiert…",
       "mediaOne": "Eine Mediendatei in der Datei, {{size}}",
       "mediaMany": "{{n}} Mediendateien in der Datei, {{size}}",
@@ -2527,10 +2659,10 @@
       "not_logged_in": "Die CLI ist installiert. Melden Sie sich bei Ihrem Konto an, um fortzufahren.",
       "install": "Installieren…",
       "signIn": "Anmelden",
-      "refresh": "Verbindung und Modelle aktualisieren",
       "installTitle": "{{name}} installieren?",
       "installDescription": "Die App lädt {{name}} herunter und installiert es mit dem Windows App Installer. Danach prüfen wir die Verbindung und bitten Sie bei Bedarf, sich anzumelden.",
       "installDescriptionNpm": "Die App installiert {{name}} mit npm. Fehlt Node.js, wird es zuerst mit dem Windows App Installer installiert. Danach prüfen wir die Verbindung und bitten Sie bei Bedarf, sich anzumelden.",
+      "installDescriptionLibrary": "Die App lädt {{name}} aus der Bibliothek Ihrer Organisation herunter und installiert es auf diesem Computer. Danach prüfen wir die Verbindung und bitten Sie bei Bedarf, sich anzumelden.",
       "approveInstall": "Zustimmen und installieren",
       "chooseModel": "Modell auswählen",
       "chooseEffort": "Aufwand auswählen",
@@ -2555,6 +2687,8 @@
       "pickerHint": "Nur für diesen Chat. Der Standard wird in den Einstellungen festgelegt.",
       "web": "Websuche und Lesen von Webseiten",
       "webHint": "Der Agent darf im Web suchen und Seiten lesen, während er Folien erstellt.",
+      "webBlocked": "Ihre Organisation erlaubt dem Agenten nicht, im Web zu suchen oder Seiten zu lesen.",
+      "askAdmin": "Ihre Organisation installiert {{name}} selbst. Bitten Sie Ihren Administrator, es auf diesem Computer zu installieren.",
       "gate": "Designprüfung am Ende jedes Durchlaufs",
       "gateHint": "Bevor der Agent fertig ist, behebt er Designbefunde auf den Folien, die er bearbeitet hat.",
       "outline": "Gliederung vor dem Erstellen einer Präsentation",
@@ -2581,10 +2715,7 @@
       "open": "Öffnen…",
       "recent": "Zuletzt verwendet",
       "noRecent": "Keine zuletzt verwendeten Dateien",
-      "importHtml": "HTML importieren…",
-      "importPptx": "PowerPoint importieren…",
-      "exportHtml": "HTML exportieren…",
-      "exportPptx": "Nach PowerPoint exportieren…",
+      "export": "Exportieren…",
       "missing": "Datei nicht gefunden",
       "save": "Speichern",
       "saveAs": "Speichern unter…",
@@ -2592,6 +2723,8 @@
       "properties": "Präsentationseigenschaften…",
       "filter": "Slidr-Präsentation",
       "filterAll": "Alle Dateien, die Slidr laden kann",
+      "importUnknown": "Dateien dieser Art können nicht importiert werden",
+      "importKinds": "Slidr importiert: {{kinds}}.",
       "unsavedTitle": "Änderungen an „{{name}}“ speichern?",
       "unsavedBody": "Ihre Änderungen gehen verloren, wenn Sie sie nicht speichern.",
       "dontSave": "Nicht speichern",
@@ -3066,7 +3199,17 @@
       "magen": "Wächter",
       "shvav": "Platine",
       "mutzar": "Startschuss",
-      "atlas": "Atlas"
+      "atlas": "Atlas",
+      "dofek": "Puls",
+      "gir": "Kreide",
+      "hon": "Kapital",
+      "tavlin": "Gewürz",
+      "rakia": "Kosmos",
+      "maslul": "Laufbahn",
+      "taarucha": "Ausstellung",
+      "hadran": "Zugabe",
+      "tefer": "Atelier",
+      "sade": "Ernte"
     },
     "tagline": {
       "zerem": "Technik in Bewegung: Türkis, das in tiefblauer Nacht leuchtet",
@@ -3093,7 +3236,17 @@
       "magen": "Dunkles Oliv und alarmierendes Orange, mit der Präzision eines Kontrolldisplays",
       "shvav": "Platinengrün und Kupfer – für Hardware auf dem Weg in die Serienfertigung",
       "mutzar": "Produktfenster, Mauszeiger und Benachrichtigungen – für den Launch einer neuen Version",
-      "atlas": "Ein Globus, Routen und Briefmarken auf Landkartenpapier, in jeder Sprache – für alles, was Grenzen überschreitet"
+      "atlas": "Ein Globus, Routen und Briefmarken auf Landkartenpapier, in jeder Sprache – für alles, was Grenzen überschreitet",
+      "dofek": "OP-Türkis, Pulsrot und die Kurve eines Monitors – für Kliniken, Praxen und öffentliche Gesundheit",
+      "gir": "Eine grüne Tafel im Eichenrahmen, Kreide in der Hand und der Zirkel der Lehrkraft – für Unterricht, Kurse und Elternabende",
+      "hon": "Bordeauxrote Tinte, Guillochen und ein Kupferfaden auf Banknotenpapier – für Zahlen, die ihren Wert behalten",
+      "tavlin": "Gewürzsäcke, Preisschilder aus Packpapier und die Serifenschrift eines Kochbuchs auf Safranpapier – für Küchen, Köche und Food-Festivals",
+      "rakia": "Sternspuren, eine Mondsichel und das Spektrum auf tiefem Nachthimmel – für Wissenschaft, die nach oben blickt",
+      "maslul": "Rote Bahnen, weiße Linien und eine Stoppuhr – für Athleten und Vereine in den Startblöcken",
+      "taarucha": "Farbige Galeriewände, gerahmte Werke und Museumsschilder – für eine Ausstellung kurz vor der Eröffnung",
+      "hadran": "Platten, Tickets und Bühnenlicht auf rosa Papier – für Musik, nach der der Saal eine Zugabe verlangt",
+      "tefer": "Schnittmusterpapier, Maßband und granatroter Faden – für Modelabels, Ateliers und Handwerk",
+      "sade": "Reifer Weizen über einem Streifen Ackerboden, ein Feld im Schnitt – für alle, die unser Essen anbauen"
     },
     "properties": {
       "title": "Präsentationseigenschaften",

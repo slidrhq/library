@@ -65,8 +65,8 @@ export async function sampleLanguages(): Promise<Record<string, ContentLanguage[
 }
 
 /**
- * The name of the slide the catalog gives a text layout nobody wrote a sample for
- * (`scripts/export-templates.mjs`): the app's own words, "Slide title" and no more.
+ * The name of the slide the catalog gives a text layout nobody wrote a sample for (the library's
+ * `templates/catalog.json`): the app's own words, "Slide title" and no more.
  */
 const UNWRITTEN = new Set(['כותרת השקף', 'Slide title']);
 

@@ -312,6 +312,8 @@ export const elementUngroup = defineCommand(
       child.opacity *= group.opacity;
       if (group.hidden) child.hidden = true;
       if (group.locked) child.locked = true;
+      // The group looked out of use with everything in it: so does each of its parts.
+      if (group.disabled) child.disabled = true;
       touched.element(slideId, child.id);
     }
 

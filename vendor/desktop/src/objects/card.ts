@@ -30,10 +30,28 @@ export function cardBox(element: Element): ShapeElement | undefined {
   if (element.type !== 'group') return undefined;
   const box = element.children[0];
   if (box?.type !== 'shape' || !takesAccent(box) || box.rotation !== 0) return undefined;
+  return covers(box, element.frame) ? box : undefined;
+}
+
+/**
+ * What a card lies on, for the pointer (ARR-01): its box, or the first child of a group that is
+ * HTML upright under the group's whole frame, a box read from a page that the model could not
+ * draw. What lies on it is reached directly, as on a card, and a press on it takes the group.
+ * There is no box to paint on such a card: `cardBox` stays undefined for it.
+ */
+export function cardGround(element: Element): Element | undefined {
+  const box = cardBox(element);
+  if (box || element.type !== 'group') return box;
+  const ground = element.children[0];
+  if (ground?.type !== 'html' || ground.rotation !== 0) return undefined;
+  return covers(ground, element.frame) ? ground : undefined;
+}
+
+/** The child takes the whole frame of its group, to within `COVERS`. */
+function covers(child: Element, group: Frame): boolean {
   const near = (a: number, b: number) => Math.abs(a - b) <= COVERS;
-  const { x, y, w, h } = box.frame;
-  const covers = near(x, 0) && near(y, 0) && near(w, element.frame.w) && near(h, element.frame.h);
-  return covers ? box : undefined;
+  const { x, y, w, h } = child.frame;
+  return near(x, 0) && near(y, 0) && near(w, group.w) && near(h, group.h);
 }
 
 /* ---------------------------------------------------------------- inserting */

@@ -1,12 +1,13 @@
 import { mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
-import { frameRev, picturedAhead, type PhotoFrame } from './frames';
+import type { ContentLanguage } from '@slidr/model';
+import { frameLanguage, frameRev, picturedAhead, type PhotoFrame } from './frames';
 
 /*
  * The small pictures of the event magnets. A magnet is a whole design: a card, stickers with
  * photographs in them, lines of words. Drawn by the renderer, the hundred of them were built
  * again each time the group was opened, behind a loading state of seconds. So each has a picture
- * that was made ahead, of the renderer's own drawing, in Hebrew and in English
- * (`scripts/generate-frames-thumbs.mjs`), and the panel shows that.
+ * that was made ahead, of the renderer's own drawing, in each language its words are written in,
+ * and the panel shows that.
  *
  * The pictures are in the media library, `images/frames/<language>/<frame>.webp`, with an index
  * that says for each the word of what it was drawn from (`frameRev`). A frame that has no
@@ -35,12 +36,10 @@ export interface FrameThumbPicture {
   spread: number;
 }
 
-type Language = 'he' | 'en';
-
 /** What was found for a frame before, by language: its picture, or null for none. */
-const found = new WeakMap<PhotoFrame, Partial<Record<Language, FrameThumbPicture | null>>>();
+const found = new WeakMap<PhotoFrame, Partial<Record<ContentLanguage, FrameThumbPicture | null>>>();
 
-function find(frame: PhotoFrame, lang: Language): FrameThumbPicture | null {
+function find(frame: PhotoFrame, lang: ContentLanguage): FrameThumbPicture | null {
   if (!index || !picturedAhead(frame)) return null;
   const name = frame.id.replace(/^frame:/, '');
   const path = `images/frames/${lang}/${name}.webp`;
@@ -50,11 +49,12 @@ function find(frame: PhotoFrame, lang: Language): FrameThumbPicture | null {
 }
 
 /**
- * The picture of a frame that was made ahead, with its words in the language given; undefined
- * for a frame that has none, or one of a drawing the frame no longer has.
+ * The picture of a frame that was made ahead, with its words in the language they are said in to
+ * an interface in `lang` (`frameLanguage`); undefined for a frame that has none, or one of a
+ * drawing the frame no longer has.
  */
 export function frameThumb(frame: PhotoFrame, lang: string): FrameThumbPicture | undefined {
-  const language: Language = lang.startsWith('he') ? 'he' : 'en';
+  const language = frameLanguage(frame, lang);
   let known = found.get(frame);
   if (!known) found.set(frame, (known = {}));
   return (known[language] ??= find(frame, language)) ?? undefined;

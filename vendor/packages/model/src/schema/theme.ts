@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import { Background } from './background';
 import { Element, PlaceholderRole } from './elements';
-import { Background, Color, Frame, Id, Shadow } from './primitives';
+import { Color, Frame, Id, Shadow } from './primitives';
 import { TextStyleRef } from './text';
 
 /** A font per script, so Hebrew and Latin text each get the face meant for them (SPEC 5.5). */

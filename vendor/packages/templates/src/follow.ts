@@ -71,13 +71,6 @@ function linkFill<F extends Fill | undefined>(fill: F, theme: Theme): F {
   return value === fill.value ? fill : ({ kind: 'css', value } as F);
 }
 
-function linkBackground(background: Background, theme: Theme): Background {
-  const fill = linkFill(background.fill, theme);
-  const overlay = linkFill(background.overlay, theme);
-  if (fill === background.fill && overlay === background.overlay) return background;
-  return { ...background, fill, ...(overlay ? { overlay } : {}) };
-}
-
 /** The fields of one element that follow the theme, as an `element.update` patch. */
 function themePatch(element: Element, from: Theme, to: Theme): Record<string, unknown> {
   const patch: Record<string, unknown> = {};
@@ -126,6 +119,16 @@ function followed(element: Element, from: Theme, to: Theme): Element {
   return { ...next, children: next.children.map((child) => followed(child, from, to)) };
 }
 
+/** A background as it follows the theme: its `css` fills, and its drawing as a layout's (ADR-125). */
+function linkBackground(background: Background, from: Theme, to: Theme): Background {
+  const fill = linkFill(background.fill, from);
+  const overlay = linkFill(background.overlay, from);
+  const elements = background.elements?.map((element) => followed(element, from, to));
+  const drawn = elements && !equalJson(elements, background.elements);
+  if (fill === background.fill && overlay === background.overlay && !drawn) return background;
+  return { ...background, fill, ...(overlay ? { overlay } : {}), ...(drawn ? { elements } : {}) };
+}
+
 /**
  * The commands that hand what a deck holds of its theme as a copy to the theme `to`: on every
  * slide, and on the layouts of `layouts`, which are the ones the deck keeps through the switch.
@@ -134,7 +137,7 @@ export function followTheme(deck: Deck, to: Theme, layouts: readonly Layout[] = 
   const from = deck.theme;
   const commands: Command[] = [];
   for (const layout of layouts) {
-    const background = layout.background && linkBackground(layout.background, from);
+    const background = layout.background && linkBackground(layout.background, from, to);
     const decorations = layout.decorations.map((decoration) => followed(decoration, from, to));
     const objects = layout.objects?.map((object) => followed(object, from, to));
     const patch = {
@@ -147,7 +150,7 @@ export function followTheme(deck: Deck, to: Theme, layouts: readonly Layout[] = 
     }
   }
   for (const slide of deck.slides) {
-    const background = slide.background && linkBackground(slide.background, from);
+    const background = slide.background && linkBackground(slide.background, from, to);
     if (background !== slide.background) {
       commands.push({ type: 'slide.update', slideId: slide.id, patch: { background } });
     }

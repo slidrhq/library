@@ -51,6 +51,8 @@
     "setup": {
       "welcome": "欢迎使用 Slidr 对话",
       "intro": "首先选择要使用的服务，然后选择模型和推理强度。",
+      "finish": "完成设置吧",
+      "finishIntro": "还需要再做几项选择，智能体才能继续工作。",
       "steps": "设置步骤",
       "steps_harness": "服务",
       "steps_model": "模型",
@@ -65,6 +67,7 @@
       "signingIn": "请在打开的窗口中完成登录，之后将在此处继续。",
       "installDescription": "这台电脑上未安装 {{name}}。经你同意后，我们将通过 Windows App Installer 下载并安装它，然后在此处继续。",
       "installDescriptionNpm": "这台电脑上未安装 {{name}}。经你同意后，我们将通过 npm 安装它（如果缺少 Node.js，会先通过 Windows App Installer 安装），然后在此处继续。",
+      "installDescriptionLibrary": "这台电脑上未安装 {{name}}。经你同意后，我们将从你所在组织的库下载并安装它，然后在此处继续。",
       "install": "同意并安装",
       "signInDescription": "登录你的帐户以加载可用模型。",
       "signIn": "登录",
@@ -609,7 +612,9 @@
       "paragraph": "第 {{n}} 段，共 {{total}} 段",
       "row": "{{name}}：{{effect}}",
       "original": "原始动效",
-      "originalHint": "导入的文件中原样写入的动效。选择其他效果将替换它。"
+      "originalHint": "导入的文件中原样写入的动效。选择其他效果将替换它。",
+      "disableHint": "对象会保持灰色淡化，直到“启用”动画。若要从幻灯片打开时就显示为禁用，请对该对象选择“显示为禁用”。",
+      "enableHint": "对象会恢复平常的外观并保持不变。若要在此动画之前显示为禁用，请对该对象选择“显示为禁用”。"
     },
     "group": {
       "leadIn": "幻灯片打开时",
@@ -656,7 +661,9 @@
         "heartbeat": "心跳",
         "flicker": "闪烁",
         "float": "浮动",
-        "tilt": "倾斜"
+        "tilt": "倾斜",
+        "disable": "禁用",
+        "enable": "启用"
       },
       "exit": {
         "disappear": "消失",
@@ -800,6 +807,8 @@
       "lock": "锁定",
       "unlock": "解锁",
       "hide": "隐藏",
+      "disable": "显示为禁用",
+      "enable": "显示为启用",
       "duplicate": "创建副本",
       "pasteStyle": "粘贴样式",
       "delete": "删除",
@@ -858,6 +867,7 @@
       "order": "图层顺序",
       "lock": "锁定",
       "visibility": "隐藏和显示",
+      "disabled": "显示为禁用或启用",
       "rename": "重命名",
       "paste": "粘贴",
       "cut": "剪切",
@@ -1040,7 +1050,10 @@
       "insert": "插入图形",
       "frame": "插入相框",
       "reframe": "将图片放入相框",
-      "cards": "插入卡片组"
+      "cards": "插入卡片组",
+      "animation": "插入动画",
+      "background": "应用背景",
+      "motion": "更改动作"
     },
     "collection": {
       "cards": "卡片组",
@@ -1049,7 +1062,9 @@
       "emoji": "表情符号",
       "icons": "图标",
       "frames": "相框",
-      "tables": "表格"
+      "tables": "表格",
+      "animations": "动画",
+      "backgrounds": "背景"
     },
     "designs": {
       "title": "现成幻灯片",
@@ -1456,17 +1471,129 @@
       "ready": "常用尺寸",
       "custom": "其他尺寸",
       "size": "{{rows}} 行 × {{cols}} 列"
+    },
+    "animations": {
+      "search": "搜索动画",
+      "searchPlaceholder": "搜索动画…",
+      "hint": "点击动画即可将其添加到幻灯片。它会自己动起来，你也可以像其他对象一样移动、缩放和旋转它。",
+      "group": {
+        "basic": "动画形状",
+        "path": "沿路径",
+        "spin": "旋转",
+        "scale": "放大与脉动",
+        "lines": "线条与波浪",
+        "particles": "粒子与网络"
+      },
+      "name": {
+        "orbit": "轨道环绕",
+        "conveyor": "路径上的方块",
+        "trace": "电路走线",
+        "atom": "原子",
+        "shuttle": "线上的点",
+        "hexagon": "旋转的六边形",
+        "rings": "旋转的圆环",
+        "radar": "雷达",
+        "ripple": "涟漪",
+        "breathe": "呼吸的形状",
+        "bars": "上升的柱子",
+        "waves": "波浪",
+        "draw": "绘制的箭头",
+        "flowArrow": "流动的连接线",
+        "heartbeat": "心跳",
+        "network": "网络",
+        "converge": "聚拢的粒子",
+        "float": "上升的气泡"
+      }
+    },
+    "backgrounds": {
+      "hint": "点击背景即可将其应用到当前幻灯片，或你选中的所有幻灯片。颜色来自模板，使用“背景”工具可回到模板的背景。",
+      "animated": "动态背景",
+      "still": "静态背景",
+      "name": {
+        "flow": "电路流动",
+        "waves": "波浪",
+        "converge": "汇聚",
+        "orbit": "轨道",
+        "radar": "雷达",
+        "network": "网络",
+        "drift": "漂移的光",
+        "particles": "上升的粒子",
+        "dots": "点阵",
+        "contours": "等高线",
+        "arcs": "角落弧线"
+      }
+    },
+    "animatedShapes": {
+      "title": "动画形状",
+      "hint": "重复某个动作的普通形状。颜色、轮廓和大小与其他形状一样编辑，动作用“动作”工具编辑。",
+      "more": "全部动画",
+      "name": {
+        "ring": "旋转的圆环",
+        "hexagon": "旋转的六边形",
+        "star": "旋转的星形",
+        "octagon": "旋转的八边形",
+        "square": "转动后停顿的方块",
+        "pulse": "跳动的圆",
+        "heart": "跳动的心",
+        "float": "漂浮的圆",
+        "arrow": "摇摆的箭头",
+        "blink": "闪烁的圆点"
+      }
+    },
+    "motion": {
+      "title": "动作",
+      "piece": "动画速度",
+      "loop": "重复动作",
+      "kind": {
+        "none": "无",
+        "spin": "旋转",
+        "pulse": "脉动",
+        "float": "漂浮",
+        "swing": "摇摆",
+        "blink": "闪烁"
+      },
+      "speed": "速度",
+      "pace": {
+        "slow": "慢",
+        "medium": "中",
+        "fast": "快"
+      },
+      "round": "每圈秒数",
+      "rhythm": "节奏",
+      "rhythmKind": {
+        "steady": "匀速",
+        "smooth": "平滑",
+        "pause": "带停顿"
+      },
+      "direction": "方向",
+      "clockwise": "顺时针",
+      "counterclockwise": "逆时针",
+      "amount": {
+        "pulse": "脉动幅度",
+        "float": "漂浮高度",
+        "swing": "摇摆角度",
+        "blink": "闪烁强度"
+      },
+      "hint": "只要幻灯片在显示，动作就会重复：在编辑器中、放映时以及导出的文件中都是如此。"
     }
   },
   "export": {
-    "title": "导出为 HTML",
+    "title": "导出演示文稿",
+    "intro": "无需 Slidr 也能打开的文件：选择格式和要包含的内容，然后保存。",
     "description": "一个可在任何浏览器中播放的文件，联网或离线均可。",
     "descriptionBeside": "一个可在任何浏览器中播放的文件（联网或离线均可），旁边另有一个存放视频和音频的文件夹。",
+    "steps": "导出步骤",
+    "stepContent": "内容",
+    "stepSave": "保存",
+    "formatQuestion": "要导出为哪种格式？",
+    "continue": "继续",
+    "back": "返回",
     "close": "关闭",
     "cancel": "取消",
     "export": "导出",
     "again": "再次导出",
     "filter": "HTML 网页",
+    "format": "格式",
     "slides": {
       "label": "幻灯片",
       "all": "整个演示文稿",
@@ -1482,6 +1609,7 @@
     "animations": {
       "label": "动画和切换效果",
       "with": "包含",
+      "withHint": "幻灯片会像放映时一样逐步出现并切换。",
       "without": "不包含",
       "withoutHint": "每张幻灯片都会完整显示，并立即切换到下一张。"
     },
@@ -2305,6 +2433,11 @@
       "blur": "模糊",
       "dim": "调暗",
       "applyAll": "应用到所有幻灯片",
+      "noDrawing": "移除背景图形",
+      "drawingColours": "图形颜色",
+      "drawingColour": "图形颜色 {{n}}",
+      "speed": "运动速度",
+      "drawingOpacity": "图形不透明度",
       "reset": "恢复为主题背景"
     },
     "groups": {
@@ -2400,8 +2533,7 @@
   "pptx": {
     "filter": "PowerPoint 演示文稿",
     "export": {
-      "title": "导出为 PowerPoint",
-      "description": "可在 PowerPoint、Keynote 和 Google 幻灯片中打开的 .pptx 文件，其中的每段文字、每个形状、表格和图表都可以编辑。",
+      "description": "可在 PowerPoint、Keynote 和 Google 幻灯片中打开，其中的所有内容都可编辑。",
       "working": "正在导出演示文稿…",
       "mediaOne": "文件中有 1 个媒体文件，{{size}}",
       "mediaMany": "文件中有 {{n}} 个媒体文件，{{size}}",
@@ -2521,10 +2653,10 @@
       "not_logged_in": "CLI 已安装。请登录你的帐户以继续。",
       "install": "安装…",
       "signIn": "登录",
-      "refresh": "刷新连接和模型",
       "installTitle": "要安装 {{name}} 吗？",
       "installDescription": "应用将通过 Windows App Installer 下载并安装 {{name}}。然后我们将检查连接，并在需要时请你登录。",
       "installDescriptionNpm": "应用将通过 npm 安装 {{name}}。如果缺少 Node.js，会先通过 Windows App Installer 安装。然后我们将检查连接，并在需要时请你登录。",
+      "installDescriptionLibrary": "应用将从你所在组织的库下载 {{name}} 并安装到这台电脑上。然后我们将检查连接，并在需要时请你登录。",
       "approveInstall": "同意并安装",
       "chooseModel": "选择模型",
       "chooseEffort": "选择推理强度",
@@ -2549,6 +2681,8 @@
       "pickerHint": "仅适用于此对话。默认设置可在“设置”中更改。",
       "web": "网页搜索和阅读",
       "webHint": "智能体在构建幻灯片时可以搜索网页并阅读网页内容。",
+      "webBlocked": "你的组织不允许智能体搜索网页或阅读网页内容。",
+      "askAdmin": "{{name}} 由你的组织自行安装。请让管理员在这台电脑上安装它。",
       "gate": "每轮结束时进行设计检查",
       "gateHint": "智能体在完成之前，会修复它改动过的幻灯片上的设计问题。",
       "outline": "构建演示文稿前先提供大纲",
@@ -2575,10 +2709,7 @@
       "open": "打开…",
       "recent": "打开最近使用的文件",
       "noRecent": "没有最近使用的文件",
-      "importHtml": "导入 HTML…",
-      "importPptx": "导入 PowerPoint…",
-      "exportHtml": "导出 HTML…",
-      "exportPptx": "导出为 PowerPoint…",
+      "export": "导出…",
       "missing": "找不到文件",
       "save": "保存",
       "saveAs": "另存为…",
@@ -2586,6 +2717,8 @@
       "properties": "演示文稿属性…",
       "filter": "Slidr 演示文稿",
       "filterAll": "Slidr 可加载的所有文件",
+      "importUnknown": "无法导入此类文件",
+      "importKinds": "Slidr 可导入：{{kinds}}。",
       "unsavedTitle": "是否保存对“{{name}}”的更改？",
       "unsavedBody": "如果不保存，你所做的更改将会丢失。",
       "dontSave": "不保存",
@@ -3060,7 +3193,17 @@
       "magen": "哨兵",
       "shvav": "电路",
       "mutzar": "首发",
-      "atlas": "地图集"
+      "atlas": "地图集",
+      "dofek": "脉搏",
+      "gir": "粉笔",
+      "hon": "资本",
+      "tavlin": "香料",
+      "rakia": "苍穹",
+      "maslul": "跑道",
+      "taarucha": "展览",
+      "hadran": "返场",
+      "tefer": "裁缝",
+      "sade": "丰收"
     },
     "tagline": {
       "zerem": "动感科技：深蓝夜色中闪耀的青绿光芒",
@@ -3087,7 +3230,17 @@
       "magen": "深橄榄色与警示橙，兼具控制显示屏般的精准",
       "shvav": "电路板绿与铜色，献给即将投产的硬件",
       "mutzar": "产品窗口、光标与通知，献给新版本的发布",
-      "atlas": "地图纸上的地球仪、航线与邮票，以每一种语言，献给跨越国界的事物"
+      "atlas": "地图纸上的地球仪、航线与邮票，以每一种语言，献给跨越国界的事物",
+      "dofek": "手术室青绿、脉搏红与监护仪波形，献给医院、诊所与公共卫生",
+      "gir": "橡木框里的绿色黑板，手中的粉笔与老师的圆规，献给课堂、课程与家长会",
+      "hon": "钞票纸上的酒红油墨、扭索纹与一道铜线，献给守住价值的数字",
+      "tavlin": "香料麻袋、牛皮纸价签与藏红花色纸上的食谱衬线字，献给厨房、主厨与美食节",
+      "rakia": "星轨、新月与光谱，铺展在深邃的夜空，献给仰望星空的科学",
+      "maslul": "红色跑道、白色线条与秒表，献给站上起跑线的运动员和俱乐部",
+      "taarucha": "上色的展厅墙面、装框的作品与博物馆展签，献给即将开幕的展览",
+      "hadran": "粉色纸面上的唱片、门票与舞台灯光，献给让人高喊“再来一首”的音乐",
+      "tefer": "纸样纸、软尺与石榴红丝线，献给时装品牌、工坊与手作人",
+      "sade": "一条沃土之上的成熟麦穗，以剖面描绘的田野，献给种出我们粮食的人"
     },
     "properties": {
       "title": "演示文稿属性",

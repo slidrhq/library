@@ -31,7 +31,9 @@ import {
 } from '@slidr/model';
 import { createSlide, type LayoutContent, type RoleFill } from '../createSlide';
 import { deckFromTemplate } from '../deck';
+import { copyJson } from '../json';
 import { mirrorLayout } from '../mirror';
+import { layoutCopies, untouchedObjects } from '../objects';
 import type { Template } from '../template';
 
 /** A frame at a distance from the start side (the right) of a right-to-left slide. */
@@ -263,6 +265,86 @@ export function withObjects(template: Template): Template {
   };
 }
 
+/**
+ * A template whose layouts give the objects of `ids` to their backgrounds (ADR-125): for a
+ * drawing that is the atmosphere of a layout and not its content, which a slide is to drop by
+ * taking another background, not to select by a click. Each object leaves the layout's objects
+ * for the drawing of its background, in the layouts of both directions, in its order; a layout
+ * without a background of its own takes the theme's, to hold it. The sample slides lose the
+ * copies they hold of it.
+ *
+ * The drawing of a background is under the layout's decorations and under every element of the
+ * slide, where an object was over them: a move that would put a drawing under something it was
+ * drawn over throws, and names what. So does an id that no layout has, and a copy on a sample
+ * slide that is no longer as its object or is animated: a background's drawing plays no
+ * animation, and what the copy has of its own is for the author to give up.
+ */
+export function toBackground(template: Template, ids: readonly string[]): Template {
+  const wanted = new Set(ids);
+  const found = new Set<string>();
+  const boxOf = (element: Element) => rotatedBounds(element.frame, element.rotation);
+  const move = (layout: Layout): Layout => {
+    const objects = layout.objects ?? [];
+    const taken = objects.filter((object) => wanted.has(object.id));
+    if (taken.length === 0) return layout;
+    for (const object of taken) {
+      found.add(object.id);
+      const box = boxOf(object);
+      const below = objects.slice(0, objects.indexOf(object)).filter((o) => !wanted.has(o.id));
+      const over = [...layout.decorations, ...below].filter(
+        (element) => !element.hidden && overlap(box, boxOf(element)),
+      );
+      if (over.length > 0) {
+        const names = over.map((element) => `"${element.id}"`).join(', ');
+        throw new Error(
+          `"${object.id}" of the layout "${layout.id}" is drawn over ${names}: in the background it would be under them.`,
+        );
+      }
+    }
+    const background = layout.background ?? copyJson(template.theme.background);
+    const rest = objects.filter((object) => !wanted.has(object.id));
+    const { objects: _objects, ...without } = layout;
+    return {
+      ...without,
+      background: { ...background, elements: [...(background.elements ?? []), ...taken] },
+      ...(rest.length > 0 ? { objects: rest } : {}),
+    };
+  };
+  const layouts = template.layouts.map(move);
+  const flipped = template.flipped?.map(move);
+  const unknown = ids.filter((id) => !found.has(id));
+  if (unknown.length > 0) {
+    throw new Error(`No layout of "${template.theme.id}" has the objects ${unknown.join(', ')}.`);
+  }
+  // The sample is drawn for the template's direction, on `layouts`.
+  const sample = template.sample?.map((slide) => {
+    const layout = template.layouts.find((l) => l.id === slide.layoutId);
+    const objects = layout?.objects ?? [];
+    const moved = (index: number) => wanted.has(objects[index]!.id);
+    const copies = [...layoutCopies(slide, layout)].filter(([, index]) => moved(index));
+    if (copies.length === 0) return slide;
+    const untouched = untouchedObjects(slide, layout);
+    const changed = copies.filter(([id]) => !untouched.has(id)).map(([id]) => `"${id}"`);
+    if (changed.length > 0) {
+      throw new Error(
+        `The sample slide "${slide.id}" has its copies ${changed.join(', ')} changed or animated: as the background's drawing they would lose it.`,
+      );
+    }
+    const gone = new Set(copies.map(([id]) => id));
+    return {
+      ...slide,
+      elements: slide.elements.filter((element) => !gone.has(element.id)),
+      timeline: slide.timeline.filter((step) => !gone.has(step.elementId)),
+    };
+  });
+  return {
+    ...template,
+    layouts,
+    ...(flipped ? { flipped } : {}),
+    ...(sample ? { sample } : {}),
+  };
+}
+
 /** Whether box `a` lies wholly within box `b`. */
 const within = (a: Frame, b: Frame) =>
   a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
@@ -292,15 +374,21 @@ export function lockedDrawings(layouts: readonly Layout[]): Map<string, Element[
 /**
  * Layouts for the other direction that the mirror alone does not get right (`Template.flipped`):
  * the mirror of each, with the background drawn by hand. Free CSS is the case: a glow in a
- * corner is not something `mirrorLayout` can turn.
+ * corner is not something `mirrorLayout` can turn. The drawing of the background (ADR-125) is
+ * elements, which the mirror does turn: a background drawn by hand without one of its own keeps
+ * the mirrored one.
  */
 export function flipBackgrounds(
   layouts: readonly Layout[],
   backgrounds: Record<string, Background>,
 ): Layout[] {
   return layouts.flatMap((layout) => {
-    const background = backgrounds[layout.id];
-    return background ? [{ ...mirrorLayout(layout), background }] : [];
+    const byHand = backgrounds[layout.id];
+    if (!byHand) return [];
+    const mirrored = mirrorLayout(layout);
+    const drawing = mirrored.background?.elements;
+    const background = byHand.elements || !drawing ? byHand : { ...byHand, elements: drawing };
+    return [{ ...mirrored, background }];
   });
 }
 

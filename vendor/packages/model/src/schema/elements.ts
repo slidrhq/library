@@ -39,6 +39,54 @@ const Effects = z.strictObject({
   radius: z.number().nonnegative().optional(),
 });
 
+/**
+ * How an element that is `disabled` is drawn, over its own look: in grey, at this share of its
+ * opacity. The renderer draws it as the filter `grayscale(1) opacity(0.4)`, on the element's box
+ * and so on everything inside it. The runtime, which depends on nothing, repeats the numbers to
+ * take an element there and back in a show; a test in `@slidr/html-export` holds them together.
+ */
+export const DISABLED_LOOK = { grayscale: 1, opacity: 0.4 } as const;
+
+/**
+ * A motion an element repeats for as long as it is shown (ADR-128): it turns, beats, floats,
+ * swings or blinks in its place, outside the slide's timeline. It plays on the stage, in a show
+ * and in an exported file, and a show's black screen holds it. The element keeps its frame: the
+ * motion moves what it draws, never where it stands.
+ */
+export const AmbientMotion = z.strictObject({
+  kind: z.enum(['spin', 'pulse', 'float', 'swing', 'blink']),
+  /** Milliseconds a round takes: a whole turn, or there and back again. */
+  duration: z.number().positive(),
+  /**
+   * How it moves through a round: at one pace (`steady`), slowing at its ends (`smooth`), or
+   * moving in the first half of the round and resting in the second (`pause`). Without it, a
+   * turn is steady and every other motion smooth.
+   */
+  rhythm: z.enum(['steady', 'smooth', 'pause']).optional(),
+  /** The other way round: a turn counterclockwise, a swing that sets out to the other side. */
+  reverse: z.boolean().optional(),
+  /**
+   * How far it goes, by kind: a beat grows by this share of its size (0.12), a float rises this
+   * many slide pixels, a swing leans this many degrees to each side, and a blink fades by this
+   * share of its opacity. A turn is always a whole one. Without it, the kind's own.
+   */
+  amount: z.number().nonnegative().optional(),
+});
+export type AmbientMotion = z.infer<typeof AmbientMotion>;
+export type AmbientKind = AmbientMotion['kind'];
+export type AmbientRhythm = NonNullable<AmbientMotion['rhythm']>;
+
+/** What each kind of ambient motion is without a word of its own: a new one starts as this. */
+export const AMBIENT_DEFAULTS: Readonly<
+  Record<AmbientKind, { duration: number; rhythm: AmbientRhythm; amount: number }>
+> = {
+  spin: { duration: 6000, rhythm: 'steady', amount: 0 },
+  pulse: { duration: 2000, rhythm: 'smooth', amount: 0.12 },
+  float: { duration: 3000, rhythm: 'smooth', amount: 16 },
+  swing: { duration: 2400, rhythm: 'smooth', amount: 12 },
+  blink: { duration: 1600, rhythm: 'smooth', amount: 0.7 },
+};
+
 /** Fields every element has (SPEC 5.2). */
 const base = {
   id: Id,
@@ -54,7 +102,15 @@ const base = {
   opacity: z.number().min(0).max(1),
   locked: z.boolean().optional(),
   hidden: z.boolean().optional(),
+  /**
+   * Drawn as something out of use: greyed and faded (`DISABLED_LOOK`), a group with everything in
+   * it. Only the look: the element is selected, edited, animated and followed as a link as before.
+   * In a show the `disable` and `enable` emphasis animations take it there and back.
+   */
+  disabled: z.boolean().optional(),
   effects: Effects.optional(),
+  /** A motion it repeats while it is shown (ADR-128). */
+  ambient: AmbientMotion.optional(),
   link: Link.optional(),
   css: CssPassthrough.optional(),
 };

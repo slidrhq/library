@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { AnimationStep, Transition } from './animation';
+import { Background } from './background';
 import { Element } from './elements';
-import { AssetId, Background, Direction, Id, SLIDE_HEIGHT, SLIDE_WIDTH } from './primitives';
+import { AssetId, Direction, Id, SLIDE_HEIGHT, SLIDE_WIDTH } from './primitives';
 import { RichText } from './text';
 import { Archetype, Layout, Theme } from './theme';
 

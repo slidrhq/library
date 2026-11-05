@@ -14,10 +14,9 @@ import {
  * the English slide, Arabic from the Hebrew one it mirrors. Each text keeps the character of the
  * family its source sets it in. Where that family has the language's letters, the text stays in
  * it; where not, it takes the family the font catalog names as the family's counterpart in the
- * language's letters (`fonts/catalog.json`, written by
- * `scripts/gen-builtin-fonts.mjs`): a serif for a serif, a rounded face for a rounded one. So no
- * language is set in one family because it is the one with the letters, and none is left to the
- * fonts of the system. `scripts/design-fonts.mjs` applies it to the designs of the library.
+ * language's letters (`fonts/catalog.json` of the library): a serif for a serif, a rounded face
+ * for a rounded one. So no language is set in one family because it is the one with the letters,
+ * and none is left to the fonts of the system.
  */
 
 /** The library's fonts as the conversion needs them: each family, and the weights it has. */

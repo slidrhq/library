@@ -32,10 +32,12 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { AMBIENT_ATTRIBUTE, ambientStyle } from './ambient';
 import { ChartView } from './chart/view';
 import { clipAttributes, CLIP_TOGGLE_ATTRIBUTE, nativeLoop, showsMark, videoSource } from './clip';
 import { domId, useRenderContext, type HtmlEditing, type RenderContext } from './context';
 import { num, passthroughStyle } from './css';
+import { DISABLED_ATTRIBUTE, DISABLED_FILTER } from './disabled';
 import { FillLayer } from './fill';
 import {
   isBoxPreset,
@@ -662,6 +664,8 @@ function ShapeView({ element: e }: { element: ShapeElement }) {
         ) : (
           <FillLayer fill={e.fill} ctx={ctx} style={sides} />
         );
+      // The borders have the corners of their own; an image under them is still cut to them.
+      cut = e.fill.kind === 'image';
     } else {
       layers = (
         <>
@@ -1259,17 +1263,28 @@ function AudioView({ element: e }: { element: AudioElement }) {
 // ---------------------------------------------------------------------------------------------
 // Group and dispatch
 
-function GroupView({ element: e, decoration }: { element: GroupElement; decoration: boolean }) {
+function GroupView({
+  element: e,
+  decoration,
+  inDisabled,
+}: {
+  element: GroupElement;
+  decoration: boolean;
+  inDisabled: boolean;
+}) {
+  // The look of a group that is out of use covers what is in it: a part that is out of use too
+  // is not faded a second time.
+  const under = inDisabled || Boolean(e.disabled);
   return (
     <div style={{ ...FILL_PARENT, transform: flipTransform(e) }}>
       {e.children.map((child) => (
-        <ElementView key={child.id} element={child} decoration={decoration} />
+        <ElementView key={child.id} element={child} decoration={decoration} inDisabled={under} />
       ))}
     </div>
   );
 }
 
-function inner(e: Element, decoration: boolean): ReactNode {
+function inner(e: Element, decoration: boolean, inDisabled: boolean): ReactNode {
   switch (e.type) {
     case 'text':
       return <TextView element={e} />;
@@ -1282,7 +1297,7 @@ function inner(e: Element, decoration: boolean): ReactNode {
     case 'svg':
       return <SvgView element={e} />;
     case 'group':
-      return <GroupView element={e} decoration={decoration} />;
+      return <GroupView element={e} decoration={decoration} inDisabled={inDisabled} />;
     case 'table':
       return <TableView element={e} />;
     case 'chart':
@@ -1303,16 +1318,32 @@ function inner(e: Element, decoration: boolean): ReactNode {
  * The root carries `data-element-id` and `data-element-type`; hit-testing, lint, the animation
  * runtime and capture find elements by them. Layout decorations carry `data-decoration-id`
  * instead, so they are not picked as slide content.
+ *
+ * An element shown as out of use (`disabled`) ends its filter with `DISABLED_FILTER`, after the
+ * filter its `css` may give it, and says so with `DISABLED_ATTRIBUTE`: the runtime takes it from
+ * there. `inDisabled` is for a part of a group that is drawn so already, which is not faded twice.
  */
 export const ElementView = memo(function ElementView({
   element,
   decoration = false,
+  inDisabled = false,
 }: {
   element: Element;
   decoration?: boolean;
+  inDisabled?: boolean;
 }) {
   const ctx = useRenderContext();
   if (element.hidden) return null;
+  const disabled = Boolean(element.disabled) && !inDisabled;
+  const style: CSSProperties = {
+    ...boxStyle(element),
+    ...passthroughStyle(element.css),
+    ...textStrokeStyle(element.css),
+  };
+  if (disabled) {
+    const own = typeof style.filter === 'string' ? style.filter.trim() : '';
+    style.filter = own && own !== 'none' ? `${own} ${DISABLED_FILTER}` : DISABLED_FILTER;
+  }
   // A link to an address that is not opened where the slide is shown is no link there: the
   // element is not marked as one, so a click on it is a click on the slide.
   const link =
@@ -1329,15 +1360,22 @@ export const ElementView = memo(function ElementView({
       data-name={element.name}
       data-link-kind={link?.kind}
       data-link-target={link?.target}
+      {...(disabled ? { [DISABLED_ATTRIBUTE]: '' } : {})}
       // In a show an element with a link is a stop of Tab, and Enter on it follows it (UI-06).
       {...(link && ctx.mode === 'present' && !decoration ? { tabIndex: 0, role: 'link' } : {})}
-      style={{
-        ...boxStyle(element),
-        ...passthroughStyle(element.css),
-        ...textStrokeStyle(element.css),
-      }}
+      style={style}
     >
-      {inner(element, decoration)}
+      {element.ambient ? (
+        // The motion it repeats (ADR-128), inside its box: under its rotation and its mirror.
+        <div
+          {...{ [AMBIENT_ATTRIBUTE]: element.ambient.kind }}
+          style={ambientStyle(element.ambient)}
+        >
+          {inner(element, decoration, inDisabled)}
+        </div>
+      ) : (
+        inner(element, decoration, inDisabled)
+      )}
     </div>
   );
   return ctx.slot && !decoration ? <>{ctx.slot(element, rendered)}</> : rendered;

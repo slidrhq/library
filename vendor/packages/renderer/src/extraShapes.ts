@@ -1,3 +1,5 @@
+import { EXTRA_SHAPE_NAMES } from './extraShapeNames';
+
 /** Additional editable shape presets. Each entry has its own path and a library label. */
 type Group = 'basic' | 'polygons' | 'arrows' | 'callouts';
 type Point = readonly [number, number];
@@ -8,6 +10,8 @@ export interface ExtraShape {
   h: number;
   en: string;
   he: string;
+  /** Its name in the other languages of the app (`extraShapeNames.ts`). */
+  names?: Readonly<Partial<Record<string, string>>>;
   draw: (w: number, h: number) => string;
 }
 
@@ -410,6 +414,18 @@ for (let width = 1; width <= 7; width++) {
         h,
       ),
   });
+}
+
+/** The families made with a number, whose names are a template in each language. */
+const NUMBERED = /^(polygon|star|sunburst|gear|seal|ribbon|waveBanner|pie|diagonalCross)(\d+)$/;
+for (const [id, shape] of Object.entries(shapes)) {
+  const numbered = NUMBERED.exec(id);
+  shape.names = Object.fromEntries(
+    Object.entries(EXTRA_SHAPE_NAMES).flatMap(([lang, { templates, fixed }]) => {
+      const name = numbered ? templates[numbered[1]!]?.replace('{n}', numbered[2]!) : fixed[id];
+      return name ? [[lang, name]] : [];
+    }),
+  );
 }
 
 export const extraShapes: Readonly<Record<string, ExtraShape>> = shapes;
