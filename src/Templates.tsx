@@ -51,7 +51,8 @@ const COVERS: Record<string, AssetMeta | undefined> = {
 
 /**
  * A template's cover as the app's gallery draws it (`templateCover`): its opening layout with its
- * name, and the photograph of a template that opens with one.
+ * name, and the photograph of a template that opens with one. Drawn on the card while the sample
+ * is read, and for a template with no sample.
  */
 function coverOf(
   template: Template,
@@ -81,7 +82,14 @@ function Cover({
   files: ReadonlySet<string>;
 }) {
   const cover = useMemo(() => coverOf(template, lang, files), [template, lang, files]);
-  return <DeckSlide deck={cover.deck} slide={cover.slide} resolveAsset={cover.resolve} lazy />;
+  // The opening slide of the sample, as the app's library shows it on the card of a template.
+  const sample = useRead(() => sampleOf(template, lang), [template, lang]);
+  const opening = sample.value?.deck?.slides[0];
+  return sample.value?.deck && opening ? (
+    <DeckSlide deck={sample.value.deck} slide={opening} resolveAsset={sample.value.resolve} lazy />
+  ) : (
+    <DeckSlide deck={cover.deck} slide={cover.slide} resolveAsset={cover.resolve} lazy />
+  );
 }
 
 const sampleDecks = new Map<
@@ -263,7 +271,7 @@ function TemplateDetail({
   );
 }
 
-/** The built-in templates: a cover of each, and its whole sample deck up close. */
+/** The built-in templates: the opening slide of each, and its whole sample deck up close. */
 export function Templates({
   route,
   go,
