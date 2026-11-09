@@ -670,9 +670,11 @@ const words: Record<MessageKey, string> = {
   'system.removed': '설정을 제거했습니다.',
   'system.issues': '다음 설정이 올바르지 않습니다:',
   'library.section.animations.name': '애니메이션',
-  'library.section.animations.about': '요소의 애니메이션과 애니메이션 도형: 슬라이드에 들어가는 모습 그대로, 스스로 움직이는 것들.',
+  'library.section.animations.about':
+    '요소의 애니메이션과 애니메이션 도형: 슬라이드에 들어가는 모습 그대로, 스스로 움직이는 것들.',
   'library.section.backgrounds.name': '배경',
-  'library.section.backgrounds.about': '요소의 배경. 움직이는 배경과 정지된 배경이 슬라이드 바탕 위에 그려집니다.',
+  'library.section.backgrounds.about':
+    '요소의 배경. 움직이는 배경과 정지된 배경이 슬라이드 바탕 위에 그려집니다.',
   'libraryMotion.loading': '불러오는 중…',
   'libraryMotion.animationsEmpty': '라이브러리에 애니메이션이 없습니다.',
   'libraryMotion.backgroundsEmpty': '라이브러리에 배경이 없습니다.',
@@ -695,9 +697,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': '이름',
   'libraryMotion.rtl': '오른쪽부터 읽는 프레젠테이션에서',
   'libraryMotion.ltr': '왼쪽부터 읽는 프레젠테이션에서',
-  'libraryMotion.themeNote': '새 프레젠테이션의 테마로 그렸습니다. 슬라이드에서는 프레젠테이션 템플릿의 색을 따릅니다.',
+  'libraryMotion.themeNote':
+    '새 프레젠테이션의 테마로 그렸습니다. 슬라이드에서는 프레젠테이션 템플릿의 색을 따릅니다.',
   'uploads.kind.backgrounds.add': '새 배경',
   'uploads.kind.animations.add': '새 애니메이션',
+  'libraryMotion.cannotDraw': '앱이 이 업로드의 내용을 그릴 수 없습니다.',
 };
 
 export default words;

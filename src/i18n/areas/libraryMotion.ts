@@ -15,6 +15,7 @@ export const he = {
   'uploads.kind.animations.add': 'אנימציה חדשה',
 
   'libraryMotion.loading': 'טוען…',
+  'libraryMotion.cannotDraw': 'האפליקציה לא יכולה לצייר את מה שההעלאה מביאה.',
   'libraryMotion.animationsEmpty': 'בספרייה אין אנימציות.',
   'libraryMotion.backgroundsEmpty': 'בספרייה אין רקעים.',
   'libraryMotion.hint': 'כל אחד זז כשהעכבר עליו. לחיצה פותחת אותו בגדול.',
@@ -51,6 +52,7 @@ export const en: Record<keyof typeof he, string> = {
   'uploads.kind.animations.add': 'New animation',
 
   'libraryMotion.loading': 'Loading…',
+  'libraryMotion.cannotDraw': 'The app cannot draw what this upload brings.',
   'libraryMotion.animationsEmpty': 'The library has no animations.',
   'libraryMotion.backgroundsEmpty': 'The library has no backgrounds.',
   'libraryMotion.hint': 'Each one moves while the pointer is on it. A click opens it full size.',

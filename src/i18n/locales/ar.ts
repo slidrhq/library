@@ -654,9 +654,11 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'أُزيلت الإعدادات.',
   'system.issues': 'هذه الإعدادات غير صالحة:',
   'library.section.animations.name': 'الرسوم المتحركة',
-  'library.section.animations.about': 'الرسوم المتحركة والأشكال المتحركة في العناصر: ما يتحرك من تلقاء نفسه، كما يدخل إلى الشريحة.',
+  'library.section.animations.about':
+    'الرسوم المتحركة والأشكال المتحركة في العناصر: ما يتحرك من تلقاء نفسه، كما يدخل إلى الشريحة.',
   'library.section.backgrounds.name': 'الخلفيات',
-  'library.section.backgrounds.about': 'خلفيات العناصر، المتحركة والساكنة، مرسومة فوق أرضية الشريحة.',
+  'library.section.backgrounds.about':
+    'خلفيات العناصر، المتحركة والساكنة، مرسومة فوق أرضية الشريحة.',
   'libraryMotion.loading': 'جارٍ التحميل…',
   'libraryMotion.animationsEmpty': 'لا توجد رسوم متحركة في المكتبة.',
   'libraryMotion.backgroundsEmpty': 'لا توجد خلفيات في المكتبة.',
@@ -682,6 +684,7 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.themeNote': 'مرسوم بنسق عرض تقديمي جديد. وعلى الشريحة تأتي ألوانه من قالب العرض.',
   'uploads.kind.backgrounds.add': 'خلفية جديدة',
   'uploads.kind.animations.add': 'رسم متحرك جديد',
+  'libraryMotion.cannotDraw': 'لا يستطيع التطبيق رسم ما يأتي به هذا الرفع.',
 };
 
 export default words;

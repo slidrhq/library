@@ -680,13 +680,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'सेटिंग्स हटा दी गईं।',
   'system.issues': 'ये सेटिंग्स मान्य नहीं हैं:',
   'library.section.animations.name': 'एनिमेशन',
-  'library.section.animations.about': 'एलिमेंट्स के एनिमेशन और एनिमेटेड आकृतियाँ: जो अपने आप चलता है, जैसे वह स्लाइड पर आता है।',
+  'library.section.animations.about':
+    'एलिमेंट्स के एनिमेशन और एनिमेटेड आकृतियाँ: जो अपने आप चलता है, जैसे वह स्लाइड पर आता है।',
   'library.section.backgrounds.name': 'पृष्ठभूमियाँ',
-  'library.section.backgrounds.about': 'एलिमेंट्स की पृष्ठभूमियाँ, चलती हुई और स्थिर, स्लाइड की ज़मीन के ऊपर बनी हुई।',
+  'library.section.backgrounds.about':
+    'एलिमेंट्स की पृष्ठभूमियाँ, चलती हुई और स्थिर, स्लाइड की ज़मीन के ऊपर बनी हुई।',
   'libraryMotion.loading': 'लोड हो रहा है…',
   'libraryMotion.animationsEmpty': 'लाइब्रेरी में कोई एनिमेशन नहीं है।',
   'libraryMotion.backgroundsEmpty': 'लाइब्रेरी में कोई पृष्ठभूमि नहीं है।',
-  'libraryMotion.hint': 'पॉइंटर ऊपर रहने तक हर एक चलता है। क्लिक करने पर वह पूरे आकार में खुलता है।',
+  'libraryMotion.hint':
+    'पॉइंटर ऊपर रहने तक हर एक चलता है। क्लिक करने पर वह पूरे आकार में खुलता है।',
   'libraryMotion.kind': 'प्रकार',
   'libraryMotion.kindPicture': 'अपने आप चलने वाली तस्वीर',
   'libraryMotion.kindLine': 'एक रेखा जिसके साथ कुछ चलता है',
@@ -705,9 +708,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'नाम',
   'libraryMotion.rtl': 'दाईं ओर से पढ़ी जाने वाली प्रस्तुति में',
   'libraryMotion.ltr': 'बाईं ओर से पढ़ी जाने वाली प्रस्तुति में',
-  'libraryMotion.themeNote': 'नई प्रस्तुति की थीम में बनाया गया। स्लाइड पर, इसके रंग प्रस्तुति के टेम्पलेट से आते हैं।',
+  'libraryMotion.themeNote':
+    'नई प्रस्तुति की थीम में बनाया गया। स्लाइड पर, इसके रंग प्रस्तुति के टेम्पलेट से आते हैं।',
   'uploads.kind.backgrounds.add': 'नई पृष्ठभूमि',
   'uploads.kind.animations.add': 'नया एनिमेशन',
+  'libraryMotion.cannotDraw': 'ऐप वह नहीं बना सकता जो यह अपलोड लाता है।',
 };
 
 export default words;

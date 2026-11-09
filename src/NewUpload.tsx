@@ -208,7 +208,7 @@ export function NewUpload({
     // Which pictures the library has, and their sizes: the app reads them when the designs are
     // first wanted, and a design has no picture until then.
     await assets.designPictures.load();
-    const source = (asset?:ReturnType<typeof assets.previewAsset>): PictureSource | undefined => {
+    const source = (asset?: ReturnType<typeof assets.previewAsset>): PictureSource | undefined => {
       const url = asset ? assets.designAssetUrl(asset) : undefined;
       return url && asset ? { url, width: asset.width, height: asset.height } : undefined;
     };

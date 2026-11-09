@@ -4,9 +4,10 @@
  * stand without the app's shell are named here: they depend on `@slidr/media-library`,
  * `@slidr/model`, `@slidr/renderer` and `@slidr/templates` alone.
  *
- * Most read the library as they are imported, so each is loaded only when its section opens.
- * They read the published library (`@slidr/media-library`): a page that runs outside the app,
- * without the dev server's stand-in, reads it from the site.
+ * Each is loaded only when its section opens. Most keep what they read of the library in a
+ * catalog that is empty until it is first wanted (`mediaCatalog`), so a section awaits the
+ * catalog's `load()` before it draws. They read the published library (`@slidr/media-library`):
+ * a page that runs outside the app, without the dev server's stand-in, reads it from the site.
  */
 import { he as elementsHe, en as elementsEn } from '@desktop/elements/messages';
 import { he as objectsHe, en as objectsEn } from '@desktop/objects/messages';

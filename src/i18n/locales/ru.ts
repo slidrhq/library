@@ -678,13 +678,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Настройки удалены.',
   'system.issues': 'Эти настройки некорректны:',
   'library.section.animations.name': 'Анимации',
-  'library.section.animations.about': 'Анимации и анимированные фигуры из «Элементов»: то, что движется само, в том виде, в каком попадает на слайд.',
+  'library.section.animations.about':
+    'Анимации и анимированные фигуры из «Элементов»: то, что движется само, в том виде, в каком попадает на слайд.',
   'library.section.backgrounds.name': 'Фоны',
-  'library.section.backgrounds.about': 'Фоны из «Элементов», подвижные и спокойные, нарисованные поверх основы слайда.',
+  'library.section.backgrounds.about':
+    'Фоны из «Элементов», подвижные и спокойные, нарисованные поверх основы слайда.',
   'libraryMotion.loading': 'Загрузка…',
   'libraryMotion.animationsEmpty': 'В библиотеке нет анимаций.',
   'libraryMotion.backgroundsEmpty': 'В библиотеке нет фонов.',
-  'libraryMotion.hint': 'Каждый движется, пока на нём указатель. Щелчок открывает его в полный размер.',
+  'libraryMotion.hint':
+    'Каждый движется, пока на нём указатель. Щелчок открывает его в полный размер.',
   'libraryMotion.kind': 'Вид',
   'libraryMotion.kindPicture': 'Изображение, которое движется само',
   'libraryMotion.kindLine': 'Линия, по которой что-то бежит',
@@ -693,7 +696,8 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.moving': 'Движется',
   'libraryMotion.still': 'Неподвижный',
   'libraryMotion.direction': 'Направление',
-  'libraryMotion.sided': 'Стоит у одного края слайда и отражается вместе с направлением презентации',
+  'libraryMotion.sided':
+    'Стоит у одного края слайда и отражается вместе с направлением презентации',
   'libraryMotion.whole': 'Покрывает весь слайд, одинаков в обоих направлениях',
   'libraryMotion.reads': 'Движется от края к краю, по направлению чтения презентации',
   'libraryMotion.same': 'Одинаков в обоих направлениях',
@@ -703,9 +707,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Названия',
   'libraryMotion.rtl': 'В презентации, которая читается справа',
   'libraryMotion.ltr': 'В презентации, которая читается слева',
-  'libraryMotion.themeNote': 'Нарисовано в теме новой презентации. На слайде цвета берутся из шаблона презентации.',
+  'libraryMotion.themeNote':
+    'Нарисовано в теме новой презентации. На слайде цвета берутся из шаблона презентации.',
   'uploads.kind.backgrounds.add': 'Новый фон',
   'uploads.kind.animations.add': 'Новая анимация',
+  'libraryMotion.cannotDraw': 'Приложение не может нарисовать то, что приносит эта загрузка.',
 };
 
 export default words;

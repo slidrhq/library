@@ -683,13 +683,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Pengaturan telah dihapus.',
   'system.issues': 'Pengaturan ini tidak valid:',
   'library.section.animations.name': 'Animasi',
-  'library.section.animations.about': 'Animasi dan bentuk animasi dari Elemen: yang bergerak sendiri, seperti saat masuk ke slide.',
+  'library.section.animations.about':
+    'Animasi dan bentuk animasi dari Elemen: yang bergerak sendiri, seperti saat masuk ke slide.',
   'library.section.backgrounds.name': 'Latar belakang',
-  'library.section.backgrounds.about': 'Latar belakang dari Elemen, bergerak dan diam, digambar di atas dasar slide.',
+  'library.section.backgrounds.about':
+    'Latar belakang dari Elemen, bergerak dan diam, digambar di atas dasar slide.',
   'libraryMotion.loading': 'Memuat…',
   'libraryMotion.animationsEmpty': 'Pustaka tidak memiliki animasi.',
   'libraryMotion.backgroundsEmpty': 'Pustaka tidak memiliki latar belakang.',
-  'libraryMotion.hint': 'Masing-masing bergerak selama penunjuk ada di atasnya. Klik untuk membukanya dalam ukuran penuh.',
+  'libraryMotion.hint':
+    'Masing-masing bergerak selama penunjuk ada di atasnya. Klik untuk membukanya dalam ukuran penuh.',
   'libraryMotion.kind': 'Jenis',
   'libraryMotion.kindPicture': 'Gambar yang bergerak sendiri',
   'libraryMotion.kindLine': 'Garis yang dilalui sesuatu',
@@ -708,9 +711,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Nama',
   'libraryMotion.rtl': 'Dalam presentasi yang dibaca dari kanan',
   'libraryMotion.ltr': 'Dalam presentasi yang dibaca dari kiri',
-  'libraryMotion.themeNote': 'Digambar dengan tema presentasi baru. Di slide, warnanya berasal dari templat presentasi.',
+  'libraryMotion.themeNote':
+    'Digambar dengan tema presentasi baru. Di slide, warnanya berasal dari templat presentasi.',
   'uploads.kind.backgrounds.add': 'Latar belakang baru',
   'uploads.kind.animations.add': 'Animasi baru',
+  'libraryMotion.cannotDraw': 'Aplikasi tidak dapat menggambar isi unggahan ini.',
 };
 
 export default words;

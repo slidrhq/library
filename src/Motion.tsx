@@ -532,6 +532,84 @@ export function Animations(props: PartProps) {
   );
 }
 
+/* ---------------------------------------------------------------- an upload */
+
+/** What an upload of `backgrounds: add` or `animations: add` holds, as the page reads it. */
+interface MotionUpload {
+  type: string;
+  target: string;
+  fields: Record<string, unknown>;
+  languages: Partial<Record<string, unknown>>;
+}
+
+/**
+ * The item an upload adds, read by the app's own reader of the catalogs (`backgroundsOf`,
+ * `animationsOf`), as the app will read it once it is published: an upload the app could not draw
+ * gives none.
+ */
+async function itemOfUpload(upload: MotionUpload): Promise<Item | undefined> {
+  const name = Object.fromEntries(
+    Object.entries(upload.languages).flatMap(([lang, content]) => {
+      const one = (content as { name?: unknown } | undefined)?.name;
+      return typeof one === 'string' ? [[lang, one]] : [];
+    }),
+  );
+  const { kind, shape, ...fields } = upload.fields;
+  const record = { id: upload.target, name, ...fields };
+  if (upload.type === 'backgrounds') {
+    const [background] = (await motionBackgroundsModule()).backgroundsOf({
+      backgrounds: [record],
+    });
+    return background && backgroundItem(background);
+  }
+  const { animationsOf } = await motionPiecesModule();
+  if (kind === 'shape') {
+    const [one] = animationsOf({
+      shapes: [{ id: upload.target, name, ...(shape as object | undefined) }],
+    }).shapes;
+    return one && shapeItem(one);
+  }
+  const [piece] = animationsOf({ animations: [record] }).pieces;
+  return piece && pieceItem(piece);
+}
+
+/**
+ * An upload of a background or an animation up close: the item it adds, moving, in the language
+ * chosen, and in the other direction too when its direction matters.
+ */
+export function MotionUploadStage({ upload, lang }: { upload: MotionUpload; lang: Lang }) {
+  const t = useT();
+  const read = useRead(() => Promise.all([motionModule(), itemOfUpload(upload)]), [upload]);
+  const [motion, item] = read.value ?? [];
+  const decks = useMemo(() => {
+    const own = deckIn(lang);
+    if (!item?.turns) return [own];
+    return [own, own.meta.dir === 'rtl' ? deckIn('en') : deckIn('he')];
+  }, [item, lang]);
+  if (read.error) return <p className="error-text">{read.error}</p>;
+  if (!read.value) return <p className="muted">{t('libraryMotion.loading')}</p>;
+  if (!motion || !item) return <p className="muted">{t('libraryMotion.cannotDraw')}</p>;
+  return (
+    <>
+      {decks.map((deck) => (
+        <figure key={deck.meta.dir} className="motion-figure">
+          <MovingSlide deck={deck} slide={item.slide(motion, deck)} />
+          {item.turns && (
+            <figcaption>
+              {t(deck.meta.dir === 'rtl' ? 'libraryMotion.rtl' : 'libraryMotion.ltr')}
+            </figcaption>
+          )}
+        </figure>
+      ))}
+      <dl className="facts">
+        {item.facts(lang, t).map(([term, value]) => (
+          <FactRow key={term} term={term} value={value} />
+        ))}
+      </dl>
+    </>
+  );
+}
+
 /* ---------------------------------------------------------------- the overview */
 
 /** Two of a part's items, still, side by side: for the overview. */

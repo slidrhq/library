@@ -683,13 +683,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'As configurações foram removidas.',
   'system.issues': 'Estas configurações não são válidas:',
   'library.section.animations.name': 'Animações',
-  'library.section.animations.about': 'As animações e as formas animadas de Elementos: o que se move sozinho, do jeito que entra em um slide.',
+  'library.section.animations.about':
+    'As animações e as formas animadas de Elementos: o que se move sozinho, do jeito que entra em um slide.',
   'library.section.backgrounds.name': 'Fundos',
-  'library.section.backgrounds.about': 'Os fundos de Elementos, em movimento e parados, desenhados sobre o fundo do slide.',
+  'library.section.backgrounds.about':
+    'Os fundos de Elementos, em movimento e parados, desenhados sobre o fundo do slide.',
   'libraryMotion.loading': 'Carregando…',
   'libraryMotion.animationsEmpty': 'A biblioteca não tem animações.',
   'libraryMotion.backgroundsEmpty': 'A biblioteca não tem fundos.',
-  'libraryMotion.hint': 'Cada um se move enquanto o ponteiro está sobre ele. Um clique o abre em tamanho grande.',
+  'libraryMotion.hint':
+    'Cada um se move enquanto o ponteiro está sobre ele. Um clique o abre em tamanho grande.',
   'libraryMotion.kind': 'Tipo',
   'libraryMotion.kindPicture': 'Uma imagem que se move sozinha',
   'libraryMotion.kindLine': 'Uma linha pela qual algo corre',
@@ -708,9 +711,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Nomes',
   'libraryMotion.rtl': 'Em uma apresentação lida da direita',
   'libraryMotion.ltr': 'Em uma apresentação lida da esquerda',
-  'libraryMotion.themeNote': 'Desenhado no tema de uma apresentação nova. Em um slide, as cores vêm do modelo da apresentação.',
+  'libraryMotion.themeNote':
+    'Desenhado no tema de uma apresentação nova. Em um slide, as cores vêm do modelo da apresentação.',
   'uploads.kind.backgrounds.add': 'Novo fundo',
   'uploads.kind.animations.add': 'Nova animação',
+  'libraryMotion.cannotDraw': 'O aplicativo não consegue desenhar o que este envio traz.',
 };
 
 export default words;

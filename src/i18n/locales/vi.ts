@@ -680,13 +680,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Đã xóa các cài đặt.',
   'system.issues': 'Các cài đặt này không hợp lệ:',
   'library.section.animations.name': 'Hoạt ảnh',
-  'library.section.animations.about': 'Các hoạt ảnh và hình động của Thành phần: những gì tự chuyển động, đúng như khi được đưa vào trang chiếu.',
+  'library.section.animations.about':
+    'Các hoạt ảnh và hình động của Thành phần: những gì tự chuyển động, đúng như khi được đưa vào trang chiếu.',
   'library.section.backgrounds.name': 'Nền',
-  'library.section.backgrounds.about': 'Các nền của Thành phần, chuyển động và tĩnh, được vẽ trên nền của trang chiếu.',
+  'library.section.backgrounds.about':
+    'Các nền của Thành phần, chuyển động và tĩnh, được vẽ trên nền của trang chiếu.',
   'libraryMotion.loading': 'Đang tải…',
   'libraryMotion.animationsEmpty': 'Thư viện không có hoạt ảnh nào.',
   'libraryMotion.backgroundsEmpty': 'Thư viện không có nền nào.',
-  'libraryMotion.hint': 'Mỗi mục chuyển động khi con trỏ ở trên nó. Nhấp để mở ở kích thước đầy đủ.',
+  'libraryMotion.hint':
+    'Mỗi mục chuyển động khi con trỏ ở trên nó. Nhấp để mở ở kích thước đầy đủ.',
   'libraryMotion.kind': 'Loại',
   'libraryMotion.kindPicture': 'Một hình ảnh tự chuyển động',
   'libraryMotion.kindLine': 'Một đường có thứ gì đó chạy dọc theo',
@@ -705,9 +708,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Tên',
   'libraryMotion.rtl': 'Trong bản trình bày đọc từ phải',
   'libraryMotion.ltr': 'Trong bản trình bày đọc từ trái',
-  'libraryMotion.themeNote': 'Được vẽ theo chủ đề của một bản trình bày mới. Trên trang chiếu, màu sắc lấy từ mẫu của bản trình bày.',
+  'libraryMotion.themeNote':
+    'Được vẽ theo chủ đề của một bản trình bày mới. Trên trang chiếu, màu sắc lấy từ mẫu của bản trình bày.',
   'uploads.kind.backgrounds.add': 'Nền mới',
   'uploads.kind.animations.add': 'Hoạt ảnh mới',
+  'libraryMotion.cannotDraw': 'Ứng dụng không thể vẽ nội dung mà lần tải lên này mang đến.',
 };
 
 export default words;

@@ -638,7 +638,8 @@ const words: Record<MessageKey, string> = {
   'system.removed': '设置已移除。',
   'system.issues': '以下设置无效：',
   'library.section.animations.name': '动画',
-  'library.section.animations.about': '元素中的动画和动画形状：会自己动起来的内容，与放到幻灯片上时一样。',
+  'library.section.animations.about':
+    '元素中的动画和动画形状：会自己动起来的内容，与放到幻灯片上时一样。',
   'library.section.backgrounds.name': '背景',
   'library.section.backgrounds.about': '元素中的背景，有动态的也有静态的，绘制在幻灯片底色之上。',
   'libraryMotion.loading': '正在加载…',
@@ -666,6 +667,7 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.themeNote': '以新演示文稿的主题绘制。在幻灯片上，颜色来自演示文稿的模板。',
   'uploads.kind.backgrounds.add': '新背景',
   'uploads.kind.animations.add': '新动画',
+  'libraryMotion.cannotDraw': '应用无法绘制此次上传的内容。',
 };
 
 export default words;

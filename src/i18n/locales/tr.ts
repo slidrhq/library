@@ -676,13 +676,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Ayarlar kaldırıldı.',
   'system.issues': 'Bu ayarlar geçersiz:',
   'library.section.animations.name': 'Animasyonlar',
-  'library.section.animations.about': 'Öğeler’in animasyonları ve animasyonlu şekilleri: slayta girdiği gibi kendi kendine hareket edenler.',
+  'library.section.animations.about':
+    'Öğeler’in animasyonları ve animasyonlu şekilleri: slayta girdiği gibi kendi kendine hareket edenler.',
   'library.section.backgrounds.name': 'Arka planlar',
-  'library.section.backgrounds.about': 'Öğeler’in hareketli ve durgun arka planları, slaydın zemininin üzerine çizilir.',
+  'library.section.backgrounds.about':
+    'Öğeler’in hareketli ve durgun arka planları, slaydın zemininin üzerine çizilir.',
   'libraryMotion.loading': 'Yükleniyor…',
   'libraryMotion.animationsEmpty': 'Kitaplıkta animasyon yok.',
   'libraryMotion.backgroundsEmpty': 'Kitaplıkta arka plan yok.',
-  'libraryMotion.hint': 'İşaretçi üzerindeyken her biri hareket eder. Tıklayınca tam boyutta açılır.',
+  'libraryMotion.hint':
+    'İşaretçi üzerindeyken her biri hareket eder. Tıklayınca tam boyutta açılır.',
   'libraryMotion.kind': 'Tür',
   'libraryMotion.kindPicture': 'Kendi kendine hareket eden bir resim',
   'libraryMotion.kindLine': 'Üzerinde bir şeyin aktığı bir çizgi',
@@ -701,9 +704,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Adlar',
   'libraryMotion.rtl': 'Sağdan okunan bir sunuda',
   'libraryMotion.ltr': 'Soldan okunan bir sunuda',
-  'libraryMotion.themeNote': 'Yeni bir sununun temasıyla çizildi. Bir slaytta renkleri sununun şablonundan gelir.',
+  'libraryMotion.themeNote':
+    'Yeni bir sununun temasıyla çizildi. Bir slaytta renkleri sununun şablonundan gelir.',
   'uploads.kind.backgrounds.add': 'Yeni arka plan',
   'uploads.kind.animations.add': 'Yeni animasyon',
+  'libraryMotion.cannotDraw': 'Uygulama bu yüklemenin getirdiğini çizemiyor.',
 };
 
 export default words;

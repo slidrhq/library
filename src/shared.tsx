@@ -87,13 +87,16 @@ export function TagFacts({ tags }: { tags: Tags | undefined }) {
   return (
     <>
       <dt>{t('library.icons.tags')}</dt>
-      {CONTENT_LANGUAGES.filter((lang) => tags?.[lang]?.length).map((lang) => (
-        <dd key={lang} lang={lang} dir={languageDir(lang)}>
-          <strong>{LANGUAGE_NAMES[lang].native}: </strong>
-          {tags?.[lang]?.join(', ')}
-        </dd>
-      ))}
-      {!CONTENT_LANGUAGES.some((lang) => tags?.[lang]?.length) && <dd>—</dd>}
+      {/* One value under its term: the facts are a grid of two columns, a term and its value. */}
+      <dd>
+        {CONTENT_LANGUAGES.filter((lang) => tags?.[lang]?.length).map((lang) => (
+          <span key={lang} className="block" lang={lang} dir={languageDir(lang)}>
+            <strong>{LANGUAGE_NAMES[lang].native}: </strong>
+            {tags?.[lang]?.join(', ')}
+          </span>
+        ))}
+        {!CONTENT_LANGUAGES.some((lang) => tags?.[lang]?.length) && '—'}
+      </dd>
     </>
   );
 }

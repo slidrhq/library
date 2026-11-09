@@ -4,6 +4,7 @@ import { designAssetsModule, designsModule } from './app';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
+import { MotionUploadStage } from './Motion';
 import { ItemOverlay } from './Overlay';
 import { useRead } from './shared';
 import {
@@ -39,7 +40,7 @@ import {
 
 /**
  * The languages each kind of upload is written in (`server/core/uploads`: designs.ts, templates.ts,
- * tags.ts).
+ * tags.ts, motion.ts).
  */
 const OTHERS = CONTENT_LANGUAGES.filter((lang) => lang !== 'he' && lang !== 'en');
 const BASE: readonly ContentLanguage[] = ['he', 'en'];
@@ -51,6 +52,9 @@ export const RULES: Record<
   'designs:translate': { allowed: OTHERS, required: [] },
   'designs:draw': { allowed: CONTENT_LANGUAGES, required: [] },
   'templates:translate': { allowed: OTHERS, required: [] },
+  // A moving background or animation is named in Hebrew and English, and in any other language.
+  'backgrounds:add': { allowed: CONTENT_LANGUAGES, required: BASE },
+  'animations:add': { allowed: CONTENT_LANGUAGES, required: BASE },
   ...(Object.fromEntries(
     TAGGED.map((type) => [`${type}:tag`, { allowed: BASE, required: BASE }]),
   ) as Record<
@@ -823,6 +827,8 @@ export function UploadDetail({
         <TagStage upload={upload} lang={shown} />
       ) : upload.type === 'templates' ? (
         <TemplateStage upload={upload} lang={shown} />
+      ) : upload.type === 'backgrounds' || upload.type === 'animations' ? (
+        <MotionUploadStage upload={upload} lang={shown} />
       ) : upload.action === 'draw' ? (
         <DrawStage upload={upload} lang={shown} />
       ) : (

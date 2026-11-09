@@ -684,13 +684,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': '設定を削除しました。',
   'system.issues': '次の設定が正しくありません:',
   'library.section.animations.name': 'アニメーション',
-  'library.section.animations.about': '要素のアニメーションとアニメーション図形。スライドに入ったときと同じように、ひとりでに動くもの。',
+  'library.section.animations.about':
+    '要素のアニメーションとアニメーション図形。スライドに入ったときと同じように、ひとりでに動くもの。',
   'library.section.backgrounds.name': '背景',
-  'library.section.backgrounds.about': '要素の背景。動くものと静かなものがあり、スライドの地の上に描かれます。',
+  'library.section.backgrounds.about':
+    '要素の背景。動くものと静かなものがあり、スライドの地の上に描かれます。',
   'libraryMotion.loading': '読み込み中…',
   'libraryMotion.animationsEmpty': 'ライブラリにアニメーションはありません。',
   'libraryMotion.backgroundsEmpty': 'ライブラリに背景はありません。',
-  'libraryMotion.hint': 'ポインターを置いている間、それぞれが動きます。クリックすると大きく開きます。',
+  'libraryMotion.hint':
+    'ポインターを置いている間、それぞれが動きます。クリックすると大きく開きます。',
   'libraryMotion.kind': '種類',
   'libraryMotion.kindPicture': 'ひとりでに動く画像',
   'libraryMotion.kindLine': '何かが沿って流れる線',
@@ -709,9 +712,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': '名前',
   'libraryMotion.rtl': '右から読むプレゼンテーションでは',
   'libraryMotion.ltr': '左から読むプレゼンテーションでは',
-  'libraryMotion.themeNote': '新規プレゼンテーションのテーマで描画されています。スライド上では、色はプレゼンテーションのテンプレートから取られます。',
+  'libraryMotion.themeNote':
+    '新規プレゼンテーションのテーマで描画されています。スライド上では、色はプレゼンテーションのテンプレートから取られます。',
   'uploads.kind.backgrounds.add': '新しい背景',
   'uploads.kind.animations.add': '新しいアニメーション',
+  'libraryMotion.cannotDraw': 'このアップロードの内容はアプリで描画できません。',
 };
 
 export default words;

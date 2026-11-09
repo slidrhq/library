@@ -696,9 +696,11 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Les paramètres ont été supprimés.',
   'system.issues': 'Ces paramètres ne sont pas valides :',
   'library.section.animations.name': 'Animations',
-  'library.section.animations.about': 'Les animations et les formes animées des Éléments : ce qui bouge tout seul, tel qu’il arrive sur une diapositive.',
+  'library.section.animations.about':
+    'Les animations et les formes animées des Éléments : ce qui bouge tout seul, tel qu’il arrive sur une diapositive.',
   'library.section.backgrounds.name': 'Arrière-plans',
-  'library.section.backgrounds.about': 'Les arrière-plans des Éléments, animés et calmes, dessinés par-dessus le fond de la diapositive.',
+  'library.section.backgrounds.about':
+    'Les arrière-plans des Éléments, animés et calmes, dessinés par-dessus le fond de la diapositive.',
   'libraryMotion.loading': 'Chargement…',
   'libraryMotion.animationsEmpty': 'La médiathèque n’a pas d’animations.',
   'libraryMotion.backgroundsEmpty': 'La médiathèque n’a pas d’arrière-plans.',
@@ -711,7 +713,8 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.moving': 'Animé',
   'libraryMotion.still': 'Calme',
   'libraryMotion.direction': 'Sens',
-  'libraryMotion.sided': 'Se tient d’un côté de la diapositive, et s’inverse avec le sens de la présentation',
+  'libraryMotion.sided':
+    'Se tient d’un côté de la diapositive, et s’inverse avec le sens de la présentation',
   'libraryMotion.whole': 'Couvre toute la diapositive, identique dans les deux sens',
   'libraryMotion.reads': 'Va d’un côté à l’autre, dans le sens de lecture de la présentation',
   'libraryMotion.same': 'Identique dans les deux sens',
@@ -721,9 +724,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Noms',
   'libraryMotion.rtl': 'Dans une présentation qui se lit de droite à gauche',
   'libraryMotion.ltr': 'Dans une présentation qui se lit de gauche à droite',
-  'libraryMotion.themeNote': 'Dessiné dans le thème d’une nouvelle présentation. Sur une diapositive, ses couleurs viennent du modèle de la présentation.',
+  'libraryMotion.themeNote':
+    'Dessiné dans le thème d’une nouvelle présentation. Sur une diapositive, ses couleurs viennent du modèle de la présentation.',
   'uploads.kind.backgrounds.add': 'Nouvel arrière-plan',
   'uploads.kind.animations.add': 'Nouvelle animation',
+  'libraryMotion.cannotDraw': 'L’application ne peut pas dessiner ce que cet envoi apporte.',
 };
 
 export default words;

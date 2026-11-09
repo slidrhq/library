@@ -693,13 +693,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Se quitó la configuración.',
   'system.issues': 'Esta configuración no es válida:',
   'library.section.animations.name': 'Animaciones',
-  'library.section.animations.about': 'Las animaciones y las formas animadas de Elementos: lo que se mueve solo, tal como entra en una diapositiva.',
+  'library.section.animations.about':
+    'Las animaciones y las formas animadas de Elementos: lo que se mueve solo, tal como entra en una diapositiva.',
   'library.section.backgrounds.name': 'Fondos',
-  'library.section.backgrounds.about': 'Los fondos de Elementos, en movimiento y quietos, dibujados sobre el fondo de la diapositiva.',
+  'library.section.backgrounds.about':
+    'Los fondos de Elementos, en movimiento y quietos, dibujados sobre el fondo de la diapositiva.',
   'libraryMotion.loading': 'Cargando…',
   'libraryMotion.animationsEmpty': 'La biblioteca no tiene animaciones.',
   'libraryMotion.backgroundsEmpty': 'La biblioteca no tiene fondos.',
-  'libraryMotion.hint': 'Cada uno se mueve mientras el puntero está sobre él. Un clic lo abre a tamaño completo.',
+  'libraryMotion.hint':
+    'Cada uno se mueve mientras el puntero está sobre él. Un clic lo abre a tamaño completo.',
   'libraryMotion.kind': 'Tipo',
   'libraryMotion.kindPicture': 'Una imagen que se mueve sola',
   'libraryMotion.kindLine': 'Una línea por la que corre algo',
@@ -708,7 +711,8 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.moving': 'Se mueve',
   'libraryMotion.still': 'Quieto',
   'libraryMotion.direction': 'Dirección',
-  'libraryMotion.sided': 'Está a un lado de la diapositiva y se refleja con la dirección de la presentación',
+  'libraryMotion.sided':
+    'Está a un lado de la diapositiva y se refleja con la dirección de la presentación',
   'libraryMotion.whole': 'Cubre toda la diapositiva, igual en ambas direcciones',
   'libraryMotion.reads': 'Va de un lado al otro, en la dirección de lectura de la presentación',
   'libraryMotion.same': 'Igual en ambas direcciones',
@@ -718,9 +722,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Nombres',
   'libraryMotion.rtl': 'En una presentación que se lee desde la derecha',
   'libraryMotion.ltr': 'En una presentación que se lee desde la izquierda',
-  'libraryMotion.themeNote': 'Dibujado con el tema de una presentación nueva. En una diapositiva, los colores vienen de la plantilla de la presentación.',
+  'libraryMotion.themeNote':
+    'Dibujado con el tema de una presentación nueva. En una diapositiva, los colores vienen de la plantilla de la presentación.',
   'uploads.kind.backgrounds.add': 'Fondo nuevo',
   'uploads.kind.animations.add': 'Animación nueva',
+  'libraryMotion.cannotDraw': 'La aplicación no puede dibujar lo que trae esta subida.',
 };
 
 export default words;

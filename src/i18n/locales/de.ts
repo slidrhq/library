@@ -693,13 +693,16 @@ const words: Record<MessageKey, string> = {
   'system.removed': 'Die Einstellungen wurden entfernt.',
   'system.issues': 'Diese Einstellungen sind ungültig:',
   'library.section.animations.name': 'Animationen',
-  'library.section.animations.about': 'Die Animationen und animierten Formen der Elemente: was sich von selbst bewegt, so wie es auf eine Folie kommt.',
+  'library.section.animations.about':
+    'Die Animationen und animierten Formen der Elemente: was sich von selbst bewegt, so wie es auf eine Folie kommt.',
   'library.section.backgrounds.name': 'Hintergründe',
-  'library.section.backgrounds.about': 'Die Hintergründe der Elemente, bewegt und ruhig, über den Grund der Folie gezeichnet.',
+  'library.section.backgrounds.about':
+    'Die Hintergründe der Elemente, bewegt und ruhig, über den Grund der Folie gezeichnet.',
   'libraryMotion.loading': 'Wird geladen …',
   'libraryMotion.animationsEmpty': 'Die Bibliothek hat keine Animationen.',
   'libraryMotion.backgroundsEmpty': 'Die Bibliothek hat keine Hintergründe.',
-  'libraryMotion.hint': 'Jedes bewegt sich, solange der Zeiger darauf ist. Ein Klick öffnet es in voller Größe.',
+  'libraryMotion.hint':
+    'Jedes bewegt sich, solange der Zeiger darauf ist. Ein Klick öffnet es in voller Größe.',
   'libraryMotion.kind': 'Art',
   'libraryMotion.kindPicture': 'Ein Bild, das sich von selbst bewegt',
   'libraryMotion.kindLine': 'Eine Linie, an der etwas entlangläuft',
@@ -708,7 +711,8 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.moving': 'Bewegt',
   'libraryMotion.still': 'Ruhig',
   'libraryMotion.direction': 'Richtung',
-  'libraryMotion.sided': 'Steht auf einer Seite der Folie und wird mit der Richtung der Präsentation gespiegelt',
+  'libraryMotion.sided':
+    'Steht auf einer Seite der Folie und wird mit der Richtung der Präsentation gespiegelt',
   'libraryMotion.whole': 'Bedeckt die ganze Folie, in beiden Richtungen gleich',
   'libraryMotion.reads': 'Läuft von einer Seite zur anderen, in der Leserichtung der Präsentation',
   'libraryMotion.same': 'In beiden Richtungen gleich',
@@ -718,9 +722,11 @@ const words: Record<MessageKey, string> = {
   'libraryMotion.names': 'Namen',
   'libraryMotion.rtl': 'In einer Präsentation, die von rechts gelesen wird',
   'libraryMotion.ltr': 'In einer Präsentation, die von links gelesen wird',
-  'libraryMotion.themeNote': 'Im Design einer neuen Präsentation gezeichnet. Auf einer Folie kommen die Farben aus der Vorlage der Präsentation.',
+  'libraryMotion.themeNote':
+    'Im Design einer neuen Präsentation gezeichnet. Auf einer Folie kommen die Farben aus der Vorlage der Präsentation.',
   'uploads.kind.backgrounds.add': 'Neuer Hintergrund',
   'uploads.kind.animations.add': 'Neue Animation',
+  'libraryMotion.cannotDraw': 'Die App kann nicht zeichnen, was dieser Upload bringt.',
 };
 
 export default words;
