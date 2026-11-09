@@ -3,7 +3,9 @@
  * itself (`live.ts`), and Cloudflare keeps each file it answered for a day, and the manifest for
  * two hours, the least the Free plan allows (README, "Serving the library"). A publication writes files under the paths they
  * had, so once the manifest is written it empties the cache of every file it wrote, and of the
- * manifest: the next request for one reads it from the bucket. Every other file stays in the cache.
+ * manifest: the next request for one reads it from the bucket. Purging a URL alone leaves R2's
+ * CORS variants cached under the requesting Origin. Path-prefix purges also clear those variants
+ * and query strings, so browsers and installed apps read the same publication.
  *
  * Until it is emptied, an app would read the new manifest and an old file, whose bytes are not
  * those the manifest names: the app shows them, and fetches them again each time. A publication
@@ -36,7 +38,7 @@ export type Purge =
 export type Purger = (paths: readonly string[]) => Promise<Purge>;
 
 const API = 'https://api.cloudflare.com/client/v4/zones';
-/** The most addresses Cloudflare takes in one call. */
+/** The most prefixes Cloudflare takes in one call. */
 const PER_CALL = 100;
 /** More files than this, and the whole host is emptied in one call instead. */
 const MOST_FILES = 300;
@@ -95,7 +97,11 @@ export function purgerFor(env: CacheEnv): Purger {
         return { emptied: 'host', host };
       }
       for (let at = 0; at < urls.length; at += PER_CALL) {
-        await purge(zone, token, { files: urls.slice(at, at + PER_CALL) });
+        const prefixes = urls.slice(at, at + PER_CALL).map((address) => {
+          const url = new URL(address);
+          return url.host + url.pathname;
+        });
+        await purge(zone, token, { prefixes });
       }
       return { emptied: 'files', files: urls.length };
     } catch (error) {

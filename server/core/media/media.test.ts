@@ -1273,7 +1273,7 @@ describe('a publication', () => {
       {
         url: PURGE,
         token: 'Bearer purge-token',
-        body: { files: [`${MEDIA}tags/emoji.json`, `${MEDIA}manifest.json`] },
+        body: { prefixes: ['media.example/tags/emoji.json', 'media.example/manifest.json'] },
       },
     ]);
     assert.deepEqual(
@@ -1499,11 +1499,11 @@ describe('an author’s publication of files', () => {
       calls.map((one) => one.body),
       [
         {
-          files: [
-            `${MEDIA}fonts/new.woff2`,
-            `${MEDIA}icons/lucide/tags.json`,
-            `${MEDIA}fonts/old.woff2`,
-            `${MEDIA}manifest.json`,
+          prefixes: [
+            'media.example/fonts/new.woff2',
+            'media.example/icons/lucide/tags.json',
+            'media.example/fonts/old.woff2',
+            'media.example/manifest.json',
           ],
         },
       ],
@@ -1591,15 +1591,36 @@ describe('an author’s publication of files', () => {
 describe('the cache before the library', () => {
   const paths = (count: number) => Array.from({ length: count }, (_, at) => `icons/${at}.svg`);
 
+  test('purges catalog prefixes across Origin and query variants, each path once', async () => {
+    const calls = cloudflare();
+    const purge = purgerFor({ ...ZONE, MEDIA_LIBRARY_URL: 'https://media.example/library/' });
+    await purge([
+      'elements/animations/catalog.json',
+      'elements/animations/catalog.json',
+      'manifest.json',
+    ]);
+    assert.deepEqual(
+      calls.map((call) => call.body),
+      [
+        {
+          prefixes: [
+            'media.example/library/elements/animations/catalog.json',
+            'media.example/library/manifest.json',
+          ],
+        },
+      ],
+    );
+  });
+
   test('is emptied a hundred addresses a call, and of a whole host when they are many', async () => {
     const calls = cloudflare();
     const purge = purgerFor({ ...ZONE, MEDIA_LIBRARY_URL: 'https://media.example' });
     assert.deepEqual(await purge(paths(150)), { emptied: 'files', files: 151 });
     assert.deepEqual(
-      calls.map((one) => one.body.files!.length),
+      calls.map((one) => one.body.prefixes!.length),
       [100, 51],
     );
-    assert.equal(calls[1]!.body.files!.at(-1), 'https://media.example/manifest.json');
+    assert.equal(calls[1]!.body.prefixes!.at(-1), 'media.example/manifest.json');
     calls.length = 0;
     assert.deepEqual(await purge(paths(400)), { emptied: 'host', host: 'media.example' });
     assert.deepEqual(
@@ -1624,6 +1645,6 @@ describe('the cache before the library', () => {
     assert.match((failed as { message: string }).message, /503/);
     assert.equal(never.length, 3);
     // The published library, unless the Worker names another.
-    assert.equal(once[0]!.body.files![0], 'https://media.slidr.studio/tags/emoji.json');
+    assert.equal(once[0]!.body.prefixes![0], 'media.slidr.studio/tags/emoji.json');
   });
 });

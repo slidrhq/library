@@ -223,7 +223,8 @@ describe('an archive brought into the library', () => {
     Object.assign(env, ZONE);
     const purged: string[][] = [];
     mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
-      purged.push(((await new Request(input, init).json()) as { files: string[] }).files);
+      const body = (await new Request(input, init).json()) as { prefixes: string[] };
+      purged.push(body.prefixes.map((prefix) => `https://${prefix}`));
       return Response.json({ success: true });
     });
     const archive = await archiveOf({
