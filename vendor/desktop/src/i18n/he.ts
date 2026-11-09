@@ -109,11 +109,8 @@ export const he = {
     tools: 'כלים',
     collapse: 'כיווץ הפאנל',
     resize: 'שינוי רוחב הפאנל',
-    actions: 'פעולות',
     chatEmptyTitle: "הצ'אט עוד לא מחובר",
     chatEmptyBody: 'כאן תבקשו שינויים מהסוכן ותראו אותם קורים על השקף.',
-    actionsEmptyTitle: 'אין פעולות עדיין',
-    actionsEmptyBody: 'פעולות מהירות לכלי הזה יופיעו כאן.',
     soonTitle: 'עוד לא זמין',
     mediaBody: 'העלאות, תמונות סטוק, אייקונים ותמונות AI.',
     animationsBody: 'בחירת אנימציות וציר הזמן של השקף.',
@@ -291,6 +288,12 @@ export const he = {
     hint: 'ההערות נשמרות עם המצגת, ואינן מוצגות על השקף.',
     noSlide: 'אין שקף',
     step: 'הערות דובר',
+  },
+  crash: {
+    title: 'משהו השתבש',
+    body: 'ב־Slidr אירעה שגיאה לא צפויה. טענו מחדש את החלון כדי להמשיך.',
+    reload: 'טעינה מחדש',
+    details: 'פרטים',
   },
 } as const;
 

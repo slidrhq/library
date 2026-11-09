@@ -9,7 +9,13 @@ desktop/src/elements/designs.ts
 desktop/src/elements/frameThumbs.ts
 desktop/src/elements/frames.ts
 desktop/src/elements/messages.ts
+desktop/src/elements/motion.ts
+desktop/src/elements/motionBackgrounds.ts
+desktop/src/elements/motionKit.ts
+desktop/src/elements/motionPieces.ts
+desktop/src/elements/motionShapes.ts
 desktop/src/elements/stickers.ts
+desktop/src/fonts/builtinFonts.generated.ts
 desktop/src/i18n/he.ts
 desktop/src/i18n/locales/ar.json
 desktop/src/i18n/locales/de.json
@@ -76,6 +82,7 @@ packages/model/src/schema/theme.ts
 packages/model/src/store.ts
 packages/model/src/svgStretch.ts
 packages/renderer/src/SlideRenderer.tsx
+packages/renderer/src/adjustHandles.ts
 packages/renderer/src/ambient.ts
 packages/renderer/src/chart/controller.ts
 packages/renderer/src/chart/cue.ts
@@ -91,6 +98,7 @@ packages/renderer/src/elements.tsx
 packages/renderer/src/extraShapeNames.ts
 packages/renderer/src/extraShapes.ts
 packages/renderer/src/fill.tsx
+packages/renderer/src/flow.tsx
 packages/renderer/src/geometry.ts
 packages/renderer/src/icons.tsx
 packages/renderer/src/imageLook.tsx
@@ -98,9 +106,11 @@ packages/renderer/src/index.ts
 packages/renderer/src/markup.ts
 packages/renderer/src/measure.ts
 packages/renderer/src/offscreen.tsx
+packages/renderer/src/outlineHandle.ts
 packages/renderer/src/picture.ts
 packages/renderer/src/sanitize.ts
 packages/renderer/src/settle.ts
+packages/renderer/src/still.ts
 packages/renderer/src/stretchSvg.ts
 packages/renderer/src/table.tsx
 packages/renderer/src/tableStyle.ts
@@ -121,6 +131,7 @@ packages/templates/src/letters.generated.ts
 packages/templates/src/master.ts
 packages/templates/src/mirror.ts
 packages/templates/src/objects.ts
+packages/templates/src/pointsAcross.ts
 packages/templates/src/relayout.ts
 packages/templates/src/standardLayouts.ts
 packages/templates/src/template.ts

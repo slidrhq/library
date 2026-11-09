@@ -2,8 +2,9 @@
  * The parts of the library, and what an upload may do to each (`GET /api/content`).
  *
  * A part takes new items where what is uploaded stays: designs join the catalog of the designs,
- * which publishing writes into and no script writes over, and a template's sample takes more
- * languages beside those its source writes. The other parts are written whole by the app's own
+ * which publishing writes into and no script writes over, as backgrounds and animations join
+ * theirs (`motion.ts`), and a template's sample takes more languages beside those its source
+ * writes. The other parts are written whole by the app's own
  * scripts, from packages they read, or are drawn by the app's code, so a new item in them would be
  * written over, or never shown; each says why (`closed`). Opening one takes the app first: a
  * catalog that publishing writes into, as the designs' is. Every part the app searches takes the
@@ -19,6 +20,7 @@ import {
 } from '@slidr/model';
 import { addDesign, drawDesign, translateDesign } from './designs.ts';
 import type { ActionId, Handler, TypeId } from './handler.ts';
+import { ANIMATIONS, BACKGROUNDS, addAnimation, addBackground } from './motion.ts';
 import { tagHandler } from './tags.ts';
 import { translateTemplate } from './templates.ts';
 
@@ -70,6 +72,18 @@ export const PARTS: readonly Part[] = [
     paths: ['templates/catalog.json'],
     handlers: [translateTemplate],
   },
+  tagged({
+    type: 'backgrounds',
+    written: 'content',
+    paths: [BACKGROUNDS],
+    handlers: [addBackground],
+  }),
+  tagged({
+    type: 'animations',
+    written: 'content',
+    paths: [ANIMATIONS],
+    handlers: [addAnimation],
+  }),
   tagged({
     type: 'cards',
     written: 'base',

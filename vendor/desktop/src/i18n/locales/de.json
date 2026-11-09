@@ -378,35 +378,6 @@
         "other": "Diese Option wurde nicht erstellt"
       }
     },
-    "look": {
-      "hint": "Für eine Vorschau auf der Folie darauf zeigen · Zum Übernehmen klicken",
-      "current": "In der Präsentation verwendet",
-      "template": {
-        "title": "Vorlage",
-        "builtIn": "Integriert",
-        "personal": "Persönlich",
-        "undo": "Vorlage wechseln"
-      },
-      "palette": {
-        "title": "Farbpalette",
-        "sample": "Aa",
-        "undo": "Farbpalette ändern",
-        "names": {
-          "basic": "Basis",
-          "ocean": "Ozean",
-          "sage": "Salbei",
-          "rose": "Rosé",
-          "graphite": "Graphit",
-          "forest": "Wald",
-          "plum": "Pflaume"
-        }
-      },
-      "fonts": {
-        "title": "Schriftpaar",
-        "undo": "Schriftpaar ändern",
-        "pair": "Überschriften: {{heading}} · Text: {{body}}"
-      }
-    },
     "action": {
       "other": "Aktion",
       "deck": {
@@ -469,77 +440,6 @@
       }
     },
     "actions": {
-      "wording": "Formulierung",
-      "edit": "Bearbeiten",
-      "content": "Inhalt",
-      "design": "Design",
-      "slideSettings": "Die Folie selbst",
-      "image": "Bild",
-      "count": "Anzahl der Optionen",
-      "variations": "Andere Formulierungen",
-      "titles": "Alternative Titel",
-      "shorten": "Kürzen",
-      "expand": "Erweitern",
-      "fix": "Fehler korrigieren",
-      "bullets": "In Aufzählung umwandeln",
-      "tone": "Tonfall ändern",
-      "toneChoice": "Tonfall",
-      "translate": "Übersetzen",
-      "language": "Zielsprache",
-      "redesign": "Neu gestalten",
-      "shortenSlide": "Text kürzen",
-      "split": "In zwei Folien teilen",
-      "visual": "Visuelles Element hinzufügen",
-      "addImage": "Bild hinzufügen",
-      "animate": "Animationen",
-      "notes": "Sprechernotizen",
-      "fixFindings": "Designbefunde beheben",
-      "shortenDeck": "Text kürzen",
-      "improve": "Design verbessern",
-      "alternatives": "Alternativen generieren",
-      "imagePrompt": "Was soll das Bild zeigen, oder was soll sich daran ändern?",
-      "imagePromptHint": "Für Alternativen optional: Ohne Beschreibung entscheidet der Agent anhand der Folie.",
-      "imageEdit": "Mit KI bearbeiten",
-      "editImage": "Wie beschrieben ändern",
-      "restyle": "An den Stil der Präsentation anpassen",
-      "paintMask": "Zu ändernden Bereich markieren",
-      "maskSet": "Ein Bereich ist markiert: Nur er wird geändert",
-      "maskClear": "Markierung löschen",
-      "expandImage": "Bild erweitern",
-      "expandTo": "Form nach dem Erweitern",
-      "expandHint": "Das Bild bleibt, wo es ist, und die KI ergänzt ringsum, was der gewählten Form fehlt.",
-      "expandFailed": "Das Bild wurde nicht erweitert",
-      "expandSame": "Das Bild hat bereits diese Form.",
-      "expandLabel": "Bild erweitern",
-      "imageLocal": "Ohne KI",
-      "crop": "Zuschneiden",
-      "chart": "Diagramm",
-      "chartType": "Diagrammtyp vorschlagen",
-      "chartTitle": "Titel und Erkenntnis",
-      "chartFill": "Daten aus dem Text übernehmen",
-      "chartSource": "Fügen Sie hier einen Text oder eine Tabelle mit den Zahlen ein",
-      "tableFill": "Tabelle aus dem Text füllen",
-      "tableSource": "Fügen Sie hier den Text ein, aus dem die Tabelle gefüllt werden soll",
-      "tableStyle": "Designs vorschlagen",
-      "tableInsight": "In einer Erkenntnis zusammenfassen",
-      "tableChart": "In ein Diagramm umwandeln",
-      "fromText": "Aus Text",
-      "fromTextHint": "Der Agent übernimmt nur, was im Text steht, und sagt Ihnen, was er weggelassen hat.",
-      "onSlide": "Auf der Folie",
-      "onSlideHint": "Diese beiden ändern die Folie, nicht nur die Tabelle.",
-      "shape": "Form",
-      "shapeSuggest": "Form vorschlagen",
-      "icon": "Symbol",
-      "iconReplace": "Ein passenderes Symbol",
-      "colourByTheme": "Nach Vorlage einfärben",
-      "editKind": {
-        "exact": "Der Bildanbieter ändert nur, was Sie verlangen, und Sie können ihm einen Bereich vorgeben.",
-        "regenerate": "Der Bildanbieter zeichnet das Bild nach dem Original neu: Kleine Details verschieben sich, und ein Bereich lässt sich nicht vorgeben.",
-        "none": "Dieser Bildanbieter bearbeitet keine Bilder."
-      },
-      "layout": "Layout",
-      "layoutNone": "Diese Folie hat kein Layout, das sich wechseln lässt.",
-      "layoutLabel": "Folienlayout",
       "languages": {
         "Hebrew": "Hebräisch",
         "English": "Englisch",
@@ -563,32 +463,6 @@
         "friendly": "freundlich",
         "confident": "selbstbewusst",
         "plain": "schlicht"
-      },
-      "template": {
-        "title": "Neue Vorlage",
-        "open": "Vorlage mit KI erstellen",
-        "description": "Wie soll die Vorlage aussehen?",
-        "url": "Eine Website als Vorbild für die Vorlage",
-        "logo": "Logo",
-        "chooseLogo": "Logo auswählen",
-        "files": "Ein Bild oder eine HTML-Datei als Vorbild",
-        "addFile": "Datei hinzufügen",
-        "fromDeck": "Nach dem Design dieser Präsentation",
-        "create": "Entwurf erstellen",
-        "hint": "Der Agent liest die Quellen, erstellt einen Entwurf und zeigt ihn im Chat. Nichts wird gespeichert, bis Sie es speichern.",
-        "needSource": "Geben Sie mindestens eine Quelle an: eine Beschreibung, eine Adresse, ein Logo, eine Datei oder diese Präsentation."
-      },
-      "busy": "Der Agent ist mitten in einem Durchlauf. Die Aktionen sind wieder verfügbar, sobald er fertig ist.",
-      "groupSelection": "Ihre Auswahl",
-      "groupSlide": "Folie {{n}}",
-      "groupDeck": "Die ganze Präsentation",
-      "noActions": "Für Ihre Auswahl gibt es keine vorgefertigten Aktionen. Bitten Sie im Chat um eine beliebige Änderung.",
-      "provider": {
-        "checking": "Bildanbieter wird geprüft…",
-        "ready": "Jedes Bild dauert etwa eine Minute; sie erscheinen nacheinander.",
-        "not_installed": "Der Bildanbieter ist auf diesem Computer nicht installiert, daher können keine Bilder generiert werden.",
-        "not_logged_in": "Der Bildanbieter ist nicht angemeldet. Melden Sie sich dort an und kehren Sie dann hierher zurück.",
-        "unavailable": "Der Bildanbieter ist gerade nicht verfügbar."
       }
     }
   },
@@ -1487,62 +1361,17 @@
         "scale": "Wachsen und Pulsieren",
         "lines": "Linien und Wellen",
         "particles": "Partikel und Netze"
-      },
-      "name": {
-        "orbit": "Umlaufbahn",
-        "conveyor": "Boxen auf einer Bahn",
-        "trace": "Leiterbahn",
-        "atom": "Atom",
-        "shuttle": "Punkt auf einer Linie",
-        "hexagon": "Drehende Sechsecke",
-        "rings": "Drehende Ringe",
-        "radar": "Radar",
-        "ripple": "Wellenringe",
-        "breathe": "Atmende Form",
-        "bars": "Wachsende Balken",
-        "waves": "Wellen",
-        "draw": "Gezeichneter Pfeil",
-        "flowArrow": "Fließender Verbinder",
-        "heartbeat": "Herzschlag",
-        "network": "Netzwerk",
-        "converge": "Sich sammelnde Partikel",
-        "float": "Aufsteigende Blasen"
       }
     },
     "backgrounds": {
       "hint": "Klicken Sie auf einen Hintergrund, um ihn auf die Folie oder auf alle ausgewählten Folien anzuwenden. Die Farben stammen aus der Vorlage; das Werkzeug „Hintergrund“ führt zum Hintergrund der Vorlage zurück.",
       "animated": "Bewegte Hintergründe",
-      "still": "Ruhige Hintergründe",
-      "name": {
-        "flow": "Schaltkreisfluss",
-        "waves": "Wellen",
-        "converge": "Sammeln",
-        "orbit": "Umlaufbahnen",
-        "radar": "Radar",
-        "network": "Netzwerk",
-        "drift": "Wanderndes Licht",
-        "particles": "Aufsteigende Partikel",
-        "dots": "Punktraster",
-        "contours": "Höhenlinien",
-        "arcs": "Bögen in der Ecke"
-      }
+      "still": "Ruhige Hintergründe"
     },
     "animatedShapes": {
       "title": "Animierte Formen",
       "hint": "Gewöhnliche Formen, die eine Bewegung wiederholen. Farbe, Kontur und Größe bearbeiten Sie wie bei jeder Form, die Bewegung mit dem Werkzeug „Bewegung“.",
-      "more": "Alle Animationen",
-      "name": {
-        "ring": "Drehender Ring",
-        "hexagon": "Drehendes Sechseck",
-        "star": "Drehender Stern",
-        "octagon": "Drehendes Achteck",
-        "square": "Quadrat, das sich dreht und ruht",
-        "pulse": "Pulsierender Kreis",
-        "heart": "Schlagendes Herz",
-        "float": "Schwebender Kreis",
-        "arrow": "Wackelnder Pfeil",
-        "blink": "Blinkender Punkt"
-      }
+      "more": "Alle Animationen"
     },
     "motion": {
       "title": "Bewegung",
@@ -1577,6 +1406,21 @@
         "float": "Schwebehöhe",
         "swing": "Schwingwinkel",
         "blink": "Blinkstärke"
+      },
+      "flow": {
+        "title": "Entlang der Linie",
+        "kind": {
+          "none": "Keine",
+          "dashes": "Striche",
+          "box": "Kästchen",
+          "dot": "Punkte"
+        },
+        "speed": "Pixel pro Sekunde",
+        "forward": "Zum Ende",
+        "back": "Zum Anfang",
+        "count": "Anzahl",
+        "size": "Größe",
+        "color": "Farbe"
       },
       "hint": "Die Bewegung wiederholt sich, solange die Folie gezeigt wird: im Editor, in der Präsentation und in einer exportierten Datei."
     }
@@ -1774,20 +1618,6 @@
       "signingIn": "Schließen Sie die Anmeldung im geöffneten Fenster ab.",
       "install": "Installieren…",
       "signIn": "Anmelden"
-    },
-    "mask": {
-      "title": "Zu ändernden Bereich markieren",
-      "description": "Übermalen Sie den Teil des Bildes, den die KI ändern darf. Alles, was nicht übermalt ist, bleibt genau so, wie es ist.",
-      "canvas": "Das Bild, auf dem der Bereich markiert wird",
-      "tool": "Werkzeug",
-      "paint": "Malen",
-      "erase": "Radieren",
-      "brush": "Pinselgröße",
-      "clear": "Löschen",
-      "empty": "Noch ist kein Bereich markiert.",
-      "done": "Fertig",
-      "cancel": "Abbrechen",
-      "failed": "Die Markierung wurde nicht gespeichert"
     },
     "upscale": {
       "title": "Hochskalieren",
@@ -2803,11 +2633,8 @@
       "tools": "Werkzeuge",
       "collapse": "Bereich einklappen",
       "resize": "Bereichsgröße ändern",
-      "actions": "Aktionen",
       "chatEmptyTitle": "Der Chat ist noch nicht verbunden",
       "chatEmptyBody": "Hier bitten Sie den Agenten um Änderungen und sehen zu, wie sie auf der Folie entstehen.",
-      "actionsEmptyTitle": "Noch keine Aktionen",
-      "actionsEmptyBody": "Schnellaktionen für dieses Werkzeug werden hier angezeigt.",
       "soonTitle": "Noch nicht verfügbar",
       "mediaBody": "Uploads, Stockfotos, Symbole und KI-Bilder.",
       "animationsBody": "Animationseffekte und die Zeitachse der Folie.",
@@ -2984,6 +2811,12 @@
       "hint": "Notizen werden mit der Präsentation gespeichert und nicht auf der Folie angezeigt.",
       "noSlide": "Keine Folie",
       "step": "Sprechernotizen"
+    },
+    "crash": {
+      "title": "Etwas ist schiefgelaufen",
+      "body": "In Slidr ist ein unerwarteter Fehler aufgetreten. Laden Sie das Fenster neu, um fortzufahren.",
+      "reload": "Neu laden",
+      "details": "Details"
     }
   },
   "stage": {
@@ -3007,6 +2840,7 @@
       "editData": "Daten bearbeiten",
       "editCells": "Zellen bearbeiten",
       "editPoints": "Punkte bearbeiten",
+      "adjust": "Form anpassen",
       "order": "Ebenenreihenfolge"
     },
     "toolbar": {
@@ -3018,7 +2852,7 @@
       "walk": "Zum nächsten oder vorherigen Objekt wechseln (in der Folienleiste: zur Folie), ohne es auszuwählen",
       "toggle": "Zur Auswahl hinzufügen oder daraus entfernen",
       "points": "Punkte einer Linie bearbeiten und wieder verlassen",
-      "part": "Nächster oder vorheriger Punkt einer Linie; nächster oder vorheriger Zuschneidegriff",
+      "part": "Nächster oder vorheriger Punkt einer Linie; nächster oder vorheriger Anpassungsgriff einer Form; nächster oder vorheriger Zuschneidegriff",
       "addPoint": "Punkt zur Linie hinzufügen",
       "removePoint": "Punkt aus der Linie entfernen",
       "lock": "Sperren und entsperren",
@@ -3026,6 +2860,8 @@
     },
     "at": {
       "point": "Punkt {{n}} von {{total}}. Mit den Pfeiltasten verschieben.",
+      "adjust": "Anpassungsgriff {{n}} von {{total}}. Mit den Pfeiltasten verschieben.",
+      "outline": "Griff der Konturstärke: {{width}} px. Mit den Pfeiltasten verschieben.",
       "picture": "Zuschneiden: Die Pfeiltasten verschieben das Bild. Ctrl+Pfeil nach oben oder unten ändert die Größe. Tab wechselt zu den Griffen.",
       "handle": "Zuschneidegriff: {{where}}. Mit den Pfeiltasten verschieben.",
       "walkSelected": "{{what}}: ausgewählt",

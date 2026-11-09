@@ -348,6 +348,254 @@ export const CATALOGS: Record<string, unknown> = {
   'icons/tabler/icons.json': { balloon: { tags: ['party'] } },
 };
 
+/* ---------------------------------------------------------------- backgrounds and animations */
+
+export const BACKGROUNDS = 'elements/backgrounds/catalog.json';
+export const ANIMATIONS = 'elements/animations/catalog.json';
+
+/**
+ * The catalogs of the backgrounds and of the animations, an item or two of each list as the app
+ * drew them before they were the library's: a still background, a picture that moves, a line that
+ * boxes run along, an animated shape, and one that points the way a line runs.
+ */
+export const MOTION: Record<string, unknown> = {
+  [BACKGROUNDS]: {
+    version: 1,
+    backgrounds: [
+      {
+        id: 'dots',
+        name: {
+          he: 'רשת נקודות',
+          en: 'Dot grid',
+          ar: 'شبكة نقاط',
+          de: 'Punktraster',
+          es: 'Cuadrícula de puntos',
+          fr: 'Grille de points',
+          it: 'Griglia di punti',
+          'pt-BR': 'Grade de pontos',
+          ru: 'Сетка точек',
+          tr: 'Nokta ızgarası',
+          vi: 'Lưới chấm',
+          id: 'Kisi titik',
+          hi: 'बिंदुओं का ग्रिड',
+          ja: 'ドットグリッド',
+          ko: '점 격자',
+          'zh-CN': '点阵',
+        },
+        animated: false,
+        sided: true,
+        markup:
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"><defs><pattern id="d" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1.6" fill="#15213f" fill-opacity=".16"/></pattern><radialGradient id="v" cx=".5" cy=".5" r=".72"><stop offset=".5" stop-opacity="1"/><stop offset="1" stop-opacity=".35"/></radialGradient><radialGradient id="l"><stop offset="0" stop-color="#6c4cf1" stop-opacity=".2"/><stop offset="1" stop-color="#6c4cf1" stop-opacity="0"/></radialGradient><mask id="m" mask-type="alpha" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="1920" height="1080"><rect width="1920" height="1080" fill="url(#v)"/></mask></defs><circle cx="576" cy="561.6" r="760" fill="url(#l)"/><rect width="1920" height="1080" fill="url(#d)" mask="url(#m)"/></svg>',
+      },
+    ],
+  },
+  [ANIMATIONS]: {
+    version: 1,
+    animations: [
+      {
+        id: 'shuttle',
+        name: {
+          he: 'נקודה על קו',
+          en: 'Dot on a line',
+          ar: 'نقطة على خط',
+          de: 'Punkt auf einer Linie',
+          es: 'Punto en una línea',
+          fr: 'Point sur une ligne',
+          it: 'Punto su una linea',
+          'pt-BR': 'Ponto em uma linha',
+          ru: 'Точка на линии',
+          tr: 'Çizgi üzerinde nokta',
+          vi: 'Chấm trên đường thẳng',
+          id: 'Titik di garis',
+          hi: 'रेखा पर बिंदु',
+          ja: '線上の点',
+          ko: '선 위의 점',
+          'zh-CN': '线上的点',
+        },
+        group: 'path',
+        size: { w: 560, h: 140 },
+        reads: true,
+        markup:
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140"><style>.k{animation:glide 2.8s cubic-bezier(.65,0,.35,1) infinite alternate}.p{animation:fill 2.8s cubic-bezier(.65,0,.35,1) infinite alternate}@keyframes glide{from{transform:translateX(0)}to{transform:translateX(460px)}}@keyframes fill{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}</style><path d="M50 70H510" stroke="#15213f" stroke-opacity=".14" stroke-width="12" stroke-linecap="round"/><path class="p" d="M50 70H510" pathLength="100" stroke="#6c4cf1" stroke-width="12" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="100"/><g class="k"><circle cx="50" cy="70" r="40" fill="#6c4cf1" fill-opacity=".15"/><circle cx="50" cy="70" r="24" fill="#6c4cf1" stroke="#fbf6ec" stroke-width="6"/></g></svg>',
+      },
+      {
+        id: 'conveyor',
+        name: {
+          he: 'קופסאות במסלול',
+          en: 'Boxes on a path',
+          ar: 'صناديق على مسار',
+          de: 'Boxen auf einer Bahn',
+          es: 'Cajas en un recorrido',
+          fr: 'Boîtes sur un parcours',
+          it: 'Scatole su un percorso',
+          'pt-BR': 'Caixas em um caminho',
+          ru: 'Коробки на пути',
+          tr: 'Yoldaki kutular',
+          vi: 'Hộp trên đường đi',
+          id: 'Kotak di lintasan',
+          hi: 'पथ पर डिब्बे',
+          ja: '経路を進む箱',
+          ko: '경로 위의 상자',
+          'zh-CN': '路径上的方块',
+        },
+        group: 'path',
+        size: { w: 380, h: 160 },
+        reads: true,
+        line: {
+          points: [
+            { x: 0, y: 160 },
+            { x: 380, y: 0 },
+          ],
+          stroke: { color: { token: 'secondary' }, width: 3.5, dash: 'dashed', cap: 'round' },
+          startHead: 'none',
+          endHead: 'none',
+          curve: 'curved',
+          flow: { speed: 90, rider: 'box', count: 4, color: { token: 'text' } },
+        },
+      },
+    ],
+    shapes: [
+      {
+        id: 'ring',
+        name: {
+          he: 'טבעת מסתובבת',
+          en: 'Turning ring',
+          ar: 'حلقة تدور',
+          de: 'Drehender Ring',
+          es: 'Anillo que gira',
+          fr: 'Anneau qui tourne',
+          it: 'Anello che ruota',
+          'pt-BR': 'Anel girando',
+          ru: 'Вращающееся кольцо',
+          tr: 'Dönen halka',
+          vi: 'Vòng xoay',
+          id: 'Cincin berputar',
+          hi: 'घूमती अंगूठी',
+          ja: '回転するリング',
+          ko: '회전하는 고리',
+          'zh-CN': '旋转的圆环',
+        },
+        preset: 'ellipse',
+        side: 260,
+        look: 'dashed',
+        ink: 'primary',
+        ambient: { kind: 'spin', duration: 8000 },
+      },
+      {
+        id: 'arrow',
+        name: {
+          he: 'חץ מתנדנד',
+          en: 'Wiggling arrow',
+          ar: 'سهم يتمايل',
+          de: 'Wackelnder Pfeil',
+          es: 'Flecha que se balancea',
+          fr: 'Flèche qui oscille',
+          it: 'Freccia che oscilla',
+          'pt-BR': 'Seta balançando',
+          ru: 'Покачивающаяся стрелка',
+          tr: 'Sallanan ok',
+          vi: 'Mũi tên lắc lư',
+          id: 'Panah bergoyang',
+          hi: 'हिलता तीर',
+          ja: '揺れる矢印',
+          ko: '흔들리는 화살표',
+          'zh-CN': '摇摆的箭头',
+        },
+        preset: 'arrowRight',
+        side: 260,
+        look: 'fill',
+        ink: 'primary',
+        ambient: { kind: 'swing', duration: 2400, rhythm: 'pause', amount: 10 },
+        reads: true,
+      },
+    ],
+  },
+};
+
+/** The name of a comet in every language of the app: what the new items below are named. */
+export const COMET: Record<ContentLanguage, string> = {
+  he: 'שביט',
+  en: 'Comet',
+  ar: 'مذنب',
+  de: 'Komet',
+  es: 'Cometa',
+  fr: 'Comète',
+  it: 'Cometa',
+  'pt-BR': 'Cometa',
+  ru: 'Комета',
+  tr: 'Kuyruklu yıldız',
+  vi: 'Sao chổi',
+  id: 'Komet',
+  hi: 'धूमकेतु',
+  ja: '彗星',
+  ko: '혜성',
+  'zh-CN': '彗星',
+};
+
+/** The content of a new background or animation in each language: its name. */
+export const motionLanguages = (languages: readonly ContentLanguage[] = ['he', 'en']) =>
+  Object.fromEntries(languages.map((lang) => [lang, { name: COMET[lang] }]));
+
+/** A picture that moves by itself: a dot turning about the middle, in the theme's primary colour. */
+export const motionPicture = (w = 400, h = 400) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><style>.t{animation:t 6s linear infinite;transform-origin:${w / 2}px ${h / 2}px}@keyframes t{to{transform:rotate(360deg)}}</style><circle class="t" cx="${w / 2}" cy="${h / 4}" r="24" fill="#6c4cf1"/></svg>`;
+
+/** Uploads of a new background, and of an animation of each kind, named a comet. */
+export const NEW_MOTION = {
+  background: {
+    type: 'backgrounds',
+    action: 'add',
+    id: 'aurora',
+    animated: true,
+    sided: false,
+    markup: motionPicture(1920, 1080),
+  },
+  picture: {
+    type: 'animations',
+    action: 'add',
+    id: 'comet',
+    kind: 'picture',
+    group: 'spin',
+    size: { w: 400, h: 400 },
+    reads: false,
+    markup: motionPicture(),
+  },
+  line: {
+    type: 'animations',
+    action: 'add',
+    id: 'comet-trail',
+    kind: 'line',
+    group: 'lines',
+    size: { w: 430, h: 80 },
+    reads: true,
+    line: {
+      points: [
+        { x: 0, y: 80 },
+        { x: 220, y: 0 },
+        { x: 430, y: 50 },
+      ],
+      stroke: { color: { token: 'secondary' }, width: 6, dash: 'dashed', cap: 'round' },
+      startHead: 'circle',
+      endHead: 'triangle',
+      curve: 'curved',
+      flow: { speed: 40 },
+    },
+  },
+  shape: {
+    type: 'animations',
+    action: 'add',
+    id: 'comet',
+    kind: 'shape',
+    shape: {
+      preset: 'star6',
+      side: 220,
+      look: 'fill',
+      ink: 'accent',
+      ambient: { kind: 'pulse', duration: 1400, rhythm: 'pause', amount: 0.16 },
+    },
+  },
+} as const;
+
 /**
  * Serves a published library of these files, and the paths named besides, from the site of
  * `MEDIA`, until the test ends.

@@ -377,35 +377,6 @@
         "other": "Opsi ini tidak berhasil dibuat"
       }
     },
-    "look": {
-      "hint": "Arahkan kursor untuk melihatnya di slide · klik untuk menerapkan",
-      "current": "Digunakan di presentasi",
-      "template": {
-        "title": "Templat",
-        "builtIn": "Bawaan",
-        "personal": "Pribadi",
-        "undo": "Ganti templat"
-      },
-      "palette": {
-        "title": "Palet warna",
-        "sample": "Aa",
-        "undo": "Ubah palet warna",
-        "names": {
-          "basic": "Dasar",
-          "ocean": "Samudra",
-          "sage": "Sage",
-          "rose": "Mawar",
-          "graphite": "Grafit",
-          "forest": "Hutan",
-          "plum": "Plum"
-        }
-      },
-      "fonts": {
-        "title": "Pasangan font",
-        "undo": "Ubah pasangan font",
-        "pair": "Judul: {{heading}} · Isi: {{body}}"
-      }
-    },
     "action": {
       "other": "Tindakan",
       "deck": {
@@ -468,77 +439,6 @@
       }
     },
     "actions": {
-      "wording": "Rumusan",
-      "edit": "Pengeditan",
-      "content": "Konten",
-      "design": "Desain",
-      "slideSettings": "Slide itu sendiri",
-      "image": "Gambar",
-      "count": "Jumlah opsi",
-      "variations": "Rumusan lain",
-      "titles": "Judul alternatif",
-      "shorten": "Persingkat",
-      "expand": "Perluas",
-      "fix": "Perbaiki kesalahan",
-      "bullets": "Ubah menjadi poin-poin",
-      "tone": "Ubah nada",
-      "toneChoice": "Nada",
-      "translate": "Terjemahkan",
-      "language": "Bahasa tujuan",
-      "redesign": "Desain ulang",
-      "shortenSlide": "Persingkat teks",
-      "split": "Bagi menjadi dua slide",
-      "visual": "Tambahkan visual",
-      "addImage": "Tambahkan gambar",
-      "animate": "Animasi",
-      "notes": "Catatan pembicara",
-      "fixFindings": "Perbaiki temuan desain",
-      "shortenDeck": "Persingkat teks",
-      "improve": "Sempurnakan desain",
-      "alternatives": "Buat alternatif",
-      "imagePrompt": "Apa yang harus ditampilkan gambar, atau apa yang perlu diubah?",
-      "imagePromptHint": "Opsional untuk alternatif: tanpa deskripsi, Agen akan menentukannya berdasarkan slide.",
-      "imageEdit": "Edit dengan AI",
-      "editImage": "Ubah sesuai deskripsi",
-      "restyle": "Sesuaikan dengan gaya presentasi",
-      "paintMask": "Tandai area yang akan diubah",
-      "maskSet": "Area sudah ditandai: hanya area itu yang akan berubah",
-      "maskClear": "Hapus tanda",
-      "expandImage": "Perluas gambar",
-      "expandTo": "Bentuk setelah diperluas",
-      "expandHint": "Gambar tetap di tempatnya, dan AI mengisi bagian di sekitarnya yang kurang untuk bentuk yang dipilih.",
-      "expandFailed": "Gambar tidak berhasil diperluas",
-      "expandSame": "Gambar sudah memiliki bentuk ini.",
-      "expandLabel": "Perluas gambar",
-      "imageLocal": "Tanpa AI",
-      "crop": "Pangkas",
-      "chart": "Bagan",
-      "chartType": "Sarankan jenis bagan",
-      "chartTitle": "Judul dan wawasan",
-      "chartFill": "Isi data dari teks",
-      "chartSource": "Tempel teks atau tabel berisi angka di sini",
-      "tableFill": "Isi tabel dari teks",
-      "tableSource": "Tempel di sini teks yang akan digunakan untuk mengisi tabel",
-      "tableStyle": "Sarankan tampilan",
-      "tableInsight": "Rangkum menjadi wawasan",
-      "tableChart": "Ubah menjadi bagan",
-      "fromText": "Dari teks",
-      "fromTextHint": "Agen hanya mengambil apa yang tertulis dalam teks, dan memberi tahu Anda apa yang tidak disertakan.",
-      "onSlide": "Di slide",
-      "onSlideHint": "Kedua tindakan ini mengubah slide, bukan hanya tabel.",
-      "shape": "Bentuk",
-      "shapeSuggest": "Sarankan bentuk",
-      "icon": "Ikon",
-      "iconReplace": "Ikon yang lebih sesuai",
-      "colourByTheme": "Warnai sesuai templat",
-      "editKind": {
-        "exact": "Penyedia gambar hanya mengubah apa yang Anda minta, dan dapat diberi area tertentu.",
-        "regenerate": "Penyedia gambar menggambar ulang gambar berdasarkan aslinya: detail kecil dapat bergeser, dan tidak dapat diberi area tertentu.",
-        "none": "Penyedia gambar ini tidak dapat mengedit gambar."
-      },
-      "layout": "Tata letak",
-      "layoutNone": "Slide ini tidak memiliki tata letak untuk diganti.",
-      "layoutLabel": "Tata letak slide",
       "languages": {
         "Hebrew": "Ibrani",
         "English": "Inggris",
@@ -562,32 +462,6 @@
         "friendly": "ramah",
         "confident": "percaya diri",
         "plain": "sederhana"
-      },
-      "template": {
-        "title": "Templat baru",
-        "open": "Buat templat dengan AI",
-        "description": "Seperti apa tampilan templat yang Anda inginkan?",
-        "url": "Situs yang menjadi acuan tampilan templat",
-        "logo": "Logo",
-        "chooseLogo": "Pilih logo",
-        "files": "Gambar atau file HTML sebagai acuan",
-        "addFile": "Tambahkan file",
-        "fromDeck": "Berdasarkan desain presentasi ini",
-        "create": "Buat draf",
-        "hint": "Agen membaca sumber, membuat draf, dan menampilkannya di obrolan. Tidak ada yang disimpan sampai Anda menyimpannya.",
-        "needSource": "Berikan setidaknya satu sumber: deskripsi, alamat, logo, file, atau presentasi ini."
-      },
-      "busy": "Agen sedang menjalankan giliran. Tindakan akan tersedia kembali setelah selesai.",
-      "groupSelection": "Pilihan Anda",
-      "groupSlide": "Slide {{n}}",
-      "groupDeck": "Seluruh presentasi",
-      "noActions": "Tidak ada tindakan siap pakai untuk pilihan Anda. Minta perubahan apa pun di obrolan.",
-      "provider": {
-        "checking": "Memeriksa penyedia gambar…",
-        "ready": "Setiap gambar membutuhkan sekitar satu menit, dan gambar akan muncul satu per satu.",
-        "not_installed": "Penyedia gambar belum terinstal di komputer ini, sehingga gambar tidak dapat dibuat.",
-        "not_logged_in": "Penyedia gambar belum masuk. Masuk ke penyedia tersebut, lalu kembali ke sini.",
-        "unavailable": "Penyedia gambar saat ini tidak tersedia."
       }
     }
   },
@@ -1483,62 +1357,17 @@
         "scale": "Membesar dan berdenyut",
         "lines": "Garis dan gelombang",
         "particles": "Partikel dan jaringan"
-      },
-      "name": {
-        "orbit": "Orbit",
-        "conveyor": "Kotak di lintasan",
-        "trace": "Jalur sirkuit",
-        "atom": "Atom",
-        "shuttle": "Titik di garis",
-        "hexagon": "Segi enam berputar",
-        "rings": "Cincin berputar",
-        "radar": "Radar",
-        "ripple": "Riak",
-        "breathe": "Bentuk bernapas",
-        "bars": "Batang naik",
-        "waves": "Gelombang",
-        "draw": "Panah tergambar",
-        "flowArrow": "Penghubung mengalir",
-        "heartbeat": "Detak jantung",
-        "network": "Jaringan",
-        "converge": "Partikel berkumpul",
-        "float": "Gelembung naik"
       }
     },
     "backgrounds": {
       "hint": "Klik sebuah latar belakang untuk menerapkannya ke slide, atau ke semua slide yang Anda pilih. Warnanya berasal dari templat, dan alat “Latar belakang” membawa Anda kembali ke latar belakang templat.",
       "animated": "Latar belakang bergerak",
-      "still": "Latar belakang tenang",
-      "name": {
-        "flow": "Aliran sirkuit",
-        "waves": "Gelombang",
-        "converge": "Berkumpul",
-        "orbit": "Orbit",
-        "radar": "Radar",
-        "network": "Jaringan",
-        "drift": "Cahaya melayang",
-        "particles": "Partikel naik",
-        "dots": "Kisi titik",
-        "contours": "Garis kontur",
-        "arcs": "Busur di sudut"
-      }
+      "still": "Latar belakang tenang"
     },
     "animatedShapes": {
       "title": "Bentuk animasi",
       "hint": "Bentuk biasa yang mengulang suatu gerakan. Warna, garis tepi, dan ukurannya diedit seperti bentuk lain, dan gerakannya dengan alat Gerakan.",
-      "more": "Semua animasi",
-      "name": {
-        "ring": "Cincin berputar",
-        "hexagon": "Segi enam berputar",
-        "star": "Bintang berputar",
-        "octagon": "Segi delapan berputar",
-        "square": "Persegi yang berputar lalu diam",
-        "pulse": "Lingkaran berdenyut",
-        "heart": "Hati berdenyut",
-        "float": "Lingkaran melayang",
-        "arrow": "Panah bergoyang",
-        "blink": "Titik berkedip"
-      }
+      "more": "Semua animasi"
     },
     "motion": {
       "title": "Gerakan",
@@ -1573,6 +1402,21 @@
         "float": "Tinggi melayang",
         "swing": "Sudut ayunan",
         "blink": "Kekuatan kedipan"
+      },
+      "flow": {
+        "title": "Di sepanjang garis",
+        "kind": {
+          "none": "Tidak ada",
+          "dashes": "Garis putus",
+          "box": "Kotak",
+          "dot": "Titik"
+        },
+        "speed": "Piksel per detik",
+        "forward": "Ke ujung",
+        "back": "Ke awal",
+        "count": "Jumlah",
+        "size": "Ukuran",
+        "color": "Warna"
       },
       "hint": "Gerakan berulang selama slide ditampilkan: di editor, saat presentasi, dan dalam file yang diekspor."
     }
@@ -1768,20 +1612,6 @@
       "signingIn": "Selesaikan proses masuk di jendela yang terbuka.",
       "install": "Instal…",
       "signIn": "Masuk"
-    },
-    "mask": {
-      "title": "Tandai area yang akan diubah",
-      "description": "Warnai bagian gambar yang boleh diubah oleh AI. Bagian yang tidak diwarnai akan tetap persis seperti semula.",
-      "canvas": "Gambar, untuk mewarnai area",
-      "tool": "Alat",
-      "paint": "Warnai",
-      "erase": "Hapus",
-      "brush": "Ukuran kuas",
-      "clear": "Kosongkan",
-      "empty": "Belum ada area yang diwarnai.",
-      "done": "Selesai",
-      "cancel": "Batal",
-      "failed": "Tanda tidak disimpan"
     },
     "upscale": {
       "title": "Tingkatkan resolusi",
@@ -2797,11 +2627,8 @@
       "tools": "Alat",
       "collapse": "Ciutkan panel",
       "resize": "Ubah ukuran panel",
-      "actions": "Tindakan",
       "chatEmptyTitle": "Obrolan belum terhubung",
       "chatEmptyBody": "Di sini Anda akan meminta perubahan kepada Agen dan melihatnya terjadi langsung di slide.",
-      "actionsEmptyTitle": "Belum ada tindakan",
-      "actionsEmptyBody": "Tindakan cepat untuk alat ini akan muncul di sini.",
       "soonTitle": "Belum tersedia",
       "mediaBody": "Unggahan, foto stok, ikon, dan gambar AI.",
       "animationsBody": "Efek animasi dan garis waktu slide.",
@@ -2978,6 +2805,12 @@
       "hint": "Catatan disimpan bersama presentasi, dan tidak ditampilkan di slide.",
       "noSlide": "Tidak ada slide",
       "step": "Catatan pembicara"
+    },
+    "crash": {
+      "title": "Terjadi kesalahan",
+      "body": "Slidr mengalami kesalahan yang tidak terduga. Muat ulang jendela untuk melanjutkan.",
+      "reload": "Muat ulang",
+      "details": "Detail"
     }
   },
   "stage": {
@@ -3001,6 +2834,7 @@
       "editData": "Edit data bagan",
       "editCells": "Edit sel",
       "editPoints": "Edit titik",
+      "adjust": "Sesuaikan bentuk",
       "order": "Urutan lapisan"
     },
     "toolbar": {
@@ -3012,7 +2846,7 @@
       "walk": "Pindah ke objek berikutnya atau sebelumnya, atau ke slide di strip slide, tanpa memilihnya",
       "toggle": "Tambahkan ke pilihan, atau keluarkan dari pilihan",
       "points": "Masuk ke titik-titik garis, dan keluar darinya",
-      "part": "Titik garis berikutnya atau sebelumnya; gagang pangkas berikutnya atau sebelumnya",
+      "part": "Titik garis berikutnya atau sebelumnya; gagang penyesuaian bentuk berikutnya atau sebelumnya; gagang pangkas berikutnya atau sebelumnya",
       "addPoint": "Tambahkan titik ke garis",
       "removePoint": "Hapus titik dari garis",
       "lock": "Kunci dan buka kunci",
@@ -3020,6 +2854,8 @@
     },
     "at": {
       "point": "Titik {{n}} dari {{total}}. Tombol panah memindahkannya.",
+      "adjust": "Gagang penyesuaian {{n}} dari {{total}}. Tombol panah memindahkannya.",
+      "outline": "Gagang ketebalan garis tepi: {{width}} px. Tombol panah memindahkannya.",
       "picture": "Pangkas: tombol panah memindahkan gambar. Ctrl+Up atau Down mengubah skalanya. Tab berpindah ke gagang.",
       "handle": "Gagang pangkas: {{where}}. Tombol panah memindahkannya.",
       "walkSelected": "{{what}}: dalam pilihan",

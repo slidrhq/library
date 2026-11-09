@@ -13,6 +13,9 @@ import {
   designSlide,
   frenchSample,
   CATALOGS,
+  MOTION,
+  NEW_MOTION,
+  motionLanguages,
   publishLibrary,
   webp,
 } from './testing.ts';
@@ -87,6 +90,8 @@ describe('what the library takes', () => {
     assert.deepEqual(Object.keys(byType), [
       'designs',
       'templates',
+      'backgrounds',
+      'animations',
       'cards',
       'frames',
       'shapes',
@@ -97,6 +102,13 @@ describe('what the library takes', () => {
     ]);
     assert.deepEqual(Object.keys(byType.designs!.actions), ['add', 'translate', 'draw', 'tag']);
     assert.deepEqual(Object.keys(byType.templates!.actions), ['translate']);
+    // Backgrounds and animations take new items, named in every language, and their tags.
+    for (const type of ['backgrounds', 'animations']) {
+      assert.deepEqual(Object.keys(byType[type]!.actions), ['add', 'tag'], type);
+      assert.deepEqual(byType[type]!.paths, [`elements/${type}/catalog.json`, `tags/${type}.json`]);
+      const add = byType[type]!.actions.add as { languages: { complete: string[] } };
+      assert.deepEqual(add.languages.complete, [...ALL_LANGUAGES]);
+    }
     assert.equal(byType.fonts!.uploads, false);
     assert.match(byType.fonts!.closed!, /gen-builtin-fonts/);
     // A part the app searches takes the tags of its items, though it takes no new ones.
@@ -130,6 +142,10 @@ describe('what the library takes', () => {
         'designs: draw',
         'designs: tag',
         'templates: translate',
+        'backgrounds: add',
+        'backgrounds: tag',
+        'animations: add',
+        'animations: tag',
         'cards: tag',
         'frames: tag',
         'shapes: tag',
@@ -144,6 +160,28 @@ describe('what the library takes', () => {
     assert.ok(slide.properties.elements);
     assert.equal((await call('/api/schemas/sample.json')).status, 200);
     assert.equal((await call('/api/schemas/deck.json')).status, 404);
+    // An animation's line and an animated shape, as the model's schemas take them.
+    const line = await read<{ properties: Record<string, unknown> }>(
+      await call('/api/schemas/line.json'),
+    );
+    assert.deepEqual(Object.keys(line.properties), [
+      'points',
+      'stroke',
+      'startHead',
+      'endHead',
+      'curve',
+      'flow',
+    ]);
+    const shape = await read<{ properties: Record<string, unknown> }>(
+      await call('/api/schemas/shape.json'),
+    );
+    assert.ok(shape.properties.ambient);
+    // A field that is one of some words is their enum.
+    const add = api.components.schemas.UploadRequest.oneOf.find(
+      (one) => one.title === 'animations: add',
+    ) as unknown as { properties: Record<string, { enum?: string[]; $ref?: string }> };
+    assert.deepEqual(add.properties.kind!.enum, ['picture', 'line', 'shape']);
+    assert.equal(add.properties.line!.$ref, 'schemas/line.json');
   });
 });
 
@@ -346,6 +384,201 @@ describe('a new design', () => {
   });
 });
 
+describe('a new background or animation', () => {
+  /** Posts an upload in Hebrew and English. */
+  const post =
+    (send: (path: string, method: string, body: unknown) => Promise<Response>) =>
+    (body: object, languages: unknown = motionLanguages()) =>
+      send('/api/uploads', 'POST', { ...body, languages });
+
+  /** A picture of 400 × 400 with `inner` in it, and `root` on its <svg>. */
+  const picture = (inner: string, root = '') =>
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"${root}>${inner}</svg>`;
+
+  test('waits until it is named in every language of the app, and is then accepted', async () => {
+    publishLibrary([], MOTION);
+    const { send } = await caller();
+    const response = await post(send)(NEW_MOTION.background);
+    assert.equal(response.status, 201, await response.clone().text());
+    const made = await read<Answer>(response);
+    assert.equal(made.target, 'aurora');
+    assert.deepEqual(made.missing, ALL_LANGUAGES.slice(2));
+    const at = `/api/uploads/${made.id}`;
+    // A language it lacks keeps it from being accepted.
+    const early = await send(`${at}/status`, 'POST', { status: 'accepted' });
+    assert.equal(early.status, 409);
+    assert.equal((await read<Problem>(early)).error, 'incomplete');
+    // A language holds its name, and nothing else.
+    const wrong = await issuesOf(
+      await send(`${at}/languages/fr`, 'PUT', { name: ' ', tags: ['aurore'] }),
+    );
+    assert.deepEqual(wrong.map((one) => [one.path, one.language]).sort(), [
+      ['languages.fr.name', 'fr'],
+      ['languages.fr.tags', 'fr'],
+    ]);
+    for (const lang of ALL_LANGUAGES.slice(2)) {
+      const written = await send(`${at}/languages/${lang}`, 'PUT', motionLanguages([lang])[lang]);
+      assert.equal(written.status, 200, lang);
+    }
+    const accepted = await read<Answer>(await send(`${at}/status`, 'POST', { status: 'accepted' }));
+    assert.deepEqual([accepted.status, accepted.missing], ['accepted', []]);
+  });
+
+  test('is a picture, a line or a shape, each checked as what it is', async () => {
+    const shapes = { shapes: { rect: {}, blob: {} }, lines: {} };
+    publishLibrary([], { ...CATALOGS, 'elements/catalogs/shapes.json': shapes, ...MOTION });
+    const { send } = await caller();
+    const upload = post(send);
+    // An animation and an animated shape of one id are two items, uploaded side by side.
+    for (const kind of ['picture', 'line', 'shape'] as const) {
+      const response = await upload(NEW_MOTION[kind]);
+      assert.equal(response.status, 201, `${kind}: ${await response.clone().text()}`);
+    }
+    const twice = await issuesOf(await upload({ ...NEW_MOTION.picture, group: 'path' }));
+    assert.match(twice[0]!.message, /adds comet too/);
+
+    const paths = async (body: object) =>
+      (await issuesOf(await upload(body))).map((one) => one.path).sort();
+    const { picture: comet, line, shape } = NEW_MOTION;
+    assert.deepEqual(
+      await paths({ ...comet, id: 'comet-2', size: { w: 2000, h: 100 }, line: line.line }),
+      ['line', 'size'],
+    );
+    const units = await issuesOf(
+      await upload({ ...comet, id: 'comet-3', size: { w: 200, h: 400 } }),
+    );
+    assert.match(
+      units[0]!.message,
+      /drawn in 400 × 400 units \(its viewBox\), and its size is 200 × 400/,
+    );
+    const outside = {
+      ...line.line,
+      points: [
+        { x: 0, y: 80 },
+        { x: 500, y: 0 },
+      ],
+    };
+    assert.deepEqual(await paths({ ...line, id: 'trail-2', line: outside }), ['line.points.1']);
+    const { flow: _flow, ...still } = line.line;
+    assert.deepEqual(await paths({ ...line, id: 'trail-3', line: still, markup: comet.markup }), [
+      'line.flow',
+      'markup',
+    ]);
+    // A shape the renderer draws, or one of the library's catalog of shapes.
+    const blob = { ...shape, id: 'blob', shape: { ...shape.shape, preset: 'blob' } };
+    assert.equal((await upload(blob)).status, 201);
+    assert.deepEqual(
+      await paths({ ...shape, id: 'nothing', shape: { ...shape.shape, preset: 'nothing' } }),
+      ['shape.preset'],
+    );
+    // One that reads points to the right, and has a twin that points to the left.
+    const reading = (preset: string) => ({
+      ...shape,
+      id: 'pointer',
+      shape: { ...shape.shape, preset, reads: true },
+    });
+    assert.deepEqual(await paths(reading('star6')), ['shape.reads']);
+    assert.deepEqual(await paths(reading('arrowLeftRight')), ['shape.reads']);
+    assert.equal((await upload(reading('arrowRight'))).status, 201);
+    assert.deepEqual(await paths({ ...shape, id: 'pointer-2', group: 'spin', reads: true }), [
+      'group',
+      'reads',
+    ]);
+    assert.deepEqual(
+      await paths({ ...shape, id: 'pointer-3', shape: { ...shape.shape, side: 2000 } }),
+      ['shape.side'],
+    );
+    assert.deepEqual(await paths({ ...comet, id: 'comet-4', kind: 'video' }), ['kind']);
+    assert.deepEqual(await paths({ ...comet, id: 'Comet_4' }), ['id']);
+  });
+
+  test('is refused under an id its list has', async () => {
+    publishLibrary([], MOTION);
+    const { send } = await caller();
+    const upload = post(send);
+    const taken = async (body: object) => {
+      const issues = await issuesOf(await upload(body));
+      assert.deepEqual(
+        issues.map((one) => one.path),
+        ['id'],
+      );
+      return issues[0]!.message;
+    };
+    const { background, picture: comet, shape } = NEW_MOTION;
+    assert.equal(
+      await taken({ ...background, id: 'dots' }),
+      'The library has a background dots already.',
+    );
+    assert.equal(
+      await taken({ ...comet, id: 'shuttle' }),
+      'The library has an animation shuttle already.',
+    );
+    assert.equal(
+      await taken({ ...shape, id: 'ring' }),
+      'The library has an animated shape ring already.',
+    );
+    // An animated shape may take the id of an animation: each is in a list of its own.
+    assert.equal((await upload({ ...shape, id: 'shuttle' })).status, 201);
+  });
+
+  test('draws its own picture, which runs nothing and reads nothing from outside itself', async () => {
+    publishLibrary();
+    const { send } = await caller();
+    const upload = post(send);
+    const cases: [string, RegExp][] = [
+      [picture('<script>alert(1)</script>'), /has a <script>/],
+      [picture('<circle r="9"/>', ' onload="alert(1)"'), /event attribute \(onload=\)/],
+      [picture('<use href="https://example.com/sprite.svg#dot"/>'), /links to "https:\/\/example/],
+      [picture('<use xlink:href="sprite.svg#dot"/>'), /links to "sprite\.svg#dot"/],
+      [
+        picture('<rect width="9" height="9" fill="url(https://example.com/a.png)"/>'),
+        /reads "url\(https/,
+      ],
+      [picture('<style>@import "x.css";</style>'), /@import/],
+      [picture('<foreignObject><p>Hi</p></foreignObject>'), /<foreignObject>/],
+      [picture('<image href="#dot"/>'), /shows an image file/],
+      [picture('<iframe src="#x"></iframe>'), /embeds another document \(<iframe>\)/],
+      [picture('<a href="javascript:alert(1)">x</a>'), /javascript:/],
+      [picture('<set attributeName="href" to="#x"/>'), /changes a link as it moves/],
+      [
+        picture('<circle r="9"/>', ' data-slidr-motion="comet"'),
+        /names data-slidr-motion: the app gives/,
+      ],
+      [picture('<circle r="9"/>', ' data-slidr-speed="2"'), /names data-slidr-speed/],
+      ['<div></div>', /one <svg> element/],
+      ['<svg viewBox="0 0 400 400"></svg>', /xmlns="http:\/\/www\.w3\.org\/2000\/svg"/],
+      [
+        picture('').replace(' viewBox="0 0 400 400"', ' viewBox="0 0 0 400"'),
+        /viewBox of four numbers/,
+      ],
+      [picture(`<!--${'x'.repeat(256 * 1024)}-->`), /at most 256 KiB/],
+    ];
+    for (const [i, [markup, message]] of cases.entries()) {
+      const issues = await issuesOf(
+        await upload({ ...NEW_MOTION.picture, id: `comet-${i}`, markup }),
+      );
+      assert.ok(
+        issues.some((one) => one.path === 'markup' && message.test(one.message)),
+        `${message}: ${JSON.stringify(issues)}`,
+      );
+      assert.ok(
+        issues.every((one) => one.path === 'markup'),
+        JSON.stringify(issues),
+      );
+    }
+    // A background's markup is held to the same, and whitespace around it is let be.
+    const background = await issuesOf(
+      await upload({ ...NEW_MOTION.background, markup: picture('<script></script>') }),
+    );
+    assert.deepEqual(
+      background.map((one) => one.path),
+      ['markup'],
+    );
+    const spaced = `\n  ${NEW_MOTION.picture.markup}\n`;
+    assert.equal((await upload({ ...NEW_MOTION.picture, markup: spaced })).status, 201);
+  });
+});
+
 /** An upload of the tags of a part's items, in Hebrew and English. */
 const tagsOf = (
   type: string,
@@ -439,7 +672,10 @@ describe('the tags of published items', () => {
   });
 
   test('know the keys of every part the app searches', async () => {
-    publishLibrary(['images/designs/birthday.webp', 'images/designs/birthday-bg.webp'], CATALOGS);
+    publishLibrary(['images/designs/birthday.webp', 'images/designs/birthday-bg.webp'], {
+      ...CATALOGS,
+      ...MOTION,
+    });
     const { send } = await caller();
     const keys: Record<string, string[]> = {
       emoji: ['birthday-cake'],
@@ -447,9 +683,20 @@ describe('the tags of published items', () => {
       // A preset of the renderer, though the catalog does not list it, a line, and the card.
       shapes: ['shape:rect', 'shape:heart', 'line:arrow', 'card'],
       designs: ['birthday'],
+      backgrounds: ['dots'],
+      // An animation by its id, an animated shape as `shape:<id>`.
+      animations: ['shuttle', 'conveyor', 'shape:ring', 'shape:arrow'],
     };
     const of = (list: string[], tags: string[]) =>
       Object.fromEntries(list.map((key) => [key, tags]));
+    const shapeById = await issuesOf(
+      await send(
+        '/api/uploads',
+        'POST',
+        tagsOf('animations', of(['ring'], balloon.he), of(['ring'], balloon.en)),
+      ),
+    );
+    assert.match(shapeById[0]!.message, /has no animation ring/);
     // A design's backdrop is no design.
     const backdrop = await issuesOf(
       await send(
@@ -541,7 +788,7 @@ describe('a part the library takes no uploads of', () => {
     assert.equal(problem.error, 'not-uploadable');
     assert.match(problem.message, /gen-builtin-fonts\.mjs/);
     const unknown = await issuesOf(await send('/api/uploads', 'POST', { type: 'videos' }));
-    assert.match(unknown[0]!.message, /designs, templates, cards/);
+    assert.match(unknown[0]!.message, /designs, templates, backgrounds, animations, cards/);
     const action = await issuesOf(
       await send('/api/uploads', 'POST', { type: 'templates', action: 'add' }),
     );

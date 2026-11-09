@@ -55,6 +55,8 @@ export const TAG_KINDS = [
   'shapes',
   'cards',
   'designs',
+  'animations',
+  'backgrounds',
 ] as const;
 export type TagKind = (typeof TAG_KINDS)[number];
 

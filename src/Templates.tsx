@@ -2,7 +2,7 @@ import { mediaFiles, mediaUrl } from '@slidr/media-library';
 import { createDeck, languageDir, type AssetMeta, type Deck, type Slide } from '@slidr/model';
 import { loadCharts } from '@slidr/renderer';
 import { templateCover, withStandardLayouts, type Template } from '@slidr/templates';
-import { pictures } from '@slidr/templates/builtin/pictures';
+import { templatePictures } from '@slidr/templates/builtin/pictures';
 import { useEffect, useMemo, useState } from 'react';
 import { useT } from './i18n';
 import { isBase, LanguageNames, LanguagePicker, nativeName, type Lang } from './languages';
@@ -15,18 +15,24 @@ const dirOf = languageDir;
 
 /**
  * The templates as the app's library holds them: in the published order, standard layouts in,
- * with the languages the sample of each is written in.
+ * with the languages the sample of each is written in. The app reads them (`builtInTemplates`)
+ * once it has started, after the fonts their slides are set in and with the pictures of their
+ * samples, and has none until then; the page waits for them, and so has the pictures too.
  */
 const load = async () => {
-  const [{ builtIn }, files, samples] = await Promise.all([
+  const [{ builtInTemplates }, files, samples] = await Promise.all([
     templatesModule(),
     mediaFiles(),
     samplesModule(),
   ]);
+  const [builtIn, languages] = await Promise.all([
+    builtInTemplates.load(),
+    samples.sampleLanguages(),
+  ]);
   return {
     templates: builtIn.map((template) => withStandardLayouts(template)),
     files,
-    languages: await samples.sampleLanguages(),
+    languages,
   };
 };
 
@@ -37,16 +43,17 @@ const taglineOf = (template: Template, lang: Lang) =>
 
 /**
  * The photograph on the cover of each built-in template that opens with one: the one the opening
- * slide of its sample shows (as `desktop/src/templates/covers.ts` has them).
+ * slide of its sample shows, by its name among the pictures of the samples (`templatePictures`,
+ * read with the templates), as `desktop/src/templates/covers.ts` has them.
  */
-const COVERS: Record<string, AssetMeta | undefined> = {
-  shvil: pictures.shvilRidge,
-  tzuk: pictures.tzukWarehouse,
-  lavan: pictures.lavanChair1,
-  nof: pictures.nofView2,
-  defus: pictures.defusStreet1,
-  shidur: pictures.migdalTeam2,
-  mifgash: pictures.mifgashCall,
+const COVERS: Record<string, string> = {
+  shvil: 'shvilRidge',
+  tzuk: 'tzukWarehouse',
+  lavan: 'lavanChair1',
+  nof: 'nofView2',
+  defus: 'defusStreet1',
+  shidur: 'migdalTeam2',
+  mifgash: 'mifgashCall',
 };
 
 /**
@@ -59,7 +66,8 @@ function coverOf(
   lang: Lang,
   files: ReadonlySet<string>,
 ): { deck: Deck; slide: Slide; resolve: (asset: AssetMeta) => string | undefined } {
-  const picture = COVERS[template.theme.id];
+  const name = COVERS[template.theme.id];
+  const picture = name === undefined ? undefined : templatePictures.peek()[name];
   const path = picture ? `images/templates/${picture.name}` : undefined;
   const url = path && files.has(path) ? mediaUrl(path) : undefined;
   const resolve = (asset: AssetMeta) => (asset.id === picture?.id ? url : undefined);

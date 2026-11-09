@@ -7,7 +7,7 @@
  * and in whatever other language a template's author wrote them (`@slidr/model` languages). So
  * nothing here imports `@slidr/templates/builtin`, whose catalog is read as it is imported.
  */
-import { mediaFiles, mediaUrl, requireMediaJson } from '@slidr/media-library';
+import { mediaFilesNow, mediaUrl, requireMediaJson } from '@slidr/media-library';
 import {
   languagesOf,
   writtenIn,
@@ -18,23 +18,23 @@ import {
 } from '@slidr/model';
 import type { Template } from '@slidr/templates';
 import { sampleDeck, type SampleSlide } from '@slidr/templates/builtin/kit';
-import { pictures } from '@slidr/templates/builtin/pictures';
+import { templatePictures } from '@slidr/templates/builtin/pictures';
 
-const files = await mediaFiles();
+/** The pictures of the samples as assets of a deck, by id: none until they have been read. */
+const pictureAssets = (): Record<string, AssetMeta> =>
+  Object.fromEntries(
+    Object.values(templatePictures.peek()).map((picture) => [picture.id, picture]),
+  );
 
-const urls = new Map<string, string>();
-for (const picture of Object.values(pictures)) {
-  const path = `images/templates/${picture.name}`;
-  if (files.has(path)) urls.set(picture.id, mediaUrl(path));
-}
-
-const pictureAssets: Record<string, AssetMeta> = Object.fromEntries(
-  Object.values(pictures).map((picture) => [picture.id, picture]),
-);
-
-/** Where a picture of the built-in samples loads from; undefined for any other asset. */
+/**
+ * Where a picture of the built-in samples loads from; undefined for any other asset, and for one
+ * the library does not have, as far as its manifest is known (a sample comes after it).
+ */
 export function pictureUrl(asset: AssetMeta): string | undefined {
-  return urls.get(asset.id);
+  const picture = pictureAssets()[asset.id];
+  if (!picture) return undefined;
+  const path = `images/templates/${picture.name}`;
+  return mediaFilesNow().has(path) ? mediaUrl(path) : undefined;
 }
 
 type Samples = Record<string, Localized<SampleSlide[]>>;
@@ -43,8 +43,12 @@ let read: Promise<Samples> | undefined;
 
 /** The samples of the catalog, by template id. Read once; a failed read is tried again. */
 function samples(): Promise<Samples> {
-  read ??= requireMediaJson<{ samples?: Samples }>('templates/catalog.json')
-    .then((catalog) => catalog.samples ?? {})
+  read ??= Promise.all([
+    requireMediaJson<{ samples?: Samples }>('templates/catalog.json'),
+    // The pictures the samples name, which a sample deck carries.
+    templatePictures.load(),
+  ])
+    .then(([catalog]) => catalog.samples ?? {})
     .catch((error: unknown) => {
       read = undefined;
       throw error;
@@ -87,18 +91,25 @@ function finished(slide: SampleSlide, template: Template): boolean {
 /**
  * The sample deck of a built-in template in the language and direction of `like`; undefined
  * when the catalog has no sample for it. `template` is the one the library holds, which comes
- * without the pictures of its sample.
+ * without the pictures of its sample. `count`: only so many of its first slides, as the card of
+ * a template shows its opening alone.
  */
-export async function builtInSampleDeck(template: Template, like: Deck): Promise<Deck | undefined> {
+export async function builtInSampleDeck(
+  template: Template,
+  like: Deck,
+  count?: number,
+): Promise<Deck | undefined> {
   const mine = (await samples())[template.theme.id];
   if (!mine) return undefined;
   // A deck in a language the sample is not written in is shown the English one as it was
   // written, left to right, and not English text in a mirrored layout.
   const own = writtenIn(mine, like.meta.lang);
   const written = own !== undefined;
-  const slides = (own ? mine[own]! : mine.en).filter((slide) => finished(slide, template));
+  const slides = (own ? mine[own]! : mine.en)
+    .filter((slide) => finished(slide, template))
+    .slice(0, count);
   if (slides.length === 0) return undefined;
-  const assets = { ...pictureAssets, ...template.assets };
+  const assets = { ...pictureAssets(), ...template.assets };
   return sampleDeck(
     { ...template, assets },
     slides,

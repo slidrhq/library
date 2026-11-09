@@ -1,6 +1,7 @@
 import { AMBIENT_DEFAULTS, walkElements, type AmbientMotion, type Element } from '@slidr/model';
 import type { CSSProperties } from 'react';
 import { num } from './css';
+import { FLOW_KEYFRAMES } from './flow';
 
 /*
  * The ambient motion of an element (ADR-128): a CSS animation that never ends, on a box inside
@@ -38,6 +39,8 @@ export const AMBIENT_KEYFRAMES = [
   `@keyframes slidr-swing-pause{12.5%${at(`rotate(${A})`)}37.5%${at(`rotate(calc(${A} * -1))`)}50%,to${at('none')}}`,
   `@keyframes slidr-blink{50%{opacity:${A}}}`,
   `@keyframes slidr-blink-pause{25%{opacity:${A}}50%,to{opacity:1}}`,
+  // What runs along a line (ADR-131): its dashes, and the riders on it.
+  FLOW_KEYFRAMES,
 ].join('');
 
 /** How far a motion goes, as the value its keyframes read. */
@@ -86,9 +89,15 @@ export function ambientStyle(motion: AmbientMotion): CSSProperties {
   };
 }
 
-/** Whether any of these elements, or anything inside them, moves by itself. */
+/**
+ * Whether any of these elements, or anything inside them, moves by itself: a motion it repeats,
+ * or a line that something runs along (ADR-131).
+ */
 export function hasAmbient(elements: readonly Element[] | undefined): boolean {
   if (!elements) return false;
-  for (const element of walkElements(elements)) if (element.ambient && !element.hidden) return true;
+  for (const element of walkElements(elements)) {
+    if (element.hidden) continue;
+    if (element.ambient || (element.type === 'line' && element.flow)) return true;
+  }
   return false;
 }

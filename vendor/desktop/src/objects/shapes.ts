@@ -1,4 +1,4 @@
-import { readMediaJson } from '@slidr/media-library';
+import { mediaCatalog, readMediaJson } from '@slidr/media-library';
 import {
   createElement,
   type Direction,
@@ -25,7 +25,7 @@ interface ShapeSpec {
   glyph?: readonly [number, number];
 }
 
-interface ShapeCatalog {
+export interface ShapeCatalog {
   groups: ShapeGroup[];
   /** In library order. A preset the renderer adds later shows at the end of `basic` until listed. */
   shapes: Record<string, ShapeSpec>;
@@ -106,35 +106,46 @@ const BUILT_IN: ShapeCatalog = {
 const isRecord = (value: unknown): value is Record<string, never> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/** The library authored in the media library (`elements/catalogs/shapes.json`), part by part. */
-const authored = await readMediaJson<Partial<ShapeCatalog>>('elements/catalogs/shapes.json');
-const library: ShapeCatalog = {
-  groups:
-    Array.isArray(authored?.groups) && authored.groups.length > 0
-      ? authored.groups
-      : BUILT_IN.groups,
-  shapes: isRecord(authored?.shapes) ? authored.shapes : BUILT_IN.shapes,
-  lines: isRecord(authored?.lines) ? authored.lines : BUILT_IN.lines,
-};
-export const SHAPE_GROUPS: readonly ShapeGroup[] = library.groups;
-const CATALOGUE = library.shapes;
+/**
+ * The library authored in the media library (`elements/catalogs/shapes.json`), part by part; the
+ * built-in one until it has come, and for any part it lacks. Read when the shapes are first
+ * wanted, or while the app is idle; the panels that list them draw again when it comes.
+ */
+export const shapeCatalog = mediaCatalog<ShapeCatalog>(async () => {
+  const authored = await readMediaJson<Partial<ShapeCatalog>>('elements/catalogs/shapes.json');
+  return {
+    groups:
+      Array.isArray(authored?.groups) && authored.groups.length > 0
+        ? authored.groups
+        : BUILT_IN.groups,
+    shapes: isRecord(authored?.shapes) ? authored.shapes : BUILT_IN.shapes,
+    lines: isRecord(authored?.lines) ? authored.lines : BUILT_IN.lines,
+  };
+}, BUILT_IN);
+
+/** The groups of the library, in its order. */
+export const shapeGroups = (): readonly ShapeGroup[] => shapeCatalog.get().groups;
 
 const UNLISTED: ShapeSpec = { group: 'basic', w: 360, h: 360 };
 
 function specOf(preset: string): ShapeSpec {
-  return CATALOGUE[preset] ?? extraShapes[preset] ?? UNLISTED;
+  return shapeCatalog.get().shapes[preset] ?? extraShapes[preset] ?? UNLISTED;
 }
 
 /** Every preset the renderer draws, by library group and in library order. */
 export function shapeLibrary(
   presets: readonly string[] = shapePresets,
+  catalog: ShapeCatalog = shapeCatalog.get(),
 ): { group: ShapeGroup; presets: string[] }[] {
-  const listed = Object.keys(CATALOGUE).filter((preset) => presets.includes(preset));
-  const all = [...listed, ...presets.filter((preset) => !(preset in CATALOGUE))];
-  return SHAPE_GROUPS.map((group) => ({
-    group,
-    presets: all.filter((preset) => specOf(preset).group === group),
-  })).filter((entry) => entry.presets.length > 0);
+  const { groups, shapes } = catalog;
+  const listed = Object.keys(shapes).filter((preset) => presets.includes(preset));
+  const all = [...listed, ...presets.filter((preset) => !(preset in shapes))];
+  return groups
+    .map((group) => ({
+      group,
+      presets: all.filter((preset) => specOf(preset).group === group),
+    }))
+    .filter((entry) => entry.presets.length > 0);
 }
 
 /** Brackets and braces: an outline with nothing to fill. */
@@ -214,7 +225,9 @@ export function newShape(preset: string, slide: Size, taken: readonly Frame[] = 
 
 export type LineKind = 'line' | 'arrow' | 'doubleArrow' | 'elbow' | 'curved';
 
-export const LINE_KINDS: readonly LineKind[] = Object.keys(library.lines) as LineKind[];
+/** The lines of the Insert menu, in its order. */
+export const lineKinds = (catalog: ShapeCatalog = shapeCatalog.get()): readonly LineKind[] =>
+  Object.keys(catalog.lines) as LineKind[];
 
 /**
  * A new line. It runs in the reading direction of the deck, so an arrow points forward: to the
@@ -243,4 +256,4 @@ export function newLine(
 }
 
 /** The lines of the Insert menu drawn small, in a 24 box, running left to right. */
-export const LINE_GLYPHS: Record<LineKind, string> = library.lines;
+export const lineGlyphs = (): Record<LineKind, string> => shapeCatalog.get().lines;

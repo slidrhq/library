@@ -379,35 +379,6 @@
         "other": "Questa opzione non è stata creata"
       }
     },
-    "look": {
-      "hint": "Passa il mouse per vederlo nella diapositiva · fai clic per applicarlo",
-      "current": "In uso nella presentazione",
-      "template": {
-        "title": "Modello",
-        "builtIn": "Integrato",
-        "personal": "Personale",
-        "undo": "Cambia modello"
-      },
-      "palette": {
-        "title": "Tavolozza colori",
-        "sample": "Aa",
-        "undo": "Cambia la tavolozza colori",
-        "names": {
-          "basic": "Base",
-          "ocean": "Oceano",
-          "sage": "Salvia",
-          "rose": "Rosa",
-          "graphite": "Grafite",
-          "forest": "Foresta",
-          "plum": "Prugna"
-        }
-      },
-      "fonts": {
-        "title": "Coppia di font",
-        "undo": "Cambia la coppia di font",
-        "pair": "Titoli: {{heading}} · Corpo: {{body}}"
-      }
-    },
     "action": {
       "other": "Azione",
       "deck": {
@@ -470,77 +441,6 @@
       }
     },
     "actions": {
-      "wording": "Formulazione",
-      "edit": "Modifica",
-      "content": "Contenuto",
-      "design": "Design",
-      "slideSettings": "La diapositiva",
-      "image": "Immagine",
-      "count": "Numero di opzioni",
-      "variations": "Altre formulazioni",
-      "titles": "Titoli alternativi",
-      "shorten": "Accorcia",
-      "expand": "Espandi",
-      "fix": "Correggi errori",
-      "bullets": "Trasforma in elenco puntato",
-      "tone": "Cambia tono",
-      "toneChoice": "Tono",
-      "translate": "Traduci",
-      "language": "Lingua di destinazione",
-      "redesign": "Riprogetta",
-      "shortenSlide": "Accorcia il testo",
-      "split": "Dividi in due diapositive",
-      "visual": "Aggiungi un elemento visivo",
-      "addImage": "Aggiungi un'immagine",
-      "animate": "Animazioni",
-      "notes": "Note del relatore",
-      "fixFindings": "Correggi le segnalazioni di design",
-      "shortenDeck": "Accorcia il testo",
-      "improve": "Migliora il design",
-      "alternatives": "Genera alternative",
-      "imagePrompt": "Cosa deve mostrare l'immagine o cosa vuoi cambiare?",
-      "imagePromptHint": "Facoltativo per le alternative: senza descrizione, l'agente decide in base alla diapositiva.",
-      "imageEdit": "Modifica con l'AI",
-      "editImage": "Modifica come descritto",
-      "restyle": "Adatta allo stile della presentazione",
-      "paintMask": "Contrassegna l'area da modificare",
-      "maskSet": "Area contrassegnata: cambierà solo questa",
-      "maskClear": "Cancella il contrassegno",
-      "expandImage": "Estendi l'immagine",
-      "expandTo": "Formato dopo l'estensione",
-      "expandHint": "L'immagine resta dov'è e l'AI completa intorno a essa ciò che manca per il formato scelto.",
-      "expandFailed": "L'immagine non è stata estesa",
-      "expandSame": "L'immagine ha già questo formato.",
-      "expandLabel": "Estendi immagine",
-      "imageLocal": "Senza AI",
-      "crop": "Ritaglia",
-      "chart": "Grafico",
-      "chartType": "Suggerisci un tipo di grafico",
-      "chartTitle": "Titolo e osservazione chiave",
-      "chartFill": "Compila i dati dal testo",
-      "chartSource": "Incolla qui un testo o una tabella con i numeri",
-      "tableFill": "Compila la tabella dal testo",
-      "tableSource": "Incolla qui il testo con cui compilare la tabella",
-      "tableStyle": "Suggerisci stili",
-      "tableInsight": "Riassumi in un'osservazione chiave",
-      "tableChart": "Trasforma in grafico",
-      "fromText": "Dal testo",
-      "fromTextHint": "L'agente usa solo ciò che dice il testo e ti indica cosa ha tralasciato.",
-      "onSlide": "Nella diapositiva",
-      "onSlideHint": "Queste due opzioni modificano la diapositiva, non solo la tabella.",
-      "shape": "Forma",
-      "shapeSuggest": "Suggerisci una forma",
-      "icon": "Icona",
-      "iconReplace": "Un'icona più adatta",
-      "colourByTheme": "Colora in base al modello",
-      "editKind": {
-        "exact": "Il provider di immagini cambia solo ciò che chiedi e puoi indicargli un'area.",
-        "regenerate": "Il provider di immagini ridisegna l'immagine partendo dall'originale: i piccoli dettagli cambiano e non è possibile indicargli un'area.",
-        "none": "Questo provider di immagini non modifica le immagini."
-      },
-      "layout": "Layout",
-      "layoutNone": "Questa diapositiva non ha un layout da cambiare.",
-      "layoutLabel": "Layout diapositiva",
       "languages": {
         "Hebrew": "ebraico",
         "English": "inglese",
@@ -564,32 +464,6 @@
         "friendly": "amichevole",
         "confident": "sicuro",
         "plain": "semplice"
-      },
-      "template": {
-        "title": "Un nuovo modello",
-        "open": "Crea un modello con l'AI",
-        "description": "Che aspetto deve avere il modello?",
-        "url": "Un sito a cui il modello deve somigliare",
-        "logo": "Logo",
-        "chooseLogo": "Scegli un logo",
-        "files": "Un'immagine o un file HTML da usare come riferimento",
-        "addFile": "Aggiungi un file",
-        "fromDeck": "In base al design di questa presentazione",
-        "create": "Crea una bozza",
-        "hint": "L'agente legge le fonti, crea una bozza e la mostra nella chat. Non viene salvato nulla finché non la salvi tu.",
-        "needSource": "Indica almeno una fonte: una descrizione, un indirizzo, un logo, un file o questa presentazione."
-      },
-      "busy": "L'agente sta completando un turno. Le azioni torneranno disponibili al termine.",
-      "groupSelection": "La tua selezione",
-      "groupSlide": "Diapositiva {{n}}",
-      "groupDeck": "L'intera presentazione",
-      "noActions": "Per la selezione non ci sono azioni pronte. Chiedi qualsiasi modifica nella chat.",
-      "provider": {
-        "checking": "Verifica del provider di immagini…",
-        "ready": "Ogni immagine richiede circa un minuto e le immagini compaiono una alla volta.",
-        "not_installed": "Il provider di immagini non è installato su questo computer, quindi non è possibile generare immagini.",
-        "not_logged_in": "Il provider di immagini non ha effettuato l'accesso. Accedi e poi torna qui.",
-        "unavailable": "Il provider di immagini non è disponibile al momento."
       }
     }
   },
@@ -1491,62 +1365,17 @@
         "scale": "Crescita e pulsazione",
         "lines": "Linee e onde",
         "particles": "Particelle e reti"
-      },
-      "name": {
-        "orbit": "Orbita",
-        "conveyor": "Scatole su un percorso",
-        "trace": "Circuito",
-        "atom": "Atomo",
-        "shuttle": "Punto su una linea",
-        "hexagon": "Esagoni che ruotano",
-        "rings": "Anelli che ruotano",
-        "radar": "Radar",
-        "ripple": "Onde concentriche",
-        "breathe": "Forma che respira",
-        "bars": "Barre che salgono",
-        "waves": "Onde",
-        "draw": "Freccia disegnata",
-        "flowArrow": "Connettore che scorre",
-        "heartbeat": "Battito",
-        "network": "Rete",
-        "converge": "Particelle che si radunano",
-        "float": "Bolle che salgono"
       }
     },
     "backgrounds": {
       "hint": "Fai clic su uno sfondo per applicarlo alla diapositiva o a tutte quelle selezionate. I colori vengono dal modello, e lo strumento «Sfondo» riporta allo sfondo del modello.",
       "animated": "Sfondi in movimento",
-      "still": "Sfondi calmi",
-      "name": {
-        "flow": "Flusso di circuito",
-        "waves": "Onde",
-        "converge": "Convergenza",
-        "orbit": "Orbite",
-        "radar": "Radar",
-        "network": "Rete",
-        "drift": "Luce fluttuante",
-        "particles": "Particelle che salgono",
-        "dots": "Griglia di punti",
-        "contours": "Curve di livello",
-        "arcs": "Archi nell’angolo"
-      }
+      "still": "Sfondi calmi"
     },
     "animatedShapes": {
       "title": "Forme animate",
       "hint": "Forme normali che ripetono un movimento. Colore, contorno e dimensioni si modificano come per ogni forma, e il movimento con lo strumento Movimento.",
-      "more": "Tutte le animazioni",
-      "name": {
-        "ring": "Anello che ruota",
-        "hexagon": "Esagono che ruota",
-        "star": "Stella che ruota",
-        "octagon": "Ottagono che ruota",
-        "square": "Quadrato che ruota e si ferma",
-        "pulse": "Cerchio pulsante",
-        "heart": "Cuore che batte",
-        "float": "Cerchio fluttuante",
-        "arrow": "Freccia che oscilla",
-        "blink": "Punto lampeggiante"
-      }
+      "more": "Tutte le animazioni"
     },
     "motion": {
       "title": "Movimento",
@@ -1581,6 +1410,21 @@
         "float": "Altezza della fluttuazione",
         "swing": "Angolo di oscillazione",
         "blink": "Intensità del lampeggio"
+      },
+      "flow": {
+        "title": "Lungo la linea",
+        "kind": {
+          "none": "Nessuno",
+          "dashes": "Trattini",
+          "box": "Scatole",
+          "dot": "Punti"
+        },
+        "speed": "Pixel al secondo",
+        "forward": "Verso la fine",
+        "back": "Verso l'inizio",
+        "count": "Quantità",
+        "size": "Dimensione",
+        "color": "Colore"
       },
       "hint": "Il movimento si ripete finché la diapositiva è visibile: nell’editor, nella presentazione e in un file esportato."
     }
@@ -1780,20 +1624,6 @@
       "signingIn": "Completa l'accesso nella finestra che si è aperta.",
       "install": "Installa…",
       "signIn": "Accedi"
-    },
-    "mask": {
-      "title": "Contrassegna l'area da modificare",
-      "description": "Dipingi sulla parte dell'immagine che l'AI può modificare. Tutto ciò che non è dipinto resta esattamente com'è.",
-      "canvas": "L'immagine su cui dipingere l'area",
-      "tool": "Strumento",
-      "paint": "Dipingi",
-      "erase": "Cancella",
-      "brush": "Dimensione pennello",
-      "clear": "Cancella tutto",
-      "empty": "Non hai ancora dipinto nessuna area.",
-      "done": "Fine",
-      "cancel": "Annulla",
-      "failed": "L'area contrassegnata non è stata salvata"
     },
     "upscale": {
       "title": "Aumenta risoluzione",
@@ -2809,11 +2639,8 @@
       "tools": "Strumenti",
       "collapse": "Comprimi riquadro",
       "resize": "Ridimensiona riquadro",
-      "actions": "Azioni",
       "chatEmptyTitle": "La chat non è ancora connessa",
       "chatEmptyBody": "Qui potrai chiedere modifiche all'agente e vederle applicate alla diapositiva.",
-      "actionsEmptyTitle": "Nessuna azione",
-      "actionsEmptyBody": "Qui compariranno le azioni rapide per questo strumento.",
       "soonTitle": "Non ancora disponibile",
       "mediaBody": "Caricamenti, foto stock, icone e immagini AI.",
       "animationsBody": "Effetti di animazione e sequenza temporale della diapositiva.",
@@ -2990,6 +2817,12 @@
       "hint": "Le note vengono salvate con la presentazione e non sono visibili nella diapositiva.",
       "noSlide": "Nessuna diapositiva",
       "step": "Note del relatore"
+    },
+    "crash": {
+      "title": "Si è verificato un problema",
+      "body": "Slidr ha riscontrato un errore imprevisto. Ricarica la finestra per continuare.",
+      "reload": "Ricarica",
+      "details": "Dettagli"
     }
   },
   "stage": {
@@ -3013,6 +2846,7 @@
       "editData": "Modifica dati",
       "editCells": "Modifica celle",
       "editPoints": "Modifica punti",
+      "adjust": "Regola forma",
       "order": "Ordine dei livelli"
     },
     "toolbar": {
@@ -3024,7 +2858,7 @@
       "walk": "Passa all'oggetto successivo o precedente (o alla diapositiva, nel riquadro delle diapositive) senza selezionarlo",
       "toggle": "Aggiungi alla selezione o rimuovi da essa",
       "points": "Entra nei punti di una linea ed esci",
-      "part": "Punto successivo o precedente di una linea; quadratino di ritaglio successivo o precedente",
+      "part": "Punto successivo o precedente di una linea; quadratino di regolazione successivo o precedente di una forma; quadratino di ritaglio successivo o precedente",
       "addPoint": "Aggiungi un punto alla linea",
       "removePoint": "Rimuovi un punto dalla linea",
       "lock": "Blocca e sblocca",
@@ -3032,6 +2866,8 @@
     },
     "at": {
       "point": "Punto {{n}} di {{total}}. Spostalo con le frecce.",
+      "adjust": "Quadratino di regolazione {{n}} di {{total}}. Spostalo con le frecce.",
+      "outline": "Quadratino dello spessore del contorno: {{width}} px. Spostalo con le frecce.",
       "picture": "Ritaglio: sposta l'immagine con le frecce. Ctrl+freccia su o giù la ridimensiona. Tab passa ai quadratini.",
       "handle": "Quadratino di ritaglio: {{where}}. Spostalo con le frecce.",
       "walkSelected": "{{what}}: nella selezione",

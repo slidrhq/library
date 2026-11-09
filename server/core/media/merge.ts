@@ -1,13 +1,23 @@
 /**
  * What a publication writes of each kind of upload into the files of the library: the search
  * tags of a part into `tags/<part>.json`, a design into the catalog of the designs
- * (`elements/designs/index.json`, `designCatalog.ts`), a template's sample into
- * `templates/catalog.json`. Each is a function of the file as it is and the upload, and changes
- * nothing else of the file.
+ * (`elements/designs/index.json`, `designCatalog.ts`), a background or an animation into its
+ * catalog (`elements/backgrounds/catalog.json`, `elements/animations/catalog.json`), a template's
+ * sample into `templates/catalog.json`. Each is a function of the file as it is and the upload,
+ * and changes nothing else of the file.
  */
 import { BASE_LANGUAGES, CONTENT_LANGUAGES } from '@slidr/model';
 import { isRecord } from '../http.ts';
 import type { Draft } from '../uploads/handler.ts';
+import {
+  GROUPS,
+  MOTION_CATALOGS,
+  MOTION_ITEM,
+  MotionLine,
+  MotionShape,
+  placeOf,
+  type MotionList,
+} from '../uploads/motion.ts';
 import { toBytes, toText } from './live.ts';
 
 /** What a publication cannot write of an upload, in words. */
@@ -141,6 +151,89 @@ export function designOf(upload: Draft & { id?: string }): DesignRecord {
     );
   }
   return record;
+}
+
+/* ---------------------------------------------------------------- backgrounds and animations */
+
+/** A catalog of backgrounds or of animations, as the app's own were written: two spaces, a newline. */
+export const encodeCatalog = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
+
+/** An item of a catalog of backgrounds or of animations, its id first. */
+export type MotionItem = { id: string } & Record<string, unknown>;
+
+/**
+ * The item of an upload of `backgrounds: add` or `animations: add`, as its catalog holds it, and
+ * where: its names in every language of the app, in the app's order, then its fields in the order
+ * of the catalog, a line and a shape as the model's schemas give them. Its markup is written
+ * without the whitespace around it, since the app reads a picture by its first `<svg`. The library
+ * checked each when it took the upload; what is missing after all is not published.
+ */
+export function motionItemOf(upload: Draft): { path: string; list: MotionList; item: MotionItem } {
+  const { path, list } = placeOf(upload);
+  const id = upload.target;
+  const languages = upload.languages as Record<string, Record<string, unknown> | undefined>;
+  const name: Names = {};
+  for (const lang of CONTENT_LANGUAGES) {
+    const one = text(languages[lang]?.name);
+    if (!one) throw new PublishError(`${id} is not named in every language of the app.`);
+    name[lang] = one.trim();
+  }
+  const { animated, sided, markup, group, size, reads } = upload.fields;
+  const picture = typeof markup === 'string' && markup.trim() ? markup.trim() : undefined;
+  if (list === 'backgrounds') {
+    if (typeof animated !== 'boolean' || typeof sided !== 'boolean' || !picture) {
+      throw new PublishError(`${id} is not a whole background.`);
+    }
+    return { path, list, item: { id, name, animated, sided, markup: picture } };
+  }
+  if (list === 'shapes') {
+    const shape = MotionShape.safeParse(upload.fields.shape);
+    if (!shape.success) throw new PublishError(`${id} is not a whole animated shape.`);
+    const { preset, side, aspect, look, ink, ambient, reads: points } = shape.data;
+    const item = { id, name, preset, side, ...(aspect === undefined ? {} : { aspect }), look, ink };
+    return { path, list, item: { ...item, ambient, ...(points ? { reads: points } : {}) } };
+  }
+  const box = isRecord(size) ? size : {};
+  if (
+    !(GROUPS as readonly unknown[]).includes(group) ||
+    typeof box.w !== 'number' ||
+    typeof box.h !== 'number' ||
+    typeof reads !== 'boolean'
+  ) {
+    throw new PublishError(`${id} is not a whole animation.`);
+  }
+  const piece = { id, name, group, size: { w: box.w, h: box.h }, reads };
+  if (upload.fields.kind === 'line') {
+    const line = MotionLine.safeParse(upload.fields.line);
+    if (!line.success) throw new PublishError(`${id} is not a whole line.`);
+    return { path, list, item: { ...piece, line: line.data } };
+  }
+  if (!picture) throw new PublishError(`${id} has no picture.`);
+  return { path, list, item: { ...piece, markup: picture } };
+}
+
+/**
+ * A catalog of backgrounds or of animations with an item put last in its list; one the library
+ * does not have yet begins with its lists empty. Every other item, and everything else of the
+ * file, stays as it was. An id its list has already is not written.
+ */
+export function putMotionItem(
+  file: unknown,
+  path: string,
+  list: MotionList,
+  item: MotionItem,
+): Record<string, unknown> {
+  if (file !== undefined && !isRecord(file)) throw new PublishError(`${path} is not a catalog.`);
+  const catalog: Record<string, unknown> = file ? { ...file } : { version: 1 };
+  for (const one of MOTION_CATALOGS[path] ?? [list]) {
+    if (!Array.isArray(catalog[one])) catalog[one] = [];
+  }
+  const items = catalog[list] as unknown[];
+  if (items.some((one) => isRecord(one) && one.id === item.id)) {
+    throw new PublishError(`The library has ${MOTION_ITEM[list]} ${item.id} already.`);
+  }
+  catalog[list] = [...items, item];
+  return catalog;
 }
 
 /* ---------------------------------------------------------------- the samples of templates */

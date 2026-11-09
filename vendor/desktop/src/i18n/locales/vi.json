@@ -377,35 +377,6 @@
         "other": "Không tạo được phương án này"
       }
     },
-    "look": {
-      "hint": "Di chuột để xem trên trang chiếu · bấm để áp dụng",
-      "current": "Đang dùng trong bản trình bày",
-      "template": {
-        "title": "Mẫu",
-        "builtIn": "Có sẵn",
-        "personal": "Cá nhân",
-        "undo": "Đổi mẫu"
-      },
-      "palette": {
-        "title": "Bảng màu",
-        "sample": "Aa",
-        "undo": "Đổi bảng màu",
-        "names": {
-          "basic": "Cơ bản",
-          "ocean": "Đại dương",
-          "sage": "Xô thơm",
-          "rose": "Hoa hồng",
-          "graphite": "Than chì",
-          "forest": "Rừng xanh",
-          "plum": "Mận chín"
-        }
-      },
-      "fonts": {
-        "title": "Cặp phông chữ",
-        "undo": "Đổi cặp phông chữ",
-        "pair": "Đề mục: {{heading}} · Nội dung: {{body}}"
-      }
-    },
     "action": {
       "other": "Thao tác",
       "deck": {
@@ -468,77 +439,6 @@
       }
     },
     "actions": {
-      "wording": "Câu chữ",
-      "edit": "Chỉnh sửa",
-      "content": "Nội dung",
-      "design": "Thiết kế",
-      "slideSettings": "Bản thân trang chiếu",
-      "image": "Hình ảnh",
-      "count": "Số phương án",
-      "variations": "Cách diễn đạt khác",
-      "titles": "Tiêu đề thay thế",
-      "shorten": "Rút gọn",
-      "expand": "Mở rộng",
-      "fix": "Sửa lỗi",
-      "bullets": "Chuyển thành dấu đầu dòng",
-      "tone": "Đổi giọng văn",
-      "toneChoice": "Giọng văn",
-      "translate": "Dịch",
-      "language": "Ngôn ngữ đích",
-      "redesign": "Thiết kế lại",
-      "shortenSlide": "Rút gọn văn bản",
-      "split": "Tách thành hai trang chiếu",
-      "visual": "Thêm yếu tố trực quan",
-      "addImage": "Thêm hình ảnh",
-      "animate": "Hiệu ứng động",
-      "notes": "Ghi chú diễn giả",
-      "fixFindings": "Sửa các vấn đề thiết kế",
-      "shortenDeck": "Rút gọn văn bản",
-      "improve": "Cải thiện thiết kế",
-      "alternatives": "Tạo phương án thay thế",
-      "imagePrompt": "Hình ảnh nên thể hiện gì, hoặc cần thay đổi gì trong hình ảnh?",
-      "imagePromptHint": "Không bắt buộc với phương án thay thế: nếu không có mô tả, tác nhân sẽ tự quyết định dựa trên trang chiếu.",
-      "imageEdit": "Chỉnh sửa bằng AI",
-      "editImage": "Thay đổi theo mô tả",
-      "restyle": "Theo phong cách bản trình bày",
-      "paintMask": "Đánh dấu vùng cần thay đổi",
-      "maskSet": "Đã đánh dấu một vùng: chỉ vùng này sẽ thay đổi",
-      "maskClear": "Xóa vùng đánh dấu",
-      "expandImage": "Mở rộng hình ảnh",
-      "expandTo": "Khung hình sau khi mở rộng",
-      "expandHint": "Hình ảnh giữ nguyên vị trí, và AI sẽ vẽ thêm xung quanh phần còn thiếu so với khung hình đã chọn.",
-      "expandFailed": "Chưa mở rộng được hình ảnh",
-      "expandSame": "Hình ảnh đã có khung hình này.",
-      "expandLabel": "Mở rộng hình ảnh",
-      "imageLocal": "Không dùng AI",
-      "crop": "Cắt xén",
-      "chart": "Biểu đồ",
-      "chartType": "Đề xuất loại biểu đồ",
-      "chartTitle": "Tiêu đề và nhận định",
-      "chartFill": "Điền dữ liệu từ văn bản",
-      "chartSource": "Dán văn bản hoặc bảng chứa các con số vào đây",
-      "tableFill": "Điền bảng từ văn bản",
-      "tableSource": "Dán văn bản dùng để điền bảng vào đây",
-      "tableStyle": "Đề xuất kiểu trình bày",
-      "tableInsight": "Tóm tắt thành một nhận định",
-      "tableChart": "Chuyển thành biểu đồ",
-      "fromText": "Từ văn bản",
-      "fromTextHint": "Tác nhân chỉ lấy những gì có trong văn bản và cho bạn biết những gì đã bỏ qua.",
-      "onSlide": "Trên trang chiếu",
-      "onSlideHint": "Hai thao tác này thay đổi cả trang chiếu chứ không chỉ riêng bảng.",
-      "shape": "Hình dạng",
-      "shapeSuggest": "Đề xuất hình dạng",
-      "icon": "Biểu tượng",
-      "iconReplace": "Biểu tượng phù hợp hơn",
-      "colourByTheme": "Tô màu theo mẫu",
-      "editKind": {
-        "exact": "Nhà cung cấp hình ảnh chỉ thay đổi đúng phần bạn yêu cầu và có thể giới hạn trong một vùng.",
-        "regenerate": "Nhà cung cấp hình ảnh vẽ lại hình ảnh dựa trên bản gốc: các chi tiết nhỏ có thể xê dịch và không thể giới hạn trong một vùng.",
-        "none": "Nhà cung cấp hình ảnh này không chỉnh sửa hình ảnh."
-      },
-      "layout": "Bố trí",
-      "layoutNone": "Trang chiếu này không có bố trí để đổi.",
-      "layoutLabel": "Bố trí trang chiếu",
       "languages": {
         "Hebrew": "tiếng Do Thái",
         "English": "tiếng Anh",
@@ -562,32 +462,6 @@
         "friendly": "thân thiện",
         "confident": "tự tin",
         "plain": "giản dị"
-      },
-      "template": {
-        "title": "Mẫu mới",
-        "open": "Tạo mẫu bằng AI",
-        "description": "Mẫu nên trông như thế nào?",
-        "url": "Trang web mà mẫu nên giống",
-        "logo": "Logo",
-        "chooseLogo": "Chọn logo",
-        "files": "Ảnh hoặc tệp HTML để tham khảo",
-        "addFile": "Thêm tệp",
-        "fromDeck": "Theo thiết kế của bản trình bày này",
-        "create": "Tạo bản nháp",
-        "hint": "Tác nhân đọc các nguồn, tạo bản nháp và hiển thị trong khung trò chuyện. Chưa có gì được lưu cho đến khi bạn lưu.",
-        "needSource": "Hãy cung cấp ít nhất một nguồn: mô tả, địa chỉ web, logo, tệp hoặc bản trình bày này."
-      },
-      "busy": "Tác nhân đang thực hiện một lượt. Các thao tác sẽ xuất hiện lại khi tác nhân xong việc.",
-      "groupSelection": "Vùng chọn của bạn",
-      "groupSlide": "Trang chiếu {{n}}",
-      "groupDeck": "Toàn bộ bản trình bày",
-      "noActions": "Vùng chọn của bạn không có thao tác soạn sẵn. Hãy yêu cầu bất kỳ thay đổi nào trong khung trò chuyện.",
-      "provider": {
-        "checking": "Đang kiểm tra nhà cung cấp hình ảnh…",
-        "ready": "Mỗi hình ảnh mất khoảng một phút và sẽ lần lượt xuất hiện.",
-        "not_installed": "Nhà cung cấp hình ảnh chưa được cài đặt trên máy tính này nên không thể tạo hình ảnh.",
-        "not_logged_in": "Nhà cung cấp hình ảnh chưa đăng nhập. Hãy đăng nhập rồi quay lại đây.",
-        "unavailable": "Nhà cung cấp hình ảnh hiện không khả dụng."
       }
     }
   },
@@ -1483,62 +1357,17 @@
         "scale": "Phóng to và nhịp đập",
         "lines": "Đường và sóng",
         "particles": "Hạt và mạng lưới"
-      },
-      "name": {
-        "orbit": "Quỹ đạo",
-        "conveyor": "Hộp trên đường đi",
-        "trace": "Đường mạch",
-        "atom": "Nguyên tử",
-        "shuttle": "Chấm trên đường thẳng",
-        "hexagon": "Lục giác xoay",
-        "rings": "Vòng xoay",
-        "radar": "Ra-đa",
-        "ripple": "Gợn sóng",
-        "breathe": "Hình đang thở",
-        "bars": "Cột đi lên",
-        "waves": "Sóng",
-        "draw": "Mũi tên được vẽ",
-        "flowArrow": "Đường nối chảy",
-        "heartbeat": "Nhịp tim",
-        "network": "Mạng lưới",
-        "converge": "Hạt hội tụ",
-        "float": "Bong bóng bay lên"
       }
     },
     "backgrounds": {
       "hint": "Bấm vào một nền để áp dụng cho trang chiếu, hoặc cho mọi trang chiếu bạn đã chọn. Màu sắc lấy từ mẫu, và công cụ “Nền” đưa bạn về nền của mẫu.",
       "animated": "Nền chuyển động",
-      "still": "Nền tĩnh",
-      "name": {
-        "flow": "Dòng chảy mạch",
-        "waves": "Sóng",
-        "converge": "Hội tụ",
-        "orbit": "Quỹ đạo",
-        "radar": "Ra-đa",
-        "network": "Mạng lưới",
-        "drift": "Ánh sáng trôi",
-        "particles": "Hạt bay lên",
-        "dots": "Lưới chấm",
-        "contours": "Đường đồng mức",
-        "arcs": "Vòng cung ở góc"
-      }
+      "still": "Nền tĩnh"
     },
     "animatedShapes": {
       "title": "Hình động",
       "hint": "Các hình thông thường lặp lại một chuyển động. Màu, đường viền và kích thước được chỉnh như mọi hình khác, còn chuyển động thì chỉnh bằng công cụ Chuyển động.",
-      "more": "Tất cả hoạt ảnh",
-      "name": {
-        "ring": "Vòng xoay",
-        "hexagon": "Lục giác xoay",
-        "star": "Ngôi sao xoay",
-        "octagon": "Bát giác xoay",
-        "square": "Hình vuông xoay rồi nghỉ",
-        "pulse": "Hình tròn đập nhịp",
-        "heart": "Trái tim đập",
-        "float": "Hình tròn trôi nổi",
-        "arrow": "Mũi tên lắc lư",
-        "blink": "Chấm nhấp nháy"
-      }
+      "more": "Tất cả hoạt ảnh"
     },
     "motion": {
       "title": "Chuyển động",
@@ -1573,6 +1402,21 @@
         "float": "Độ cao trôi nổi",
         "swing": "Góc lắc lư",
         "blink": "Độ mạnh nhấp nháy"
+      },
+      "flow": {
+        "title": "Dọc theo đường",
+        "kind": {
+          "none": "Không",
+          "dashes": "Nét đứt",
+          "box": "Hộp",
+          "dot": "Chấm"
+        },
+        "speed": "Pixel mỗi giây",
+        "forward": "Về cuối",
+        "back": "Về đầu",
+        "count": "Số lượng",
+        "size": "Kích thước",
+        "color": "Màu"
       },
       "hint": "Chuyển động lặp lại khi trang chiếu đang hiển thị: trong trình soạn thảo, khi trình chiếu và trong tệp đã xuất."
     }
@@ -1768,20 +1612,6 @@
       "signingIn": "Hãy hoàn tất đăng nhập trong cửa sổ vừa mở.",
       "install": "Cài đặt…",
       "signIn": "Đăng nhập"
-    },
-    "mask": {
-      "title": "Đánh dấu vùng cần thay đổi",
-      "description": "Tô lên phần hình ảnh mà AI được phép thay đổi. Phần không được tô sẽ giữ nguyên.",
-      "canvas": "Hình ảnh để tô vùng cần thay đổi",
-      "tool": "Công cụ",
-      "paint": "Tô",
-      "erase": "Xóa",
-      "brush": "Cỡ cọ",
-      "clear": "Xóa hết",
-      "empty": "Chưa tô vùng nào.",
-      "done": "Xong",
-      "cancel": "Hủy",
-      "failed": "Chưa lưu được vùng đánh dấu"
     },
     "upscale": {
       "title": "Tăng độ phân giải",
@@ -2797,11 +2627,8 @@
       "tools": "Công cụ",
       "collapse": "Thu gọn ngăn",
       "resize": "Đổi kích thước ngăn",
-      "actions": "Thao tác",
       "chatEmptyTitle": "Chưa kết nối trò chuyện",
       "chatEmptyBody": "Đây là nơi bạn yêu cầu tác nhân thực hiện thay đổi và theo dõi các thay đổi diễn ra ngay trên trang chiếu.",
-      "actionsEmptyTitle": "Chưa có thao tác nào",
-      "actionsEmptyBody": "Các thao tác nhanh cho công cụ này sẽ xuất hiện ở đây.",
       "soonTitle": "Chưa khả dụng",
       "mediaBody": "Tệp tải lên, ảnh có sẵn, biểu tượng và hình ảnh AI.",
       "animationsBody": "Hiệu ứng động và dòng thời gian của trang chiếu.",
@@ -2978,6 +2805,12 @@
       "hint": "Ghi chú được lưu cùng bản trình bày và không hiển thị trên trang chiếu.",
       "noSlide": "Không có trang chiếu",
       "step": "Ghi chú diễn giả"
+    },
+    "crash": {
+      "title": "Đã xảy ra sự cố",
+      "body": "Slidr gặp lỗi không mong muốn. Hãy tải lại cửa sổ để tiếp tục.",
+      "reload": "Tải lại",
+      "details": "Chi tiết"
     }
   },
   "stage": {
@@ -3001,6 +2834,7 @@
       "editData": "Chỉnh sửa dữ liệu",
       "editCells": "Chỉnh sửa ô",
       "editPoints": "Chỉnh sửa điểm",
+      "adjust": "Điều chỉnh hình",
       "order": "Thứ tự lớp"
     },
     "toolbar": {
@@ -3012,7 +2846,7 @@
       "walk": "Chuyển đến đối tượng tiếp theo hoặc trước đó (hoặc trang chiếu, trong dải trang chiếu) mà không chọn",
       "toggle": "Thêm vào vùng chọn hoặc bỏ khỏi vùng chọn",
       "points": "Vào chế độ chỉnh điểm của đường kẻ, và thoát ra",
-      "part": "Điểm tiếp theo hoặc trước đó của đường kẻ; tay cắt xén tiếp theo hoặc trước đó",
+      "part": "Điểm tiếp theo hoặc trước đó của đường kẻ; tay điều chỉnh tiếp theo hoặc trước đó của hình; tay cắt xén tiếp theo hoặc trước đó",
       "addPoint": "Thêm điểm vào đường kẻ",
       "removePoint": "Xóa điểm khỏi đường kẻ",
       "lock": "Khóa và mở khóa",
@@ -3020,6 +2854,8 @@
     },
     "at": {
       "point": "Điểm {{n}}/{{total}}. Dùng phím mũi tên để di chuyển.",
+      "adjust": "Tay điều chỉnh {{n}}/{{total}}. Dùng phím mũi tên để di chuyển.",
+      "outline": "Tay chỉnh độ dày đường viền: {{width}} px. Dùng phím mũi tên để di chuyển.",
       "picture": "Cắt xén: phím mũi tên di chuyển ảnh. Ctrl+mũi tên lên hoặc xuống thay đổi kích thước ảnh. Tab chuyển đến các tay cắt xén.",
       "handle": "Tay cắt xén: {{where}}. Dùng phím mũi tên để di chuyển.",
       "walkSelected": "{{what}}: nằm trong vùng chọn",

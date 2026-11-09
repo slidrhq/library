@@ -1,7 +1,7 @@
 import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
 import { isolate } from './bidi';
 import { useMemo, useState, type DragEvent, type ReactNode } from 'react';
-import { designsModule, messages, named, templatesModule } from './app';
+import { designsModule, messages, named } from './app';
 import { useT, type MessageKey } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
 import { ItemOverlay } from './Overlay';
@@ -11,6 +11,7 @@ import {
   DesignPreview,
   SampleSheet,
   Unshown,
+  loadBuiltInTemplates,
   sampleDeckOf,
   type PictureSource,
 } from './uploadPreview';
@@ -139,8 +140,7 @@ function SampleStage({
   const t = useT();
   const [current, setCurrent] = useState(0);
   const drawn = useRead(async () => {
-    const { builtIn } = await templatesModule();
-    const template = builtIn.find((one) => one.theme.id === target);
+    const template = (await loadBuiltInTemplates()).find((one) => one.theme.id === target);
     return template ? sampleDeckOf(template, sample, lang) : undefined;
   }, [target, sample, lang]);
   if (drawn.error) {
@@ -191,7 +191,7 @@ export function NewUpload({
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
   const known = useDesigns(lang);
-  const templates = useRead(templatesModule, []);
+  const templates = useRead(loadBuiltInTemplates, []);
 
   const rules = RULES[kind];
   const adds = kind === 'designs:add';
@@ -205,7 +205,10 @@ export function NewUpload({
   const published = useRead(async () => {
     if (kind !== 'designs:translate' || !target) return undefined;
     const assets = await import('@desktop/elements/designAssets');
-    const source = (asset?: ReturnType<typeof assets.previewAsset>): PictureSource | undefined => {
+    // Which pictures the library has, and their sizes: the app reads them when the designs are
+    // first wanted, and a design has no picture until then.
+    await assets.designPictures.load();
+    const source = (asset?:ReturnType<typeof assets.previewAsset>): PictureSource | undefined => {
       const url = asset ? assets.designAssetUrl(asset) : undefined;
       return url && asset ? { url, width: asset.width, height: asset.height } : undefined;
     };
@@ -537,7 +540,7 @@ export function NewUpload({
             <Field label={t('uploads.form.template')}>
               <select value={target} onChange={(e) => setTarget(e.target.value)}>
                 <option value="">{t('uploads.form.templatePick')}</option>
-                {(templates.value?.builtIn ?? []).map((one) => (
+                {(templates.value ?? []).map((one) => (
                   <option key={one.theme.id} value={one.theme.id}>
                     {named(messages.templates, lang, 'name', one.theme.id) ?? one.theme.name} ·{' '}
                     {one.theme.id}

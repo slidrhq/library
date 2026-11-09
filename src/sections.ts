@@ -78,6 +78,18 @@ export const SECTIONS: Section[] = [
     paths: ['elements/catalogs/emoji-catalog', ...artSets('twemoji')],
   },
   {
+    id: 'animations',
+    nameKey: 'library.section.animations.name',
+    aboutKey: 'library.section.animations.about',
+    paths: ['elements/animations/'],
+  },
+  {
+    id: 'backgrounds',
+    nameKey: 'library.section.backgrounds.name',
+    aboutKey: 'library.section.backgrounds.about',
+    paths: ['elements/backgrounds/'],
+  },
+  {
     id: 'icons',
     nameKey: 'library.section.icons.name',
     aboutKey: 'library.section.icons.about',

@@ -45,8 +45,11 @@ import {
   PublishError,
   TEMPLATES,
   designOf,
+  encodeCatalog,
   encodeTags,
   mergeTags,
+  motionItemOf,
+  putMotionItem,
   spliceSample,
   tagsPath,
 } from './merge.ts';
@@ -266,6 +269,12 @@ async function apply(
     }
     changes.setBytes(TEMPLATES, catalog);
     return [TEMPLATES];
+  }
+  if ((type === 'backgrounds' || type === 'animations') && action === 'add') {
+    const { path, list, item } = motionItemOf(upload);
+    const catalog = await changes.json(path, encodeCatalog);
+    changes.setJson(path, putMotionItem(catalog, path, list, item), encodeCatalog);
+    return [path];
   }
   throw new PublishError(`The library does not publish ${type}: ${action}.`);
 }

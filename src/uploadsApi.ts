@@ -12,6 +12,8 @@ export const STATUSES: readonly Status[] = ['pending', 'accepted', 'rejected', '
 /** The parts the app searches, which take the search tags of their items (`tag`, ADR-108). */
 export const TAGGED = [
   'designs',
+  'backgrounds',
+  'animations',
   'cards',
   'frames',
   'shapes',
@@ -23,7 +25,13 @@ export type Tagged = (typeof TAGGED)[number];
 
 /** What an upload does, as `<type>:<action>`. */
 export type Kind =
-  'designs:add' | 'designs:translate' | 'designs:draw' | 'templates:translate' | `${Tagged}:tag`;
+  | 'designs:add'
+  | 'designs:translate'
+  | 'designs:draw'
+  | 'templates:translate'
+  | 'backgrounds:add'
+  | 'animations:add'
+  | `${Tagged}:tag`;
 /** The kinds a person makes on the page; tags come from programs (the app's `tag-elements.mjs`). */
 export const KINDS: readonly Kind[] = ['designs:add', 'designs:translate', 'templates:translate'];
 
@@ -54,7 +62,22 @@ export interface Upload {
   type: string;
   action: string;
   target: string;
-  fields: { group?: string; subject?: [number, number] };
+  /**
+   * The fields written once: a design's group and subject; a background's or an animation's
+   * drawing and how it stands (`server/core/uploads/motion.ts`).
+   */
+  fields: {
+    group?: string;
+    subject?: [number, number];
+    animated?: boolean;
+    sided?: boolean;
+    markup?: string;
+    kind?: 'picture' | 'line' | 'shape';
+    size?: { w: number; h: number };
+    reads?: boolean;
+    line?: unknown;
+    shape?: unknown;
+  };
   languages: Partial<Record<ContentLanguage, LanguagePart>>;
   files: Record<string, UploadFile>;
   status: Status;

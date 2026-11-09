@@ -24,8 +24,19 @@ const groupName = (group: string, lang: Lang) =>
   named(messages.objects, lang, 'library', group) ?? group;
 /** The key the library's tags give a shape or a line (`tags/shapes.json`). */
 const tagKey = (item: string) => (item.startsWith(LINE) ? item : `shape:${item}`);
+/**
+ * The app's shapes once the library's catalog of them has come. The app reads it
+ * (`shapeCatalog`) the first time the shapes are wanted, and draws its own built-in catalog until
+ * then; the page waits for it, so it shows the library's groups, shapes and lines alone, and
+ * `shapeLibrary()`, `lineKinds()`, the glyphs and a new shape all answer from it.
+ */
+const shapesRead = async () => {
+  const mod = await shapesModule();
+  await mod.shapeCatalog.load();
+  return mod;
+};
 /** The shapes, the app's search, and the tags it finds them by (ADR-108). */
-const load = () => Promise.all([shapesModule(), iconSearchModule(), tagsOf('shapes')]);
+const load = () => Promise.all([shapesRead(), iconSearchModule(), tagsOf('shapes')]);
 
 /** A shape of the library in neutral black, as the app's library draws it (`ShapeArt`). */
 function ShapeGlyph({ mod, preset }: { mod: ShapesMod; preset: string }) {
@@ -51,7 +62,7 @@ function LineGlyph({ mod, kind }: { mod: ShapesMod; kind: string }) {
   return (
     <svg aria-hidden viewBox={`0 0 ${mod.GLYPH_BOX} ${mod.GLYPH_BOX}`} className="glyph">
       <path
-        d={mod.LINE_GLYPHS[kind as keyof ShapesMod['LINE_GLYPHS']]}
+        d={mod.lineGlyphs()[kind as keyof ReturnType<ShapesMod['lineGlyphs']>]}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.9"
@@ -125,17 +136,20 @@ export function Shapes({
     const lines = {
       group: 'lines',
       name: named(messages.elements, 'he', 'lines') ?? t('libraryBrowse.shapesLines'),
-      items: mod.LINE_KINDS.filter(
-        (kind) =>
-          finds(
-            search,
-            query,
-            { he: lineName(kind, 'he'), en: lineName(kind, 'en') },
-            { he: [linesName('he')], en: [linesName('en')] },
-            tags[LINE + kind],
-          ) ||
-          matches(query, kind, lineName(kind, 'he'), lineName(kind, 'en'), lineName(kind, lang)),
-      ).map((kind) => LINE + kind),
+      items: mod
+        .lineKinds()
+        .filter(
+          (kind) =>
+            finds(
+              search,
+              query,
+              { he: lineName(kind, 'he'), en: lineName(kind, 'en') },
+              { he: [linesName('he')], en: [linesName('en')] },
+              tags[LINE + kind],
+            ) ||
+            matches(query, kind, lineName(kind, 'he'), lineName(kind, 'en'), lineName(kind, lang)),
+        )
+        .map((kind) => LINE + kind),
     };
     return [...shapes, lines];
   }, [mod, search, tags, query, lang, t]);
@@ -239,7 +253,7 @@ const PEEK = ['roundRect', 'ellipse', 'triangle', 'star5', 'arrowRight', 'wedgeR
 
 /** A few shapes of the library, as its glyphs draw them: for the overview. */
 export function ShapesPeek() {
-  const read = useRead(shapesModule, []);
+  const read = useRead(shapesRead, []);
   if (!read.value) return <span className="peek" />;
   const mod = read.value;
   return (

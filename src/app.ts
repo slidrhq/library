@@ -25,6 +25,9 @@ export const shapesModule = () => import('@desktop/objects/shapes');
 export const stickersModule = () => import('@desktop/elements/stickers');
 export const iconsModule = () => import('@desktop/media/icons/library');
 export const iconSearchModule = () => import('@desktop/media/icons/search');
+export const motionModule = () => import('@desktop/elements/motion');
+export const motionBackgroundsModule = () => import('@desktop/elements/motionBackgrounds');
+export const motionPiecesModule = () => import('@desktop/elements/motionPieces');
 
 type Words = Partial<Record<Lang, unknown>>;
 

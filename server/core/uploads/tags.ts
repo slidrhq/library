@@ -26,6 +26,7 @@ import {
   type TypeId,
 } from './handler.ts';
 import type { Library } from './library.ts';
+import { ANIMATIONS, BACKGROUNDS, idsIn } from './motion.ts';
 
 /** The fewest tags a language gives an item, and the most. */
 export const TAGS_FEWEST = 3;
@@ -174,6 +175,24 @@ const KEYS: Partial<Record<TypeId, { about: string; keys: Keys }>> = {
         return id && !id.endsWith('-bg') ? [id] : [];
       });
       return new Set(ids);
+    },
+  },
+  backgrounds: {
+    about: 'a background by its id, as `flow`',
+    async keys(library) {
+      return idsIn(await catalogOf(library, BACKGROUNDS), 'backgrounds');
+    },
+  },
+  animations: {
+    about:
+      'an animation by its id, as `orbit`, and an animated shape as `shape:<id>`, as `shape:ring`',
+    // An animation and an animated shape may share an id, each in a list of its own.
+    async keys(library) {
+      const catalog = await catalogOf(library, ANIMATIONS);
+      return new Set([
+        ...idsIn(catalog, 'animations'),
+        ...[...idsIn(catalog, 'shapes')].map((id) => `shape:${id}`),
+      ]);
     },
   },
   cards: {

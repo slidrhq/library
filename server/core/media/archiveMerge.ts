@@ -11,6 +11,8 @@
  * - The samples of the templates, a template and a language at a time.
  * - The catalog of the frames, a group and a frame at a time, as the page exports them by their
  *   groups: a frame only the library has comes after the others of its group.
+ * - The catalogs of the backgrounds and of the animations, an item of each list at a time, by its
+ *   id: one only the library has comes after the archive's of its list.
  *
  * An archive of a library of before holds `managed.json` too: it is folded into the archive's
  * catalog first, as a publication folds the library's (`foldManaged`), and its files of each
@@ -18,6 +20,7 @@
  */
 import type { Bucket } from '../bucket.ts';
 import { isRecord } from '../http.ts';
+import { MOTION_CATALOGS } from '../uploads/motion.ts';
 import {
   CATALOG,
   DESIGN_TAGS,
@@ -37,6 +40,7 @@ import {
   OPEN_OBJECT,
   TEMPLATES,
   byLanguage,
+  encodeCatalog,
   encodeTags,
   membersOf,
   skipSpace,
@@ -168,6 +172,33 @@ export function mergeFrames(
   return any;
 }
 
+/**
+ * The archive's catalog of the backgrounds or of the animations, with ours: in each of its lists,
+ * each item the archive has as it has it, by its id, and one only ours has after the archive's.
+ * Whether ours added any.
+ */
+export function mergeMotion(
+  theirs: Record<string, unknown>,
+  ours: Record<string, unknown>,
+  lists: readonly string[],
+): boolean {
+  const withId = (list: unknown) =>
+    (Array.isArray(list) ? list : []).filter(
+      (item): item is Record<string, unknown> & { id: string } =>
+        isRecord(item) && typeof item.id === 'string',
+    );
+  let any = false;
+  for (const list of lists) {
+    const given: unknown[] = Array.isArray(theirs[list]) ? theirs[list] : [];
+    const have = new Set(withId(given).map((item) => item.id));
+    const more = withId(ours[list]).filter((item) => !have.has(item.id));
+    if (more.length === 0) continue;
+    theirs[list] = [...given, ...more];
+    any = true;
+  }
+  return any;
+}
+
 /** `images/designs/thumbs/index.json` (`designFiles.ts`). */
 interface Thumbs {
   widths: number[];
@@ -277,6 +308,15 @@ export async function mergeHeld(
     const mine = parsed(await ours(FRAMES));
     const more = isRecord(theirs) && isRecord(mine) && mergeFrames(theirs, mine);
     files.set(FRAMES, more ? toBytes(`${JSON.stringify(theirs, null, 2)}\n`) : frames);
+  }
+
+  for (const [path, lists] of Object.entries(MOTION_CATALOGS)) {
+    const bytes = held.get(path);
+    if (!bytes) continue;
+    const theirs = parsed(bytes);
+    const mine = parsed(await ours(path));
+    const more = isRecord(theirs) && isRecord(mine) && mergeMotion(theirs, mine, lists);
+    files.set(path, more ? toBytes(encodeCatalog(theirs)) : bytes);
   }
 
   const templates = held.get(TEMPLATES);

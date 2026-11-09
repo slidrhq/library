@@ -19,7 +19,7 @@ import {
 } from '@slidr/model';
 import { searchTags } from '../media/icons/library';
 import type { TagsOf } from '../media/icons/search';
-import { designAssetUrl, previewAsset, previewBackdrop } from './designAssets';
+import { designAssetUrl, designPictures, previewAsset, previewBackdrop } from './designAssets';
 import {
   designTagsOf,
   localName,
@@ -296,6 +296,8 @@ async function wordsIn(
 }
 
 async function readIn(lang: ContentLanguage): Promise<Designs> {
+  // The pictures' sizes and files, which the previews are drawn with.
+  await designPictures.load();
   const [{ files }, written] = await Promise.all([mediaManifest(), designRevs()]);
   const catalogs = await Promise.all(
     CATALOGS.map((name) => catalogIn(name, lang, files, written !== undefined)),
@@ -324,8 +326,11 @@ let all: Promise<Designs> | undefined;
 
 /** Every design in every language: the whole catalog, for the tests and the review pages. */
 export function loadAllDesigns(): Promise<Designs> {
-  all ??= Promise.all(
-    CATALOGS.map((name) => readMediaJson<CatalogFile>(`elements/designs/${name}`)),
-  ).then((catalogs) => designsFrom(catalogs));
+  all ??= designPictures
+    .load()
+    .then(() =>
+      Promise.all(CATALOGS.map((name) => readMediaJson<CatalogFile>(`elements/designs/${name}`))),
+    )
+    .then((catalogs) => designsFrom(catalogs));
   return all;
 }

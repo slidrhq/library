@@ -379,35 +379,6 @@
         "other": "Cette option n’a pas été créée"
       }
     },
-    "look": {
-      "hint": "Survolez pour voir le résultat sur la diapositive · cliquez pour l’appliquer",
-      "current": "Utilisé dans la présentation",
-      "template": {
-        "title": "Modèle",
-        "builtIn": "Intégré",
-        "personal": "Personnel",
-        "undo": "Changer de modèle"
-      },
-      "palette": {
-        "title": "Palette de couleurs",
-        "sample": "Aa",
-        "undo": "Changer la palette de couleurs",
-        "names": {
-          "basic": "Basique",
-          "ocean": "Océan",
-          "sage": "Sauge",
-          "rose": "Rose",
-          "graphite": "Graphite",
-          "forest": "Forêt",
-          "plum": "Prune"
-        }
-      },
-      "fonts": {
-        "title": "Paire de polices",
-        "undo": "Changer la paire de polices",
-        "pair": "Titres : {{heading}} · Corps : {{body}}"
-      }
-    },
     "action": {
       "other": "Action",
       "deck": {
@@ -470,77 +441,6 @@
       }
     },
     "actions": {
-      "wording": "Formulation",
-      "edit": "Modification",
-      "content": "Contenu",
-      "design": "Design",
-      "slideSettings": "La diapositive elle-même",
-      "image": "Image",
-      "count": "Nombre d’options",
-      "variations": "Autres formulations",
-      "titles": "Titres alternatifs",
-      "shorten": "Raccourcir",
-      "expand": "Développer",
-      "fix": "Corriger les fautes",
-      "bullets": "Transformer en liste à puces",
-      "tone": "Changer de ton",
-      "toneChoice": "Ton",
-      "translate": "Traduire",
-      "language": "Langue cible",
-      "redesign": "Repenser le design",
-      "shortenSlide": "Raccourcir le texte",
-      "split": "Scinder en deux diapositives",
-      "visual": "Ajouter un visuel",
-      "addImage": "Ajouter une image",
-      "animate": "Animations",
-      "notes": "Notes du présentateur",
-      "fixFindings": "Corriger les problèmes de design",
-      "shortenDeck": "Raccourcir le texte",
-      "improve": "Améliorer le design",
-      "alternatives": "Générer des alternatives",
-      "imagePrompt": "Que doit montrer l’image, ou que faut-il y modifier ?",
-      "imagePromptHint": "Facultatif pour les alternatives : sans description, l’agent décide d’après la diapositive.",
-      "imageEdit": "Modifier avec l’IA",
-      "editImage": "Modifier selon la description",
-      "restyle": "Adapter au style de la présentation",
-      "paintMask": "Marquer la zone à modifier",
-      "maskSet": "Une zone est marquée : seule celle-ci sera modifiée",
-      "maskClear": "Effacer le marquage",
-      "expandImage": "Étendre l’image",
-      "expandTo": "Format après extension",
-      "expandHint": "L’image reste en place, et l’IA complète autour d’elle ce qui manque pour obtenir le format choisi.",
-      "expandFailed": "L’image n’a pas été étendue",
-      "expandSame": "L’image a déjà ce format.",
-      "expandLabel": "Étendre l’image",
-      "imageLocal": "Sans IA",
-      "crop": "Rogner",
-      "chart": "Graphique",
-      "chartType": "Proposer un type de graphique",
-      "chartTitle": "Titre et idée clé",
-      "chartFill": "Remplir les données à partir du texte",
-      "chartSource": "Collez ici un texte ou un tableau contenant les chiffres",
-      "tableFill": "Remplir le tableau à partir du texte",
-      "tableSource": "Collez ici le texte qui servira à remplir le tableau",
-      "tableStyle": "Proposer des styles",
-      "tableInsight": "Résumer en une idée clé",
-      "tableChart": "Transformer en graphique",
-      "fromText": "À partir d’un texte",
-      "fromTextHint": "L’agent ne reprend que ce que dit le texte, et vous indique ce qu’il a laissé de côté.",
-      "onSlide": "Sur la diapositive",
-      "onSlideHint": "Ces deux actions modifient la diapositive, et pas seulement le tableau.",
-      "shape": "Forme",
-      "shapeSuggest": "Proposer une forme",
-      "icon": "Icône",
-      "iconReplace": "Une icône plus adaptée",
-      "colourByTheme": "Colorer selon le modèle",
-      "editKind": {
-        "exact": "Le fournisseur d’images ne modifie que ce que vous demandez, et une zone peut lui être indiquée.",
-        "regenerate": "Le fournisseur d’images redessine l’image d’après l’original : les petits détails changent, et aucune zone ne peut lui être indiquée.",
-        "none": "Ce fournisseur d’images ne modifie pas les images."
-      },
-      "layout": "Disposition",
-      "layoutNone": "Cette diapositive n’a pas de disposition à changer.",
-      "layoutLabel": "Disposition de la diapositive",
       "languages": {
         "Hebrew": "hébreu",
         "English": "anglais",
@@ -564,32 +464,6 @@
         "friendly": "amical",
         "confident": "assuré",
         "plain": "simple"
-      },
-      "template": {
-        "title": "Un nouveau modèle",
-        "open": "Créer un modèle avec l’IA",
-        "description": "À quoi doit ressembler le modèle ?",
-        "url": "Un site dont le modèle doit s’inspirer",
-        "logo": "Logo",
-        "chooseLogo": "Choisir un logo",
-        "files": "Une image ou un fichier HTML de référence",
-        "addFile": "Ajouter un fichier",
-        "fromDeck": "D’après le design de cette présentation",
-        "create": "Créer un brouillon",
-        "hint": "L’agent lit les sources, crée un brouillon et l’affiche dans la conversation. Rien n’est enregistré tant que vous ne l’enregistrez pas.",
-        "needSource": "Indiquez au moins une source : une description, une adresse, un logo, un fichier ou cette présentation."
-      },
-      "busy": "L’agent est en train de répondre. Les actions seront de nouveau disponibles quand il aura terminé.",
-      "groupSelection": "Votre sélection",
-      "groupSlide": "Diapositive {{n}}",
-      "groupDeck": "Toute la présentation",
-      "noActions": "Aucune action prête à l’emploi pour votre sélection. Demandez n’importe quelle modification dans la conversation.",
-      "provider": {
-        "checking": "Vérification du fournisseur d’images…",
-        "ready": "Chaque image prend environ une minute, et elles apparaissent une à une.",
-        "not_installed": "Le fournisseur d’images n’est pas installé sur cet ordinateur : impossible de générer des images.",
-        "not_logged_in": "Le fournisseur d’images n’est pas connecté. Connectez-vous à celui-ci, puis revenez ici.",
-        "unavailable": "Le fournisseur d’images n’est pas disponible pour le moment."
       }
     }
   },
@@ -1491,62 +1365,17 @@
         "scale": "Croissance et pulsation",
         "lines": "Lignes et ondes",
         "particles": "Particules et réseaux"
-      },
-      "name": {
-        "orbit": "Orbite",
-        "conveyor": "Boîtes sur un parcours",
-        "trace": "Circuit imprimé",
-        "atom": "Atome",
-        "shuttle": "Point sur une ligne",
-        "hexagon": "Hexagones qui tournent",
-        "rings": "Anneaux qui tournent",
-        "radar": "Radar",
-        "ripple": "Ondes concentriques",
-        "breathe": "Forme qui respire",
-        "bars": "Barres qui montent",
-        "waves": "Vagues",
-        "draw": "Flèche dessinée",
-        "flowArrow": "Connecteur fluide",
-        "heartbeat": "Battement de cœur",
-        "network": "Réseau",
-        "converge": "Particules qui se rassemblent",
-        "float": "Bulles qui montent"
       }
     },
     "backgrounds": {
       "hint": "Cliquez sur un arrière-plan pour l’appliquer à la diapositive, ou à toutes les diapositives sélectionnées. Ses couleurs viennent du modèle, et l’outil « Arrière-plan » ramène à l’arrière-plan du modèle.",
       "animated": "Arrière-plans animés",
-      "still": "Arrière-plans calmes",
-      "name": {
-        "flow": "Flux de circuit",
-        "waves": "Vagues",
-        "converge": "Convergence",
-        "orbit": "Orbites",
-        "radar": "Radar",
-        "network": "Réseau",
-        "drift": "Lumière flottante",
-        "particles": "Particules qui montent",
-        "dots": "Grille de points",
-        "contours": "Courbes de niveau",
-        "arcs": "Arcs en coin"
-      }
+      "still": "Arrière-plans calmes"
     },
     "animatedShapes": {
       "title": "Formes animées",
       "hint": "Des formes ordinaires qui répètent un mouvement. Leur couleur, leur contour et leur taille se modifient comme pour toute forme, et leur mouvement avec l’outil Mouvement.",
-      "more": "Toutes les animations",
-      "name": {
-        "ring": "Anneau qui tourne",
-        "hexagon": "Hexagone qui tourne",
-        "star": "Étoile qui tourne",
-        "octagon": "Octogone qui tourne",
-        "square": "Carré qui tourne et se repose",
-        "pulse": "Cercle qui bat",
-        "heart": "Cœur qui bat",
-        "float": "Cercle flottant",
-        "arrow": "Flèche qui oscille",
-        "blink": "Point clignotant"
-      }
+      "more": "Toutes les animations"
     },
     "motion": {
       "title": "Mouvement",
@@ -1581,6 +1410,21 @@
         "float": "Hauteur du flottement",
         "swing": "Angle du balancement",
         "blink": "Intensité du clignotement"
+      },
+      "flow": {
+        "title": "Le long de la ligne",
+        "kind": {
+          "none": "Aucun",
+          "dashes": "Tirets",
+          "box": "Boîtes",
+          "dot": "Points"
+        },
+        "speed": "Pixels par seconde",
+        "forward": "Vers la fin",
+        "back": "Vers le début",
+        "count": "Nombre",
+        "size": "Taille",
+        "color": "Couleur"
       },
       "hint": "Le mouvement se répète tant que la diapositive est affichée : dans l’éditeur, en présentation et dans un fichier exporté."
     }
@@ -1780,20 +1624,6 @@
       "signingIn": "Terminez la connexion dans la fenêtre qui s’est ouverte.",
       "install": "Installer…",
       "signIn": "Se connecter"
-    },
-    "mask": {
-      "title": "Marquer la zone à modifier",
-      "description": "Peignez la partie de l’image que l’IA peut modifier. Tout ce qui n’est pas peint reste exactement tel quel.",
-      "canvas": "L’image, pour y peindre la zone",
-      "tool": "Outil",
-      "paint": "Peindre",
-      "erase": "Effacer",
-      "brush": "Taille du pinceau",
-      "clear": "Effacer tout",
-      "empty": "Aucune zone n’est encore peinte.",
-      "done": "Terminé",
-      "cancel": "Annuler",
-      "failed": "Le marquage n’a pas été enregistré"
     },
     "upscale": {
       "title": "Augmenter la résolution",
@@ -2809,11 +2639,8 @@
       "tools": "Outils",
       "collapse": "Réduire le volet",
       "resize": "Redimensionner le volet",
-      "actions": "Actions",
       "chatEmptyTitle": "La conversation n’est pas encore connectée",
       "chatEmptyBody": "C’est ici que vous demanderez des modifications à l’agent et que vous les verrez s’appliquer sur la diapositive.",
-      "actionsEmptyTitle": "Aucune action pour l’instant",
-      "actionsEmptyBody": "Les actions rapides de cet outil apparaîtront ici.",
       "soonTitle": "Pas encore disponible",
       "mediaBody": "Fichiers chargés, photos de stock, icônes et images IA.",
       "animationsBody": "Effets d’animation et chronologie de la diapositive.",
@@ -2990,6 +2817,12 @@
       "hint": "Les notes sont enregistrées avec la présentation et ne s’affichent pas sur la diapositive.",
       "noSlide": "Aucune diapositive",
       "step": "Notes du présentateur"
+    },
+    "crash": {
+      "title": "Un problème est survenu",
+      "body": "Slidr a rencontré une erreur inattendue. Rechargez la fenêtre pour continuer.",
+      "reload": "Recharger",
+      "details": "Détails"
     }
   },
   "stage": {
@@ -3013,6 +2846,7 @@
       "editData": "Modifier les données",
       "editCells": "Modifier les cellules",
       "editPoints": "Modifier les points",
+      "adjust": "Ajuster la forme",
       "order": "Ordre des calques"
     },
     "toolbar": {
@@ -3024,7 +2858,7 @@
       "walk": "Passer à l’objet suivant ou précédent, ou à la diapositive suivante ou précédente dans le volet des diapositives, sans modifier la sélection",
       "toggle": "Ajouter à la sélection, ou en retirer",
       "points": "Entrer dans les points d’une ligne, et en sortir",
-      "part": "Point suivant ou précédent d’une ligne ; poignée de rognage suivante ou précédente",
+      "part": "Point suivant ou précédent d’une ligne ; poignée d’ajustement suivante ou précédente d’une forme ; poignée de rognage suivante ou précédente",
       "addPoint": "Ajouter un point à la ligne",
       "removePoint": "Supprimer un point de la ligne",
       "lock": "Verrouiller et déverrouiller",
@@ -3032,6 +2866,8 @@
     },
     "at": {
       "point": "Point {{n}} sur {{total}}. Les flèches le déplacent.",
+      "adjust": "Poignée d’ajustement {{n}} sur {{total}}. Les flèches la déplacent.",
+      "outline": "Poignée d’épaisseur du contour : {{width}} px. Les flèches la déplacent.",
       "picture": "Rognage : les flèches déplacent l’image. Ctrl+Flèche haut ou bas la redimensionne. Tab passe aux poignées.",
       "handle": "Poignée de rognage : {{where}}. Les flèches la déplacent.",
       "walkSelected": "{{what}} : dans la sélection",

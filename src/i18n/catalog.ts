@@ -7,6 +7,7 @@ import * as account from './areas/account';
 import * as archive from './areas/archive';
 import * as libraryBrowse from './areas/libraryBrowse';
 import * as libraryCatalogs from './areas/libraryCatalogs';
+import * as libraryMotion from './areas/libraryMotion';
 import * as libraryShell from './areas/libraryShell';
 import * as people from './areas/people';
 import * as publications from './areas/publications';
@@ -22,6 +23,7 @@ const areas = [
   libraryShell,
   libraryBrowse,
   libraryCatalogs,
+  libraryMotion,
   archive,
   uploads,
   people,
@@ -36,6 +38,7 @@ export const en = Object.assign({}, ...areas.map((area) => area.en)) as Merge<ty
   Merge<typeof libraryShell.en> &
   Merge<typeof libraryBrowse.en> &
   Merge<typeof libraryCatalogs.en> &
+  Merge<typeof libraryMotion.en> &
   Merge<typeof archive.en> &
   Merge<typeof uploads.en> &
   Merge<typeof people.en> &

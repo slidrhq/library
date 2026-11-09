@@ -66,7 +66,17 @@ export const REFERENCE_DECKS = 'reference-decks';
 export const FRAMES_CATALOG = 'elements/catalogs/frames-catalog.json';
 
 /** The kinds whose search tags are a file of their own (ADR-108 of the app). */
-const TAGGED = new Set(['designs', 'cards', 'frames', 'shapes', 'graphics', 'emoji', 'icons']);
+const TAGGED = new Set([
+  'designs',
+  'backgrounds',
+  'animations',
+  'cards',
+  'frames',
+  'shapes',
+  'graphics',
+  'emoji',
+  'icons',
+]);
 
 /** Of the fonts catalog, what says which family is made for which letters, and where its files are. */
 export interface FontsCatalog {

@@ -1,12 +1,18 @@
 import { CONTENT_LANGUAGES, languageDir, type ContentLanguage } from '@slidr/model';
 import { Fragment, useMemo, useState, type ChangeEvent } from 'react';
-import { designAssetsModule, designsModule, templatesModule } from './app';
+import { designAssetsModule, designsModule } from './app';
 import { isolate } from './bidi';
 import { useLang, useT, type MessageKey, type Translate } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
 import { ItemOverlay } from './Overlay';
 import { useRead } from './shared';
-import { DesignPreview, SampleSheet, sampleDeckOf, type PictureSource } from './uploadPreview';
+import {
+  DesignPreview,
+  SampleSheet,
+  loadBuiltInTemplates,
+  sampleDeckOf,
+  type PictureSource,
+} from './uploadPreview';
 import {
   ApiError,
   TAGGED,
@@ -225,8 +231,7 @@ function TemplateStage({ upload, lang }: { upload: Upload; lang: ContentLanguage
   const [current, setCurrent] = useState(0);
   const sample = upload.languages[lang]?.sample;
   const drawn = useRead(async () => {
-    const { builtIn } = await templatesModule();
-    const template = builtIn.find((one) => one.theme.id === upload.target);
+    const template = (await loadBuiltInTemplates()).find((one) => one.theme.id === upload.target);
     if (!template || !sample) return undefined;
     return sampleDeckOf(template, sample, lang);
   }, [upload, lang]);

@@ -1,11 +1,13 @@
 /**
  * The API, as OpenAPI 3.1 (`GET /api/openapi.json`), written from the parts of the library
- * themselves (`content.ts`), so it says what the Worker takes. A slide and a template's sample
- * are described by the model's own JSON Schema, at `/api/schemas/`.
+ * themselves (`content.ts`), so it says what the Worker takes. A slide, a template's sample, an
+ * animation's line and an animated shape are described by the model's own JSON Schema, at
+ * `/api/schemas/`.
  */
-import { CONTENT_LANGUAGES, type ContentLanguage } from '@slidr/model';
+import { CONTENT_LANGUAGES, SLIDE_HEIGHT, SLIDE_WIDTH, type ContentLanguage } from '@slidr/model';
 import { PARTS } from './content.ts';
 import { ACTIONS, type Field, type Handler } from './handler.ts';
+import { MARKUP_BYTES } from './motion.ts';
 import { STATUSES } from './store.ts';
 import { TAGS_FEWEST, TAGS_MOST } from './tags.ts';
 
@@ -30,10 +32,30 @@ const SCHEMA_OF: Record<string, Schema> = {
   'SampleSlide[]': { $ref: 'schemas/sample.json' },
   Tags: TAGS,
   'Record<key, Tags>': { type: 'object', minProperties: 1, additionalProperties: TAGS },
+  boolean: { type: 'boolean' },
+  // Characters, as JSON Schema counts them: the check counts its bytes in UTF-8, as many or more.
+  SVG: { type: 'string', minLength: 1, maxLength: MARKUP_BYTES, contentMediaType: 'image/svg+xml' },
+  '{ w, h }': {
+    type: 'object',
+    properties: {
+      w: { type: 'number', exclusiveMinimum: 0, maximum: SLIDE_WIDTH },
+      h: { type: 'number', exclusiveMinimum: 0, maximum: SLIDE_HEIGHT },
+    },
+    required: ['w', 'h'],
+    additionalProperties: false,
+  },
+  Line: { $ref: 'schemas/line.json' },
+  AnimatedShape: { $ref: 'schemas/shape.json' },
 };
 
+/** A type that is one of some words, as `"fill" | "outline"`. */
+const ONE_OF = /^"[^"]*"(?: \| "[^"]*")+$/;
+
 const fieldSchema = (field: Field): Schema => ({
-  ...(SCHEMA_OF[field.type] ?? {}),
+  ...(SCHEMA_OF[field.type] ??
+    (ONE_OF.test(field.type)
+      ? { enum: [...field.type.matchAll(/"([^"]*)"/g)].map((word) => word[1]) }
+      : {})),
   description: field.about,
 });
 
@@ -141,10 +163,16 @@ export function openApi() {
       },
       '/api/schemas/{name}.json': {
         get: {
-          summary: "The JSON Schema of a slide, or of a template's sample",
+          summary:
+            "The JSON Schema of a slide, of a template's sample, of an animation's line, or of an animated shape",
           security: [],
           parameters: [
-            { name: 'name', in: 'path', required: true, schema: { enum: ['slide', 'sample'] } },
+            {
+              name: 'name',
+              in: 'path',
+              required: true,
+              schema: { enum: ['slide', 'sample', 'line', 'shape'] },
+            },
           ],
           responses: { 200: { description: 'A JSON Schema (draft 2020-12).' }, ...errors(404) },
         },

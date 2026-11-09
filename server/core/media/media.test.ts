@@ -3,9 +3,14 @@ import { afterEach, describe, mock, test } from 'node:test';
 import { forgetLibrary } from '../uploads/library.ts';
 import {
   ALL_LANGUAGES,
+  ANIMATIONS,
+  BACKGROUNDS,
   CATALOGS,
+  COMET,
   FONTS,
   MEDIA,
+  MOTION,
+  NEW_MOTION,
   PICTURE,
   TEMPLATE,
   EDITOR,
@@ -15,6 +20,7 @@ import {
   designSlide,
   failing,
   frenchSample,
+  motionLanguages,
   webp,
 } from '../uploads/testing.ts';
 import worker, { contextOf } from '../../host/cloudflare/index.ts';
@@ -42,7 +48,7 @@ import {
   putTranslation,
 } from './designCatalog.ts';
 import { REVS, THUMBS, thumbPath } from './designFiles.ts';
-import { encodeTags, mergeTags, spliceSample, type DesignRecord } from './merge.ts';
+import { encodeTags, mergeTags, putMotionItem, spliceSample, type DesignRecord } from './merge.ts';
 import { bodyOf, joined, sha256Of } from './parts.ts';
 
 afterEach(() => {
@@ -326,6 +332,40 @@ describe('what a publication writes', () => {
     ) as typeof back;
     assert.deepEqual(fresh.samples, { harbour: { de: [1] } });
     assert.throws(() => spliceSample(toBytes('{"samples":'), 'harbour', 'de', [1]));
+  });
+
+  test('backgrounds and animations: an item last in its list, its lists made where there are none', () => {
+    const item = { id: 'comet', name: { he: 'שביט', en: 'Comet' } };
+    // A catalog the library does not have begins with its lists, empty.
+    assert.deepEqual(putMotionItem(undefined, ANIMATIONS, 'shapes', item), {
+      version: 1,
+      animations: [],
+      shapes: [item],
+    });
+    assert.deepEqual(putMotionItem(undefined, BACKGROUNDS, 'backgrounds', item), {
+      version: 1,
+      backgrounds: [item],
+    });
+    // One it has keeps every other item, and all else of it.
+    const file = { version: 1, note: 'kept', animations: [{ id: 'orbit' }] };
+    assert.deepEqual(putMotionItem(file, ANIMATIONS, 'animations', item), {
+      version: 1,
+      note: 'kept',
+      animations: [{ id: 'orbit' }, item],
+      shapes: [],
+    });
+    assert.deepEqual(file.animations, [{ id: 'orbit' }]);
+    // An id its list has is not written, though the other list may have it.
+    assert.throws(
+      () => putMotionItem(file, ANIMATIONS, 'animations', { ...item, id: 'orbit' }),
+      /has an animation orbit already/,
+    );
+    assert.equal(
+      (putMotionItem(file, ANIMATIONS, 'shapes', { ...item, id: 'orbit' }).shapes as unknown[])
+        .length,
+      1,
+    );
+    assert.throws(() => putMotionItem([], BACKGROUNDS, 'backgrounds', item), /is not a catalog/);
   });
 });
 
@@ -677,6 +717,121 @@ describe('a publication', () => {
       languages: designLanguages(),
     });
     assert.equal(again.status, 422);
+  });
+
+  interface MotionCatalog {
+    version: number;
+    backgrounds: Record<string, unknown>[];
+    animations: Record<string, unknown>[];
+    shapes: Record<string, unknown>[];
+  }
+
+  test('puts a new background into its catalog, and an animation, a line and a shape each into its list', async () => {
+    const { send, media, approve } = await live();
+    const all = motionLanguages(ALL_LANGUAGES);
+    // The library has no catalog of either yet: the first item of each makes it. Its markup is
+    // written without the whitespace around it.
+    const { markup } = NEW_MOTION.background;
+    const background = await approve({
+      ...NEW_MOTION.background,
+      markup: `\n  ${markup}\n`,
+      languages: all,
+    });
+    assert.equal(background.status, 'published', JSON.stringify(background));
+    assert.deepEqual(background.publishing?.publication?.added, [BACKGROUNDS]);
+    const text = stored(media, BACKGROUNDS)!;
+    const backgrounds = JSON.parse(text) as MotionCatalog;
+    assert.equal(text, `${JSON.stringify(backgrounds, null, 2)}\n`);
+    assert.deepEqual(backgrounds, {
+      version: 1,
+      backgrounds: [{ id: 'aurora', name: COMET, animated: true, sided: false, markup }],
+    });
+    assert.deepEqual(Object.keys(backgrounds.backgrounds[0]!), [
+      'id',
+      'name',
+      'animated',
+      'sided',
+      'markup',
+    ]);
+    assert.deepEqual(Object.keys(backgrounds.backgrounds[0]!.name as object), [...ALL_LANGUAGES]);
+
+    // An animation and an animated shape may share an id.
+    for (const kind of ['picture', 'line', 'shape'] as const) {
+      const approved = await approve({ ...NEW_MOTION[kind], languages: all });
+      assert.equal(approved.status, 'published', `${kind}: ${JSON.stringify(approved)}`);
+      assert.deepEqual(approved.publishing?.publication?.uploads[0]?.paths, [ANIMATIONS]);
+    }
+    const animations = JSON.parse(stored(media, ANIMATIONS)!) as MotionCatalog;
+    assert.deepEqual(Object.keys(animations), ['version', 'animations', 'shapes']);
+    const { picture, line, shape } = NEW_MOTION;
+    assert.deepEqual(animations.animations, [
+      {
+        id: 'comet',
+        name: COMET,
+        group: 'spin',
+        size: picture.size,
+        reads: false,
+        markup: picture.markup,
+      },
+      {
+        id: 'comet-trail',
+        name: COMET,
+        group: 'lines',
+        size: line.size,
+        reads: true,
+        line: line.line,
+      },
+    ]);
+    assert.deepEqual(animations.shapes, [{ id: 'comet', name: COMET, ...shape.shape }]);
+    assert.deepEqual(Object.keys(animations.animations[1]!), [
+      'id',
+      'name',
+      'group',
+      'size',
+      'reads',
+      'line',
+    ]);
+
+    // Published, its id is taken in its list.
+    const again = await send('/api/uploads', 'POST', {
+      ...NEW_MOTION.background,
+      languages: motionLanguages(),
+    });
+    assert.equal(again.status, 422);
+    assert.match(await again.text(), /has a background aurora already/);
+  });
+
+  test('adds to the catalogs of backgrounds and animations the library has, after their items', async () => {
+    const { media, approve } = await live(MOTION);
+    const all = motionLanguages(ALL_LANGUAGES);
+    const pointer = {
+      ...NEW_MOTION.shape,
+      id: 'pointer',
+      shape: { ...NEW_MOTION.shape.shape, preset: 'arrowRight', reads: false },
+    };
+    for (const body of [NEW_MOTION.background, NEW_MOTION.picture, pointer]) {
+      const approved = await approve({ ...body, languages: all });
+      assert.deepEqual(approved.publishing?.publication?.changed, [
+        body.type === 'backgrounds' ? BACKGROUNDS : ANIMATIONS,
+      ]);
+    }
+    const was = (path: string) => MOTION[path] as MotionCatalog;
+    const backgrounds = JSON.parse(stored(media, BACKGROUNDS)!) as MotionCatalog;
+    assert.deepEqual(backgrounds.backgrounds.slice(0, -1), was(BACKGROUNDS).backgrounds);
+    assert.equal(backgrounds.backgrounds.at(-1)!.id, 'aurora');
+    const animations = JSON.parse(stored(media, ANIMATIONS)!) as MotionCatalog;
+    assert.deepEqual(
+      animations.animations.map((one) => one.id),
+      ['shuttle', 'conveyor', 'comet'],
+    );
+    assert.deepEqual(animations.shapes.slice(0, -1), was(ANIMATIONS).shapes);
+    // A shape that does not read says nothing of it.
+    assert.deepEqual(animations.shapes.at(-1), {
+      id: 'pointer',
+      name: COMET,
+      ...NEW_MOTION.shape.shape,
+      preset: 'arrowRight',
+    });
   });
 
   interface Revs {

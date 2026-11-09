@@ -379,35 +379,6 @@
         "other": "Esta opção não foi criada"
       }
     },
-    "look": {
-      "hint": "Passe o mouse para ver no slide · clique para aplicar",
-      "current": "Em uso na apresentação",
-      "template": {
-        "title": "Modelo",
-        "builtIn": "Integrado",
-        "personal": "Pessoal",
-        "undo": "Trocar o modelo"
-      },
-      "palette": {
-        "title": "Paleta de cores",
-        "sample": "Aa",
-        "undo": "Alterar a paleta de cores",
-        "names": {
-          "basic": "Básica",
-          "ocean": "Oceano",
-          "sage": "Sálvia",
-          "rose": "Rosa",
-          "graphite": "Grafite",
-          "forest": "Floresta",
-          "plum": "Ameixa"
-        }
-      },
-      "fonts": {
-        "title": "Par de fontes",
-        "undo": "Alterar o par de fontes",
-        "pair": "Títulos: {{heading}} · Corpo: {{body}}"
-      }
-    },
     "action": {
       "other": "Ação",
       "deck": {
@@ -470,77 +441,6 @@
       }
     },
     "actions": {
-      "wording": "Redação",
-      "edit": "Edição",
-      "content": "Conteúdo",
-      "design": "Design",
-      "slideSettings": "O slide em si",
-      "image": "Imagem",
-      "count": "Número de opções",
-      "variations": "Outras redações",
-      "titles": "Títulos alternativos",
-      "shorten": "Encurtar",
-      "expand": "Expandir",
-      "fix": "Corrigir erros",
-      "bullets": "Transformar em marcadores",
-      "tone": "Mudar o tom",
-      "toneChoice": "Tom",
-      "translate": "Traduzir",
-      "language": "Idioma de destino",
-      "redesign": "Refazer design",
-      "shortenSlide": "Encurtar o texto",
-      "split": "Dividir em dois slides",
-      "visual": "Adicionar elemento visual",
-      "addImage": "Adicionar uma imagem",
-      "animate": "Animações",
-      "notes": "Anotações do orador",
-      "fixFindings": "Corrigir apontamentos de design",
-      "shortenDeck": "Encurtar o texto",
-      "improve": "Melhorar o design",
-      "alternatives": "Gerar alternativas",
-      "imagePrompt": "O que a imagem deve mostrar, ou o que deve mudar nela?",
-      "imagePromptHint": "Opcional para alternativas: sem uma descrição, o agente decide com base no slide.",
-      "imageEdit": "Editar com IA",
-      "editImage": "Alterar conforme a descrição",
-      "restyle": "Adaptar ao estilo da apresentação",
-      "paintMask": "Marcar a área a alterar",
-      "maskSet": "Há uma área marcada: só ela vai mudar",
-      "maskClear": "Limpar a marcação",
-      "expandImage": "Estender a imagem",
-      "expandTo": "O formato depois de estender",
-      "expandHint": "A imagem fica onde está, e a IA preenche ao redor o que falta para chegar ao formato escolhido.",
-      "expandFailed": "A imagem não foi estendida",
-      "expandSame": "A imagem já tem este formato.",
-      "expandLabel": "Estender imagem",
-      "imageLocal": "Sem IA",
-      "crop": "Cortar",
-      "chart": "Gráfico",
-      "chartType": "Sugerir um tipo de gráfico",
-      "chartTitle": "Título e insight",
-      "chartFill": "Preencher os dados a partir do texto",
-      "chartSource": "Cole aqui um texto ou uma tabela com os números",
-      "tableFill": "Preencher a tabela a partir do texto",
-      "tableSource": "Cole aqui o texto com que a tabela será preenchida",
-      "tableStyle": "Sugerir visuais",
-      "tableInsight": "Resumir em um insight",
-      "tableChart": "Transformar em gráfico",
-      "fromText": "A partir de texto",
-      "fromTextHint": "O agente usa somente o que o texto diz e informa o que ficou de fora.",
-      "onSlide": "No slide",
-      "onSlideHint": "Estas duas opções alteram o slide, não só a tabela.",
-      "shape": "Forma",
-      "shapeSuggest": "Sugerir uma forma",
-      "icon": "Ícone",
-      "iconReplace": "Um ícone mais adequado",
-      "colourByTheme": "Colorir conforme o modelo",
-      "editKind": {
-        "exact": "O provedor de imagens altera somente o que você pede e aceita uma área marcada.",
-        "regenerate": "O provedor de imagens redesenha a imagem com base na original: pequenos detalhes mudam, e não é possível marcar uma área.",
-        "none": "Este provedor de imagens não edita imagens."
-      },
-      "layout": "Layout",
-      "layoutNone": "Este slide não tem layout para trocar.",
-      "layoutLabel": "Layout do slide",
       "languages": {
         "Hebrew": "hebraico",
         "English": "inglês",
@@ -564,32 +464,6 @@
         "friendly": "amigável",
         "confident": "confiante",
         "plain": "simples"
-      },
-      "template": {
-        "title": "Um novo modelo",
-        "open": "Criar um modelo com IA",
-        "description": "Como o modelo deve ser?",
-        "url": "Um site com o visual que o modelo deve ter",
-        "logo": "Logotipo",
-        "chooseLogo": "Escolher um logotipo",
-        "files": "Uma imagem ou um arquivo HTML de referência",
-        "addFile": "Adicionar um arquivo",
-        "fromDeck": "Com base no design desta apresentação",
-        "create": "Criar um rascunho",
-        "hint": "O agente lê as referências, cria um rascunho e o mostra no chat. Nada é salvo até você salvar.",
-        "needSource": "Informe pelo menos uma referência: uma descrição, um endereço, um logotipo, um arquivo ou esta apresentação."
-      },
-      "busy": "O agente está no meio de um turno. As ações voltam quando ele terminar.",
-      "groupSelection": "Sua seleção",
-      "groupSlide": "Slide {{n}}",
-      "groupDeck": "A apresentação inteira",
-      "noActions": "Não há ações prontas para a sua seleção. Peça qualquer alteração no chat.",
-      "provider": {
-        "checking": "Verificando o provedor de imagens…",
-        "ready": "Cada imagem leva cerca de um minuto, e elas aparecem uma a uma.",
-        "not_installed": "O provedor de imagens não está instalado neste computador, por isso não é possível gerar imagens.",
-        "not_logged_in": "O provedor de imagens não está conectado. Entre na sua conta nele e volte aqui.",
-        "unavailable": "O provedor de imagens não está disponível no momento."
       }
     }
   },
@@ -1491,62 +1365,17 @@
         "scale": "Crescer e pulsar",
         "lines": "Linhas e ondas",
         "particles": "Partículas e redes"
-      },
-      "name": {
-        "orbit": "Órbita",
-        "conveyor": "Caixas em um caminho",
-        "trace": "Trilha de circuito",
-        "atom": "Átomo",
-        "shuttle": "Ponto em uma linha",
-        "hexagon": "Hexágonos girando",
-        "rings": "Anéis girando",
-        "radar": "Radar",
-        "ripple": "Ondulações",
-        "breathe": "Forma que respira",
-        "bars": "Barras subindo",
-        "waves": "Ondas",
-        "draw": "Seta desenhada",
-        "flowArrow": "Conector que flui",
-        "heartbeat": "Batimento",
-        "network": "Rede",
-        "converge": "Partículas se reunindo",
-        "float": "Bolhas subindo"
       }
     },
     "backgrounds": {
       "hint": "Clique em um plano de fundo para aplicá-lo ao slide ou a todos os slides selecionados. As cores vêm do modelo, e a ferramenta “Plano de fundo” leva de volta ao plano de fundo do modelo.",
       "animated": "Planos de fundo em movimento",
-      "still": "Planos de fundo calmos",
-      "name": {
-        "flow": "Fluxo de circuito",
-        "waves": "Ondas",
-        "converge": "Convergência",
-        "orbit": "Órbitas",
-        "radar": "Radar",
-        "network": "Rede",
-        "drift": "Luz flutuante",
-        "particles": "Partículas subindo",
-        "dots": "Grade de pontos",
-        "contours": "Curvas de nível",
-        "arcs": "Arcos no canto"
-      }
+      "still": "Planos de fundo calmos"
     },
     "animatedShapes": {
       "title": "Formas animadas",
       "hint": "Formas comuns que repetem um movimento. Cor, contorno e tamanho são editados como em qualquer forma, e o movimento com a ferramenta Movimento.",
-      "more": "Todas as animações",
-      "name": {
-        "ring": "Anel girando",
-        "hexagon": "Hexágono girando",
-        "star": "Estrela girando",
-        "octagon": "Octógono girando",
-        "square": "Quadrado que gira e descansa",
-        "pulse": "Círculo pulsante",
-        "heart": "Coração batendo",
-        "float": "Círculo flutuante",
-        "arrow": "Seta balançando",
-        "blink": "Ponto piscando"
-      }
+      "more": "Todas as animações"
     },
     "motion": {
       "title": "Movimento",
@@ -1581,6 +1410,21 @@
         "float": "Altura da flutuação",
         "swing": "Ângulo do balanço",
         "blink": "Intensidade da piscada"
+      },
+      "flow": {
+        "title": "Ao longo da linha",
+        "kind": {
+          "none": "Nenhum",
+          "dashes": "Traços",
+          "box": "Caixas",
+          "dot": "Pontos"
+        },
+        "speed": "Pixels por segundo",
+        "forward": "Para o fim",
+        "back": "Para o início",
+        "count": "Quantidade",
+        "size": "Tamanho",
+        "color": "Cor"
       },
       "hint": "O movimento se repete enquanto o slide é exibido: no editor, na apresentação e em um arquivo exportado."
     }
@@ -1780,20 +1624,6 @@
       "signingIn": "Conclua o login na janela que se abriu.",
       "install": "Instalar…",
       "signIn": "Entrar"
-    },
-    "mask": {
-      "title": "Marcar a área a alterar",
-      "description": "Pinte a parte da imagem que a IA pode alterar. O que não for pintado continua exatamente igual.",
-      "canvas": "A imagem, para pintar a área",
-      "tool": "Ferramenta",
-      "paint": "Pintar",
-      "erase": "Apagar",
-      "brush": "Tamanho do pincel",
-      "clear": "Limpar",
-      "empty": "Nenhuma área foi pintada ainda.",
-      "done": "Concluído",
-      "cancel": "Cancelar",
-      "failed": "A marcação não foi salva"
     },
     "upscale": {
       "title": "Aumentar resolução",
@@ -2809,11 +2639,8 @@
       "tools": "Ferramentas",
       "collapse": "Recolher painel",
       "resize": "Redimensionar painel",
-      "actions": "Ações",
       "chatEmptyTitle": "O chat ainda não está conectado",
       "chatEmptyBody": "É aqui que você vai pedir alterações ao agente e vê-las acontecer no slide.",
-      "actionsEmptyTitle": "Nenhuma ação ainda",
-      "actionsEmptyBody": "As ações rápidas desta ferramenta aparecerão aqui.",
       "soonTitle": "Ainda não disponível",
       "mediaBody": "Arquivos carregados, fotos de banco de imagens, ícones e imagens de IA.",
       "animationsBody": "Efeitos de animação e a linha do tempo do slide.",
@@ -2990,6 +2817,12 @@
       "hint": "As anotações são salvas com a apresentação e não aparecem no slide.",
       "noSlide": "Nenhum slide",
       "step": "Anotações do orador"
+    },
+    "crash": {
+      "title": "Algo deu errado",
+      "body": "O Slidr encontrou um erro inesperado. Recarregue a janela para continuar.",
+      "reload": "Recarregar",
+      "details": "Detalhes"
     }
   },
   "stage": {
@@ -3013,6 +2846,7 @@
       "editData": "Editar dados",
       "editCells": "Editar células",
       "editPoints": "Editar pontos",
+      "adjust": "Ajustar forma",
       "order": "Ordem das camadas"
     },
     "toolbar": {
@@ -3024,7 +2858,7 @@
       "walk": "Ir para o objeto seguinte ou anterior (ou para o slide, na faixa de slides) sem selecioná-lo",
       "toggle": "Adicionar à seleção ou remover dela",
       "points": "Entrar nos pontos de uma linha e sair deles",
-      "part": "Ponto seguinte ou anterior de uma linha; alça de corte seguinte ou anterior",
+      "part": "Ponto seguinte ou anterior de uma linha; alça de ajuste seguinte ou anterior de uma forma; alça de corte seguinte ou anterior",
       "addPoint": "Adicionar um ponto à linha",
       "removePoint": "Remover um ponto da linha",
       "lock": "Bloquear e desbloquear",
@@ -3032,6 +2866,8 @@
     },
     "at": {
       "point": "Ponto {{n}} de {{total}}. As setas o movem.",
+      "adjust": "Alça de ajuste {{n}} de {{total}}. As setas a movem.",
+      "outline": "Alça da espessura do contorno: {{width}} px. As setas a movem.",
       "picture": "Corte: as setas movem a imagem. Ctrl+Seta para cima ou para baixo altera a escala. Tab vai para as alças.",
       "handle": "Alça de corte: {{where}}. As setas a movem.",
       "walkSelected": "{{what}}: na seleção",

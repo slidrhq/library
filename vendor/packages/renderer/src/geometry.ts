@@ -374,6 +374,9 @@ function segments(d: string): Segment[] {
     if (args.length < count || args.some(Number.isNaN)) break;
     i += count;
     out.push({ command, args });
+    // The pairs that follow a move are lines to them, as SVG reads them.
+    if (command === 'M') command = 'L';
+    else if (command === 'm') command = 'l';
   }
   return out;
 }
@@ -474,4 +477,160 @@ export function pathBounds(d: string): { x: number; y: number; w: number; h: num
   }
   if (minX === Infinity) return { x: 0, y: 0, w: 0, h: 0 };
   return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+/** Pieces a curve is cut into, and the most an arc turns in one piece. */
+const CURVE_PIECES = 24;
+const ARC_STEP = Math.PI / 48;
+
+/**
+ * The points of an arc after its start, as the SVG specification turns the end points of an arc
+ * into its centre (F.6.5), cut into pieces that turn at most `ARC_STEP` each.
+ */
+function arcPoints(
+  x1: number,
+  y1: number,
+  [rxIn, ryIn, angle, large, sweep, x2, y2]: number[],
+): Pt[] {
+  if (x1 === x2 && y1 === y2) return [];
+  let rx = Math.abs(rxIn!);
+  let ry = Math.abs(ryIn!);
+  if (!rx || !ry) return [[x2!, y2!]];
+  const phi = (angle! * Math.PI) / 180;
+  const cos = Math.cos(phi);
+  const sin = Math.sin(phi);
+  const dx = (x1 - x2!) / 2;
+  const dy = (y1 - y2!) / 2;
+  const x1p = cos * dx + sin * dy;
+  const y1p = -sin * dx + cos * dy;
+  const lambda = (x1p * x1p) / (rx * rx) + (y1p * y1p) / (ry * ry);
+  if (lambda > 1) {
+    rx *= Math.sqrt(lambda);
+    ry *= Math.sqrt(lambda);
+  }
+  const num = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p;
+  const den = rx * rx * y1p * y1p + ry * ry * x1p * x1p;
+  const coef = (large !== sweep ? 1 : -1) * Math.sqrt(Math.max(0, num / (den || 1)));
+  const cxp = (coef * rx * y1p) / ry;
+  const cyp = (-coef * ry * x1p) / rx;
+  const cx = cos * cxp - sin * cyp + (x1 + x2!) / 2;
+  const cy = sin * cxp + cos * cyp + (y1 + y2!) / 2;
+  const turn = (ux: number, uy: number, vx: number, vy: number) =>
+    Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+  const ux = (x1p - cxp) / rx;
+  const uy = (y1p - cyp) / ry;
+  const start = turn(1, 0, ux, uy);
+  let delta = turn(ux, uy, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
+  if (!sweep && delta > 0) delta -= 2 * Math.PI;
+  if (sweep && delta < 0) delta += 2 * Math.PI;
+  const n = Math.max(2, Math.ceil(Math.abs(delta) / ARC_STEP));
+  const out: Pt[] = [];
+  for (let i = 1; i <= n; i++) {
+    const t = start + (delta * i) / n;
+    const ex = rx * Math.cos(t);
+    const ey = ry * Math.sin(t);
+    out.push([cos * ex - sin * ey + cx, sin * ex + cos * ey + cy]);
+  }
+  return out;
+}
+
+/**
+ * A path as the lines it draws, one run of points for each part of it: curves and arcs cut into
+ * short straight pieces. For measuring a drawn outline, such as how far a point is from it; not
+ * for drawing.
+ */
+export function flattenPath(d: string): Pt[][] {
+  const runs: Pt[][] = [];
+  let run: Pt[] = [];
+  let x = 0;
+  let y = 0;
+  let startX = 0;
+  let startY = 0;
+  // The second control point of the curve before, which a smooth curve mirrors.
+  let control: Pt | null = null;
+  let controlOf = '';
+  const end = () => {
+    if (run.length > 1) runs.push(run);
+    run = [];
+  };
+  const to = (px: number, py: number) => {
+    if (!run.length) run.push([x, y]);
+    run.push([px, py]);
+    x = px;
+    y = py;
+  };
+  const cubic = (c1: Pt, c2: Pt, px: number, py: number) => {
+    const [x0, y0] = [x, y];
+    for (let i = 1; i <= CURVE_PIECES; i++) {
+      const t = i / CURVE_PIECES;
+      const s = 1 - t;
+      to(
+        s * s * s * x0 + 3 * s * s * t * c1[0] + 3 * s * t * t * c2[0] + t * t * t * px,
+        s * s * s * y0 + 3 * s * s * t * c1[1] + 3 * s * t * t * c2[1] + t * t * t * py,
+      );
+    }
+  };
+  const quadratic = (c: Pt, px: number, py: number) => {
+    const [x0, y0] = [x, y];
+    for (let i = 1; i <= CURVE_PIECES; i++) {
+      const t = i / CURVE_PIECES;
+      const s = 1 - t;
+      to(s * s * x0 + 2 * s * t * c[0] + t * t * px, s * s * y0 + 2 * s * t * c[1] + t * t * py);
+    }
+  };
+  const mirrored = (kinds: string): Pt =>
+    control && kinds.includes(controlOf) ? [2 * x - control[0], 2 * y - control[1]] : [x, y];
+  for (const { command, args } of segments(d)) {
+    const kind = command.toLowerCase();
+    const ox = command === kind ? x : 0;
+    const oy = command === kind ? y : 0;
+    const a = args.map((v, k) => v + (k % 2 ? oy : ox));
+    let next: Pt | null = null;
+    switch (kind) {
+      case 'm':
+        end();
+        x = startX = a[0]!;
+        y = startY = a[1]!;
+        break;
+      case 'z':
+        if (run.length) to(startX, startY);
+        end();
+        x = startX;
+        y = startY;
+        break;
+      case 'l':
+        to(a[0]!, a[1]!);
+        break;
+      case 'h':
+        to(args[0]! + ox, y);
+        break;
+      case 'v':
+        to(x, args[0]! + oy);
+        break;
+      case 'c':
+        next = [a[2]!, a[3]!];
+        cubic([a[0]!, a[1]!], next, a[4]!, a[5]!);
+        break;
+      case 's':
+        next = [a[0]!, a[1]!];
+        cubic(mirrored('cs'), next, a[2]!, a[3]!);
+        break;
+      case 'q':
+        next = [a[0]!, a[1]!];
+        quadratic(next, a[2]!, a[3]!);
+        break;
+      case 't':
+        next = mirrored('qt');
+        quadratic(next, a[0]!, a[1]!);
+        break;
+      case 'a':
+        for (const [px, py] of arcPoints(x, y, [...args.slice(0, 5), args[5]! + ox, args[6]! + oy]))
+          to(px, py);
+        break;
+    }
+    control = next;
+    controlOf = kind;
+  }
+  end();
+  return runs;
 }

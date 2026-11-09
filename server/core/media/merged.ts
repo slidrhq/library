@@ -10,6 +10,8 @@
  *   templates/catalog.json             the samples of the templates, a language at a time
  *   elements/catalogs/frames-catalog.json   the frames, a group and a frame at a time: the page
  *                                      exports them by their groups (`src/exportParts.ts`)
+ *   elements/backgrounds/catalog.json  the backgrounds, an item at a time
+ *   elements/animations/catalog.json   the animations and the animated shapes, an item at a time
  *
  * And of an archive of a library of before: `elements/designs/managed.json`, the catalog of the
  * designs Slidr Studio made, is folded into the catalog, and its files of each language go.
@@ -22,6 +24,8 @@ const MERGED = new Set([
   'images/designs/thumbs/index.json',
   'templates/catalog.json',
   'elements/catalogs/frames-catalog.json',
+  'elements/backgrounds/catalog.json',
+  'elements/animations/catalog.json',
 ]);
 
 /** A file of `managed.json` in one language, of a library of before: not brought in. */

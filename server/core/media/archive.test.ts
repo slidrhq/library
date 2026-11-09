@@ -530,6 +530,48 @@ describe('an archive brought into the library', () => {
     assert.equal(again.published, undefined, JSON.stringify(again));
   });
 
+  test('merges the backgrounds and the animations an item of each list at a time', async () => {
+    const BACKGROUNDS = 'elements/backgrounds/catalog.json';
+    const ANIMATIONS = 'elements/animations/catalog.json';
+    const item = (id: string, words = id) => ({ id, name: { he: words, en: words } });
+    // The library published a background, an animation and a shape of its own, and has the
+    // orbit and the ring the archive draws again.
+    const { bring, media } = await admin({
+      [BACKGROUNDS]: { version: 1, backgrounds: [item('flow'), item('mine')] },
+      [ANIMATIONS]: {
+        version: 1,
+        animations: [item('orbit', 'old'), item('my-comet')],
+        shapes: [item('ring', 'old'), item('orbit')],
+      },
+    });
+    const archive = await archiveOf({
+      [BACKGROUNDS]: { version: 1, backgrounds: [item('waves'), item('flow', 'new')] },
+      [ANIMATIONS]: {
+        version: 1,
+        animations: [item('orbit', 'new'), item('atom')],
+        shapes: [item('ring', 'new')],
+      },
+    });
+    const done = await read<Imported>(await bring(archive));
+    assert.ok(done.changed.includes(BACKGROUNDS) && done.changed.includes(ANIMATIONS));
+    // Each item as the archive has it, in its order; one only the library has after them.
+    const backgrounds = stored(media, BACKGROUNDS)!;
+    assert.equal(backgrounds, `${JSON.stringify(JSON.parse(backgrounds), null, 2)}\n`);
+    assert.deepEqual(JSON.parse(backgrounds), {
+      version: 1,
+      backgrounds: [item('waves'), item('flow', 'new'), item('mine')],
+    });
+    // An animation and an animated shape of one id are two items.
+    assert.deepEqual(JSON.parse(stored(media, ANIMATIONS)!), {
+      version: 1,
+      animations: [item('orbit', 'new'), item('atom'), item('my-comet')],
+      shapes: [item('ring', 'new'), item('orbit')],
+    });
+    // Brought in again, it changes nothing.
+    const again = await read<Imported>(await bring(archive));
+    assert.equal(again.published, undefined, JSON.stringify(again));
+  });
+
   test('of a library of before, makes its two catalogs one, as the library’s own', async () => {
     const both = { he: designSlide('he'), en: designSlide('en') };
     const { bring, media } = await admin({

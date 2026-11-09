@@ -272,6 +272,31 @@ export type ShapeElement = z.infer<typeof ShapeElement>;
 
 const LineHead = z.enum(['none', 'arrow', 'triangle', 'circle', 'diamond', 'bar']);
 
+/**
+ * What runs along a line while it is shown (ADR-131): its dashes flow from its start toward its
+ * end, and riders, boxes or dots, travel it at the same pace, as on a conveyor. It plays on the
+ * stage, in a show and in an exported file. The line keeps its points: the flow follows them.
+ */
+export const LineFlow = z.strictObject({
+  /** Slide pixels a second, of the dashes and the riders alike. */
+  speed: z.number().positive(),
+  /** What travels the line besides its dashes. Without it, nothing. */
+  rider: z.enum(['none', 'box', 'dot']).optional(),
+  /** How many riders are on the line at once, evenly spaced. Without it, 3. */
+  count: z.number().int().min(1).max(12).optional(),
+  /** A rider's longest side, in slide pixels. Without it, in proportion to the line's width. */
+  size: z.number().positive().optional(),
+  /** A rider's colour. Without it, the line's. */
+  color: Color.optional(),
+  /** From the end of the line back to its start. */
+  reverse: z.boolean().optional(),
+});
+export type LineFlow = z.infer<typeof LineFlow>;
+export type LineRider = NonNullable<LineFlow['rider']>;
+
+/** What a flow is without a word of its own: a new one starts as this (ADR-131). */
+export const LINE_FLOW_DEFAULTS = { speed: 80, count: 3 } as const;
+
 export const LineElement = z.strictObject({
   ...base,
   type: z.literal('line'),
@@ -281,6 +306,8 @@ export const LineElement = z.strictObject({
   startHead: LineHead,
   endHead: LineHead,
   curve: z.enum(['straight', 'elbow', 'curved']),
+  /** What runs along it while it is shown (ADR-131). */
+  flow: LineFlow.optional(),
 });
 export type LineElement = z.infer<typeof LineElement>;
 

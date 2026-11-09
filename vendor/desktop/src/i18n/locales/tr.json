@@ -378,35 +378,6 @@
         "other": "Bu seçenek oluşturulamadı"
       }
     },
-    "look": {
-      "hint": "Slaytta görmek için üzerine gelin · uygulamak için tıklayın",
-      "current": "Sunuda kullanılıyor",
-      "template": {
-        "title": "Şablon",
-        "builtIn": "Yerleşik",
-        "personal": "Kişisel",
-        "undo": "Şablon değiştirme"
-      },
-      "palette": {
-        "title": "Renk paleti",
-        "sample": "Aa",
-        "undo": "Renk paletini değiştirme",
-        "names": {
-          "basic": "Temel",
-          "ocean": "Okyanus",
-          "sage": "Adaçayı",
-          "rose": "Gül",
-          "graphite": "Grafit",
-          "forest": "Orman",
-          "plum": "Erik"
-        }
-      },
-      "fonts": {
-        "title": "Yazı tipi çifti",
-        "undo": "Yazı tipi çiftini değiştirme",
-        "pair": "Başlıklar: {{heading}} · Gövde: {{body}}"
-      }
-    },
     "action": {
       "other": "Eylem",
       "deck": {
@@ -469,77 +440,6 @@
       }
     },
     "actions": {
-      "wording": "İfade",
-      "edit": "Düzenleme",
-      "content": "İçerik",
-      "design": "Tasarım",
-      "slideSettings": "Slaytın kendisi",
-      "image": "Görsel",
-      "count": "Seçenek sayısı",
-      "variations": "Farklı ifadeler",
-      "titles": "Alternatif başlıklar",
-      "shorten": "Kısalt",
-      "expand": "Genişlet",
-      "fix": "Hataları düzelt",
-      "bullets": "Madde işaretlerine dönüştür",
-      "tone": "Tonu değiştir",
-      "toneChoice": "Ton",
-      "translate": "Çevir",
-      "language": "Hedef dil",
-      "redesign": "Yeniden tasarla",
-      "shortenSlide": "Metni kısalt",
-      "split": "İki slayta böl",
-      "visual": "Görselleştirme ekle",
-      "addImage": "Görsel ekle",
-      "animate": "Animasyonlar",
-      "notes": "Konuşmacı notları",
-      "fixFindings": "Tasarım bulgularını düzelt",
-      "shortenDeck": "Metni kısalt",
-      "improve": "Tasarımı iyileştir",
-      "alternatives": "Alternatif oluştur",
-      "imagePrompt": "Görselde ne olmalı ya da görselde ne değişmeli?",
-      "imagePromptHint": "Alternatifler için isteğe bağlı: açıklama yoksa aracı slayta bakarak karar verir.",
-      "imageEdit": "Yapay zekâ ile düzenle",
-      "editImage": "Açıklamaya göre değiştir",
-      "restyle": "Sununun stiline uydur",
-      "paintMask": "Değişecek alanı işaretle",
-      "maskSet": "Bir alan işaretlendi: yalnızca orası değişecek",
-      "maskClear": "İşareti temizle",
-      "expandImage": "Görseli genişlet",
-      "expandTo": "Genişletme sonrasındaki biçim",
-      "expandHint": "Görsel yerinde kalır; seçilen biçimde eksik kalan kısmı yapay zekâ görselin çevresine ekler.",
-      "expandFailed": "Görsel genişletilemedi",
-      "expandSame": "Görsel zaten bu biçimde.",
-      "expandLabel": "Görseli genişlet",
-      "imageLocal": "Yapay zekâ olmadan",
-      "crop": "Kırp",
-      "chart": "Grafik",
-      "chartType": "Grafik türü öner",
-      "chartTitle": "Başlık ve içgörü",
-      "chartFill": "Verileri metinden doldur",
-      "chartSource": "Sayıları içeren bir metni veya tabloyu buraya yapıştırın",
-      "tableFill": "Tabloyu metinden doldur",
-      "tableSource": "Tablonun doldurulacağı metni buraya yapıştırın",
-      "tableStyle": "Görünüm öner",
-      "tableInsight": "İçgörüyle özetle",
-      "tableChart": "Grafiğe dönüştür",
-      "fromText": "Metinden",
-      "fromTextHint": "Aracı yalnızca metinde yazanları alır ve neleri dışarıda bıraktığını size söyler.",
-      "onSlide": "Slaytta",
-      "onSlideHint": "Bu ikisi yalnızca tabloyu değil, slaytı da değiştirir.",
-      "shape": "Şekil",
-      "shapeSuggest": "Şekil öner",
-      "icon": "Simge",
-      "iconReplace": "Daha uygun bir simge",
-      "colourByTheme": "Şablona göre renklendir",
-      "editKind": {
-        "exact": "Görsel sağlayıcısı yalnızca istediğinizi değiştirir; değişecek alanı işaretleyebilirsiniz.",
-        "regenerate": "Görsel sağlayıcısı görseli özgün görsele bakarak yeniden çizer: küçük ayrıntılar değişir ve alan işaretlenemez.",
-        "none": "Bu görsel sağlayıcısı görsel düzenlemez."
-      },
-      "layout": "Düzen",
-      "layoutNone": "Bu slaytta değiştirilecek bir düzen yok.",
-      "layoutLabel": "Slayt düzeni",
       "languages": {
         "Hebrew": "İbranice",
         "English": "İngilizce",
@@ -563,32 +463,6 @@
         "friendly": "samimi",
         "confident": "kendinden emin",
         "plain": "sade"
-      },
-      "template": {
-        "title": "Yeni şablon",
-        "open": "Yapay zekâ ile şablon oluştur",
-        "description": "Şablon nasıl görünmeli?",
-        "url": "Şablonun benzemesini istediğiniz bir site",
-        "logo": "Logo",
-        "chooseLogo": "Logo seç",
-        "files": "Örnek alınacak bir görsel veya HTML dosyası",
-        "addFile": "Dosya ekle",
-        "fromDeck": "Bu sununun tasarımına göre",
-        "create": "Taslak hazırla",
-        "hint": "Aracı kaynakları okur, bir taslak hazırlar ve sohbette gösterir. Siz kaydedene kadar hiçbir şey kaydedilmez.",
-        "needSource": "En az bir kaynak verin: açıklama, adres, logo, dosya ya da bu sunu."
-      },
-      "busy": "Aracı bir turun ortasında. Tur bitince eylemler yeniden kullanılabilir.",
-      "groupSelection": "Seçiminiz",
-      "groupSlide": "Slayt {{n}}",
-      "groupDeck": "Sununun tamamı",
-      "noActions": "Seçiminiz için hazır eylem yok. İstediğiniz değişikliği sohbette isteyebilirsiniz.",
-      "provider": {
-        "checking": "Görsel sağlayıcısı denetleniyor…",
-        "ready": "Her görsel yaklaşık bir dakika sürer ve görseller tek tek görünür.",
-        "not_installed": "Görsel sağlayıcısı bu bilgisayarda yüklü değil, bu yüzden görsel oluşturulamıyor.",
-        "not_logged_in": "Görsel sağlayıcısında oturum açılmamış. Oturum açıp buraya geri dönün.",
-        "unavailable": "Görsel sağlayıcısı şu anda kullanılamıyor."
       }
     }
   },
@@ -1487,62 +1361,17 @@
         "scale": "Büyüme ve atım",
         "lines": "Çizgiler ve dalgalar",
         "particles": "Parçacıklar ve ağlar"
-      },
-      "name": {
-        "orbit": "Yörünge",
-        "conveyor": "Yoldaki kutular",
-        "trace": "Devre yolu",
-        "atom": "Atom",
-        "shuttle": "Çizgi üzerinde nokta",
-        "hexagon": "Dönen altıgenler",
-        "rings": "Dönen halkalar",
-        "radar": "Radar",
-        "ripple": "Yayılan halkalar",
-        "breathe": "Nefes alan şekil",
-        "bars": "Yükselen çubuklar",
-        "waves": "Dalgalar",
-        "draw": "Çizilen ok",
-        "flowArrow": "Akan bağlayıcı",
-        "heartbeat": "Kalp atışı",
-        "network": "Ağ",
-        "converge": "Toplanan parçacıklar",
-        "float": "Yükselen kabarcıklar"
       }
     },
     "backgrounds": {
       "hint": "Slayta ya da seçtiğiniz tüm slaytlara uygulamak için bir arka plana tıklayın. Renkleri şablondan gelir; „Arka plan” aracı sizi şablonun arka planına geri götürür.",
       "animated": "Hareketli arka planlar",
-      "still": "Sakin arka planlar",
-      "name": {
-        "flow": "Devre akışı",
-        "waves": "Dalgalar",
-        "converge": "Toplanma",
-        "orbit": "Yörüngeler",
-        "radar": "Radar",
-        "network": "Ağ",
-        "drift": "Süzülen ışık",
-        "particles": "Yükselen parçacıklar",
-        "dots": "Nokta ızgarası",
-        "contours": "Eş yükselti eğrileri",
-        "arcs": "Köşede yaylar"
-      }
+      "still": "Sakin arka planlar"
     },
     "animatedShapes": {
       "title": "Hareketli şekiller",
       "hint": "Bir hareketi tekrarlayan sıradan şekiller. Rengi, dış çizgisi ve boyutu her şekil gibi düzenlenir; hareketi Hareket aracıyla düzenlenir.",
-      "more": "Tüm animasyonlar",
-      "name": {
-        "ring": "Dönen halka",
-        "hexagon": "Dönen altıgen",
-        "star": "Dönen yıldız",
-        "octagon": "Dönen sekizgen",
-        "square": "Dönüp duran kare",
-        "pulse": "Atan daire",
-        "heart": "Atan kalp",
-        "float": "Süzülen daire",
-        "arrow": "Sallanan ok",
-        "blink": "Yanıp sönen nokta"
-      }
+      "more": "Tüm animasyonlar"
     },
     "motion": {
       "title": "Hareket",
@@ -1577,6 +1406,21 @@
         "float": "Süzülme yüksekliği",
         "swing": "Sallanma açısı",
         "blink": "Yanıp sönme gücü"
+      },
+      "flow": {
+        "title": "Çizgi boyunca",
+        "kind": {
+          "none": "Yok",
+          "dashes": "Kesik çizgiler",
+          "box": "Kutular",
+          "dot": "Noktalar"
+        },
+        "speed": "Saniyede piksel",
+        "forward": "Sona doğru",
+        "back": "Başa doğru",
+        "count": "Sayı",
+        "size": "Boyut",
+        "color": "Renk"
       },
       "hint": "Hareket, slayt gösterildiği sürece tekrarlanır: düzenleyicide, sunumda ve dışa aktarılan dosyada."
     }
@@ -1774,20 +1618,6 @@
       "signingIn": "Açılan pencerede oturum açma işlemini tamamlayın.",
       "install": "Yükle…",
       "signIn": "Oturum aç"
-    },
-    "mask": {
-      "title": "Değişecek alanı işaretleyin",
-      "description": "Görselin, yapay zekânın değiştirebileceği kısmını boyayın. Boyanmayan her yer olduğu gibi kalır.",
-      "canvas": "Alanın üzerine boyanacağı görsel",
-      "tool": "Araç",
-      "paint": "Boya",
-      "erase": "Sil",
-      "brush": "Fırça boyutu",
-      "clear": "Temizle",
-      "empty": "Henüz boyanmış alan yok.",
-      "done": "Bitti",
-      "cancel": "İptal",
-      "failed": "İşaret kaydedilmedi"
     },
     "upscale": {
       "title": "Çözünürlüğü artır",
@@ -2803,11 +2633,8 @@
       "tools": "Araçlar",
       "collapse": "Paneli daralt",
       "resize": "Paneli yeniden boyutlandır",
-      "actions": "Eylemler",
       "chatEmptyTitle": "Sohbet henüz bağlı değil",
       "chatEmptyBody": "Aracıdan değişiklik isteyeceğiniz ve bu değişikliklerin slaytta gerçekleşmesini izleyeceğiniz yer burası.",
-      "actionsEmptyTitle": "Henüz eylem yok",
-      "actionsEmptyBody": "Bu araca ait hızlı eylemler burada görünecek.",
       "soonTitle": "Henüz kullanılamıyor",
       "mediaBody": "Yüklemeler, stok fotoğraflar, simgeler ve yapay zekâ görselleri.",
       "animationsBody": "Animasyon efektleri ve slayt zaman çizelgesi.",
@@ -2984,6 +2811,12 @@
       "hint": "Notlar sunuyla birlikte kaydedilir ve slaytta gösterilmez.",
       "noSlide": "Slayt yok",
       "step": "Konuşmacı notları"
+    },
+    "crash": {
+      "title": "Bir sorun oluştu",
+      "body": "Slidr beklenmeyen bir hatayla karşılaştı. Devam etmek için pencereyi yeniden yükleyin.",
+      "reload": "Yeniden yükle",
+      "details": "Ayrıntılar"
     }
   },
   "stage": {
@@ -3007,6 +2840,7 @@
       "editData": "Verileri düzenle",
       "editCells": "Hücreleri düzenle",
       "editPoints": "Noktaları düzenle",
+      "adjust": "Şekli ayarla",
       "order": "Katman sırası"
     },
     "toolbar": {
@@ -3018,7 +2852,7 @@
       "walk": "Seçmeden sonraki veya önceki nesneye ya da slayt şeridinde sonraki veya önceki slayta git",
       "toggle": "Seçime ekle ya da seçimden çıkar",
       "points": "Çizginin noktalarına gir ve çık",
-      "part": "Çizginin sonraki veya önceki noktası; sonraki veya önceki kırpma tutamacı",
+      "part": "Çizginin sonraki veya önceki noktası; şeklin sonraki veya önceki ayar tutamacı; sonraki veya önceki kırpma tutamacı",
       "addPoint": "Çizgiye nokta ekle",
       "removePoint": "Çizgiden nokta kaldır",
       "lock": "Kilitle ve kilidi aç",
@@ -3026,6 +2860,8 @@
     },
     "at": {
       "point": "Nokta {{n}} / {{total}}. Ok tuşları noktayı taşır.",
+      "adjust": "Ayar tutamacı {{n}} / {{total}}. Ok tuşları tutamacı taşır.",
+      "outline": "Ana hat kalınlığı tutamacı: {{width}} px. Ok tuşları tutamacı taşır.",
       "picture": "Kırpma: ok tuşları görseli taşır. Ctrl+Yukarı ok veya Ctrl+Aşağı ok görseli ölçeklendirir. Tab tutamaçlara geçer.",
       "handle": "Kırpma tutamacı: {{where}}. Ok tuşları tutamacı taşır.",
       "walkSelected": "{{what}}: seçimde",

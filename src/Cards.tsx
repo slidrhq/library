@@ -10,11 +10,22 @@ import { ItemOverlay, stepper } from './Overlay';
 import { finds, matches, TagFacts, tagsOf, useRead, type LibraryRoute } from './shared';
 
 type CardSets = Awaited<ReturnType<typeof cardSetsModule>>;
-type CardSetId = CardSets['CARD_SETS'][number];
+type CardSetId = ReturnType<CardSets['cardSets']>[number];
 type Tags = Awaited<ReturnType<typeof tagsOf>>;
 
+/**
+ * The app's card sets once their catalog has come. The app reads it (`cardSetCatalog`) the first
+ * time Elements wants the sets, and knows none until then, so the page waits for it before it
+ * draws them, and `cardSets()` and everything that draws a set answer from it.
+ */
+const cardSetsRead = async () => {
+  const cards = await cardSetsModule();
+  await cards.cardSetCatalog.load();
+  return cards;
+};
+
 /** The card sets, the app's search, and the tags it finds them by (ADR-108). */
-const load = () => Promise.all([cardSetsModule(), iconSearchModule(), tagsOf('cards')]);
+const load = () => Promise.all([cardSetsRead(), iconSearchModule(), tagsOf('cards')]);
 
 /** The room around a drawn set, in slide pixels: its shadow falls there (`CardSetsCollection`). */
 const PAD = 44;
@@ -182,7 +193,7 @@ export function Cards({
   const [cards, search, tags] = read.value ?? [];
   const shown = useMemo(
     () =>
-      (cards?.CARD_SETS ?? []).filter(
+      (cards?.cardSets() ?? []).filter(
         (id) =>
           (search &&
             finds(search, query, { he: nameOf(id, 'he'), en: nameOf(id, 'en') }, tags?.[id])) ||
@@ -197,7 +208,8 @@ export function Cards({
   }, [cards, shown, lang]);
   if (read.error) return <p className="error-text">{read.error}</p>;
   if (!cards || !tags) return <p className="muted">{t('libraryBrowse.cardsLoading')}</p>;
-  if (cards.CARD_SETS.length === 0) return <p className="muted">{t('libraryBrowse.cardsEmpty')}</p>;
+  if (cards.cardSets().length === 0)
+    return <p className="muted">{t('libraryBrowse.cardsEmpty')}</p>;
   // The card sets are written in Hebrew and English only, and are shown in no other language.
   if (!isBase(lang)) {
     return (
@@ -208,7 +220,7 @@ export function Cards({
     );
   }
   const open = (id: string) => go({ section: 'cards', item: id });
-  const opened = cards.CARD_SETS.find((id) => id === route.item);
+  const opened = cards.cardSets().find((id) => id === route.item);
 
   return (
     <>
@@ -250,10 +262,11 @@ export function Cards({
 
 /** A set of the library as a new one goes onto a slide: for the overview. */
 export function CardsPeek() {
-  const read = useRead(cardSetsModule, []);
+  const read = useRead(cardSetsRead, []);
   const cards = read.value;
   const element = useMemo(() => {
-    const id = cards?.CARD_SETS.includes('stats') ? 'stats' : cards?.CARD_SETS[0];
+    const ids = cards?.cardSets() ?? [];
+    const id = ids.includes('stats') ? 'stats' : ids[0];
     return cards && id ? cards.newCardSet(id, cards.readingOf(metaOf('he'))) : undefined;
   }, [cards]);
   return (

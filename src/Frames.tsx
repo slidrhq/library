@@ -1,5 +1,5 @@
 import { BASE_LANGUAGES, createDeck, type AssetMeta } from '@slidr/model';
-import { pictures } from '@slidr/templates/builtin/pictures';
+import { templatePictures } from '@slidr/templates/builtin/pictures';
 import { useMemo, useState } from 'react';
 import { useT } from './i18n';
 import { LanguagePicker, nativeName, type Lang } from './languages';
@@ -14,13 +14,25 @@ type FramesMod = Awaited<ReturnType<typeof framesModule>>;
 type ThumbsMod = Awaited<ReturnType<typeof frameThumbsModule>>;
 type PhotoFrame = Awaited<ReturnType<FramesMod['loadFrames']>>[number];
 
+/**
+ * The frames, the app's pictures of them made ahead, and the library's tags of them. The app
+ * reads the index of those pictures (`frameThumbIndex`) the first time the frames are shown, and
+ * draws every frame live until it has come: the page waits for it, so a tile shows what the app's
+ * would. It waits for the pictures of the templates' samples too, as a frame up close is shown
+ * around one of them.
+ */
 const load = async () => {
   const [frames, thumbs, tags] = await Promise.all([
     framesModule(),
     frameThumbsModule(),
     tagsOf('frames'),
   ]);
-  return { frames, thumbs, tags, all: await frames.loadFrames() };
+  const [all] = await Promise.all([
+    frames.loadFrames(),
+    thumbs.frameThumbIndex.load(),
+    templatePictures.load(),
+  ]);
+  return { frames, thumbs, tags, all };
 };
 
 /** The theme a frame is drawn in here: a new deck's, as no deck is open. */
@@ -39,8 +51,11 @@ const LANDSCAPE = `data:image/svg+xml,${encodeURIComponent(
     '<path d="M0 120v-18l44-30 40 26 36-14v36Z" fill="#22c55e"/></svg>',
 )}`;
 
-/** A photograph of the library, to see a frame with a real picture in it. */
-const PHOTO = pictures.ananTeam2;
+/**
+ * A photograph of the library, to see a frame with a real picture in it: one of the pictures of
+ * the templates' samples, which `load` has read.
+ */
+const samplePhoto = (): AssetMeta | undefined => templatePictures.peek().ananTeam2;
 
 const TILE = { w: 176, h: 144 };
 
@@ -67,15 +82,16 @@ function DrawnFrame({
   const drawn = useMemo(() => {
     const { deck, slide } = mod.framePreview(frame, lang, THEME);
     const id = mod.SAMPLE_PHOTO.id;
-    if (photo && PHOTO) {
+    const picture = photo ? samplePhoto() : undefined;
+    if (picture) {
       deck.assets[id] = {
         ...mod.SAMPLE_PHOTO,
         mime: 'image/webp',
-        width: PHOTO.width,
-        height: PHOTO.height,
+        width: picture.width,
+        height: picture.height,
       };
     }
-    const url = photo && PHOTO ? mediaUrl(`images/templates/${PHOTO.name}`) : LANDSCAPE;
+    const url = picture ? mediaUrl(`images/templates/${picture.name}`) : LANDSCAPE;
     const resolve = (asset: AssetMeta) => (asset.id === id ? url : undefined);
     return { deck, slide, resolve };
   }, [mod, frame, lang, photo]);

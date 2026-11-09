@@ -13,6 +13,7 @@ import {
 } from '@slidr/model';
 import type { Template } from '@slidr/templates';
 import { Component, useMemo, type MouseEvent, type ReactNode } from 'react';
+import { templatesModule } from './app';
 import { DeckSlide } from './Lazy';
 import { slideProblem } from './uploadsApi';
 
@@ -147,17 +148,29 @@ export function DesignPreview({
   );
 }
 
+/**
+ * The built-in templates, as the app's library holds them (`builtInTemplates` of
+ * `desktop/src/templates/builtIn.ts`). The app reads them once it has started and has none until
+ * they have come, so this waits for them.
+ */
+export const loadBuiltInTemplates = (): Promise<readonly Template[]> =>
+  templatesModule().then(({ builtInTemplates }) => builtInTemplates.load());
+
 /** A template's sample in a language, seated on its layouts by the template's own engine. */
 export async function sampleDeckOf(
   template: Template,
   sample: unknown[],
   lang: ContentLanguage,
 ): Promise<{ deck: Deck; resolve: (asset: AssetMeta) => string | undefined }> {
-  const [{ sampleDeck }, { pictures }, { pictureUrl }] = await Promise.all([
+  const [{ sampleDeck }, { templatePictures }, { pictureUrl }, { mediaFiles }] = await Promise.all([
     import('@slidr/templates/builtin/kit'),
     import('@slidr/templates/builtin/pictures'),
     import('@desktop/templates/samples'),
+    import('@slidr/media-library'),
   ]);
+  // The pictures the samples name, and the library's files: `pictureUrl` answers from both as far
+  // as they are known, and they are read only when first wanted.
+  const [pictures] = await Promise.all([templatePictures.load(), mediaFiles()]);
   const assets = Object.fromEntries(Object.values(pictures).map((one) => [one.id, one]));
   const deck = sampleDeck(
     { ...template, assets: { ...assets, ...template.assets } },

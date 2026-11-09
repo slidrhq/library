@@ -1,4 +1,4 @@
-import { mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
+import { mediaCatalog, mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
 import type { ContentLanguage } from '@slidr/model';
 import { frameLanguage, frameRev, picturedAhead, type PhotoFrame } from './frames';
 
@@ -23,9 +23,21 @@ interface ThumbsIndex {
   frames: Readonly<Record<string, string>>;
 }
 
-// A media library that has no pictures yet has none, and nothing fails.
-const index = await readMediaJson<ThumbsIndex>('images/frames/index.json');
-const files = await mediaFiles();
+/**
+ * The index of the pictures, and the library's files: read when the frames are first shown, or
+ * while the app is idle. Until then, and in a media library that has no pictures yet, a frame has
+ * none and is drawn, and nothing fails.
+ */
+export const frameThumbIndex = mediaCatalog<{
+  index: ThumbsIndex | undefined;
+  files: ReadonlySet<string>;
+}>(
+  async () => ({
+    index: await readMediaJson<ThumbsIndex>('images/frames/index.json'),
+    files: await mediaFiles(),
+  }),
+  { index: undefined, files: new Set() },
+);
 
 export interface FrameThumbPicture {
   url: string;
@@ -37,9 +49,14 @@ export interface FrameThumbPicture {
 }
 
 /** What was found for a frame before, by language: its picture, or null for none. */
-const found = new WeakMap<PhotoFrame, Partial<Record<ContentLanguage, FrameThumbPicture | null>>>();
+let found = new WeakMap<PhotoFrame, Partial<Record<ContentLanguage, FrameThumbPicture | null>>>();
+// Found again with the index that came.
+frameThumbIndex.subscribe(() => {
+  found = new WeakMap();
+});
 
 function find(frame: PhotoFrame, lang: ContentLanguage): FrameThumbPicture | null {
+  const { index, files } = frameThumbIndex.get();
   if (!index || !picturedAhead(frame)) return null;
   const name = frame.id.replace(/^frame:/, '');
   const path = `images/frames/${lang}/${name}.webp`;
@@ -73,7 +90,9 @@ export function prepareFrameThumbs(frames: readonly PhotoFrame[], lang: string):
   const idle = typeof requestIdleCallback === 'function';
   let at = 0;
   let waiting = 0;
+  let stopped = false;
   const wait = () => {
+    if (stopped) return;
     waiting = idle ? requestIdleCallback(step) : window.setTimeout(step, 30);
   };
   const step = () => {
@@ -91,6 +110,11 @@ export function prepareFrameThumbs(frames: readonly PhotoFrame[], lang: string):
     }
     wait();
   };
-  wait();
-  return () => (idle ? cancelIdleCallback(waiting) : clearTimeout(waiting));
+  // Which frame has a picture is known once the index has come.
+  void frameThumbIndex.load().then(wait);
+  return () => {
+    stopped = true;
+    if (idle) cancelIdleCallback(waiting);
+    else clearTimeout(waiting);
+  };
 }

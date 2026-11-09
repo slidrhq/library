@@ -42,6 +42,7 @@ interface Surroundings {
   location?: { origin?: string };
   fetch?: (url: string, init?: { signal?: unknown }) => Promise<Answer>;
   AbortSignal?: { timeout?: (ms: number) => unknown };
+  console?: { error(message: string, error: unknown): void };
 }
 
 const surroundings = () => globalThis as unknown as Surroundings;
@@ -153,12 +154,134 @@ export function mediaManifest(): Promise<MediaManifest> {
 
 /** The places of the library's files: what a reader may ask for. Empty without a library. */
 export function mediaFiles(): Promise<ReadonlySet<string>> {
-  files ??= mediaManifest().then((read) => new Set(Object.keys(read.files)));
+  files ??= mediaManifest().then((read) => {
+    const known = new Set(Object.keys(read.files));
+    filesNow = known;
+    changed();
+    return known;
+  });
   return files;
+}
+
+/** The places of the library's files as far as they are known now: none until the manifest came. */
+let filesNow: ReadonlySet<string> = new Set();
+/** Bumped whenever something read from the library comes, or comes again. */
+let epoch = 0;
+const listeners = new Set<() => void>();
+
+function changed(): void {
+  epoch += 1;
+  for (const listener of [...listeners]) listener();
+}
+
+/**
+ * The places of the library's files known now, without waiting: empty until the manifest has
+ * come, which asking for it starts. A reader that draws with it draws again on
+ * {@link subscribeMedia}.
+ */
+export function mediaFilesNow(): ReadonlySet<string> {
+  void mediaFiles();
+  return filesNow;
+}
+
+/**
+ * Calls `listener` whenever something of the library comes: the manifest, a catalog, or either
+ * again after the library changed. For a page that draws what it holds, so it draws again.
+ */
+export function subscribeMedia(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/** A number that changes whenever {@link subscribeMedia} calls its listeners. */
+export const mediaEpoch = (): number => epoch;
+
+/**
+ * A value made of the library's files, read in the background the first time it is wanted and
+ * never waited for: until it has come, readers get what stands in for it, and draw again when it
+ * comes (`subscribe`). The app starts without the library this way, and a library that is slow,
+ * or not there, costs it nothing.
+ */
+export interface MediaCatalog<T> {
+  /** The value now: `empty` until it has been read. Asking starts the read. */
+  readonly get: () => T;
+  /** The value now, without starting the read: for a reader that has it read when it chooses. */
+  readonly peek: () => T;
+  /** The value once read (`empty` when the library has nothing); starts the read. Never rejects. */
+  readonly load: () => Promise<T>;
+  /** Whether a read has come, whatever it found. */
+  readonly ready: boolean;
+  /** Calls `listener` when the value changes; returns what stops it. */
+  readonly subscribe: (listener: () => void) => () => void;
+}
+
+/** The catalogs read so far, read again when the library changes. */
+const catalogs = new Set<{ reload(): void }>();
+
+/** A value of the library that `read` makes, `empty` until it has: see {@link MediaCatalog}. */
+export function mediaCatalog<T>(read: () => Promise<T>, empty: T): MediaCatalog<T> {
+  let value = empty;
+  let ready = false;
+  let reading: Promise<T> | undefined;
+  const own = new Set<() => void>();
+  const start = (): Promise<T> =>
+    read()
+      .catch((error: unknown) => {
+        surroundings().console?.error('A file of the media library could not be read', error);
+        return empty;
+      })
+      .then((next) => {
+        value = next;
+        ready = true;
+        for (const listener of [...own]) listener();
+        changed();
+        return next;
+      });
+  const catalog: MediaCatalog<T> = {
+    get: () => {
+      void catalog.load();
+      return value;
+    },
+    peek: () => value,
+    load: () => {
+      if (!reading) {
+        reading = start();
+        catalogs.add({
+          reload: () => {
+            reading = start();
+          },
+        });
+      }
+      return reading;
+    },
+    get ready() {
+      return ready;
+    },
+    subscribe: (listener) => {
+      own.add(listener);
+      return () => own.delete(listener);
+    },
+  };
+  return catalog;
+}
+
+/**
+ * The library changed while the app runs (the core read a newer manifest than the one it answered
+ * from at the start): the manifest is read again, and so is every catalog read so far, and
+ * whoever draws them draws again.
+ */
+export function refreshMediaLibrary(): void {
+  // What is known stays known until the new manifest has come.
+  manifest = undefined;
+  files = undefined;
+  void mediaFiles().then(() => {
+    for (const catalog of catalogs) catalog.reload();
+  });
 }
 
 /** Forgets the manifest read, so the next call reads it again: for tests. */
 export function forgetMediaManifest(): void {
   manifest = undefined;
   files = undefined;
+  filesNow = new Set();
 }

@@ -1,9 +1,24 @@
-import { mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
+import { mediaCatalog, mediaFiles, mediaUrl, readMediaJson } from '@slidr/media-library';
 import type { AssetMeta } from '@slidr/model';
 import type { DesignId } from './designs';
 
-const sizes =
-  (await readMediaJson<Record<string, number[] | undefined>>('images/designs/sizes.json')) ?? {};
+/**
+ * What the library says of the designs' pictures: their sizes in pixels
+ * (`images/designs/sizes.json`), and which of them it has. Read when the designs are first
+ * wanted, or while the app is idle; until then a design has no picture to show.
+ */
+export const designPictures = mediaCatalog<{
+  sizes: Readonly<Record<string, number[] | undefined>>;
+  files: ReadonlySet<string>;
+}>(
+  async () => ({
+    sizes:
+      (await readMediaJson<Record<string, number[] | undefined>>('images/designs/sizes.json')) ??
+      {},
+    files: await mediaFiles(),
+  }),
+  { sizes: {}, files: new Set() },
+);
 
 /**
  * The originals in the media library, by file name: `<id>.webp` is a design's picture, and
@@ -12,10 +27,9 @@ const sizes =
  * person, a product), the picture is the subject alone on a transparent ground, so it stays usable
  * when the background behind it is changed.
  */
-const files = await mediaFiles();
 const url = (name: string) => {
   const path = `images/designs/${name}.webp`;
-  return files.has(path) ? mediaUrl(path) : undefined;
+  return designPictures.get().files.has(path) ? mediaUrl(path) : undefined;
 };
 
 export const previewAssetId = (id: DesignId) => `design-preview-${id}`;
@@ -30,7 +44,7 @@ type Size = readonly [number, number];
  * catalog gives, from the caller): a cropped picture cannot be drawn without it.
  */
 function meta(id: string, name: string, given?: Size): AssetMeta {
-  const size = sizes[name] ?? given;
+  const size = designPictures.get().sizes[name] ?? given;
   const file = `${name}.webp`;
   return {
     id,
@@ -58,6 +72,7 @@ export function designAssetUrl(asset: AssetMeta): string | undefined {
 }
 
 async function bundled(name: string): Promise<File> {
+  await designPictures.load();
   const address = url(name);
   const response = address ? await fetch(address) : undefined;
   if (!response?.ok) throw new Error(`Could not load design image: ${name}.webp`);
@@ -67,6 +82,7 @@ async function bundled(name: string): Promise<File> {
 export const designAssetFile = (id: DesignId) => bundled(id);
 
 /** The file of a design's backdrop, when it has one. */
-export function designBackdropFile(id: DesignId): Promise<File> | undefined {
+export async function designBackdropFile(id: DesignId): Promise<File | undefined> {
+  await designPictures.load();
   return url(`${id}-bg`) ? bundled(`${id}-bg`) : undefined;
 }

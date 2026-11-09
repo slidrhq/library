@@ -45,11 +45,28 @@ export function hebrewFaces<T extends { family: string; unicodeRange?: string }>
  */
 type Counterpart = (family: string, lang: string) => { family: string; whole: boolean } | undefined;
 let counterpartOf: Counterpart = () => undefined;
+/** Bumped whenever the host tells the counterparts, so slides drawn before draw again. */
+let counterpartsVersion = 0;
+const counterpartListeners = new Set<() => void>();
 
-/** Tells the renderer the counterparts of its host's fonts (see `fontStack`). */
+/**
+ * Tells the renderer the counterparts of its host's fonts (see `fontStack`). The host may tell
+ * them after slides were drawn, once its font library has come: they are drawn again.
+ */
 export function setFontCounterparts(counterpart: Counterpart): void {
   counterpartOf = counterpart;
+  counterpartsVersion += 1;
+  for (const listener of [...counterpartListeners]) listener();
 }
+
+/** For `useSyncExternalStore`: calls `listener` when the counterparts are told again. */
+export function subscribeFontCounterparts(listener: () => void): () => void {
+  counterpartListeners.add(listener);
+  return () => counterpartListeners.delete(listener);
+}
+
+/** A number that changes whenever the counterparts are told. */
+export const fontCounterpartsVersion = (): number => counterpartsVersion;
 
 /**
  * A font family list where each script gets the face meant for it (SPEC 5.5). The Hebrew-only

@@ -308,6 +308,24 @@ button.chip[aria-pressed='true'] .muted {
   background: var(--surface-2);
 }
 
+/* An animation or a background up close: moving, and in each direction when it matters. */
+.motion-figure {
+  margin: 0 0 1rem;
+}
+
+/* Two of them, still, side by side, in the overview. */
+.peek.motion-peek {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2px;
+}
+
+.motion-peek-slide {
+  display: block;
+  min-width: 0;
+}
+
 .card-picture-box {
   width: 100%;
 }

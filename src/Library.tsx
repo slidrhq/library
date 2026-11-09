@@ -21,10 +21,16 @@ const Frames = lazy(() => import('./Frames').then((m) => ({ default: m.Frames })
 const Shapes = lazy(() => import('./Shapes').then((m) => ({ default: m.Shapes })));
 const Stickers = lazy(() => import('./Stickers').then((m) => ({ default: m.Stickers })));
 const Icons = lazy(() => import('./Icons').then((m) => ({ default: m.Icons })));
+const Animations = lazy(() => import('./Motion').then((m) => ({ default: m.Animations })));
+const Backgrounds = lazy(() => import('./Motion').then((m) => ({ default: m.Backgrounds })));
 const ArtPeek = lazy(() => import('./Art').then((m) => ({ default: m.ArtPeek })));
 const CardsPeek = lazy(() => import('./Cards').then((m) => ({ default: m.CardsPeek })));
 const ShapesPeek = lazy(() => import('./Shapes').then((m) => ({ default: m.ShapesPeek })));
 const IconsPeek = lazy(() => import('./Icons').then((m) => ({ default: m.IconsPeek })));
+const AnimationsPeek = lazy(() => import('./Motion').then((m) => ({ default: m.AnimationsPeek })));
+const BackgroundsPeek = lazy(() =>
+  import('./Motion').then((m) => ({ default: m.BackgroundsPeek })),
+);
 const Uploads = lazy(() => import('./Uploads').then((m) => ({ default: m.Uploads })));
 const Export = lazy(() => import('./Export').then((m) => ({ default: m.Export })));
 const Members = lazy(() => import('./Members').then((m) => ({ default: m.Members })));
@@ -65,7 +71,14 @@ const OWN: Record<string, { name: MessageKey; about: MessageKey }> = {
 };
 
 /** The parts whose names are searched in the language shown too, from the app's translations. */
-const TRANSLATED = new Set(['designs', 'templates', 'cards', 'shapes']);
+const TRANSLATED = new Set([
+  'designs',
+  'templates',
+  'cards',
+  'shapes',
+  'animations',
+  'backgrounds',
+]);
 
 /** What the search of a part reads: paths, or names in Hebrew, English and the language shown. */
 function searchHint(section: string, lang: Lang, t: Translate): string {
@@ -101,6 +114,8 @@ function pictures(read: Manifest | undefined, folder: string, count: number): st
 const PEEKS: Record<string, () => ReactNode> = {
   cards: () => <CardsPeek />,
   shapes: () => <ShapesPeek />,
+  animations: () => <AnimationsPeek />,
+  backgrounds: () => <BackgroundsPeek />,
   // The illustrated graphics draw from this set, among others.
   graphics: () => <ArtPeek set="streamline-stickies-color" />,
   emoji: () => (
@@ -299,6 +314,12 @@ export function Library({
       break;
     case 'emoji':
       content = <Stickers kind="emoji" {...props} />;
+      break;
+    case 'animations':
+      content = <Animations {...props} />;
+      break;
+    case 'backgrounds':
+      content = <Backgrounds {...props} />;
       break;
     case 'icons':
       content = <Icons {...props} />;

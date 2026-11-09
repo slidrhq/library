@@ -3,7 +3,9 @@
  *
  *   GET    /api/content                          the parts of the library, its languages, what each takes
  *   GET    /api/openapi.json                     this API, as OpenAPI 3.1
- *   GET    /api/schemas/{slide,sample}.json      the JSON Schema of a slide, of a template's sample
+ *   GET    /api/schemas/{slide,sample,line,shape}.json
+ *                                                the JSON Schema of a slide, of a template's sample,
+ *                                                of an animation's line, of an animated shape
  *   GET    /api/uploads                          the uploads, newest first (?type ?action ?status ?target ?language)
  *   POST   /api/uploads                          a new upload: JSON, or a form with its files
  *   GET    /api/uploads/{id}                     one upload, all it holds
@@ -51,6 +53,7 @@ import {
 } from '../media/routes.ts';
 import { publishNow } from '../media/settle.ts';
 import { LibraryUnreachable, libraryFor, type Library } from './library.ts';
+import { MotionLine, MotionShape, placeOf } from './motion.ts';
 import { openApi } from './openapi.ts';
 import {
   STATUSES,
@@ -135,7 +138,8 @@ async function checked(
 
 /**
  * The other uploads of the same new item, or of the tags of the same part, that wait or were
- * accepted: a part's tags are one upload at a time, written in it until it is published.
+ * accepted: a part's tags are one upload at a time, written in it until it is published. An
+ * animation and an animated shape of the same id are two items, each in a list of its own.
  */
 async function rivals(bucket: Bucket, draft: Draft, self?: string): Promise<Issue[]> {
   if (draft.action !== 'add' && draft.action !== 'tag') return [];
@@ -145,14 +149,22 @@ async function rivals(bucket: Bucket, draft: Draft, self?: string): Promise<Issu
     1000,
   );
   const does = draft.action === 'add' ? 'adds' : 'tags';
-  return uploads
-    .filter(
-      (other) => other.id !== self && (other.status === 'pending' || other.status === 'accepted'),
-    )
-    .map((other) => ({
-      path: 'id',
-      message: `The upload ${other.id} ${does} ${draft.target} too.`,
-    }));
+  const waiting = uploads.filter(
+    (other) => other.id !== self && (other.status === 'pending' || other.status === 'accepted'),
+  );
+  const list = draft.type === 'animations' && draft.action === 'add' && placeOf(draft).list;
+  const same = list
+    ? await Promise.all(
+        waiting.map(async (other) => {
+          const found = await readUpload(bucket, other.id);
+          return found && placeOf(found.upload).list === list ? [other] : [];
+        }),
+      )
+    : [waiting];
+  return same.flat().map((other) => ({
+    path: 'id',
+    message: `The upload ${other.id} ${does} ${draft.target} too.`,
+  }));
 }
 
 const invalid = (issues: Issue[]) => problem(422, 'invalid', 'The upload does not hold.', issues);
@@ -181,7 +193,12 @@ const openapi: Route = () => Promise.resolve(json(openApi()));
 let schemas: Record<string, unknown> | undefined;
 
 const schema: Route = (_request, _ctx, [name]) => {
-  schemas ??= { slide: slideJsonSchema(), sample: toJsonSchema(Sample) };
+  schemas ??= {
+    slide: slideJsonSchema(),
+    sample: toJsonSchema(Sample),
+    line: toJsonSchema(MotionLine),
+    shape: toJsonSchema(MotionShape),
+  };
   const found = name ? schemas[name] : undefined;
   return Promise.resolve(
     found ? json(found) : problem(404, 'not-found', `There is no schema ${name}.`),

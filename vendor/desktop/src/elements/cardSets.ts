@@ -1,4 +1,4 @@
-import { readMediaJson } from '@slidr/media-library';
+import { mediaCatalog, readMediaJson } from '@slidr/media-library';
 import {
   cloneElement,
   createDeck,
@@ -45,27 +45,59 @@ interface CardSetDesign {
 interface MediaDesign extends Omit<CardSetDesign, 'card'> {
   variants: Record<string, Record<string, Element[][]>>;
 }
-/**
- * The authored cards: the catalog of the media library (`elements/cards/catalog.json`). Without
- * it there are no card sets to add, and a set already on a slide is a plain group.
- */
-const read = await readMediaJson<{ order?: unknown; designs?: Record<string, MediaDesign> }>(
-  'elements/cards/catalog.json',
-);
-const catalog = {
-  order: Array.isArray(read?.order) ? read.order : [],
-  designs: read?.designs ?? {},
-};
 export type CardSetId = 'pop' | 'steps' | 'stats' | 'plans' | 'voices';
-export const CARD_SETS: readonly CardSetId[] = catalog.order.filter(
-  (id): id is CardSetId => typeof id === 'string' && id in catalog.designs,
+
+interface CardCatalog {
+  /** The sets, in the order Elements shows them. */
+  ids: readonly CardSetId[];
+  designs: Partial<Record<CardSetId, CardSetDesign>>;
+}
+
+/**
+ * The authored cards: the catalog of the media library (`elements/cards/catalog.json`), read when
+ * the sets are first wanted, or while the app is idle. Until it has come, and without it, there
+ * are no card sets to add, and a set already on a slide is a plain group.
+ */
+export const cardSetCatalog = mediaCatalog<CardCatalog>(
+  async () => {
+    const read = await readMediaJson<{ order?: unknown; designs?: unknown }>(
+      'elements/cards/catalog.json',
+    );
+    const designs =
+      typeof read?.designs === 'object' && read.designs !== null && !Array.isArray(read.designs)
+        ? (read.designs as Record<string, MediaDesign>)
+        : {};
+    const order = Array.isArray(read?.order) ? (read.order as unknown[]) : [];
+    return {
+      ids: order.filter(
+        (id): id is CardSetId => typeof id === 'string' && Object.hasOwn(designs, id),
+      ),
+      designs: Object.fromEntries(
+        Object.entries(designs).map(([id, design]) => [id, cardSetDesign(id, design)]),
+      ),
+    };
+  },
+  { ids: [], designs: {} },
 );
+
+/** The card sets known now: none until the catalog has come. */
+export const cardSets = (): readonly CardSetId[] => cardSetCatalog.get().ids;
+
 /**
  * The sets an interface in `lang` offers. The words of every set are Hebrew and English (the
  * `he-` and `en-` variants), so an interface in another language offers none.
  */
-export const cardSetsIn = (lang: string): readonly CardSetId[] =>
-  ['he', 'en'].includes(lang.toLowerCase().split('-')[0]!) ? CARD_SETS : [];
+export const cardSetsIn = (
+  lang: string,
+  ids: readonly CardSetId[] = cardSets(),
+): readonly CardSetId[] => (['he', 'en'].includes(lang.toLowerCase().split('-')[0]!) ? ids : []);
+
+/** The design of a set the catalog has: asked only of a set it named. */
+function designOf(id: CardSetId): CardSetDesign {
+  const design = cardSetCatalog.get().designs[id];
+  if (!design) throw new Error('Missing card set in media: ' + id);
+  return design;
+}
 
 const whole = ({ w, h }: Size): Frame => ({ x: 0, y: 0, w, h });
 const widthFor = (count: number, design: MediaDesign): number => {
@@ -88,37 +120,35 @@ function scaleFrames(element: Element, width: number, height: number): Element {
       }
     : { ...element, frame };
 }
-const DESIGNS = Object.fromEntries(
-  Object.entries(catalog.designs).map(([id, design]) => [
-    id,
-    {
-      starts: design.starts,
-      kinds: design.kinds,
-      perRow: design.perRow,
-      most: design.most,
-      gap: design.gap,
-      height: design.height,
-      card: (kind: number, size: Size, reading: Reading): Element[] => {
-        const key = (reading.he ? 'he' : 'en') + '-' + (reading.rtl ? 'rtl' : 'ltr');
-        const count = Array.from({ length: design.most }, (_, i) => i + 1).sort(
-          (a, b) => Math.abs(widthFor(a, design) - size.w) - Math.abs(widthFor(b, design) - size.w),
-        )[0]!;
-        const authored = design.variants[key]?.[count]?.[kind];
-        if (!authored)
-          throw new Error('Missing card in media: ' + id + '/' + key + '/' + count + '/' + kind);
-        const x = size.w / widthFor(count, design);
-        const y = size.h / design.height;
-        return authored.map((element) =>
-          scaleFrames(
-            cloneElement(element, () => newId('e')),
-            x,
-            y,
-          ),
-        );
-      },
+
+function cardSetDesign(id: string, design: MediaDesign): CardSetDesign {
+  return {
+    starts: design.starts,
+    kinds: design.kinds,
+    perRow: design.perRow,
+    most: design.most,
+    gap: design.gap,
+    height: design.height,
+    card: (kind: number, size: Size, reading: Reading): Element[] => {
+      const key = (reading.he ? 'he' : 'en') + '-' + (reading.rtl ? 'rtl' : 'ltr');
+      const count = Array.from({ length: design.most }, (_, i) => i + 1).sort(
+        (a, b) => Math.abs(widthFor(a, design) - size.w) - Math.abs(widthFor(b, design) - size.w),
+      )[0]!;
+      const authored = design.variants[key]?.[count]?.[kind];
+      if (!authored)
+        throw new Error('Missing card in media: ' + id + '/' + key + '/' + count + '/' + kind);
+      const x = size.w / widthFor(count, design);
+      const y = size.h / design.height;
+      return authored.map((element) =>
+        scaleFrames(
+          cloneElement(element, () => newId('e')),
+          x,
+          y,
+        ),
+      );
     },
-  ]),
-) as Record<CardSetId, CardSetDesign>;
+  };
+}
 
 /* ---------------------------------------------------------------- the layout of a set */
 
@@ -190,17 +220,20 @@ function slots(
 function drawCard(id: CardSetId, kind: number, size: Size, reading: Reading): GroupElement {
   return createElement.group({
     frame: whole(size),
-    children: DESIGNS[id].card(kind, size, reading),
+    children: designOf(id).card(kind, size, reading),
   });
 }
 
 const NAME = 'cards:';
 
 /** The design of a card set on a slide; undefined for any other element. */
-export function cardSetOf(element: Element | undefined): CardSetId | undefined {
+export function cardSetOf(
+  element: Element | undefined,
+  ids: readonly CardSetId[] = cardSets(),
+): CardSetId | undefined {
   if (element?.type !== 'group' || !element.name?.startsWith(NAME)) return undefined;
   const id = element.name.slice(NAME.length);
-  return (CARD_SETS as readonly string[]).includes(id) ? (id as CardSetId) : undefined;
+  return (ids as readonly string[]).includes(id) ? (id as CardSetId) : undefined;
 }
 
 /** The cards of a set, in reading order: the groups in it. */
@@ -232,12 +265,12 @@ export function readingOfSet(set: GroupElement, fallback: Reading): Reading {
 }
 
 /** How many different cards a design has, and the most a set of it holds. */
-export const cardKinds = (id: CardSetId): number => DESIGNS[id].kinds;
-export const mostCards = (id: CardSetId): number => DESIGNS[id].most;
+export const cardKinds = (id: CardSetId): number => designOf(id).kinds;
+export const mostCards = (id: CardSetId): number => designOf(id).most;
 
 /** A new set as it goes onto a slide, its corner at the corner of the slide. */
 export function newCardSet(id: CardSetId, reading: Reading): GroupElement {
-  const design = DESIGNS[id];
+  const design = designOf(id);
   const { frames, total } = slots(design.starts, design, SET_WIDTH, design.height, reading.rtl);
   return createElement.group({
     frame: whole(total),
@@ -248,7 +281,7 @@ export function newCardSet(id: CardSetId, reading: Reading): GroupElement {
 
 /** One card of a design alone, at the size it has in a new set: for the picture of a kind. */
 export function sampleCard(id: CardSetId, kind: number, reading: Reading): GroupElement {
-  const design = DESIGNS[id];
+  const design = designOf(id);
   const { frames } = slots(design.starts, design, SET_WIDTH, design.height, reading.rtl);
   return drawCard(id, kind, frames[0]!, reading);
 }
@@ -270,7 +303,7 @@ function patched(element: Element, patches: ReadonlyMap<string, object>): Elemen
  */
 function seated(card: GroupElement, slot: Frame, id: CardSetId, reading: Reading): GroupElement {
   if (near(card.frame.w, slot.w) && near(card.frame.h, slot.h)) return { ...card, frame: slot };
-  const design = DESIGNS[id];
+  const design = designOf(id);
   for (let kind = 0; kind < design.kinds; kind++) {
     const parts = design.card(kind, slot, reading);
     const same =
@@ -289,7 +322,7 @@ function seated(card: GroupElement, slot: Frame, id: CardSetId, reading: Reading
 
 /** Where `count` cards go in a set on a slide: in the width it has, as tall as its cards are. */
 function slotsIn(set: GroupElement, id: CardSetId, count: number, reading: Reading) {
-  const design = DESIGNS[id];
+  const design = designOf(id);
   const height = cardsOf(set)[0]?.frame.h ?? design.height;
   return slots(count, design, set.frame.w, height, reading.rtl);
 }
@@ -333,7 +366,7 @@ export function withCard(
   const id = cardSetOf(set);
   if (!id || set.type !== 'group') return undefined;
   const cards = cardsOf(set);
-  const design = DESIGNS[id];
+  const design = designOf(id);
   if (cards.length >= design.most || kind < 0 || kind >= design.kinds) return undefined;
   // Drawn at the size its place in the set gives it.
   const place = slotsIn(set, id, cards.length + 1, reading).frames.at(-1)!;

@@ -33,9 +33,13 @@ export {
   type TableStyle,
 } from './tableStyle';
 export { presetPath, scalePath, shapePresets, isBoxPreset, type ShapePath } from './geometry';
+export { adjustDefaults, adjustHandles, adjustTo, type AdjustHandle } from './adjustHandles';
+export { outlineHandle, outlineWidthTo } from './outlineHandle';
 export { extraShapes, type ExtraShape } from './extraShapes';
 export { imagePlacement, linePath } from './elements';
 export { AMBIENT_ATTRIBUTE, AMBIENT_KEYFRAMES, ambientAnimation, hasAmbient } from './ambient';
+export { FLOW_KEYFRAMES, pathLength, riderSize } from './flow';
+export { STILL_AT, STILL_ATTRIBUTE } from './still';
 export {
   colorRgb,
   duotonePreset,

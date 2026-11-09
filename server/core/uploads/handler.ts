@@ -2,7 +2,7 @@
  * What every kind of upload is made of, and the checks they share. Each part of the library that
  * takes uploads says, for each thing an upload of it may do (`add`, `translate`, `tag`), which
  * fields it has, which languages it is written in, which files it brings, and how it is checked
- * (`designs.ts`, `templates.ts`, `tags.ts`; `content.ts` names them all).
+ * (`designs.ts`, `templates.ts`, `motion.ts`, `tags.ts`; `content.ts` names them all).
  */
 import {
   plainText,
@@ -18,6 +18,8 @@ import type { Library } from './library.ts';
 export const TYPES = [
   'designs',
   'templates',
+  'backgrounds',
+  'animations',
   'cards',
   'frames',
   'shapes',

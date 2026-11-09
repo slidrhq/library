@@ -377,35 +377,6 @@
         "other": "未能生成此选项"
       }
     },
-    "look": {
-      "hint": "悬停可在幻灯片上预览 · 单击即可应用",
-      "current": "演示文稿中正在使用",
-      "template": {
-        "title": "模板",
-        "builtIn": "内置",
-        "personal": "个人",
-        "undo": "切换模板"
-      },
-      "palette": {
-        "title": "配色",
-        "sample": "文字",
-        "undo": "更改配色",
-        "names": {
-          "basic": "基础",
-          "ocean": "海洋",
-          "sage": "鼠尾草",
-          "rose": "玫瑰",
-          "graphite": "石墨",
-          "forest": "森林",
-          "plum": "梅子"
-        }
-      },
-      "fonts": {
-        "title": "字体搭配",
-        "undo": "更改字体搭配",
-        "pair": "标题：{{heading}} · 正文：{{body}}"
-      }
-    },
     "action": {
       "other": "操作",
       "deck": {
@@ -468,77 +439,6 @@
       }
     },
     "actions": {
-      "wording": "措辞",
-      "edit": "编辑",
-      "content": "内容",
-      "design": "设计",
-      "slideSettings": "幻灯片本身",
-      "image": "图片",
-      "count": "选项数量",
-      "variations": "其他措辞",
-      "titles": "备选标题",
-      "shorten": "精简",
-      "expand": "扩写",
-      "fix": "修正错误",
-      "bullets": "转换为项目符号列表",
-      "tone": "更改语气",
-      "toneChoice": "语气",
-      "translate": "翻译",
-      "language": "目标语言",
-      "redesign": "重新设计",
-      "shortenSlide": "精简文字",
-      "split": "拆分为两张幻灯片",
-      "visual": "添加视觉元素",
-      "addImage": "添加图片",
-      "animate": "动画",
-      "notes": "演讲者备注",
-      "fixFindings": "修复设计问题",
-      "shortenDeck": "精简文字",
-      "improve": "改进设计",
-      "alternatives": "生成备选项",
-      "imagePrompt": "图片应展示什么，或要做哪些更改？",
-      "imagePromptHint": "生成备选项时可不填写：如果没有描述，智能体会根据幻灯片自行决定。",
-      "imageEdit": "用 AI 编辑",
-      "editImage": "按描述修改",
-      "restyle": "匹配演示文稿风格",
-      "paintMask": "标记要更改的区域",
-      "maskSet": "已标记区域：只有该区域会更改",
-      "maskClear": "清除标记",
-      "expandImage": "扩展图片",
-      "expandTo": "扩展后的形状",
-      "expandHint": "图片保持原位，AI 会在其周围补全所选形状缺少的部分。",
-      "expandFailed": "图片未能扩展",
-      "expandSame": "图片已经是这个形状。",
-      "expandLabel": "扩展图片",
-      "imageLocal": "不使用 AI",
-      "crop": "裁剪",
-      "chart": "图表",
-      "chartType": "建议图表类型",
-      "chartTitle": "标题和结论",
-      "chartFill": "根据文本填充数据",
-      "chartSource": "在此粘贴包含数字的文本或表格",
-      "tableFill": "根据文本填充表格",
-      "tableSource": "在此粘贴用于填充表格的文本",
-      "tableStyle": "建议外观",
-      "tableInsight": "总结为一句结论",
-      "tableChart": "转换为图表",
-      "fromText": "根据文本",
-      "fromTextHint": "智能体只采用文本中的内容，并会告诉你哪些内容未被采用。",
-      "onSlide": "在幻灯片上",
-      "onSlideHint": "这两项会更改整张幻灯片，而不仅是表格。",
-      "shape": "形状",
-      "shapeSuggest": "建议形状",
-      "icon": "图标",
-      "iconReplace": "更合适的图标",
-      "colourByTheme": "按模板配色",
-      "editKind": {
-        "exact": "图像服务只修改你要求的内容，并且可以指定区域。",
-        "regenerate": "图像服务会参照原图重新绘制：小细节会有变化，并且无法指定区域。",
-        "none": "此图像服务不支持编辑图片。"
-      },
-      "layout": "版式",
-      "layoutNone": "这张幻灯片没有可切换的版式。",
-      "layoutLabel": "幻灯片版式",
       "languages": {
         "Hebrew": "希伯来语",
         "English": "英语",
@@ -562,32 +462,6 @@
         "friendly": "友好",
         "confident": "自信",
         "plain": "平实"
-      },
-      "template": {
-        "title": "新模板",
-        "open": "用 AI 制作模板",
-        "description": "模板应该是什么样子？",
-        "url": "希望模板参照的网站",
-        "logo": "徽标",
-        "chooseLogo": "选择徽标",
-        "files": "作为参考的图片或 HTML 文件",
-        "addFile": "添加文件",
-        "fromDeck": "参照此演示文稿的设计",
-        "create": "制作草稿",
-        "hint": "智能体会读取这些来源，制作草稿并在对话中显示。在你保存之前，不会保存任何内容。",
-        "needSource": "请至少提供一个来源：描述、网址、徽标、文件或此演示文稿。"
-      },
-      "busy": "智能体正在执行本轮操作。完成后，这些操作会重新可用。",
-      "groupSelection": "所选内容",
-      "groupSlide": "幻灯片 {{n}}",
-      "groupDeck": "整个演示文稿",
-      "noActions": "所选内容没有现成的操作。你可以在对话中提出任何更改。",
-      "provider": {
-        "checking": "正在检查图像服务…",
-        "ready": "每张图片大约需要一分钟，生成后会逐一显示。",
-        "not_installed": "这台电脑上未安装图像服务，因此无法生成图片。",
-        "not_logged_in": "图像服务未登录。请先登录，然后返回此处。",
-        "unavailable": "图像服务当前不可用。"
       }
     }
   },
@@ -1483,62 +1357,17 @@
         "scale": "放大与脉动",
         "lines": "线条与波浪",
         "particles": "粒子与网络"
-      },
-      "name": {
-        "orbit": "轨道环绕",
-        "conveyor": "路径上的方块",
-        "trace": "电路走线",
-        "atom": "原子",
-        "shuttle": "线上的点",
-        "hexagon": "旋转的六边形",
-        "rings": "旋转的圆环",
-        "radar": "雷达",
-        "ripple": "涟漪",
-        "breathe": "呼吸的形状",
-        "bars": "上升的柱子",
-        "waves": "波浪",
-        "draw": "绘制的箭头",
-        "flowArrow": "流动的连接线",
-        "heartbeat": "心跳",
-        "network": "网络",
-        "converge": "聚拢的粒子",
-        "float": "上升的气泡"
       }
     },
     "backgrounds": {
       "hint": "点击背景即可将其应用到当前幻灯片，或你选中的所有幻灯片。颜色来自模板，使用“背景”工具可回到模板的背景。",
       "animated": "动态背景",
-      "still": "静态背景",
-      "name": {
-        "flow": "电路流动",
-        "waves": "波浪",
-        "converge": "汇聚",
-        "orbit": "轨道",
-        "radar": "雷达",
-        "network": "网络",
-        "drift": "漂移的光",
-        "particles": "上升的粒子",
-        "dots": "点阵",
-        "contours": "等高线",
-        "arcs": "角落弧线"
-      }
+      "still": "静态背景"
     },
     "animatedShapes": {
       "title": "动画形状",
       "hint": "重复某个动作的普通形状。颜色、轮廓和大小与其他形状一样编辑，动作用“动作”工具编辑。",
-      "more": "全部动画",
-      "name": {
-        "ring": "旋转的圆环",
-        "hexagon": "旋转的六边形",
-        "star": "旋转的星形",
-        "octagon": "旋转的八边形",
-        "square": "转动后停顿的方块",
-        "pulse": "跳动的圆",
-        "heart": "跳动的心",
-        "float": "漂浮的圆",
-        "arrow": "摇摆的箭头",
-        "blink": "闪烁的圆点"
-      }
+      "more": "全部动画"
     },
     "motion": {
       "title": "动作",
@@ -1573,6 +1402,21 @@
         "float": "漂浮高度",
         "swing": "摇摆角度",
         "blink": "闪烁强度"
+      },
+      "flow": {
+        "title": "沿线",
+        "kind": {
+          "none": "无",
+          "dashes": "虚线",
+          "box": "方块",
+          "dot": "圆点"
+        },
+        "speed": "每秒像素",
+        "forward": "朝终点",
+        "back": "朝起点",
+        "count": "数量",
+        "size": "大小",
+        "color": "颜色"
       },
       "hint": "只要幻灯片在显示，动作就会重复：在编辑器中、放映时以及导出的文件中都是如此。"
     }
@@ -1768,20 +1612,6 @@
       "signingIn": "请在打开的窗口中完成登录。",
       "install": "安装…",
       "signIn": "登录"
-    },
-    "mask": {
-      "title": "标记要更改的区域",
-      "description": "涂抹图片中允许 AI 更改的部分。未涂抹的部分将保持原样。",
-      "canvas": "用于涂抹区域的图片",
-      "tool": "工具",
-      "paint": "涂抹",
-      "erase": "擦除",
-      "brush": "画笔大小",
-      "clear": "清除",
-      "empty": "尚未涂抹任何区域。",
-      "done": "完成",
-      "cancel": "取消",
-      "failed": "标记未保存"
     },
     "upscale": {
       "title": "放大",
@@ -2797,11 +2627,8 @@
       "tools": "工具",
       "collapse": "折叠面板",
       "resize": "调整面板大小",
-      "actions": "操作",
       "chatEmptyTitle": "对话尚未连接",
       "chatEmptyBody": "你可以在这里向智能体提出更改要求，并在幻灯片上看到更改实时发生。",
-      "actionsEmptyTitle": "暂无操作",
-      "actionsEmptyBody": "此工具的快速操作将显示在这里。",
       "soonTitle": "暂不可用",
       "mediaBody": "上传的文件、图库照片、图标和 AI 图片。",
       "animationsBody": "动画效果和幻灯片时间线。",
@@ -2978,6 +2805,12 @@
       "hint": "备注随演示文稿一起保存，不会显示在幻灯片上。",
       "noSlide": "没有幻灯片",
       "step": "演讲者备注"
+    },
+    "crash": {
+      "title": "出现问题",
+      "body": "Slidr 遇到意外错误。请重新加载窗口以继续。",
+      "reload": "重新加载",
+      "details": "详细信息"
     }
   },
   "stage": {
@@ -3001,6 +2834,7 @@
       "editData": "编辑数据",
       "editCells": "编辑单元格",
       "editPoints": "编辑顶点",
+      "adjust": "调整形状",
       "order": "图层顺序"
     },
     "toolbar": {
@@ -3012,7 +2846,7 @@
       "walk": "转到下一个或上一个对象（在缩略图窗格中则为幻灯片），但不选中它",
       "toggle": "添加到所选内容，或从中移除",
       "points": "进入或退出线条的顶点",
-      "part": "线条的下一个或上一个顶点；下一个或上一个裁剪控点",
+      "part": "线条的下一个或上一个顶点；形状的下一个或上一个调整控点；下一个或上一个裁剪控点",
       "addPoint": "为线条添加顶点",
       "removePoint": "从线条中删除顶点",
       "lock": "锁定和解锁",
@@ -3020,6 +2854,8 @@
     },
     "at": {
       "point": "第 {{n}} 个顶点，共 {{total}} 个。按方向键可移动它。",
+      "adjust": "第 {{n}} 个调整控点，共 {{total}} 个。按方向键可移动它。",
+      "outline": "轮廓粗细控点：{{width}} px。按方向键可移动它。",
       "picture": "裁剪：按方向键可移动图片。按 Ctrl+向上键或向下键可缩放图片。按 Tab 可转到控点。",
       "handle": "裁剪控点：{{where}}。按方向键可移动它。",
       "walkSelected": "{{what}}：已选中",

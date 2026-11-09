@@ -39,6 +39,7 @@ import { domId, useRenderContext, type HtmlEditing, type RenderContext } from '.
 import { num, passthroughStyle } from './css';
 import { DISABLED_ATTRIBUTE, DISABLED_FILTER } from './disabled';
 import { FillLayer } from './fill';
+import { FlowRiders, flowStrokeStyle } from './flow';
 import {
   isBoxPreset,
   pathBounds,
@@ -51,6 +52,7 @@ import { Icon } from './icons';
 import { imageLook } from './imageLook';
 import { frameDocument, prepareSvg, resolveAssetRefs, resolveAssetUrls } from './markup';
 import { parseFragment, sanitizeFragment } from './sanitize';
+import { holdPicture } from './still';
 import { stretchSvg } from './stretchSvg';
 import { TableView } from './table';
 import { numberedText, opensAddress, TextBox, textFillStyle, textStrokeStyle } from './text';
@@ -865,6 +867,7 @@ function LineView({ element: e }: { element: LineElement }) {
   const startId = domId(reactId, 'start');
   const endId = domId(reactId, 'end');
   const d = linePath(trimForHeads(e.points, e), e.curve);
+  const dashes = dashArray(e.stroke);
   return (
     <svg
       aria-hidden
@@ -896,11 +899,14 @@ function LineView({ element: e }: { element: LineElement }) {
           fill: 'none',
           stroke: colorCss(e.stroke.color),
           strokeWidth: e.stroke.width,
-          strokeDasharray: dashArray(e.stroke),
+          strokeDasharray: dashes,
           strokeLinecap: e.stroke.cap ?? (e.stroke.dash === 'dotted' ? 'round' : 'butt'),
           strokeLinejoin: e.stroke.join ?? 'round',
+          // Its dashes flow along it (ADR-131).
+          ...(e.flow ? flowStrokeStyle(e.flow, dashes) : {}),
         }}
       />
+      {e.flow ? <FlowRiders element={e} d={d} /> : null}
     </svg>
   );
 }
@@ -968,15 +974,21 @@ function SvgPicture({ e, style }: { e: SvgElement; style: CSSProperties }) {
   }, [prepared, stretch, sw, sh]);
   /** The picture the shadow root holds. */
   const drawn = useRef<DocumentFragment | null>(null);
+  // A thumbnail holds its picture still (ADR-134).
+  const still = useRenderContext().mode === 'thumbnail';
   useLayoutEffect(() => {
     const el = host.current;
     if (!el) return;
     // A slide shown again after it was hidden runs this again, with the picture still in place.
-    if (el.shadowRoot && drawn.current === picture) return;
+    const placed = el.shadowRoot !== null && drawn.current === picture;
     const root = el.shadowRoot ?? el.attachShadow({ mode: 'open', serializable: true });
-    root.replaceChildren(picture);
-    drawn.current = picture;
-  }, [picture]);
+    if (!placed) {
+      root.replaceChildren(picture);
+      drawn.current = picture;
+    }
+    // Held again each time: CSS animations start over in a picture that was hidden.
+    if (still) holdPicture(root);
+  }, [picture, still]);
   return <div ref={host} data-slidr-svg="" style={style} />;
 }
 
