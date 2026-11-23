@@ -620,7 +620,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': 'Ban đầu bật',
   'system.web.off': 'Ban đầu tắt',
   'system.web.blocked': 'Không bao giờ',
-  'system.custom.title': 'Tác nhân của tổ chức',
+  'system.custom.title': 'Tác nhân bên ngoài',
   'system.custom.explain':
     'Một công cụ dòng lệnh dùng giao thức tác nhân của ứng dụng. Ứng dụng cung cấp nó như các tác nhân của mình: cài đặt nó khi người dùng đồng ý, đăng nhập và liệt kê các mô hình của nó. Không có gì ở đây là bí mật: ai đọc được thư viện cũng đọc được nó.',
   'system.custom.unnamed': 'Tác nhân mới',

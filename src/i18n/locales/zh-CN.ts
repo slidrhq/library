@@ -581,7 +581,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': '初始为开启',
   'system.web.off': '初始为关闭',
   'system.web.blocked': '从不',
-  'system.custom.title': '组织的智能体',
+  'system.custom.title': '外部智能体',
   'system.custom.explain':
     '一个使用应用智能体协议的命令行工具。应用会像提供自己的智能体一样提供它：经用户同意后安装、登录，并列出其模型。这里的内容都不保密：任何能读取媒体库的人都能读到。',
   'system.custom.unnamed': '新智能体',

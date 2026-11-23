@@ -628,6 +628,14 @@ export function System() {
         </Field>
       </OfferPart>
 
+      <OfferPart
+        title="system.images.title"
+        explain="system.images.explain"
+        options={imageOptions}
+        value={draft.images}
+        onChange={(images) => update({ images })}
+      />
+
       <section className="settings-part">
         <h3>{t('system.custom.title')}</h3>
         <p className="small">{t('system.custom.explain')}</p>
@@ -652,13 +660,6 @@ export function System() {
         </div>
       </section>
 
-      <OfferPart
-        title="system.images.title"
-        explain="system.images.explain"
-        options={imageOptions}
-        value={draft.images}
-        onChange={(images) => update({ images })}
-      />
       <OfferPart
         title="system.languages.title"
         explain="system.languages.explain"

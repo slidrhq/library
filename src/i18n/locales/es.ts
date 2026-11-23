@@ -632,7 +632,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': 'Activado al empezar',
   'system.web.off': 'Desactivado al empezar',
   'system.web.blocked': 'Nunca',
-  'system.custom.title': 'Los agentes de la organización',
+  'system.custom.title': 'Agentes externos',
   'system.custom.explain':
     'Una herramienta de línea de comandos que habla el protocolo de agentes de la app. La app la ofrece como ofrece los suyos: la instala cuando el usuario lo aprueba, inicia sesión y muestra sus modelos. Nada aquí es secreto: cualquiera que lea la biblioteca puede leerlo.',
   'system.custom.unnamed': 'Agente nuevo',

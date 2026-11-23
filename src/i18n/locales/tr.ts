@@ -616,7 +616,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': 'Başlangıçta açık',
   'system.web.off': 'Başlangıçta kapalı',
   'system.web.blocked': 'Hiçbir zaman',
-  'system.custom.title': 'Kuruluşun ajanları',
+  'system.custom.title': 'Harici ajanlar',
   'system.custom.explain':
     'Uygulamanın ajan protokolünü konuşan bir komut satırı aracı. Uygulama onu kendi ajanları gibi sunar: kullanıcı onaylayınca kurar, oturum açar ve modellerini listeler. Burada hiçbir şey gizli değildir: kütüphaneyi okuyan herkes bunu okuyabilir.',
   'system.custom.unnamed': 'Yeni ajan',

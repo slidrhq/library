@@ -595,7 +595,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': 'مفعّل في البداية',
   'system.web.off': 'معطّل في البداية',
   'system.web.blocked': 'أبدًا',
-  'system.custom.title': 'وكلاء المؤسسة',
+  'system.custom.title': 'وكلاء خارجيون',
   'system.custom.explain':
     'أداة سطر أوامر تتحدث بروتوكول الوكلاء الخاص بالتطبيق. يقدّمها التطبيق كما يقدّم وكلاءه: يثبّتها بعد موافقة المستخدم، ويسجّل الدخول، ويعرض نماذجها. لا شيء هنا سري: كل من يقرأ المكتبة يمكنه قراءته.',
   'system.custom.unnamed': 'وكيل جديد',

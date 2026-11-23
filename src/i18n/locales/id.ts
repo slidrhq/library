@@ -622,7 +622,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': 'Aktif di awal',
   'system.web.off': 'Nonaktif di awal',
   'system.web.blocked': 'Tidak pernah',
-  'system.custom.title': 'Agen organisasi',
+  'system.custom.title': 'Agen eksternal',
   'system.custom.explain':
     'Alat baris perintah yang memakai protokol agen aplikasi. Aplikasi menawarkannya seperti agennya sendiri: memasangnya setelah pengguna menyetujui, login, dan menampilkan modelnya. Tidak ada yang rahasia di sini: siapa pun yang membaca pustaka dapat membacanya.',
   'system.custom.unnamed': 'Agen baru',

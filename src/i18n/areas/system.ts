@@ -18,7 +18,7 @@ export const he = {
   'system.web.on': 'פעילה בהתחלה',
   'system.web.off': 'כבויה בהתחלה',
   'system.web.blocked': 'אף פעם',
-  'system.custom.title': 'הסוכנים של הארגון',
+  'system.custom.title': 'סוכנים חיצוניים',
   'system.custom.explain':
     'כלי שורת פקודה שמדבר בפרוטוקול הסוכנים של האפליקציה. האפליקציה מציעה אותו כמו את הסוכנים שלה: מתקינה אותו אחרי שהמשתמש מאשר, נכנסת לחשבון ומציגה את המודלים שלו. שום דבר כאן אינו סודי: כל מי שקורא את הספרייה יכול לקרוא אותו.',
   'system.custom.unnamed': 'סוכן חדש',
@@ -104,7 +104,7 @@ export const en: Record<keyof typeof he, string> = {
   'system.web.on': 'On to start with',
   'system.web.off': 'Off to start with',
   'system.web.blocked': 'Never',
-  'system.custom.title': 'The organization’s agents',
+  'system.custom.title': 'External agents',
   'system.custom.explain':
     'A command-line tool that speaks the app’s agent protocol. The app offers it as it offers its own: it installs it once the user approves, signs in, and lists its models. Nothing here is secret: everyone who reads the library can read it.',
   'system.custom.unnamed': 'New agent',

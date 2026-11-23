@@ -610,7 +610,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': '처음에는 켜짐',
   'system.web.off': '처음에는 꺼짐',
   'system.web.blocked': '사용 안 함',
-  'system.custom.title': '조직의 에이전트',
+  'system.custom.title': '외부 에이전트',
   'system.custom.explain':
     '앱의 에이전트 프로토콜을 사용하는 명령줄 도구입니다. 앱은 자체 에이전트처럼 이 도구를 제공합니다. 사용자가 승인하면 설치하고, 로그인하고, 모델 목록을 표시합니다. 여기에는 비밀이 없습니다. 라이브러리를 읽는 누구나 이 내용을 읽을 수 있습니다.',
   'system.custom.unnamed': '새 에이전트',

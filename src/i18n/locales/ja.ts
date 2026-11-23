@@ -624,7 +624,7 @@ const words: Record<MessageKey, string> = {
   'system.web.on': '初期状態はオン',
   'system.web.off': '初期状態はオフ',
   'system.web.blocked': '許可しない',
-  'system.custom.title': '組織のエージェント',
+  'system.custom.title': '外部エージェント',
   'system.custom.explain':
     'アプリのエージェント プロトコルに対応したコマンドライン ツールです。アプリは自身のエージェントと同じようにこれを提供します。ユーザーの承認後にインストールし、ログインして、モデルを一覧表示します。ここに秘密の情報はありません。ライブラリを読める人なら誰でもこの内容を読めます。',
   'system.custom.unnamed': '新しいエージェント',
