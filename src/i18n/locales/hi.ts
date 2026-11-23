@@ -610,7 +610,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'डिफ़ॉल्ट',
   'system.defaultNone': 'कोई नहीं: ऐप का अपना',
   'system.noneOffered': 'कम से कम एक उपलब्ध कराएँ।',
-  'system.agents.title': 'एजेंट',
+  'system.agents.title': 'लेखन और डिज़ाइन एजेंट',
   'system.agents.explain':
     'ऐप जो एजेंट उपलब्ध कराता है। सभी चुने होने पर वह सभी उपलब्ध कराता है, आगे के संस्करणों में जोड़े जाने वाले एजेंट भी। डिफ़ॉल्ट एजेंट सबसे पहले दिखता है और शुरू में चुना रहता है।',
   'system.web.label': 'वेब एक्सेस',
@@ -657,6 +657,9 @@ const words: Record<MessageKey, string> = {
     'लाइब्रेरी का पैकेज: {size}, SHA-256 {hash}…। इसे बदलने के लिए कोई और फ़ाइल चुनें।',
   'system.custom.zipTooLarge': 'पैकेज ज़्यादा से ज़्यादा {most} का हो सकता है।',
   'system.custom.zipFailed': 'पैकेज नहीं भेजा गया: {error}',
+  'system.custom.images': 'चित्र भी बनाता है',
+  'system.custom.imagesHint':
+    'ऐप इसे चित्र एजेंटों में भी देता है: इसका प्रोग्राम उन्हें slidr image से बनाता है। उनके साथ यह क्या कर सकता है, यह प्रोग्राम बताता है।',
   'system.tone.orange': 'नारंगी',
   'system.tone.green': 'हरा',
   'system.tone.blue': 'नीला',
@@ -667,10 +670,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'भाषाएँ',
   'system.languages.explain':
     'ऐप के इंटरफ़ेस की भाषाएँ, और उसकी दी जाने वाली तैयार सामग्री की भाषाएँ। डिफ़ॉल्ट न हो, तो ऐप सिस्टम की भाषा में शुरू होता है, अगर वह उपलब्ध हो।',
-  'system.images.title': 'चित्र',
-  'system.images.explain': 'वे प्रदाता जिनसे ऐप चित्र बनाता है।',
+  'system.images.title': 'चित्र एजेंट',
+  'system.images.explain': 'वे एजेंट जिनसे ऐप चित्र बनाता है।',
   'system.stock.title': 'फ़ोटो',
-  'system.stock.explain': 'वे फ़ोटो संग्रह जिनमें ऐप खोजता है।',
+  'system.stock.explain':
+    'वे फ़ोटो संग्रह जिनमें ऐप खोजता है। कोई भी न चुना हो, तो ऐप फ़ोटो उपलब्ध नहीं कराता।',
   'system.save': 'प्रकाशित करें',
   'system.saved':
     'प्रकाशित हो गईं। ऐप्स सेटिंग्स को पहली बार शुरू होने पर, या अपडेट होने पर पढ़ते हैं।',

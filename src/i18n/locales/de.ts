@@ -623,7 +623,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Standard',
   'system.defaultNone': 'Keiner: Die App entscheidet',
   'system.noneOffered': 'Bieten Sie mindestens einen an.',
-  'system.agents.title': 'Agenten',
+  'system.agents.title': 'Agenten für Text und Design',
   'system.agents.explain':
     'Die Agenten, die die App anbietet. Sind alle angehakt, bietet sie alle an, auch die, die in späteren Versionen hinzukommen. Der Standard wird zuerst angeboten und ist anfangs ausgewählt.',
   'system.web.label': 'Webzugriff',
@@ -670,6 +670,9 @@ const words: Record<MessageKey, string> = {
     'Das Paket der Bibliothek: {size}, SHA-256 {hash}…. Wählen Sie eine andere Datei, um es zu ersetzen.',
   'system.custom.zipTooLarge': 'Ein Paket ist höchstens {most} groß.',
   'system.custom.zipFailed': 'Das Paket wurde nicht gesendet: {error}',
+  'system.custom.images': 'Erstellt auch Bilder',
+  'system.custom.imagesHint':
+    'Die App bietet ihn auch unter den Bild-Agenten an: Sein Programm erstellt sie mit slidr image. Was es mit ihnen kann, sagt das Programm.',
   'system.tone.orange': 'Orange',
   'system.tone.green': 'Grün',
   'system.tone.blue': 'Blau',
@@ -680,10 +683,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Sprachen',
   'system.languages.explain':
     'Die Sprachen der Oberfläche der App und der fertigen Inhalte, die sie anbietet. Ohne Standard startet eine App in der Sprache des Systems, sofern diese angeboten wird.',
-  'system.images.title': 'Bilder',
-  'system.images.explain': 'Die Anbieter, mit denen die App Bilder erstellt.',
+  'system.images.title': 'Bild-Agenten',
+  'system.images.explain': 'Die Agenten, mit denen die App Bilder erstellt.',
   'system.stock.title': 'Fotos',
-  'system.stock.explain': 'Die Fotodatenbanken, in denen die App sucht.',
+  'system.stock.explain':
+    'Die Fotodatenbanken, in denen die App sucht. Ist keine markiert, bietet sie keine Fotos an.',
   'system.save': 'Veröffentlichen',
   'system.saved':
     'Veröffentlicht. Apps lesen die Einstellungen beim ersten Start oder nach einem Update.',

@@ -613,7 +613,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Padrão',
   'system.defaultNone': 'Nenhum: o do próprio app',
   'system.noneOffered': 'Ofereça pelo menos um.',
-  'system.agents.title': 'Agentes',
+  'system.agents.title': 'Agentes de redação e design',
   'system.agents.explain':
     'Os agentes que o app oferece. Com todos marcados, ele oferece todos, inclusive os adicionados em versões futuras. O padrão é oferecido primeiro e já vem escolhido.',
   'system.web.label': 'Acesso à web',
@@ -660,6 +660,9 @@ const words: Record<MessageKey, string> = {
     'O pacote da biblioteca: {size}, SHA-256 {hash}…. Escolha outro arquivo para substituí-lo.',
   'system.custom.zipTooLarge': 'Um pacote tem no máximo {most}.',
   'system.custom.zipFailed': 'O pacote não foi enviado: {error}',
+  'system.custom.images': 'Também cria imagens',
+  'system.custom.imagesHint':
+    'O app também o oferece entre os agentes de imagens: o programa dele as cria com slidr image. O que ele consegue fazer com elas, o programa informa.',
   'system.tone.orange': 'Laranja',
   'system.tone.green': 'Verde',
   'system.tone.blue': 'Azul',
@@ -670,10 +673,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Idiomas',
   'system.languages.explain':
     'Os idiomas da interface do app e do conteúdo pronto que ele oferece. Sem um padrão, o app inicia no idioma do sistema, se ele for oferecido.',
-  'system.images.title': 'Imagens',
-  'system.images.explain': 'Os provedores com que o app cria imagens.',
+  'system.images.title': 'Agentes de imagens',
+  'system.images.explain': 'Os agentes com que o app cria imagens.',
   'system.stock.title': 'Fotos',
-  'system.stock.explain': 'Os bancos de fotos em que o app pesquisa.',
+  'system.stock.explain':
+    'Os bancos de fotos em que o app pesquisa. Sem nenhum marcado, ele não oferece fotos.',
   'system.save': 'Publicar',
   'system.saved':
     'Publicadas. Os apps leem as configurações ao iniciar pela primeira vez ou ao serem atualizados.',

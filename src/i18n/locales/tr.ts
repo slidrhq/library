@@ -607,7 +607,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Varsayılan',
   'system.defaultNone': 'Yok: uygulamanın kendi varsayılanı',
   'system.noneOffered': 'En az birini sunun.',
-  'system.agents.title': 'Ajanlar',
+  'system.agents.title': 'Yazım ve tasarım ajanları',
   'system.agents.explain':
     'Uygulamanın sunduğu ajanlar. Hepsi işaretliyse hepsini sunar, sonraki sürümlerde eklenenleri de. Varsayılan ajan ilk sırada sunulur ve başlangıçta seçili olur.',
   'system.web.label': 'Web erişimi',
@@ -654,6 +654,9 @@ const words: Record<MessageKey, string> = {
     'Kütüphanedeki paket: {size}, SHA-256 {hash}…. Değiştirmek için başka bir dosya seçin.',
   'system.custom.zipTooLarge': 'Bir paket en çok {most} olabilir.',
   'system.custom.zipFailed': 'Paket gönderilemedi: {error}',
+  'system.custom.images': 'Görsel de üretir',
+  'system.custom.imagesHint':
+    'Uygulama onu görsel ajanları arasında da sunar: programı görselleri slidr image ile üretir. Onlarla neler yapabildiğini program söyler.',
   'system.tone.orange': 'Turuncu',
   'system.tone.green': 'Yeşil',
   'system.tone.blue': 'Mavi',
@@ -664,10 +667,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Diller',
   'system.languages.explain':
     'Uygulamanın arayüz dilleri ve sunduğu hazır içeriğin dilleri. Varsayılan yoksa uygulama, sunuluyorsa sistemin diliyle açılır.',
-  'system.images.title': 'Görseller',
-  'system.images.explain': 'Uygulamanın görsel ürettiği sağlayıcılar.',
+  'system.images.title': 'Görsel ajanları',
+  'system.images.explain': 'Uygulamanın görsel ürettiği ajanlar.',
   'system.stock.title': 'Fotoğraflar',
-  'system.stock.explain': 'Uygulamanın arama yaptığı fotoğraf arşivleri.',
+  'system.stock.explain':
+    'Uygulamanın arama yaptığı fotoğraf arşivleri. Hiçbiri işaretli değilse fotoğraf sunmaz.',
   'system.save': 'Yayımla',
   'system.saved': 'Yayımlandı. Uygulamalar ayarları ilk açılışta ya da güncellendiklerinde okur.',
   'system.remove': 'Ayarları kaldır',

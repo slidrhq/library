@@ -586,7 +586,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'الافتراضي',
   'system.defaultNone': 'بلا: ما يختاره التطبيق',
   'system.noneOffered': 'يجب تقديم واحد على الأقل.',
-  'system.agents.title': 'الوكلاء',
+  'system.agents.title': 'وكلاء الكتابة والتصميم',
   'system.agents.explain':
     'الوكلاء الذين يقدّمهم التطبيق. عند تحديدهم جميعًا، يقدّمهم كلهم، ومعهم من يُضاف في الإصدارات اللاحقة. يُقدَّم الوكيل الافتراضي أولًا، ويكون مختارًا في البداية.',
   'system.web.label': 'الوصول إلى الويب',
@@ -632,6 +632,9 @@ const words: Record<MessageKey, string> = {
   'system.custom.zipPublished': 'حزمة المكتبة: {size}، SHA-256 {hash}…. اختر ملفًا آخر لاستبدالها.',
   'system.custom.zipTooLarge': 'الحزمة {most} على الأكثر.',
   'system.custom.zipFailed': 'لم تُرسل الحزمة: {error}',
+  'system.custom.images': 'ينشئ الصور أيضًا',
+  'system.custom.imagesHint':
+    'يعرضه التطبيق بين وكلاء الصور أيضًا: ينشئها برنامجه باستخدام slidr image. وما يستطيع فعله بها يحدده البرنامج.',
   'system.tone.orange': 'برتقالي',
   'system.tone.green': 'أخضر',
   'system.tone.blue': 'أزرق',
@@ -642,10 +645,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'اللغات',
   'system.languages.explain':
     'لغات واجهة التطبيق، ولغات المحتوى الجاهز الذي يقدّمه. من دون لغة افتراضية، يبدأ التطبيق بلغة النظام إن كانت مقدَّمة.',
-  'system.images.title': 'الصور',
-  'system.images.explain': 'الموفّرون الذين يُنشئ بهم التطبيق الصور.',
+  'system.images.title': 'وكلاء الصور',
+  'system.images.explain': 'الوكلاء الذين يُنشئ بهم التطبيق الصور.',
   'system.stock.title': 'الصور الفوتوغرافية',
-  'system.stock.explain': 'بنوك الصور التي يبحث فيها التطبيق.',
+  'system.stock.explain':
+    'بنوك الصور التي يبحث فيها التطبيق. إن لم يُحدَّد أيٌّ منها، فلا يقدّم صورًا فوتوغرافية.',
   'system.save': 'نشر',
   'system.saved': 'تم النشر. تقرأ التطبيقات الإعدادات عند تشغيلها أول مرة، أو عند تحديثها.',
   'system.remove': 'إزالة الإعدادات',

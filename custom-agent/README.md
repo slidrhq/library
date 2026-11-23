@@ -56,9 +56,12 @@ On **System settings** of the library, the agent's installation is **A package o
     "%SLIDR_AGENT_DIR%\\openwebui-agent.ps1"
   ],
   "env": { "POWERSHELL_UPDATECHECK": "Off", "POWERSHELL_TELEMETRY_OPTOUT": "1" },
-  "install": { "package": "system/agents/open-webui.zip", "sha256": "…", "size": 101234 }
+  "install": { "package": "system/agents/open-webui.zip", "sha256": "…", "size": 101234 },
+  "images": true
 }
 ```
+
+`images: true` (**Makes images too** on the page) offers it among the app's image agents as well (ADR-144 of the app): Settings › Media and the chat then make the deck's pictures with Open WebUI's image engine, on the same sign-in. Without it, the app runs no `slidr image` of the agent.
 
 The script reads its page beside it (`$PSScriptRoot`), so it runs from the package's folder as it is. A new .zip published replaces it on each machine at a later start of the app.
 

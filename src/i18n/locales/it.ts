@@ -619,7 +619,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Predefinito',
   'system.defaultNone': 'Nessuno: quello dell’app',
   'system.noneOffered': 'Offrine almeno uno.',
-  'system.agents.title': 'Agenti',
+  'system.agents.title': 'Agenti di scrittura e design',
   'system.agents.explain':
     'Gli agenti che l’app offre. Se sono tutti selezionati, li offre tutti, anche quelli aggiunti nelle versioni successive. Quello predefinito è offerto per primo e scelto all’inizio.',
   'system.web.label': 'Accesso al web',
@@ -667,6 +667,9 @@ const words: Record<MessageKey, string> = {
     'Il pacchetto della libreria: {size}, SHA-256 {hash}…. Scegli un altro file per sostituirlo.',
   'system.custom.zipTooLarge': 'Un pacchetto è al massimo di {most}.',
   'system.custom.zipFailed': 'Il pacchetto non è stato inviato: {error}',
+  'system.custom.images': 'Crea anche immagini',
+  'system.custom.imagesHint':
+    'L’app lo offre anche tra gli agenti per immagini: il suo programma le crea con slidr image. Che cosa sa farne lo dice il programma.',
   'system.tone.orange': 'Arancione',
   'system.tone.green': 'Verde',
   'system.tone.blue': 'Blu',
@@ -677,10 +680,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Lingue',
   'system.languages.explain':
     'Le lingue dell’interfaccia dell’app e dei contenuti pronti che offre. Senza una predefinita, un’app si avvia nella lingua del sistema, se è tra quelle offerte.',
-  'system.images.title': 'Immagini',
-  'system.images.explain': 'I provider con cui l’app crea immagini.',
+  'system.images.title': 'Agenti per immagini',
+  'system.images.explain': 'Gli agenti con cui l’app crea immagini.',
   'system.stock.title': 'Foto',
-  'system.stock.explain': 'Le banche di foto in cui cerca l’app.',
+  'system.stock.explain':
+    'Le banche di foto in cui cerca l’app. Se non ne è selezionata nessuna, non offre foto.',
   'system.save': 'Pubblica',
   'system.saved':
     'Pubblicate. Le app leggono le impostazioni al primo avvio o quando vengono aggiornate.',

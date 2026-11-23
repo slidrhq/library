@@ -1,9 +1,10 @@
 /**
  * The system settings, for the library's admins (server/core/system.ts; README, "System
- * settings"): what the organization's apps offer, and what they start with. The agents, the
- * organization's own among them; the languages of the interface; web access; the image providers
- * and the photo libraries. They are published into the media at once, as one file, and each app
- * reads it when it first starts, and again at every start, in the background, for the next one.
+ * settings"): what the organization's apps offer, and what they start with. The writing and design
+ * agents, the organization's own among them, and web access; the image agents; the languages of
+ * the interface; and the photo libraries, which may be none. They are published into the media at
+ * once, as one file, and each app reads it when it first starts, and again at every start, in the
+ * background, for the next one.
  */
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import type { ContentLanguage } from '@slidr/model';
@@ -51,6 +52,8 @@ interface AgentDraft {
    * published with the settings, by the name of its file.
    */
   zip?: Package & { name?: string };
+  /** The app offers it among the image agents too (ADR-144 of the app). */
+  images: boolean;
 }
 
 /** What is offered of one kind, as the boxes hold it; every box checked, every one. */
@@ -95,8 +98,31 @@ const agentDraft = (agent?: CustomAgent): AgentDraft => {
     ...(install && 'sha256' in install
       ? { zip: { sha256: install.sha256, size: install.size } }
       : {}),
+    images: agent?.images ?? false,
   };
 };
+
+/** The image agents: the app's, then the organization's that make images, by their ids. */
+const painters = (custom: AgentDraft[]) => [
+  ...IMAGE_PROVIDERS.map((provider) => provider.id),
+  ...custom.filter((agent) => agent.images && agent.id.trim()).map((agent) => agent.id.trim()),
+];
+
+/**
+ * The image agents offered as an agent of the organization's changes: offered as it starts to
+ * make images, or as it gets its first id; in its place as its id changes; and taken away, as the
+ * default too, once it makes none or has no id.
+ */
+function imagesAfter(offer: OfferDraft, was: AgentDraft | undefined, is: AgentDraft | undefined) {
+  const before = was?.images ? was.id.trim() : '';
+  const after = is?.images ? is.id.trim() : '';
+  const offered = offer.offered.flatMap((id) =>
+    before && id === before ? (after ? [after] : []) : [id],
+  );
+  if (after && !offered.includes(after) && !before) offered.push(after);
+  const chosen = before && offer.default === before ? after : offer.default;
+  return { offered, default: chosen };
+}
 
 const offerDraft = (offer: Offer<string> | undefined, all: readonly string[]): OfferDraft => ({
   offered: offer?.offered ?? [...all],
@@ -113,10 +139,7 @@ function draftOf(settings: SystemSettings | null): Draft {
     webAccess: settings?.agents.webAccess ?? '',
     custom,
     languages: offerDraft(settings?.languages, LANGUAGES),
-    images: offerDraft(
-      settings?.images,
-      IMAGE_PROVIDERS.map((provider) => provider.id),
-    ),
+    images: offerDraft(settings?.images, painters(custom)),
     stock: offerDraft(
       settings?.stock,
       STOCK_SOURCES.map((source) => source.id),
@@ -166,6 +189,7 @@ function changeOf(draft: Draft): SystemChange {
           ? // The server names where it keeps it.
             { install: { sha256: agent.zip.sha256, size: agent.zip.size } }
           : {}),
+    ...(agent.images ? { images: true } : {}),
   }));
   const agents = [...AGENTS.map((agent) => agent.id), ...custom.map((agent) => agent.id)];
   return {
@@ -175,10 +199,7 @@ function changeOf(draft: Draft): SystemChange {
       ...(draft.webAccess ? { webAccess: draft.webAccess } : {}),
     },
     languages: offerOf<ContentLanguage>(draft.languages, LANGUAGES),
-    images: offerOf(
-      draft.images,
-      IMAGE_PROVIDERS.map((provider) => provider.id),
-    ),
+    images: offerOf(draft.images, painters(draft.custom)),
     stock: offerOf(
       draft.stock,
       STOCK_SOURCES.map((source) => source.id),
@@ -186,13 +207,17 @@ function changeOf(draft: Draft): SystemChange {
   };
 }
 
-/** Boxes for what is offered, and the one an app starts with. */
+/**
+ * Boxes for what is offered, and the one an app starts with. One at least, but of a kind the app
+ * does without (`optional`): none checked offers none of them.
+ */
 function OfferPart({
   title,
   explain,
   options,
   value,
   onChange,
+  optional = false,
   children,
 }: {
   title: MessageKey;
@@ -200,6 +225,7 @@ function OfferPart({
   options: readonly { id: string; name: ReactNode }[];
   value: OfferDraft;
   onChange: (value: OfferDraft) => void;
+  optional?: boolean;
   children?: ReactNode;
 }) {
   const t = useT();
@@ -223,7 +249,9 @@ function OfferPart({
           </label>
         ))}
       </div>
-      {value.offered.length === 0 && <p className="error-text small">{t('system.noneOffered')}</p>}
+      {value.offered.length === 0 && !optional && (
+        <p className="error-text small">{t('system.noneOffered')}</p>
+      )}
       <Field label={t('system.default')}>
         <select
           value={value.default}
@@ -392,6 +420,17 @@ function AgentFields({
         </select>
       </Field>
       {agent.install === 'package' && <PackageField zip={agent.zip} onZip={onZip} />}
+      <div className="field">
+        <label className="settings-check">
+          <input
+            type="checkbox"
+            checked={agent.images}
+            onChange={(event) => onChange({ ...agent, images: event.target.checked })}
+          />
+          <span>{t('system.custom.images')}</span>
+        </label>
+        <span className="hint">{isolate(t('system.custom.imagesHint'))}</span>
+      </div>
       {(agent.install === 'winget' || agent.install === 'npm') && (
         <div className={agent.install === 'winget' ? 'settings-server two' : undefined}>
           <Field label={t('system.custom.package')}>
@@ -479,7 +518,15 @@ export function System() {
       .filter((agent) => agent.id.trim())
       .map((agent) => ({ id: agent.id.trim(), name: agent.name.trim() || agent.id.trim() })),
   ];
-  const empty = [draft.agents, draft.languages, draft.images, draft.stock].some(
+  // The app's image agents, and the organization's that make images too.
+  const imageOptions = [
+    ...IMAGE_PROVIDERS.map((provider) => ({ id: provider.id, name: provider.name })),
+    ...agentOptions.filter((option) =>
+      draft.custom.some((agent) => agent.images && agent.id.trim() === option.id),
+    ),
+  ];
+  // Photos are the one kind the app does without.
+  const empty = [draft.agents, draft.languages, draft.images].some(
     (offer) => offer.offered.length === 0,
   );
   // An agent installed from a package needs its .zip, sent before it is published.
@@ -508,6 +555,7 @@ export function System() {
         offered,
         default: draft.agents.default === before ? after : draft.agents.default,
       },
+      images: imagesAfter(draft.images, draft.custom[index], agent),
     });
   };
   const removeAgent = (index: number) => {
@@ -518,6 +566,7 @@ export function System() {
         offered: draft.agents.offered.filter((one) => one !== id),
         default: draft.agents.default === id ? '' : draft.agents.default,
       },
+      images: imagesAfter(draft.images, draft.custom[index], undefined),
     });
   };
 
@@ -604,6 +653,13 @@ export function System() {
       </section>
 
       <OfferPart
+        title="system.images.title"
+        explain="system.images.explain"
+        options={imageOptions}
+        value={draft.images}
+        onChange={(images) => update({ images })}
+      />
+      <OfferPart
         title="system.languages.title"
         explain="system.languages.explain"
         options={LANGUAGES.map((lang) => ({ id: lang, name: nativeName(lang) }))}
@@ -611,18 +667,12 @@ export function System() {
         onChange={(languages) => update({ languages })}
       />
       <OfferPart
-        title="system.images.title"
-        explain="system.images.explain"
-        options={IMAGE_PROVIDERS}
-        value={draft.images}
-        onChange={(images) => update({ images })}
-      />
-      <OfferPart
         title="system.stock.title"
         explain="system.stock.explain"
         options={STOCK_SOURCES}
         value={draft.stock}
         onChange={(stock) => update({ stock })}
+        optional
       />
 
       <section className="settings-part">

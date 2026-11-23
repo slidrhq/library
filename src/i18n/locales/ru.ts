@@ -608,7 +608,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'По умолчанию',
   'system.defaultNone': 'Нет: как в приложении',
   'system.noneOffered': 'Предложите хотя бы один.',
-  'system.agents.title': 'Агенты',
+  'system.agents.title': 'Агенты для текста и дизайна',
   'system.agents.explain':
     'Агенты, которые предлагает приложение. Если отмечены все, оно предлагает их все, включая добавленные в следующих версиях. Агент по умолчанию предлагается первым и выбран изначально.',
   'system.web.label': 'Доступ к интернету',
@@ -655,6 +655,9 @@ const words: Record<MessageKey, string> = {
     'Пакет в библиотеке: {size}, SHA-256 {hash}…. Чтобы заменить его, выберите другой файл.',
   'system.custom.zipTooLarge': 'Пакет занимает не больше {most}.',
   'system.custom.zipFailed': 'Пакет не отправлен: {error}',
+  'system.custom.images': 'Также создаёт изображения',
+  'system.custom.imagesHint':
+    'Приложение предлагает его и среди агентов изображений: его программа создаёт их командой slidr image. Что она умеет с ними делать, сообщает сама программа.',
   'system.tone.orange': 'Оранжевый',
   'system.tone.green': 'Зелёный',
   'system.tone.blue': 'Синий',
@@ -665,10 +668,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Языки',
   'system.languages.explain':
     'Языки интерфейса приложения и готового содержимого, которое оно предлагает. Без языка по умолчанию приложение запускается на языке системы, если он предлагается.',
-  'system.images.title': 'Изображения',
-  'system.images.explain': 'Поставщики, с которыми приложение создаёт изображения.',
+  'system.images.title': 'Агенты изображений',
+  'system.images.explain': 'Агенты, с которыми приложение создаёт изображения.',
   'system.stock.title': 'Фото',
-  'system.stock.explain': 'Фотобанки, в которых ищет приложение.',
+  'system.stock.explain':
+    'Фотобанки, в которых ищет приложение. Если не отмечен ни один, оно не предлагает фото.',
   'system.save': 'Опубликовать',
   'system.saved':
     'Опубликовано. Приложения читают настройки при первом запуске или при обновлении.',

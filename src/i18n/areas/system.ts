@@ -9,7 +9,7 @@ export const he = {
   'system.default': 'ברירת מחדל',
   'system.defaultNone': 'ללא: לפי האפליקציה',
   'system.noneOffered': 'צריך להציע אחד לפחות.',
-  'system.agents.title': 'סוכנים',
+  'system.agents.title': 'סוכני כתיבה ועיצוב',
   'system.agents.explain':
     'הסוכנים שהאפליקציה מציעה. כשכולם מסומנים, היא מציעה את כולם, וגם את אלה שיתווספו בגרסאות הבאות. ברירת המחדל מוצעת ראשונה ומסומנת מראש.',
   'system.web.label': 'גישה לאינטרנט',
@@ -56,6 +56,9 @@ export const he = {
     'החבילה שבספרייה: {size}, SHA-256 {hash}…. אפשר לבחור קובץ אחר במקומה.',
   'system.custom.zipTooLarge': 'חבילה היא עד {most}.',
   'system.custom.zipFailed': 'החבילה לא נשלחה: {error}',
+  'system.custom.images': 'גם סוכן תמונות',
+  'system.custom.imagesHint':
+    'האפליקציה מציעה אותו גם בין סוכני התמונות: התוכנה שלו מייצרת אותן ב-slidr image. מה הוא יודע לעשות בהן, התוכנה אומרת.',
   'system.tone.orange': 'כתום',
   'system.tone.green': 'ירוק',
   'system.tone.blue': 'כחול',
@@ -66,10 +69,11 @@ export const he = {
   'system.languages.title': 'שפות',
   'system.languages.explain':
     'שפות הממשק של האפליקציה, ושל התוכן המוכן שהיא מציעה. בלי ברירת מחדל, אפליקציה עולה בשפת המערכת כשהיא מוצעת.',
-  'system.images.title': 'תמונות',
-  'system.images.explain': 'הספקים שהאפליקציה מייצרת בהם תמונות.',
+  'system.images.title': 'סוכני תמונות',
+  'system.images.explain': 'הסוכנים שהאפליקציה מייצרת בהם תמונות.',
   'system.stock.title': 'צילומים',
-  'system.stock.explain': 'מאגרי הצילומים שהאפליקציה מחפשת בהם.',
+  'system.stock.explain':
+    'מאגרי הצילומים שהאפליקציה מחפשת בהם. כשאף אחד לא מסומן, היא לא מציעה צילומים.',
   'system.save': 'פרסום',
   'system.saved': 'פורסם. כל אפליקציה תקרא את ההגדרות בעלייה הבאה שלה, ותפעל לפיהן מהעלייה שאחריה.',
   'system.remove': 'הסרת ההגדרות',
@@ -91,7 +95,7 @@ export const en: Record<keyof typeof he, string> = {
   'system.default': 'Default',
   'system.defaultNone': 'None: the app’s own',
   'system.noneOffered': 'Offer one at least.',
-  'system.agents.title': 'Agents',
+  'system.agents.title': 'Writing and design agents',
   'system.agents.explain':
     'The agents the app offers. With every one checked, it offers all of them, and those added in later versions too. The default is offered first, and chosen to start with.',
   'system.web.label': 'Web access',
@@ -138,6 +142,9 @@ export const en: Record<keyof typeof he, string> = {
     'The library’s package: {size}, SHA-256 {hash}…. Choose another file to replace it.',
   'system.custom.zipTooLarge': 'A package is at most {most}.',
   'system.custom.zipFailed': 'The package was not sent: {error}',
+  'system.custom.images': 'Makes images too',
+  'system.custom.imagesHint':
+    'The app offers it among the image agents as well: its program makes them with slidr image. What it can do with them, the program says.',
   'system.tone.orange': 'Orange',
   'system.tone.green': 'Green',
   'system.tone.blue': 'Blue',
@@ -148,10 +155,11 @@ export const en: Record<keyof typeof he, string> = {
   'system.languages.title': 'Languages',
   'system.languages.explain':
     'The languages of the app’s interface, and of the ready-made content it offers. Without a default, an app starts in the system’s language when it is offered.',
-  'system.images.title': 'Images',
-  'system.images.explain': 'The providers the app makes images with.',
+  'system.images.title': 'Image agents',
+  'system.images.explain': 'The agents the app makes images with.',
   'system.stock.title': 'Photos',
-  'system.stock.explain': 'The photo libraries the app searches.',
+  'system.stock.explain':
+    'The photo libraries the app searches. With none checked, it offers no photos.',
   'system.save': 'Publish',
   'system.saved':
     'Published. Each app reads the settings at its next start, and goes by them from the start after.',

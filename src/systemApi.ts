@@ -63,6 +63,8 @@ export interface CustomAgent {
   args: string[];
   env: Record<string, string>;
   install?: Install;
+  /** The app offers it among the image agents too: its program makes images (ADR-144 of the app). */
+  images?: boolean;
 }
 
 /** What is offered of one kind, and what an app starts with; none named, every one. */
@@ -78,6 +80,7 @@ export interface SystemSettings {
   agents: Offer<string> & { custom: CustomAgent[]; webAccess?: WebAccess };
   languages: Offer<ContentLanguage>;
   images: Offer<string>;
+  /** An empty list offers no photo library: the app does without photos. */
   stock: Offer<string>;
 }
 

@@ -611,7 +611,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Mặc định',
   'system.defaultNone': 'Không có: theo ứng dụng',
   'system.noneOffered': 'Hãy cung cấp ít nhất một.',
-  'system.agents.title': 'Tác nhân',
+  'system.agents.title': 'Tác nhân viết và thiết kế',
   'system.agents.explain':
     'Các tác nhân mà ứng dụng cung cấp. Khi chọn tất cả, ứng dụng cung cấp tất cả, kể cả những tác nhân được thêm trong các phiên bản sau. Tác nhân mặc định được cung cấp đầu tiên và được chọn sẵn từ đầu.',
   'system.web.label': 'Truy cập web',
@@ -658,6 +658,9 @@ const words: Record<MessageKey, string> = {
     'Gói trong thư viện: {size}, SHA-256 {hash}…. Chọn một tệp khác để thay thế.',
   'system.custom.zipTooLarge': 'Một gói tối đa {most}.',
   'system.custom.zipFailed': 'Không gửi được gói: {error}',
+  'system.custom.images': 'Cũng tạo hình ảnh',
+  'system.custom.imagesHint':
+    'Ứng dụng cũng cung cấp nó trong số các tác nhân hình ảnh: chương trình của nó tạo hình bằng slidr image. Nó làm được gì với hình ảnh thì chương trình cho biết.',
   'system.tone.orange': 'Cam',
   'system.tone.green': 'Xanh lá',
   'system.tone.blue': 'Xanh dương',
@@ -668,10 +671,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Ngôn ngữ',
   'system.languages.explain':
     'Ngôn ngữ giao diện của ứng dụng, và của nội dung có sẵn mà ứng dụng cung cấp. Nếu không có mặc định, ứng dụng khởi động bằng ngôn ngữ của hệ thống khi ngôn ngữ đó được cung cấp.',
-  'system.images.title': 'Hình ảnh',
-  'system.images.explain': 'Các nhà cung cấp mà ứng dụng dùng để tạo hình ảnh.',
+  'system.images.title': 'Tác nhân hình ảnh',
+  'system.images.explain': 'Các tác nhân mà ứng dụng dùng để tạo hình ảnh.',
   'system.stock.title': 'Ảnh chụp',
-  'system.stock.explain': 'Các kho ảnh mà ứng dụng tìm kiếm.',
+  'system.stock.explain':
+    'Các kho ảnh mà ứng dụng tìm kiếm. Nếu không chọn kho nào, ứng dụng sẽ không cung cấp ảnh chụp.',
   'system.save': 'Xuất bản',
   'system.saved': 'Đã xuất bản. Ứng dụng đọc cài đặt khi khởi động lần đầu hoặc khi được cập nhật.',
   'system.remove': 'Xóa các cài đặt',

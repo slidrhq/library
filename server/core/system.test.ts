@@ -135,6 +135,57 @@ describe('the system settings', () => {
     assert.equal(library.manifestOf().published, before);
   });
 
+  test('may offer no photo library, and the file says so', async () => {
+    const library = await live();
+    const answer = await library.send('/api/settings/system', 'PUT', {
+      stock: { offered: [] },
+    });
+    assert.equal(answer.status, 200, await answer.clone().text());
+    // Kept as an empty list: a list left out would offer every one.
+    assert.deepEqual(library.fileOf()!.stock, { offered: [] });
+    const again = await read<{ settings: { stock: unknown } }>(
+      await library.call('/api/settings/system'),
+    );
+    assert.deepEqual(again.settings.stock, { offered: [] });
+  });
+
+  test('offer an agent of the organization’s among the image agents when it makes images', async () => {
+    const library = await live();
+    const acme = { ...SETTINGS.agents.custom[0]!, images: true };
+    const chat = { ...SETTINGS.agents.custom[0]!, id: 'chat', name: 'Chat' };
+    const answer = await library.send('/api/settings/system', 'PUT', {
+      agents: { custom: [acme, { ...chat, images: false }] },
+      images: { offered: ['acme', 'codex-cli'], default: 'acme' },
+    });
+    assert.equal(answer.status, 200, await answer.clone().text());
+    const written = library.fileOf()!;
+    // Said of the one that makes images, and of no other.
+    const custom = (written.agents as { custom: Record<string, unknown>[] }).custom;
+    assert.equal(custom[0]!.images, true);
+    assert.equal('images' in custom[1]!, false);
+    assert.deepEqual(written.images, { offered: ['acme', 'codex-cli'], default: 'acme' });
+
+    // One that makes none is no image agent, as offered or as the default.
+    const refused = async (settings: unknown, path: string) => {
+      const answer = await library.send('/api/settings/system', 'PUT', settings);
+      assert.equal(answer.status, 400, JSON.stringify(settings));
+      const { issues } = await read<{ issues: { path: string }[] }>(answer);
+      assert.ok(
+        issues.some((issue) => issue.path === path),
+        `${path} in ${JSON.stringify(issues)}`,
+      );
+    };
+    await refused(
+      { agents: { custom: [acme, chat] }, images: { offered: ['chat'] } },
+      'images.offered.0',
+    );
+    await refused(
+      { agents: { custom: [acme, chat] }, images: { default: 'chat' } },
+      'images.default',
+    );
+    await refused({ images: { offered: ['acme'] } }, 'images.offered.0');
+  });
+
   test('that do not hold are refused, each where it fails', async () => {
     const library = await live();
     const refused = async (settings: unknown, path: string) => {

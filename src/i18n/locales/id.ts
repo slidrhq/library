@@ -613,7 +613,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Bawaan',
   'system.defaultNone': 'Tidak ada: bawaan aplikasi',
   'system.noneOffered': 'Tawarkan setidaknya satu.',
-  'system.agents.title': 'Agen',
+  'system.agents.title': 'Agen penulisan dan desain',
   'system.agents.explain':
     'Agen yang ditawarkan aplikasi. Jika semuanya dicentang, aplikasi menawarkan semuanya, termasuk yang ditambahkan di versi berikutnya. Agen bawaan ditawarkan pertama dan sudah terpilih sejak awal.',
   'system.web.label': 'Akses web',
@@ -660,6 +660,9 @@ const words: Record<MessageKey, string> = {
     'Paket di pustaka: {size}, SHA-256 {hash}…. Pilih file lain untuk menggantinya.',
   'system.custom.zipTooLarge': 'Ukuran paket paling besar {most}.',
   'system.custom.zipFailed': 'Paket tidak terkirim: {error}',
+  'system.custom.images': 'Juga membuat gambar',
+  'system.custom.imagesHint':
+    'Aplikasi juga menawarkannya di antara agen gambar: programnya membuat gambar dengan slidr image. Apa yang bisa dilakukannya, program itu yang menyebutkan.',
   'system.tone.orange': 'Oranye',
   'system.tone.green': 'Hijau',
   'system.tone.blue': 'Biru',
@@ -670,10 +673,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Bahasa',
   'system.languages.explain':
     'Bahasa antarmuka aplikasi, dan bahasa konten siap pakai yang ditawarkannya. Tanpa bawaan, aplikasi dimulai dalam bahasa sistem jika bahasa itu ditawarkan.',
-  'system.images.title': 'Gambar',
-  'system.images.explain': 'Penyedia yang dipakai aplikasi untuk membuat gambar.',
+  'system.images.title': 'Agen gambar',
+  'system.images.explain': 'Agen yang dipakai aplikasi untuk membuat gambar.',
   'system.stock.title': 'Foto',
-  'system.stock.explain': 'Bank foto tempat aplikasi mencari.',
+  'system.stock.explain':
+    'Bank foto tempat aplikasi mencari. Jika tidak ada yang dicentang, aplikasi tidak menawarkan foto.',
   'system.save': 'Terbitkan',
   'system.saved':
     'Diterbitkan. Aplikasi membaca pengaturan saat pertama kali dijalankan, atau saat diperbarui.',

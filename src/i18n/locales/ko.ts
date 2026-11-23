@@ -601,7 +601,7 @@ const words: Record<MessageKey, string> = {
   'system.default': '기본값',
   'system.defaultNone': '없음: 앱 자체 기본값',
   'system.noneOffered': '하나 이상 제공해야 합니다.',
-  'system.agents.title': '에이전트',
+  'system.agents.title': '글쓰기·디자인 에이전트',
   'system.agents.explain':
     '앱이 제공하는 에이전트입니다. 모두 선택하면 이후 버전에서 추가되는 에이전트까지 모두 제공합니다. 기본 에이전트는 맨 앞에 제공되고 처음부터 선택되어 있습니다.',
   'system.web.label': '웹 액세스',
@@ -648,6 +648,9 @@ const words: Record<MessageKey, string> = {
     '라이브러리의 패키지: {size}, SHA-256 {hash}…. 바꾸려면 다른 파일을 선택하세요.',
   'system.custom.zipTooLarge': '패키지는 최대 {most}입니다.',
   'system.custom.zipFailed': '패키지를 보내지 못했습니다: {error}',
+  'system.custom.images': '이미지도 만듭니다',
+  'system.custom.imagesHint':
+    '앱이 이미지 에이전트로도 제공합니다. 프로그램이 slidr image로 이미지를 만들며, 무엇을 할 수 있는지는 프로그램이 알려 줍니다.',
   'system.tone.orange': '주황',
   'system.tone.green': '초록',
   'system.tone.blue': '파랑',
@@ -658,10 +661,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': '언어',
   'system.languages.explain':
     '앱 인터페이스의 언어와, 앱이 제공하는 기성 콘텐츠의 언어입니다. 기본값이 없으면 앱은 시스템 언어가 제공될 때 그 언어로 시작합니다.',
-  'system.images.title': '이미지',
-  'system.images.explain': '앱이 이미지를 만드는 데 쓰는 공급자입니다.',
+  'system.images.title': '이미지 에이전트',
+  'system.images.explain': '앱이 이미지를 만드는 데 쓰는 에이전트입니다.',
   'system.stock.title': '사진',
-  'system.stock.explain': '앱이 검색하는 스톡 사진 서비스입니다.',
+  'system.stock.explain':
+    '앱이 검색하는 스톡 사진 서비스입니다. 하나도 선택하지 않으면 사진을 제공하지 않습니다.',
   'system.save': '게시',
   'system.saved': '게시했습니다. 앱은 처음 시작하거나 업데이트될 때 설정을 읽습니다.',
   'system.remove': '설정 제거',

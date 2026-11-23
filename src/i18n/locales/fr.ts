@@ -625,7 +625,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Par défaut',
   'system.defaultNone': 'Aucun : celui de l’application',
   'system.noneOffered': 'Proposez-en au moins un.',
-  'system.agents.title': 'Agents',
+  'system.agents.title': 'Agents de rédaction et de design',
   'system.agents.explain':
     'Les agents que propose l’application. Si tous sont cochés, elle les propose tous, y compris ceux ajoutés dans les versions suivantes. Celui par défaut est proposé en premier, et choisi au départ.',
   'system.web.label': 'Accès au web',
@@ -673,6 +673,9 @@ const words: Record<MessageKey, string> = {
     'Le paquet de la bibliothèque : {size}, SHA-256 {hash}…. Choisissez un autre fichier pour le remplacer.',
   'system.custom.zipTooLarge': 'Un paquet fait au plus {most}.',
   'system.custom.zipFailed': 'Le paquet n’a pas été envoyé : {error}',
+  'system.custom.images': 'Crée aussi des images',
+  'system.custom.imagesHint':
+    'L’application le propose aussi parmi les agents d’images : son programme les crée avec slidr image. Ce qu’il sait en faire, le programme le dit.',
   'system.tone.orange': 'Orange',
   'system.tone.green': 'Vert',
   'system.tone.blue': 'Bleu',
@@ -683,10 +686,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Langues',
   'system.languages.explain':
     'Les langues de l’interface de l’application, et du contenu prêt à l’emploi qu’elle propose. Sans langue par défaut, une application démarre dans la langue du système, si elle est proposée.',
-  'system.images.title': 'Images',
-  'system.images.explain': 'Les fournisseurs avec lesquels l’application crée des images.',
+  'system.images.title': 'Agents d’images',
+  'system.images.explain': 'Les agents avec lesquels l’application crée des images.',
   'system.stock.title': 'Photos',
-  'system.stock.explain': 'Les banques de photos dans lesquelles l’application cherche.',
+  'system.stock.explain':
+    'Les banques de photos dans lesquelles l’application cherche. Si aucune n’est cochée, elle ne propose pas de photos.',
   'system.save': 'Publier',
   'system.saved':
     'Publiés. Les applications lisent les paramètres à leur premier démarrage, ou à leur mise à jour.',

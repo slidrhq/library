@@ -572,7 +572,7 @@ const words: Record<MessageKey, string> = {
   'system.default': '默认',
   'system.defaultNone': '无：由应用自行决定',
   'system.noneOffered': '请至少提供一个。',
-  'system.agents.title': '智能体',
+  'system.agents.title': '写作与设计智能体',
   'system.agents.explain':
     '应用提供的智能体。全部勾选时，应用会提供所有智能体，包括以后版本中新增的。默认智能体排在最前，并在一开始就被选中。',
   'system.web.label': '联网访问',
@@ -617,6 +617,9 @@ const words: Record<MessageKey, string> = {
   'system.custom.zipPublished': '媒体库中的包：{size}，SHA-256 {hash}…。选择另一个文件即可替换。',
   'system.custom.zipTooLarge': '包最大为 {most}。',
   'system.custom.zipFailed': '包未发送：{error}',
+  'system.custom.images': '也生成图像',
+  'system.custom.imagesHint':
+    '应用也会把它列为图像智能体：它的程序用 slidr image 生成图像。它能做什么，由程序说明。',
   'system.tone.orange': '橙色',
   'system.tone.green': '绿色',
   'system.tone.blue': '蓝色',
@@ -627,10 +630,10 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': '语言',
   'system.languages.explain':
     '应用界面的语言，以及应用提供的现成内容的语言。没有默认语言时，如果系统语言在提供之列，应用会以系统语言启动。',
-  'system.images.title': '图像',
-  'system.images.explain': '应用用来生成图像的提供方。',
+  'system.images.title': '图像智能体',
+  'system.images.explain': '应用用来生成图像的智能体。',
   'system.stock.title': '照片',
-  'system.stock.explain': '应用搜索的图库。',
+  'system.stock.explain': '应用搜索的图库。一个都不勾选时，应用不提供照片。',
   'system.save': '发布',
   'system.saved': '已发布。应用会在首次启动或更新时读取这些设置。',
   'system.remove': '移除设置',

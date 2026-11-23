@@ -623,7 +623,7 @@ const words: Record<MessageKey, string> = {
   'system.default': 'Predeterminado',
   'system.defaultNone': 'Ninguno: el de la app',
   'system.noneOffered': 'Ofrece al menos uno.',
-  'system.agents.title': 'Agentes',
+  'system.agents.title': 'Agentes de redacción y diseño',
   'system.agents.explain':
     'Los agentes que ofrece la app. Con todos marcados, los ofrece todos, también los que se añadan en versiones posteriores. El predeterminado se ofrece primero y está elegido al empezar.',
   'system.web.label': 'Acceso web',
@@ -670,6 +670,9 @@ const words: Record<MessageKey, string> = {
     'El paquete de la biblioteca: {size}, SHA-256 {hash}…. Elige otro archivo para reemplazarlo.',
   'system.custom.zipTooLarge': 'Un paquete ocupa como máximo {most}.',
   'system.custom.zipFailed': 'No se envió el paquete: {error}',
+  'system.custom.images': 'También crea imágenes',
+  'system.custom.imagesHint':
+    'La app lo ofrece también entre los agentes de imágenes: su programa las crea con slidr image. Lo que puede hacer con ellas lo dice el programa.',
   'system.tone.orange': 'Naranja',
   'system.tone.green': 'Verde',
   'system.tone.blue': 'Azul',
@@ -680,10 +683,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': 'Idiomas',
   'system.languages.explain':
     'Los idiomas de la interfaz de la app y del contenido listo para usar que ofrece. Sin idioma predeterminado, una app se inicia en el idioma del sistema si está entre los ofrecidos.',
-  'system.images.title': 'Imágenes',
-  'system.images.explain': 'Los proveedores con los que la app crea imágenes.',
+  'system.images.title': 'Agentes de imágenes',
+  'system.images.explain': 'Los agentes con los que la app crea imágenes.',
   'system.stock.title': 'Fotos',
-  'system.stock.explain': 'Los bancos de fotos en los que busca la app.',
+  'system.stock.explain':
+    'Los bancos de fotos en los que busca la app. Si no marcas ninguno, no ofrece fotos.',
   'system.save': 'Publicar',
   'system.saved':
     'Publicada. Las apps leen la configuración al iniciarse por primera vez o al actualizarse.',

@@ -159,6 +159,14 @@ export const CustomAgent = z
       )
       .default({}),
     install: install.optional(),
+    /**
+     * The app offers it among its image providers too: its program makes images with `slidr
+     * image` (custom-agent-cli §7, ADR-144 of the app). What it makes of them, the program says.
+     */
+    images: z
+      .boolean()
+      .optional()
+      .transform((images) => images || undefined),
   })
   .superRefine((agent, ctx) => {
     const issue = (path: (string | number)[], message: string) =>
@@ -183,9 +191,20 @@ export const CustomAgent = z
   });
 export type CustomAgent = z.infer<typeof CustomAgent>;
 
-/** What is offered of one kind, and the one an app starts with: none named, all of them. */
-const offer = <T extends z.ZodType<string>>(id: T) =>
-  z.object({ offered: z.array(id).min(1).optional(), default: id.optional() }).default({});
+/**
+ * What is offered of one kind, and the one an app starts with: none named, all of them. Of a kind
+ * the app does without (`optional`), an empty list offers none of them.
+ */
+const offer = <T extends z.ZodType<string>>(id: T, optional = false) =>
+  z
+    .object({
+      offered: z
+        .array(id)
+        .min(optional ? 0 : 1)
+        .optional(),
+      default: id.optional(),
+    })
+    .default({});
 
 const agentId = z.string().regex(/^[a-z][a-z0-9-]{1,31}$/);
 
@@ -207,11 +226,13 @@ export const SystemSettings = z
       })
       .default({ custom: [] }),
     languages: offer(z.enum(CONTENT_LANGUAGES)),
-    images: offer(z.enum(IMAGE_PROVIDERS)),
-    stock: offer(z.enum(STOCK_SOURCES)),
+    /** The app's image providers, and the organization's agents that make images too. */
+    images: offer(agentId),
+    /** The app does without photos: an empty list offers no photo library. */
+    stock: offer(z.enum(STOCK_SOURCES), true),
   })
   .superRefine((settings, ctx) => {
-    const { agents } = settings;
+    const { agents, images } = settings;
     const custom = agents.custom.map((agent) => agent.id);
     custom.forEach((id, index) => {
       if (custom.indexOf(id) !== index) {
@@ -232,10 +253,23 @@ export const SystemSettings = z
         });
       }
     });
+    const painters = new Set<string>([
+      ...IMAGE_PROVIDERS,
+      ...agents.custom.filter((agent) => agent.images).map((agent) => agent.id),
+    ]);
+    images.offered?.forEach((id, index) => {
+      if (!painters.has(id)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['images', 'offered', index],
+          message: `No image agent is ${id}: the app’s, or one of the organization’s that makes images.`,
+        });
+      }
+    });
     const parts = [
       ['agents', agents.offered ?? [...known], agents.default],
       ['languages', settings.languages.offered, settings.languages.default],
-      ['images', settings.images.offered, settings.images.default],
+      ['images', images.offered ?? [...painters], images.default],
       ['stock', settings.stock.offered, settings.stock.default],
     ] as const;
     for (const [part, offered, chosen] of parts) {
@@ -263,15 +297,19 @@ export async function readSystemSettings(ctx: Context): Promise<SystemSettings |
   }
 }
 
-/** The settings as the file holds them: what was given, without what defaults to nothing. */
+/**
+ * The settings as the file holds them: what was given, without what defaults to nothing. A list of
+ * what is offered stays, empty too: none named is every one, and an empty one is none of them.
+ */
 export function encodeSystemSettings(settings: SystemSettings): string {
-  const empty = (field: unknown) =>
+  const empty = (name: string, field: unknown) =>
     field === undefined ||
-    (Array.isArray(field) && field.length === 0) ||
-    (typeof field === 'object' && field !== null && Object.keys(field).length === 0);
+    (Array.isArray(field)
+      ? field.length === 0 && name !== 'offered'
+      : typeof field === 'object' && field !== null && Object.keys(field).length === 0);
   const part = (value: object) =>
     Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).filter(([, f]) => !empty(f)),
+      Object.entries(value as Record<string, unknown>).filter(([name, f]) => !empty(name, f)),
     );
   const agents = part({
     ...settings.agents,

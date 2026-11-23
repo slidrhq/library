@@ -615,7 +615,7 @@ const words: Record<MessageKey, string> = {
   'system.default': '既定',
   'system.defaultNone': 'なし（アプリの既定）',
   'system.noneOffered': '少なくとも 1 つ提供してください。',
-  'system.agents.title': 'エージェント',
+  'system.agents.title': '文章とデザインのエージェント',
   'system.agents.explain':
     'アプリが提供するエージェントです。すべてにチェックを入れると、今後のバージョンで追加されるものも含めてすべて提供します。既定のエージェントは最初に表示され、初期状態で選択されています。',
   'system.web.label': 'Web アクセス',
@@ -662,6 +662,9 @@ const words: Record<MessageKey, string> = {
     'ライブラリのパッケージ：{size}、SHA-256 {hash}…。置き換えるには別のファイルを選んでください。',
   'system.custom.zipTooLarge': 'パッケージは最大 {most} です。',
   'system.custom.zipFailed': 'パッケージを送信できませんでした：{error}',
+  'system.custom.images': '画像も作る',
+  'system.custom.imagesHint':
+    'アプリは画像エージェントとしても提供します。そのプログラムが slidr image で画像を作ります。何ができるかはプログラムが伝えます。',
   'system.tone.orange': 'オレンジ',
   'system.tone.green': '緑',
   'system.tone.blue': '青',
@@ -672,10 +675,11 @@ const words: Record<MessageKey, string> = {
   'system.languages.title': '言語',
   'system.languages.explain':
     'アプリのインターフェイスの言語と、アプリが提供する既製コンテンツの言語。既定がない場合、システムの言語が提供されていれば、アプリはその言語で起動します。',
-  'system.images.title': '画像',
-  'system.images.explain': 'アプリが画像の生成に使うプロバイダー。',
+  'system.images.title': '画像エージェント',
+  'system.images.explain': 'アプリが画像の生成に使うエージェント。',
   'system.stock.title': '写真',
-  'system.stock.explain': 'アプリが検索するストックフォト サービス。',
+  'system.stock.explain':
+    'アプリが検索するストックフォト サービス。どれも選ばないと、写真は提供されません。',
   'system.save': '公開',
   'system.saved': '公開しました。アプリは初回起動時や更新時に設定を読み込みます。',
   'system.remove': '設定を削除',
